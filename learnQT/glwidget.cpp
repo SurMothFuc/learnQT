@@ -11,6 +11,9 @@
 
 #include <iostream>
 
+Pass_parameters param;
+QMutex param_mutex;
+
 namespace
 {
     float vertices[] =
@@ -87,6 +90,15 @@ void GLWidget::initializeGL()
 
     glBindVertexArray(0);
 
+    QTimer* m_pTimer = new QTimer(this);
+    connect(m_pTimer, &QTimer::timeout, this, [=] {
+        QMutexLocker lock(&param_mutex);
+        {
+           // param.offx += 1.0;
+        }
+        });
+    m_pTimer->start(50);
+
     //glCheckError();
 }
 
@@ -127,8 +139,7 @@ void GLWidget::initRenderThread()
     context->doneCurrent();
     m_thread = new RenderThread(renderSurface, context, this);
     context->makeCurrent(mainSurface);
-    qDebug() << 1122334455;
-   
+
     connect(m_thread, &RenderThread::imageReady, this, [this](){
         update();
     }, Qt::QueuedConnection);
@@ -137,4 +148,65 @@ void GLWidget::initRenderThread()
     
 }
 
+void GLWidget::keyPressEvent(QKeyEvent* event)
+{
+    int key = event->key();
+    if (key >= 0 && key < 1024) {
+        QMutexLocker lock(&param_mutex);
+        {
+            param.camera.keys[key] = true;
+        }
+    }
+}
 
+void GLWidget::keyReleaseEvent(QKeyEvent* event)
+{
+    int key = event->key();
+    if (key >= 0 && key < 1024) {
+        QMutexLocker lock(&param_mutex);
+        {
+            param.camera.keys[key] = false;
+        }
+    }
+}
+
+void GLWidget::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton) {
+        m_bLeftPressed = true;
+        m_lastPos = event->pos();
+    }
+}
+
+void GLWidget::mouseReleaseEvent(QMouseEvent* event)
+{
+    Q_UNUSED(event);
+
+    m_bLeftPressed = false;
+}
+
+void GLWidget::mouseMoveEvent(QMouseEvent* event)
+{
+    if (m_bLeftPressed) {
+        int xpos = event->pos().x();
+        int ypos = event->pos().y();
+
+        int xoffset = xpos - m_lastPos.x();
+        int yoffset = m_lastPos.y() - ypos;
+        m_lastPos = event->pos();
+        QMutexLocker lock(&param_mutex);
+        {
+            param.camera.processMouseMovement(xoffset, yoffset);
+            //qDebug() << param.camera.yaw << "    " << param.camera.picth << "    " ;
+        }
+    }
+}
+
+void GLWidget::wheelEvent(QWheelEvent* event)
+{
+    QPoint offset = event->angleDelta();
+    QMutexLocker lock(&param_mutex);
+    {
+        param.camera.processMouseScroll(offset.y() / 20.0f);
+    }
+}

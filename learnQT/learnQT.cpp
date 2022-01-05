@@ -8,7 +8,7 @@ learnQT::learnQT(QWidget *parent)
 {
     ui.setupUi(this);    
     ;
-    connect( ui.pushButton,SIGNAL(clicked(bool)), this, SLOT(sed()));
+    connect( ui.pushButton,SIGNAL(clicked(bool)), this, SLOT(upoff()));
     
 }
 

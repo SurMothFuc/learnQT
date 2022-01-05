@@ -3,6 +3,8 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_learnQT.h"
 #include <iostream>
+extern Pass_parameters param;
+extern QMutex param_mutex;
 
 class learnQT : public QMainWindow
 {
@@ -11,12 +13,17 @@ class learnQT : public QMainWindow
 public:
     learnQT(QWidget *parent = Q_NULLPTR);
 public slots:
-    void print() {
-        
+    void print() {        
         std::cout << 123 << std::endl;
     };
     void sed() {
         ui.openGLWidget->sendM();
+    }
+    void upoff() {
+        QMutexLocker lock(&param_mutex);
+        {            
+            param.offx += 10.0;            
+        }
     }
 
 private:

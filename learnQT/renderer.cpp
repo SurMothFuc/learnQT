@@ -1,12 +1,10 @@
 #include "renderer.h"
 //#include "debug.h"
 
-#include <QDebug>
-#include <QElapsedTimer>
-#include <QtMath>
-#include <QMatrix4x4>
-#include <iostream>
+
 static GLuint VBO, VAO, EBO;
+extern Pass_parameters param;
+extern QMutex param_mutex;
 
 Renderer::Renderer(QObject *parent)
     : QObject(parent)
@@ -21,12 +19,29 @@ Renderer::~Renderer()
 
 void Renderer::render(int width, int height)
 {
+   
+
    // RAIITimer t("Renderer::render");
     if (m_width != width || m_height != height)
     {
         m_width = width;
         m_height = height;
-        adjustSize();
+        adjustSize();      
+    }
+
+
+    QMutexLocker lock(&param_mutex);//对于全局变量的访问使用互斥锁
+    {
+        m_program->bind();
+        QMatrix4x4 projection;
+        projection.perspective(param.camera.zoom, 1.0f * m_width / m_height, 0.1f, 100.f);
+        m_program->setUniformValue("projection", projection);
+        m_program->setUniformValue("view", param.camera.getViewMatrix());
+        QMatrix4x4 transform;
+      //  transform.translate(QVector3D(0.0f, -0.0f, -1.0f));
+        transform.rotate(param.offx, QVector3D(0.0f, 1.0f, 1.0f));
+        m_program->setUniformValue("model", transform);
+        m_program->release();
     }
 
    /* static float degree = 0.0f;
@@ -39,14 +54,14 @@ void Renderer::render(int width, int height)
     glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+   
 
     m_program->bind();
-    {
-        int xOffsetLocation = m_program->uniformLocation("xOffset");
-        glUniform1f(xOffsetLocation, m_uniformValue);
+    {        
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
     }
     m_program->release();
     glFinish();
@@ -101,30 +116,23 @@ void Renderer::init()
         qDebug() << "shaderProgram link failed!" << m_program->log();
     }
 
+    glEnable(GL_DEPTH_TEST);//开启深度缓冲
+
     //VAO，VBO数据部分
-    float vertices[] = {
-        // positions         // colors
-        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom left
-        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f   // top
-    };
+    std::vector<QVector3D> square = { QVector3D(-1, -1, 0), QVector3D(1, -1, 0), QVector3D(-1, 1, 0), QVector3D(1, 1, 0), QVector3D(-1, 1, 0), QVector3D(1, -1, 0) };
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  //顶点数据复制到缓冲
+    glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D) * square.size(), NULL, GL_STATIC_DRAW);  //顶点数据复制到缓冲
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(QVector3D) * square.size(), &square[0]);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);//取消VBO的绑定, glVertexAttribPointer已经把顶点属性关联到顶点缓冲对象了
 
@@ -135,8 +143,7 @@ void Renderer::init()
 //    VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0);   //取消VAO绑定
 
-
-
+   
 
 
 }
@@ -158,18 +165,10 @@ void Renderer::adjustSize()
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-    if (m_width > m_height)
-    {
-        m_viewportX = (m_width - m_height) / 2;
-        m_viewportY = 0;
-        m_viewportWidth = m_height;
-        m_viewportHeight = m_height;
-    }
-    else
-    {
+
         m_viewportX = 0;
-        m_viewportY = (m_height - m_width) / 2;
+        m_viewportY = 0;
         m_viewportWidth = m_width;
-        m_viewportHeight = m_width;
-    }
+        m_viewportHeight = m_height;
+   
 }

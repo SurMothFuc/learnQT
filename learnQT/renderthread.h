@@ -7,6 +7,13 @@
 #include <QOpenGLFunctions>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include "renderer.h"
+#include "texturebuffer.h"
+#include <QDebug>
+#include <QOpenGLContext>
+#include <memory>
+#include <QTimer>
+#include <iostream>
 
 class RenderThread : public QThread, public QOpenGLFunctions
 {
@@ -17,7 +24,6 @@ public:
     ~RenderThread();
 
     void setNewSize(int width, int height);
-    float offx = 0.0;
 
 signals:
     void imageReady();

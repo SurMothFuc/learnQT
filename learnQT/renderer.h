@@ -8,6 +8,13 @@
 #include <QOpenGLShaderProgram>
 #include <QImage>
 #include <memory>
+#include <QDebug>
+#include <QElapsedTimer>
+#include <QtMath>
+#include <QMatrix4x4>
+#include <iostream>
+#include <qmutex.h>
+#include "parameters.h"
 
 class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
 {
@@ -18,8 +25,6 @@ public:
 
     void render(int width, int height);
 
-    QTimer* m_pTimer = nullptr;
-    float m_uniformValue = 0.0f;
 
 private:
     void init();
