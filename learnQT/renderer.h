@@ -18,12 +18,15 @@ public:
 
     void render(int width, int height);
 
+    QTimer* m_pTimer = nullptr;
+    float m_uniformValue = 0.0f;
+
 private:
     void init();
     void uninit();
     void adjustSize();
 
-private:
+private://¾²Ö¹¸³Öµ²Ù×÷
     Renderer(const Renderer &) = delete;
     Renderer &operator =(const Renderer &) = delete;
     Renderer(const Renderer &&) = delete;

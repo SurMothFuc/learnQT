@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QOpenGLContext>
 #include <memory>
+#include <QTimer>
+#include <iostream>
 
 RenderThread::RenderThread(QSurface *surface, QOpenGLContext *mainContext, QObject *parent)
     : QThread(parent)
@@ -39,9 +41,19 @@ void RenderThread::run()
     TextureBuffer::instance()->createTexture(m_renderContext);
 
     Renderer renderer;
+    renderer.m_pTimer = new QTimer();
+    renderer.m_pTimer->setInterval(200);
+    renderer.m_pTimer->moveToThread(this);
+    connect(renderer.m_pTimer, &QTimer::timeout, this, [=] {
+        std::cout << 1 << std::endl;
+        }, Qt::DirectConnection);
+
+
+    renderer.m_pTimer->start();
 
     while (m_running)
     {
+        qDebug()<<1;
         int width = 0;
         int height = 0;
         {
@@ -49,10 +61,15 @@ void RenderThread::run()
             width = m_width;
             height = m_height;
         }
+        renderer.m_uniformValue = offx;
         renderer.render(width, height);
         TextureBuffer::instance()->updateTexture(m_renderContext, width, height);
         emit imageReady();
     }
 
     TextureBuffer::instance()->deleteTexture(m_renderContext);
+}
+void RenderThread::recMegFromMain()
+{
+    offx += 0.1;
 }

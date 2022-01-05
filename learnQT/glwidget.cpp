@@ -33,6 +33,11 @@ GLWidget::~GLWidget()
 {
 }
 
+void GLWidget::sendM()
+{
+    emit sengMsgToThread();
+}
+
 void GLWidget::initializeGL()
 {
     initRenderThread();
@@ -122,9 +127,14 @@ void GLWidget::initRenderThread()
     context->doneCurrent();
     m_thread = new RenderThread(renderSurface, context, this);
     context->makeCurrent(mainSurface);
-
+    qDebug() << 1122334455;
+   
     connect(m_thread, &RenderThread::imageReady, this, [this](){
         update();
     }, Qt::QueuedConnection);
     m_thread->start();
+    connect(this, &GLWidget::sengMsgToThread, m_thread, &RenderThread::recMegFromMain);
+    
 }
+
+

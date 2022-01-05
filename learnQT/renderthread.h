@@ -17,9 +17,14 @@ public:
     ~RenderThread();
 
     void setNewSize(int width, int height);
+    float offx = 0.0;
 
 signals:
     void imageReady();
+
+public slots:
+    //接收主线程的消息
+    void recMegFromMain();
 
 protected:
     void run() override;
@@ -29,6 +34,7 @@ private:
     RenderThread &operator =(const RenderThread &) = delete;
     RenderThread(const RenderThread &&) = delete;
     RenderThread &operator =(const RenderThread &&) = delete;
+    
 
 private:
     bool m_running = true;

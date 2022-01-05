@@ -11,9 +11,11 @@ class RenderThread;
 
 class GLWidget : public QOpenGLWidget,protected QOpenGLFunctions_3_3_Core
 {
+    Q_OBJECT
 public:
     GLWidget(QWidget *parent = nullptr);
     ~GLWidget() override;
+    void sendM();
 
 protected:
     void initializeGL() override;
@@ -28,6 +30,9 @@ private:
     unsigned m_vbo = 0;
     std::unique_ptr<QOpenGLShaderProgram> m_program;
     RenderThread *m_thread = nullptr;
+signals:
+    //给子线程发消息
+    void sengMsgToThread();
 };
 
 #endif // GLWIDGET_H

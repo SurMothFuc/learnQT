@@ -12,11 +12,12 @@ public:
     learnQT(QWidget *parent = Q_NULLPTR);
 public slots:
     void print() {
-
-
-
+        
         std::cout << 123 << std::endl;
     };
+    void sed() {
+        ui.openGLWidget->sendM();
+    }
 
 private:
     Ui::learnQTClass ui;

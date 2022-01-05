@@ -86,7 +86,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="glwidget.cpp" />
-    <ClCompile Include="qtfunctionwidget.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="renderthread.cpp" />
     <ClCompile Include="texturebuffer.cpp" />
@@ -101,8 +100,7 @@
     <None Include="triangle.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="glwidget.h" />
-    <ClInclude Include="qtfunctionwidget.h" />
+    <QtMoc Include="glwidget.h" />
     <ClInclude Include="texturebuffer.h" />
     <QtMoc Include="renderthread.h" />
     <QtMoc Include="renderer.h" />

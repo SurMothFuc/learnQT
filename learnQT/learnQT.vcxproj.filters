@@ -40,9 +40,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="qtfunctionwidget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -65,13 +62,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="qtfunctionwidget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="texturebuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="glwidget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -80,6 +71,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="renderthread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="glwidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
