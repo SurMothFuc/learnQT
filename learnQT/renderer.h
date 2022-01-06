@@ -15,6 +15,7 @@
 #include <iostream>
 #include <qmutex.h>
 #include "parameters.h"
+#include <Eigen/Dense>
 
 class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
 {
@@ -24,7 +25,10 @@ public:
     ~Renderer();
 
     void render(int width, int height);
-
+    QOpenGLShaderProgram* getShaderProgram(std::string fshader, std::string vshader);
+    GLuint getTextureRGB32F(int width, int height);
+    GLuint bindData(std::unique_ptr<QOpenGLShaderProgram> shaderProgram, std::vector<GLuint> colorAttachments);
+    GLuint VBO, VAO, EBO;
 
 private:
     void init();
@@ -46,12 +50,17 @@ private:
     int m_viewportHeight = 0;
     bool m_sizeChanged = true;
 
-    unsigned m_vao = 0;
-    unsigned m_vbo = 0;
+
     unsigned m_fbo = 0;
     unsigned m_rbo = 0;
     unsigned m_texture = 0;
 
+    int frameCounter = 0;
+
+    GLuint tbo0;
+    GLuint tbo1;
+    GLuint trianglesTextureBuffer;
+    GLuint nodesTextureBuffer;
     std::unique_ptr<QOpenGLShaderProgram> m_program;
    // std::unique_ptr<Sierpinski> m_sierpinski;
 };

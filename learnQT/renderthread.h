@@ -24,6 +24,7 @@ public:
     ~RenderThread();
 
     void setNewSize(int width, int height);
+    
 
 signals:
     void imageReady();

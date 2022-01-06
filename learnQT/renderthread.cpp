@@ -34,9 +34,7 @@ void RenderThread::run()
 
     TextureBuffer::instance()->createTexture(m_renderContext);
 
-    Renderer renderer;
-
-    
+    Renderer renderer;    
 
     while (m_running)
     {

@@ -4,13 +4,17 @@ Pass_parameters::Pass_parameters()
 {
 	camera = Camera(QVector3D(0.0f, 0.0f, 3.0f), QVector3D(0.0f, 1.0f, 0.0f));
     Material m;
-    m.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
+    m.baseColor = QVector3D(0, 0, 1.0f);
     // readObj("models/model_o_from_paraview.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.3, -1.3, 0), QVector3D(1.5, 1.5, 1.5)), true);
-    readObj("models/model_o_from_paraview.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(-0.7, -0.2, 0), QVector3D(1.5, 1.5, 1.5)), true);
+    readObj("models/Stanford Bunny.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.3, -1.6, 0), QVector3D(1.5, 1.5, 1.5)), false);
 
     m.baseColor = QVector3D(1, 1, 1);
     readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -1.4, 0), QVector3D(18.83, 0.01, 18.83)), false);
-    m.baseColor = QVector3D(0.725, 0.71, 0.68);
+
+    m.baseColor = QVector3D(1, 1, 1);
+    m.emissive = QVector3D(20, 20, 20);
+    readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.0, 1.38, -0.0), QVector3D(0.7, 0.01, 0.7)), false);
+    /*m.baseColor = QVector3D(0.725, 0.71, 0.68);
     readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 1.381, 0), QVector3D(18.83, 0.01, 18.83)), false);
 
     m.baseColor = QVector3D(0.725, 0.71, 0.68);
@@ -24,7 +28,7 @@ Pass_parameters::Pass_parameters()
 
     m.baseColor = QVector3D(1, 1, 1);
     m.emissive = QVector3D(20, 20, 20);
-    readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.0, 1.38, -0.0), QVector3D(0.7, 0.01, 0.7)), false);
+    readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.0, 1.38, -0.0), QVector3D(0.7, 0.01, 0.7)), false);*/
 
     /* m.baseColor = QVector3D(1, 1, 1);
      m.emissive = QVector3D(0, 20,0);
@@ -39,9 +43,48 @@ Pass_parameters::Pass_parameters()
     int nTriangles = triangles.size();
     std::cout << "模型读取完成: 共 " << nTriangles << " 个三角形" << std::endl;
 
+    // 建立 bvh
+    BVHNode testNode;
+    testNode.left = 255;
+    testNode.right = 128;
+    testNode.n = 30;
+    testNode.AA = QVector3D(1, 1, 0);
+    testNode.BB = QVector3D(0, 1, 0);
+    nodes= std::vector<BVHNode>{ testNode };
+    buildBVHwithSAH(triangles, nodes, 0, triangles.size() - 1, 8);
+    int nNodes = nodes.size();
+    std::cout << "BVH 建立完成: 共 " << nNodes << " 个节点" << std::endl;
+    //建立bvh需要在三角形编码之前，因为bvh的构建使用了排序
 
+    triangles_encoded= std::vector<Triangle_encoded>(nTriangles);
+    for (int i = 0; i < nTriangles; i++) {
+        Triangle& t = triangles[i];
+        Material& m = t.material;
+        // 顶点位置
+        triangles_encoded[i].p1 = t.p1;
+        triangles_encoded[i].p2 = t.p2;
+        triangles_encoded[i].p3 = t.p3;
+        // 顶点法线
+        triangles_encoded[i].n1 = t.n1;
+        triangles_encoded[i].n2 = t.n2;
+        triangles_encoded[i].n3 = t.n3;
+        // 材质
+        triangles_encoded[i].emissive = m.emissive;
+        triangles_encoded[i].baseColor = m.baseColor;
+        triangles_encoded[i].param1 = QVector3D(m.subsurface, m.metallic, m.specular);
+        triangles_encoded[i].param2 = QVector3D(m.specularTint, m.roughness, m.anisotropic);
+        triangles_encoded[i].param3 = QVector3D(m.sheen, m.sheenTint, m.clearcoat);
+        triangles_encoded[i].param4 = QVector3D(m.clearcoatGloss, m.IOR, m.transmission);
+    }
 
-
+    // 编码 BVHNode, aabb
+    nodes_encoded= std::vector<BVHNode_encoded>(nNodes);
+    for (int i = 0; i < nNodes; i++) {
+        nodes_encoded[i].childs = QVector3D(nodes[i].left, nodes[i].right, 0);
+        nodes_encoded[i].leafInfo = QVector3D(nodes[i].n, nodes[i].index, 0);
+        nodes_encoded[i].AA = nodes[i].AA;
+        nodes_encoded[i].BB = nodes[i].BB;
+    }
 
 
 
@@ -172,4 +215,155 @@ QMatrix4x4 Pass_parameters::getTransformMatrix(QVector3D rotateCtrl, QVector3D t
     model.rotate(radians(rotateCtrl.z()), QVector3D(0.0f, 0.0f, 1.0f));
     model.scale(scaleCtrl);
     return model;
+}
+
+// 按照三角形中心排序 -- 比较函数
+bool cmpx(const Triangle& t1, const Triangle& t2) {
+    QVector3D center1 = (t1.p1 + t1.p2 + t1.p3) / QVector3D(3, 3, 3);
+    QVector3D center2 = (t2.p1 + t2.p2 + t2.p3) / QVector3D(3, 3, 3);
+    return center1.x() < center2.x();
+}
+bool cmpy(const Triangle& t1, const Triangle& t2) {
+    QVector3D center1 = (t1.p1 + t1.p2 + t1.p3) / QVector3D(3, 3, 3);
+    QVector3D center2 = (t2.p1 + t2.p2 + t2.p3) / QVector3D(3, 3, 3);
+    return center1.y() < center2.y();
+}
+bool cmpz(const Triangle& t1, const Triangle& t2) {
+    QVector3D center1 = (t1.p1 + t1.p2 + t1.p3) / QVector3D(3, 3, 3);
+    QVector3D center2 = (t2.p1 + t2.p2 + t2.p3) / QVector3D(3, 3, 3);
+    return center1.z() < center2.z();
+}
+
+// SAH 优化构建 BVH
+int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& nodes, int l, int r, int n) {
+    if (l > r) return 0;
+
+    nodes.push_back(BVHNode());
+    int id = nodes.size() - 1;
+    nodes[id].left = nodes[id].right = nodes[id].n = nodes[id].index = 0;
+    nodes[id].AA = QVector3D(1145141919, 1145141919, 1145141919);
+    nodes[id].BB = QVector3D(-1145141919, -1145141919, -1145141919);
+
+    // 计算 AABB
+    for (int i = l; i <= r; i++) {
+        // 最小点 AA
+        float minx = std::min(triangles[i].p1.x(), std::min(triangles[i].p2.x(), triangles[i].p3.x()));
+        float miny = std::min(triangles[i].p1.y(), std::min(triangles[i].p2.y(), triangles[i].p3.y()));
+        float minz = std::min(triangles[i].p1.z(), std::min(triangles[i].p2.z(), triangles[i].p3.z()));
+        nodes[id].AA[0] = std::min(nodes[id].AA.x(), minx);
+        nodes[id].AA[1] = std::min(nodes[id].AA.y(), miny);
+        nodes[id].AA[2] = std::min(nodes[id].AA.z(), minz);
+        // 最大点 BB
+        float maxx = std::max(triangles[i].p1.x(), std::max(triangles[i].p2.x(), triangles[i].p3.x()));
+        float maxy = std::max(triangles[i].p1.y(), std::max(triangles[i].p2.y(), triangles[i].p3.y()));
+        float maxz = std::max(triangles[i].p1.z(), std::max(triangles[i].p2.z(), triangles[i].p3.z()));
+        nodes[id].BB[0] = std::max(nodes[id].BB.x(), maxx);
+        nodes[id].BB[1] = std::max(nodes[id].BB.y(), maxy);
+        nodes[id].BB[2] = std::max(nodes[id].BB.z(), maxz);
+    }
+
+    // 不多于 n 个三角形 返回叶子节点
+    if ((r - l + 1) <= n) {
+        nodes[id].n = r - l + 1;
+        nodes[id].index = l;
+        return id;
+    }
+
+    // 否则递归建树
+    float Cost = INF;
+    int Axis = 0;
+    int Split = (l + r) / 2;
+    for (int axis = 0; axis < 3; axis++) {
+        // 分别按 x，y，z 轴排序
+        if (axis == 0) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpx);
+        if (axis == 1) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpy);
+        if (axis == 2) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpz);
+
+        // leftMax[i]: [l, i] 中最大的 xyz 值
+        // leftMin[i]: [l, i] 中最小的 xyz 值
+        std::vector<QVector3D> leftMax(r - l + 1, QVector3D(-INF, -INF, -INF));
+        std::vector<QVector3D> leftMin(r - l + 1, QVector3D(INF, INF, INF));
+        // 计算前缀 注意 i-l 以对齐到下标 0
+        for (int i = l; i <= r; i++) {
+            Triangle& t = triangles[i];
+            int bias = (i == l) ? 0 : 1;  // 第一个元素特殊处理
+
+            leftMax[i - l][0] = std::max(leftMax[i - l - bias].x(), std::max(t.p1.x(), std::max(t.p2.x(), t.p3.x())));
+            leftMax[i - l][1] = std::max(leftMax[i - l - bias].y(), std::max(t.p1.y(), std::max(t.p2.y(), t.p3.y())));
+            leftMax[i - l][2] = std::max(leftMax[i - l - bias].z(), std::max(t.p1.z(), std::max(t.p2.z(), t.p3.z())));
+
+            leftMin[i - l][0] = std::min(leftMin[i - l - bias].x(), std::min(t.p1.x(), std::min(t.p2.x(), t.p3.x())));
+            leftMin[i - l][1] = std::min(leftMin[i - l - bias].y(), std::min(t.p1.y(), std::min(t.p2.y(), t.p3.y())));
+            leftMin[i - l][2] = std::min(leftMin[i - l - bias].z(), std::min(t.p1.z(), std::min(t.p2.z(), t.p3.z())));
+        }
+
+        // rightMax[i]: [i, r] 中最大的 xyz 值
+        // rightMin[i]: [i, r] 中最小的 xyz 值
+        std::vector<QVector3D> rightMax(r - l + 1, QVector3D(-INF, -INF, -INF));
+        std::vector<QVector3D> rightMin(r - l + 1, QVector3D(INF, INF, INF));
+        // 计算后缀 注意 i-l 以对齐到下标 0
+        for (int i = r; i >= l; i--) {
+            Triangle& t = triangles[i];
+            int bias = (i == r) ? 0 : 1;  // 第一个元素特殊处理
+
+            rightMax[i - l][0] = std::max(rightMax[i - l + bias].x(), std::max(t.p1.x(), std::max(t.p2.x(), t.p3.x())));
+            rightMax[i - l][1] = std::max(rightMax[i - l + bias].y(), std::max(t.p1.y(), std::max(t.p2.y(), t.p3.y())));
+            rightMax[i - l][2] = std::max(rightMax[i - l + bias].z(), std::max(t.p1.z(), std::max(t.p2.z(), t.p3.z())));
+
+            rightMin[i - l][0] = std::min(rightMin[i - l + bias].x(), std::min(t.p1.x(), std::min(t.p2.x(), t.p3.x())));
+            rightMin[i - l][1] = std::min(rightMin[i - l + bias].y(), std::min(t.p1.y(), std::min(t.p2.y(), t.p3.y())));
+            rightMin[i - l][2] = std::min(rightMin[i - l + bias].z(), std::min(t.p1.z(), std::min(t.p2.z(), t.p3.z())));
+        }
+
+        // 遍历寻找分割
+        float cost = INF;
+        int split = l;
+        for (int i = l; i <= r - 1; i++) {
+            float lenx, leny, lenz;
+            // 左侧 [l, i]
+            QVector3D leftAA = leftMin[i - l];
+            QVector3D leftBB = leftMax[i - l];
+            lenx = leftBB.x() - leftAA.x();
+            leny = leftBB.y() - leftAA.y();
+            lenz = leftBB.z() - leftAA.z();
+            float leftS = 2.0 * ((lenx * leny) + (lenx * lenz) + (leny * lenz));
+            float leftCost = leftS * (i - l + 1);
+
+            // 右侧 [i+1, r]
+            QVector3D rightAA = rightMin[i + 1 - l];
+            QVector3D rightBB = rightMax[i + 1 - l];
+            lenx = rightBB.x() - rightAA.x();
+            leny = rightBB.y() - rightAA.y();
+            lenz = rightBB.z() - rightAA.z();
+            float rightS = 2.0 * ((lenx * leny) + (lenx * lenz) + (leny * lenz));
+            float rightCost = rightS * (r - i);
+
+            // 记录每个分割的最小答案
+            float totalCost = leftCost + rightCost;
+            if (totalCost < cost) {
+                cost = totalCost;
+                split = i;
+            }
+        }
+        // 记录每个轴的最佳答案
+        if (cost < Cost) {
+            Cost = cost;
+            Axis = axis;
+            Split = split;
+        }
+    }
+
+    // 按最佳轴分割
+    if (Axis == 0) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpx);
+    if (Axis == 1) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpy);
+    if (Axis == 2) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpz);
+
+    // 递归
+    int left = buildBVHwithSAH(triangles, nodes, l, Split, n);
+    int right = buildBVHwithSAH(triangles, nodes, Split + 1, r, n);
+
+    nodes[id].left = left;
+    nodes[id].right = right;
+
+    return id;
 }
