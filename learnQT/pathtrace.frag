@@ -22,6 +22,7 @@ uniform samplerBuffer triangles;
 uniform samplerBuffer nodes;
 
 uniform sampler2D lastFrame;
+uniform sampler2D hdrMap;
 
 // Triangle 数据格式
 struct Triangle {
@@ -318,6 +319,21 @@ HitResult hitBVH(Ray ray) {
 
     return res;
 }
+// 将三维向量 v 转为 HDR map 的纹理坐标 uv
+vec2 SampleSphericalMap(vec3 v) {
+    vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
+    uv /= vec2(2.0 * PI, PI);
+    uv += 0.5;
+    uv.y = 1.0 - uv.y;
+    return uv;
+}
+// 获取 HDR 环境颜色
+vec3 sampleHdr(vec3 v) {
+    vec2 uv = SampleSphericalMap(normalize(v));
+    vec3 color = texture2D(hdrMap, uv).rgb;
+    color = min(color, vec3(10));
+    return color;
+}
 
 
 // 路径追踪
@@ -343,7 +359,7 @@ vec3 pathTracing(HitResult hit, int maxBounce) {
 
         // 未命中
         if(!newHit.isHit) {
-            vec3 skyColor = vec3(0,0,0);
+            vec3 skyColor = sampleHdr(randomRay.direction);
             Lo += history * skyColor * f_r * cosine_i / pdf;
             break;
         }
@@ -373,7 +389,8 @@ void main(void)
     HitResult firstHit = hitBVH(ray);
     vec3 color;    
      if(!firstHit.isHit) {
-        color = vec3(0);
+         color = vec3(0);
+         color = sampleHdr(ray.direction);
     } else {
         vec3 Le = firstHit.material.emissive;
         vec3 Li = pathTracing(firstHit,8);

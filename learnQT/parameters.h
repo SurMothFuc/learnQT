@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "hdrloader.h"
 
 struct Material {
     QVector3D emissive = QVector3D(0, 0, 0);  // 作为光源时的发光颜色
@@ -64,6 +65,7 @@ class Pass_parameters {
     std::vector<BVHNode> nodes;
     std::vector<Triangle_encoded> triangles_encoded;
     std::vector<BVHNode_encoded> nodes_encoded;
+    HDRLoaderResult hdrRes;
 
 	Pass_parameters();
     void readObj(std::string filepath, std::vector<Triangle>& triangles, Material material,QMatrix4x4 trans, bool smoothNormal);

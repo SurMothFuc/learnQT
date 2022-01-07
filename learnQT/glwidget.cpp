@@ -121,6 +121,7 @@ void GLWidget::paintGL()
 void GLWidget::resizeGL(int w, int h)
 {
     m_thread->setNewSize(w, h);
+    qDebug() << "frame size:" << w << h;
 }
 
 void GLWidget::initRenderThread()

@@ -50,7 +50,7 @@ public:
 
     float upAngle = 0.0;
     float rotatAngle = 0.0;
-    float r = 3.0;
+    float r = 4.0;
 
     //Camera options
     float movementSpeed;

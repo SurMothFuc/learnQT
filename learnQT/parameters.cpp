@@ -6,16 +6,16 @@ Pass_parameters::Pass_parameters()
     Material m;
     m.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
     // readObj("models/model_o_from_paraview.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.3, -1.3, 0), QVector3D(1.5, 1.5, 1.5)), true);
-    readObj("models/Stanford Bunny.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.3, -1.6, 0), QVector3D(1.5, 1.5, 1.5)), false);
+    readObj("models/sphere.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.5, 0), QVector3D(1,1,1)), true);
 
-    m.baseColor = QVector3D(1, 1, 1);
+    m.baseColor = QVector3D(0.725, 0.71, 0.68);
     readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -1.4, 0), QVector3D(18.83, 0.01, 18.83)), false);
 
-    m.baseColor = QVector3D(1, 1, 1);
-    m.emissive = QVector3D(20, 20, 20);
-    readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.0, 1.38, -0.0), QVector3D(0.7, 0.01, 0.7)), false);
+   /* m.baseColor = QVector3D(1, 1, 1);
+    m.emissive = QVector3D(10, 10, 10);
+    readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.0, 1.38, -0.0), QVector3D(0.7, 0.01, 0.7)), false);*/
    
-    m.emissive = QVector3D(0,0,0);
+    /*m.emissive = QVector3D(0,0,0);
     m.baseColor = QVector3D(0.725, 0.71, 0.68);
     readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 1.381, 0), QVector3D(18.83, 0.01, 18.83)), false);
 
@@ -26,7 +26,7 @@ Pass_parameters::Pass_parameters()
     readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(-1.4, 0, 0), QVector3D(0.01, 18.83, 18.83)), false);
 
     m.baseColor = QVector3D(0.0, 1.0, 0.0);
-    readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(1.4, 0, 0), QVector3D(0.01, 18.83, 18.83)), false);
+    readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(1.4, 0, 0), QVector3D(0.01, 18.83, 18.83)), false);*/
 
    
     /* m.baseColor = QVector3D(1, 1, 1);
@@ -85,7 +85,7 @@ Pass_parameters::Pass_parameters()
         nodes_encoded[i].BB = nodes[i].BB;
     }
 
-
+    qDebug()<< HDRLoader::load("./peppermint_powerplant_4k.hdr", hdrRes);   
 
 }
 

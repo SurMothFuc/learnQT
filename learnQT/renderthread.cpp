@@ -30,6 +30,8 @@ void RenderThread::setNewSize(int width, int height)
 // called in render thread
 void RenderThread::run()
 {
+    //延迟400毫秒在进行渲染，让主窗口调整好大小
+    Sleep(400);
     m_renderContext->makeCurrent(m_surface);
 
     TextureBuffer::instance()->createTexture(m_renderContext);

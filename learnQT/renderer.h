@@ -66,6 +66,7 @@ private:
     GLuint tbo1;
     GLuint trianglesTextureBuffer;
     GLuint nodesTextureBuffer;
+    GLuint hdrMap;
     std::unique_ptr<QOpenGLShaderProgram> m_program;
     std::unique_ptr<QOpenGLShaderProgram> pathtrace_program;
     std::unique_ptr<QOpenGLShaderProgram> mixframe_program;
