@@ -27,9 +27,10 @@ public:
     void render(int width, int height);
     QOpenGLShaderProgram* getShaderProgram(std::string fshader, std::string vshader);
     GLuint getTextureRGB32F(int width, int height);
-    GLuint bindData(std::unique_ptr<QOpenGLShaderProgram> shaderProgram, std::vector<GLuint> colorAttachments);
+    GLuint bindData(std::vector<GLuint> colorAttachments);
     GLuint VBO, VAO, EBO;
-
+    void updateprame();
+    bool needupdate = true;
 private:
     void init();
     void uninit();
@@ -52,8 +53,12 @@ private:
 
 
     unsigned m_fbo = 0;
-    unsigned m_rbo = 0;
+    unsigned pathtrace_fbo = 0;
+    unsigned mixframe_fbo = 0;
+    //unsigned m_rbo = 0;
     unsigned m_texture = 0;
+    unsigned pathtrace_texture = 0;
+    unsigned mixframe_texture = 0;
 
     int frameCounter = 0;
 
@@ -62,6 +67,10 @@ private:
     GLuint trianglesTextureBuffer;
     GLuint nodesTextureBuffer;
     std::unique_ptr<QOpenGLShaderProgram> m_program;
+    std::unique_ptr<QOpenGLShaderProgram> pathtrace_program;
+    std::unique_ptr<QOpenGLShaderProgram> mixframe_program;
+
+    
    // std::unique_ptr<Sierpinski> m_sierpinski;
 };
 

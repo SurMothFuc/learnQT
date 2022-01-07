@@ -37,14 +37,15 @@ QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::strin
     }
     return shaderProgram;
 }
-GLuint Renderer::bindData(std::unique_ptr<QOpenGLShaderProgram> shaderProgram, std::vector<GLuint> colorAttachments) {//colorAttachments为颜色缓冲 函数返回值为FBO
+GLuint Renderer::bindData(std::vector<GLuint> colorAttachments) {//colorAttachments为颜色缓冲 函数返回值为FBO
     GLuint FBO;
     glGenFramebuffers(1, &FBO);
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
 
     // 不是 finalPass 则生成帧缓冲的颜色附件 关键
-    if (!finalPass) {
+    //if (!finalPass) {
+    if (colorAttachments.size() != 0) {
         std::vector<GLuint> attachments;
         for (int i = 0; i < colorAttachments.size(); i++) {
             glBindTexture(GL_TEXTURE_2D, colorAttachments[i]);
@@ -53,8 +54,10 @@ GLuint Renderer::bindData(std::unique_ptr<QOpenGLShaderProgram> shaderProgram, s
         }
         glDrawBuffers(attachments.size(), &attachments[0]);
     }
+    //}
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return FBO;
 }
 
 Renderer::Renderer(QObject *parent)
@@ -70,7 +73,10 @@ Renderer::~Renderer()
 
 void Renderer::render(int width, int height)
 {
-   
+    if (needupdate) {
+        updateprame();
+        needupdate = false;
+    }
 
    // RAIITimer t("Renderer::render");
     if (m_width != width || m_height != height)
@@ -78,68 +84,11 @@ void Renderer::render(int width, int height)
         m_width = width;
         m_height = height;
         adjustSize();      
+        updateprame();
     }
 
 
-    QMutexLocker lock(&param_mutex);//对于全局变量的访问使用互斥锁
-    {
-        //绑定三角形到texture
-        
-        //更新的时候要把旧的纹理缓冲删除，不然会导致显存泄漏
-        glDeleteBuffers(1, &tbo0);
-        glDeleteTextures(1, &trianglesTextureBuffer);
-        glDeleteBuffers(1, &tbo1);
-        glDeleteTextures(1, &nodesTextureBuffer);
-
-        glGenBuffers(1, &tbo0);
-        glBindBuffer(GL_TEXTURE_BUFFER, tbo0);
-        glBufferData(GL_TEXTURE_BUFFER, param.triangles_encoded.size() * sizeof(Triangle_encoded), &param.triangles_encoded[0], GL_STATIC_DRAW);
-        glGenTextures(1, &trianglesTextureBuffer);
-        glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
-        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo0);
-
-        glGenBuffers(1, &tbo1);
-        glBindBuffer(GL_TEXTURE_BUFFER, tbo1);
-        glBufferData(GL_TEXTURE_BUFFER, param.nodes_encoded.size() * sizeof(BVHNode_encoded), &param.nodes_encoded[0], GL_STATIC_DRAW);
-        glGenTextures(1, &nodesTextureBuffer);
-        glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
-        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo1);
-
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-
-
-
-
-
-        m_program->bind();
-      /*  QMatrix4x4 projection;
-        float store[16];
-        projection.copyDataTo(store);*/
-       // projection.perspective(param.camera.zoom, 1.0f * m_width / m_height, 0.1f, 100.f);
-       // m_program->setUniformValue("projection", projection);
-      
-        QMatrix4x4 view= param.camera.getViewMatrix();
-        float viewStore[16];
-        view.copyDataTo(viewStore);
-        Eigen::Matrix4f viewM(viewStore);
-        viewM = Eigen::Matrix4f(viewM.inverse());//因为是要求光线的方向，所以求逆矩阵
-        float* newViewStore = viewM.data();
-        view = QMatrix4x4(newViewStore);
-        m_program->setUniformValue("view", view);
-      //  QMatrix4x4 transform;
-      //  transform.translate(QVector3D(0.0f, -0.0f, -1.0f));
-        //transform.rotate(param.offx, QVector3D(0.0f, 1.0f, 1.0f));
-        //m_program->setUniformValue("model", transform);
-        m_program->setUniformValue("eye", param.camera.position);
-        m_program->setUniformValue("nTriangles", (int)param.triangles.size());
-        m_program->setUniformValue("nNodes", (int)param.nodes_encoded.size());
-        m_program->setUniformValue("width", m_width);
-        m_program->setUniformValue("height", m_height);
-        m_program->release();
-    }
+    
 
    /* static float degree = 0.0f;
     degree += 1.0f;
@@ -148,34 +97,75 @@ void Renderer::render(int width, int height)
     rotate.setToIdentity();
     rotate.rotate(degree, 0, 0, 1);*/
 
-    glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
 
    
     
-    m_program->bind();
-    {        
-        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    pathtrace_program->bind(); 
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
-        m_program->setUniformValue("triangles", 0);
+        pathtrace_program->setUniformValue("triangles", 0);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
-        m_program->setUniformValue("nodes", 1);
+        pathtrace_program->setUniformValue("nodes", 1);
 
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, m_texture);
-        m_program->setUniformValue("lastFrame", 2);
-       
-        m_program->setUniformValue("frameCounter", frameCounter++);
+        glBindTexture(GL_TEXTURE_2D,mixframe_texture);
+        pathtrace_program->setUniformValue("lastFrame", 2);
 
+        pathtrace_program->setUniformValue("frameCounter", frameCounter++);
+        glBindVertexArray(VAO);
+
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    pathtrace_program->release();
+
+    mixframe_program->bind();
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, mixframe_fbo);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, pathtrace_texture);
+        mixframe_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
+
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    mixframe_program->release();
+
+    m_program->bind();
+    {        
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, mixframe_texture);
+        m_program->setUniformValue("texPass0", 0);
+        //glBindVertexArray(VAO);
+
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
     m_program->release();
+
     glFinish();
 }
 
@@ -189,29 +179,40 @@ void Renderer::init()
 
     qDebug() << reinterpret_cast<const char *>(glGetString(GL_VERSION));
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    glGenFramebuffers(1, &m_fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     
-    m_texture = getTextureRGB32F(m_width,m_height);
+    
    /* glGenTextures(1, &m_texture);
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);*/
 
-    glGenRenderbuffers(1, &m_rbo);
+   // glGenRenderbuffers(1, &m_rbo);
+    
+
+    //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0);
+    //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);//暂时用不到深度缓冲信息
+
+   // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+    pathtrace_texture = getTextureRGB32F(m_width, m_height);
+    pathtrace_fbo = bindData(std::vector<GLuint>{ pathtrace_texture});
+    pathtrace_program.reset(getShaderProgram("./pathtrace.frag", "./triangle.vert"));
+
+    mixframe_texture = getTextureRGB32F(m_width, m_height);
+    mixframe_fbo = bindData(std::vector<GLuint>{ mixframe_texture});
+    mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
+
+    m_texture = getTextureRGB32F(m_width, m_height);
+    m_fbo = bindData(std::vector<GLuint>{m_texture});
+    m_program.reset(getShaderProgram("./triangle.frag", "./triangle.vert"));
 
     adjustSize();
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    QOpenGLShaderProgram* s = new QOpenGLShaderProgram;
-    m_program.reset(getShaderProgram("./triangle.frag", "./triangle.vert"));
 
    
     glEnable(GL_DEPTH_TEST);//开启深度缓冲
@@ -243,12 +244,11 @@ void Renderer::init()
 
    
 
-
 }
 
 void Renderer::uninit()
 {
-    glDeleteRenderbuffers(1, &m_rbo);
+    //glDeleteRenderbuffers(1, &m_rbo);
     glDeleteTextures(1, &m_texture);
     glDeleteFramebuffers(1, &m_fbo);
 }
@@ -259,9 +259,17 @@ void Renderer::adjustSize()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
+    glBindTexture(GL_TEXTURE_2D, pathtrace_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindTexture(GL_TEXTURE_2D, mixframe_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    /*glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);*/
 
 
     m_viewportX = 0;
@@ -269,4 +277,65 @@ void Renderer::adjustSize()
     m_viewportWidth = m_width;
     m_viewportHeight = m_height;
    
+}
+
+void Renderer::updateprame()
+{
+    param_mutex.lock();
+    {
+        //绑定三角形到texture
+
+        //更新的时候要把旧的纹理缓冲删除，不然会导致显存泄漏
+        glDeleteBuffers(1, &tbo0);
+        glDeleteTextures(1, &trianglesTextureBuffer);
+        glDeleteBuffers(1, &tbo1);
+        glDeleteTextures(1, &nodesTextureBuffer);
+
+        glGenBuffers(1, &tbo0);
+        glBindBuffer(GL_TEXTURE_BUFFER, tbo0);
+        glBufferData(GL_TEXTURE_BUFFER, param.triangles_encoded.size() * sizeof(Triangle_encoded), &param.triangles_encoded[0], GL_STATIC_DRAW);
+        glGenTextures(1, &trianglesTextureBuffer);
+        glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
+        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo0);
+
+        glGenBuffers(1, &tbo1);
+        glBindBuffer(GL_TEXTURE_BUFFER, tbo1);
+        glBufferData(GL_TEXTURE_BUFFER, param.nodes_encoded.size() * sizeof(BVHNode_encoded), &param.nodes_encoded[0], GL_STATIC_DRAW);
+        glGenTextures(1, &nodesTextureBuffer);
+        glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
+        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo1);
+
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+        pathtrace_program->bind();
+        /*  QMatrix4x4 projection;
+          float store[16];
+          projection.copyDataTo(store);*/
+          // projection.perspective(param.camera.zoom, 1.0f * m_width / m_height, 0.1f, 100.f);
+          // m_program->setUniformValue("projection", projection);
+
+        QMatrix4x4 view = param.camera.getViewMatrix();
+        float viewStore[16];
+        view.copyDataTo(viewStore);
+        Eigen::Matrix4f viewM(viewStore);
+        viewM = Eigen::Matrix4f(viewM.inverse());//因为是要求光线的方向，所以求逆矩阵
+        float* newViewStore = viewM.data();
+        view = QMatrix4x4(newViewStore);
+        pathtrace_program->setUniformValue("view", view);
+        //  QMatrix4x4 transform;
+        //  transform.translate(QVector3D(0.0f, -0.0f, -1.0f));
+          //transform.rotate(param.offx, QVector3D(0.0f, 1.0f, 1.0f));
+          //m_program->setUniformValue("model", transform);
+        pathtrace_program->setUniformValue("eye", param.camera.position);
+        pathtrace_program->setUniformValue("nTriangles", (int)param.triangles.size());
+        pathtrace_program->setUniformValue("nNodes", (int)param.nodes_encoded.size());
+        pathtrace_program->setUniformValue("width", m_width);
+        pathtrace_program->setUniformValue("height", m_height);
+        pathtrace_program->release();
+        frameCounter = 0;
+    }
+    param_mutex.unlock();
 }

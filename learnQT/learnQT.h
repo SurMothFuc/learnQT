@@ -25,7 +25,9 @@ public slots:
             param.offx += 10.0;            
         }
     }
-
+protected:
+    void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE;
+    void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE;
 private:
     Ui::learnQTClass ui;
 };

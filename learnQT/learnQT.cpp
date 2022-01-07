@@ -12,3 +12,9 @@ learnQT::learnQT(QWidget *parent)
     
 }
 
+void learnQT::keyPressEvent(QKeyEvent* event) {
+    QApplication::sendEvent(ui.openGLWidget,event);
+}
+void  learnQT::keyReleaseEvent(QKeyEvent* event) {
+    QApplication::sendEvent(ui.openGLWidget, event);
+}

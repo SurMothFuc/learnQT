@@ -35,18 +35,46 @@ QMatrix4x4 Camera::getViewMatrix()
 void Camera::processKeyboard(Camera_Movement direction, float deltaTime)
 {
     float velocity = this->movementSpeed * deltaTime;
-    if (direction == FORWARD)
-        this->position += this->front * velocity;
-    if (direction == BACKWARD)
-        this->position -= this->front * velocity;
-    if (direction == LEFT)
-        this->position -= this->right * velocity;
-    if (direction == RIGHT)
-        this->position += this->right * velocity;
-    if (direction == UP)
-        this->position += this->worldUp * velocity;
-    if (direction == DOWN)
-        this->position -= this->worldUp * velocity;
+    if (direction == FORWARD) {
+        this->r -= 0.005* velocity;
+        position = QVector3D(-sin(radians(rotatAngle)) * cos(radians(upAngle)), sin(radians(upAngle)), cos(radians(rotatAngle)) * cos(radians(upAngle)));
+        position *= r;
+        this->updateCameraVectors();
+    }
+    if (direction == BACKWARD) {
+        this->r += 0.005* velocity;
+        position = QVector3D(-sin(radians(rotatAngle)) * cos(radians(upAngle)), sin(radians(upAngle)), cos(radians(rotatAngle)) * cos(radians(upAngle)));
+        position *= r;
+        this->updateCameraVectors();
+    }
+    if (direction == LEFT) {
+        rotatAngle += 150 * velocity / 512;
+        position = QVector3D(-sin(radians(rotatAngle)) * cos(radians(upAngle)), sin(radians(upAngle)), cos(radians(rotatAngle)) * cos(radians(upAngle)));
+        position *= r;
+        this->updateCameraVectors();
+    }
+    if (direction == RIGHT) {
+        rotatAngle -= 150 * velocity / 512;
+        position = QVector3D(-sin(radians(rotatAngle)) * cos(radians(upAngle)), sin(radians(upAngle)), cos(radians(rotatAngle)) * cos(radians(upAngle)));
+        position *= r;
+        this->updateCameraVectors();
+    }
+    if (direction == UP) {
+        upAngle += 150 * (velocity) / 512;
+        upAngle = std::min(upAngle, 89.0f);
+        upAngle = std::max(upAngle, -89.0f);
+        position = QVector3D(-sin(radians(rotatAngle)) * cos(radians(upAngle)), sin(radians(upAngle)), cos(radians(rotatAngle)) * cos(radians(upAngle)));
+        position *= r;
+        this->updateCameraVectors();
+    }
+    if (direction == DOWN) {
+        upAngle -= 150 * (velocity) / 512;
+        upAngle = std::min(upAngle, 89.0f);
+        upAngle = std::max(upAngle, -89.0f);
+        position = QVector3D(-sin(radians(rotatAngle)) * cos(radians(upAngle)), sin(radians(upAngle)), cos(radians(rotatAngle)) * cos(radians(upAngle)));
+        position *= r;
+        this->updateCameraVectors();
+    }
 }
 
 // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -77,28 +105,33 @@ void Camera::processMouseMovement(float xoffset, float yoffset, bool constraintP
 // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
 void Camera::processMouseScroll(float yoffset)
 {
-    if (this->zoom >= 1.0f && this->zoom <= 45.0f)
+    /*if (this->zoom >= 1.0f && this->zoom <= 45.0f)
         this->zoom -= yoffset;
     if (this->zoom > 45.0f)
         this->zoom = 45.0f;
     if (this->zoom < 1.0f)
-        this->zoom = 1.0f;
+        this->zoom = 1.0f;*/
+    qDebug() << r;
+    r += -yoffset * 0.001;
+    position = QVector3D(-sin(radians(rotatAngle)) * cos(radians(upAngle)), sin(radians(upAngle)), cos(radians(rotatAngle)) * cos(radians(upAngle)));
+    position *= r;
+    this->updateCameraVectors();
 }
 
 void Camera::processInput(float dt)
 {
 
-    if (keys[Qt::Key_W])
+    if (keys[Qt::Key_Q])
         processKeyboard(FORWARD, dt);
-    if (keys[Qt::Key_S])
+    if (keys[Qt::Key_E])
         processKeyboard(BACKWARD, dt);
     if (keys[Qt::Key_A])
         processKeyboard(LEFT, dt);
     if (keys[Qt::Key_D])
         processKeyboard(RIGHT, dt);
-    if (keys[Qt::Key_E])
+    if (keys[Qt::Key_W])
         processKeyboard(UP, dt);
-    if (keys[Qt::Key_Q])
+    if (keys[Qt::Key_S])
         processKeyboard(DOWN, dt);
 }
 

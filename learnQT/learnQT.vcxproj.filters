@@ -69,6 +69,12 @@
     <None Include="triangle.frag">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="pathtrace.frag">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="mixframe.frag">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="texturebuffer.h">

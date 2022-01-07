@@ -35,7 +35,6 @@ public slots:
 
 protected:
     void run() override;
-
 private:
     RenderThread(const RenderThread &) = delete;
     RenderThread &operator =(const RenderThread &) = delete;
@@ -53,6 +52,8 @@ private:
     QOpenGLContext *m_mainContext;
     QOpenGLContext *m_renderContext = nullptr;
     QSurface *m_surface;
+
+    Renderer* point_render;
 };
 
 #endif // RENDERTHREAD_H

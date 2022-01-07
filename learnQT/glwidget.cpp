@@ -92,10 +92,6 @@ void GLWidget::initializeGL()
 
     QTimer* m_pTimer = new QTimer(this);
     connect(m_pTimer, &QTimer::timeout, this, [=] {
-        QMutexLocker lock(&param_mutex);
-        {
-           // param.offx += 1.0;
-        }
         });
     m_pTimer->start(50);
 
@@ -144,6 +140,7 @@ void GLWidget::initRenderThread()
         update();
     }, Qt::QueuedConnection);
     m_thread->start();
+
     connect(this, &GLWidget::sengMsgToThread, m_thread, &RenderThread::recMegFromMain);
     
 }
@@ -151,22 +148,28 @@ void GLWidget::initRenderThread()
 void GLWidget::keyPressEvent(QKeyEvent* event)
 {
     int key = event->key();
+    qDebug() << 1;
     if (key >= 0 && key < 1024) {
-        QMutexLocker lock(&param_mutex);
+        param_mutex.lock();
         {
             param.camera.keys[key] = true;
+            param.camera.processInput(1.0f);
         }
+        param_mutex.unlock();
+        sendM();
     }
 }
 
 void GLWidget::keyReleaseEvent(QKeyEvent* event)
 {
     int key = event->key();
+    qDebug() << 2;
     if (key >= 0 && key < 1024) {
-        QMutexLocker lock(&param_mutex);
+        param_mutex.lock();
         {
             param.camera.keys[key] = false;
         }
+        param_mutex.unlock();
     }
 }
 
@@ -181,7 +184,6 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
 void GLWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     Q_UNUSED(event);
-
     m_bLeftPressed = false;
 }
 
@@ -194,19 +196,23 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
         int xoffset = xpos - m_lastPos.x();
         int yoffset = m_lastPos.y() - ypos;
         m_lastPos = event->pos();
-        QMutexLocker lock(&param_mutex);
-        {
+        param_mutex.lock();
+       {
             param.camera.processMouseMovement(xoffset, yoffset);
             //qDebug() << param.camera.yaw << "    " << param.camera.picth << "    " ;
-        }
+       }
+       param_mutex.unlock();
+       sendM();
     }
 }
 
 void GLWidget::wheelEvent(QWheelEvent* event)
 {
     QPoint offset = event->angleDelta();
-    QMutexLocker lock(&param_mutex);
+    param_mutex.lock();
     {
-        param.camera.processMouseScroll(offset.y() / 20.0f);
+        param.camera.processMouseScroll(offset.y());
     }
+    param_mutex.unlock();
+    sendM();
 }

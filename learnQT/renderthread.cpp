@@ -36,6 +36,8 @@ void RenderThread::run()
 
     Renderer renderer;    
 
+    point_render = &renderer;
+
     while (m_running)
     {
         //qDebug()<<1;
@@ -55,5 +57,6 @@ void RenderThread::run()
 }
 void RenderThread::recMegFromMain()
 {
-
+    std::cout << 1;
+    point_render->needupdate = true;
 }
