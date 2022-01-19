@@ -4,7 +4,7 @@
 //#include "sierpinski.h"
 
 #include <QObject>
-#include <QOpenGLFunctions_4_4_Core>
+#include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
 #include <QImage>
 #include <memory>
@@ -17,7 +17,7 @@
 #include "parameters.h"
 #include <Eigen/Dense>
 
-class Renderer : public QObject, protected QOpenGLFunctions_4_4_Core
+class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
 public:

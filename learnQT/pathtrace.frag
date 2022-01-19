@@ -1,4 +1,4 @@
-#version 440 core
+#version 330 core
 #define SIZE_TRIANGLE   12
 #define SIZE_BVHNODE    4
 #define INF 114514.0
@@ -453,29 +453,37 @@ void main(void)
     Ray ray;
     ray.startPoint = eye;
    // ray.startPoint = vec3(0, 0, 4);
-    vec2 AA = vec2((rand()-0.5)/float(width), (rand()-0.5)/float(height));
-   //vec2 AA = vec2(0);
-    vec4 dir = view*vec4(pix.x*float(width) /float(height)+AA.x,pix.y+AA.y, -2.0,0.0);//- ray.startPoint;
-    ray.direction = normalize(dir.xyz);
 
-   // primary hit
-    HitResult firstHit = hitBVH(ray);
-    vec3 color;    
-     if(!firstHit.isHit) {
-         color = vec3(0);
-         color = sampleHdr(ray.direction);
-    } else {
-        vec3 Le = firstHit.material.emissive;
-        vec3 Li = pathTracing(firstHit,2);
-        color = Le + Li;
-    }  
+   
+        vec2 AA = vec2((rand()-0.5)/float(width), (rand()-0.5)/float(height));
+        //vec2 AA = vec2(0);
+        vec4 dir = view*vec4(pix.x*float(width) /float(height)+AA.x,pix.y+AA.y, -2.0,0.0);//- ray.startPoint;
+        ray.direction = normalize(dir.xyz);
+        vec3 color=vec3(0);
+        // primary hit
+        HitResult firstHit = hitBVH(ray);
+            if(!firstHit.isHit) {
+                color = vec3(0);
+                color = sampleHdr(ray.direction);
+        } else {
+            vec3 Le = firstHit.material.emissive;
+            vec3 Li = pathTracing(firstHit,2);
+            color = Le + Li;
+        }  
+
+
+    
+     
+
 
     vec3 lastColor = texture2D(lastFrame, pix.xy*0.5+0.5).rgb;
 
-
+   // lastColor*=100.0;
 
 
     color = mix(lastColor, color, 1.0/float(frameCounter+uint(1)));
+
+    //color/=100.0;
     //color=(1-1.0/(frameCounter+1))*lastColor+1.0/(frameCounter+1)*color;
     
     //else
@@ -495,17 +503,12 @@ void main(void)
     if(abs(float(1.0*(frameCounter%(width*height)/width)/height*2-1)-point.x)<0.005 &&abs(float(1.0*(frameCounter%width)/width*2-1)-point.y)<0.005)
         color=vec3(1.0,0.0,0.0);*/
 
-    
-   
-       if(lastColor.x>1.1)
+         if(lastColor.x>1.1)
         color=vec3(10,10,10);
             if(lastColor.y>1.1)
         color=vec3(10,10,10);
             if(lastColor.z>1.1)
         color=vec3(10,10,10);
-
-         
-
 
 
       FragColor=vec4(color,1.0);

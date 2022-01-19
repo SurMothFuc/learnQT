@@ -17,6 +17,8 @@ GLuint Renderer::getTextureRGB32F(int width, int height) {
     return tex;
 }
 
+
+
 QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::string vshader) {
     QOpenGLShaderProgram* shaderProgram = new QOpenGLShaderProgram;
     bool success = shaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, vshader.c_str());
@@ -38,24 +40,26 @@ QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::strin
     return shaderProgram;
 }
 GLuint Renderer::bindData(std::vector<GLuint> colorAttachments) {//colorAttachments为颜色缓冲 函数返回值为FBO
-    GLuint FBO;
+    GLuint FBO=0;
     glGenFramebuffers(1, &FBO);
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-
 
     // 不是 finalPass 则生成帧缓冲的颜色附件 关键
     //if (!finalPass) {
     if (colorAttachments.size() != 0) {
-        std::vector<GLuint> attachments;
+        std::vector<GLenum> attachments;
         for (int i = 0; i < colorAttachments.size(); i++) {
             glBindTexture(GL_TEXTURE_2D, colorAttachments[i]);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorAttachments[i], 0);// 将颜色纹理绑定到 i 号颜色附件
             attachments.push_back(GL_COLOR_ATTACHMENT0 + i);
         }
         glDrawBuffers(attachments.size(), &attachments[0]);
+        //glDrawBuffer(GL_COLOR_ATTACHMENT0);
     }
     //}
-
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        qDebug() << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << glCheckFramebufferStatus(GL_FRAMEBUFFER) << endl;
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return FBO;
 }
@@ -100,22 +104,16 @@ void Renderer::render(int width, int height)
     rotate.rotate(degree, 0, 0, 1);*/
 
 
-   /* glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    
     
     pathtrace_program->bind(); 
     {
-
-
-        float a[4] = {rand(),rand(), rand(), rand()};
-        //pathtrace_program->setUniformValue("frameCounter", frameCounter++);
-
         GLint fl_loca = pathtrace_program->uniformLocation("frameCounter");
         glUniform1ui(fl_loca, frameCounter++);
-        pathtrace_program->setUniformValueArray("rdSeed",a,4,1);
 
         glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
         glActiveTexture(GL_TEXTURE0);
@@ -137,8 +135,8 @@ void Renderer::render(int width, int height)
 
         //glBindVertexArray(VAO);
 
-        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+     //   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -155,8 +153,8 @@ void Renderer::render(int width, int height)
         mixframe_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
 
-        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+       // glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+       // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -172,8 +170,8 @@ void Renderer::render(int width, int height)
         m_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
 
-        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      //  glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+      //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
@@ -191,7 +189,6 @@ void Renderer::init()
 //    glDebugMessageCallback(glDebugOutput, nullptr);
 
     qDebug() << reinterpret_cast<const char *>(glGetString(GL_VERSION));
-
 
     
     
@@ -211,18 +208,19 @@ void Renderer::init()
 
 
 
+    pathtrace_program.reset(getShaderProgram("./pathtrace.frag", "./triangle.vert"));
     pathtrace_texture = getTextureRGB32F(m_width, m_height);
     pathtrace_fbo = bindData(std::vector<GLuint>{ pathtrace_texture});
-    pathtrace_program.reset(getShaderProgram("./pathtrace.frag", "./triangle.vert"));
 
+
+    mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
     mixframe_texture = getTextureRGB32F(m_width, m_height);
     mixframe_fbo = bindData(std::vector<GLuint>{ mixframe_texture});
-    mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
 
+
+    m_program.reset(getShaderProgram("./triangle.frag", "./triangle.vert"));
     m_texture = getTextureRGB32F(m_width, m_height);
     m_fbo = bindData(std::vector<GLuint>{m_texture});
-    m_program.reset(getShaderProgram("./triangle.frag", "./triangle.vert"));
-
     //adjustSize();
 
 
@@ -264,20 +262,23 @@ void Renderer::uninit()
     //glDeleteRenderbuffers(1, &m_rbo);
     glDeleteTextures(1, &m_texture);
     glDeleteFramebuffers(1, &m_fbo);
+    /*
+    * .........还应该把剩余的添加进来
+    */
 }
 
 void Renderer::adjustSize()
 {
     glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glBindTexture(GL_TEXTURE_2D, pathtrace_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glBindTexture(GL_TEXTURE_2D, mixframe_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     /*glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);

@@ -52,7 +52,7 @@ void GLWidget::initializeGL()
 //    glDebugMessageCallback(glDebugOutput, nullptr);
 
     char vertexShaderSource[] =
-            "#version 440 core\n"
+            "#version 330 core\n"
             "layout (location = 0) in vec2 vPos;\n"
             "layout (location = 1) in vec2 texCoord;\n"
             "out vec2 TexCoord;\n"
@@ -62,7 +62,7 @@ void GLWidget::initializeGL()
             "   TexCoord = texCoord;\n"
             "}\n";
     char fragmentShaderSource[] =
-            "#version 440 core\n"
+            "#version 330 core\n"
             "out vec4 FragColor;\n"
             "in vec2 TexCoord;\n"
             "uniform sampler2D ourTexture;\n"
