@@ -100,15 +100,23 @@ void Renderer::render(int width, int height)
     rotate.rotate(degree, 0, 0, 1);*/
 
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+   /* glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
 
    
     
     pathtrace_program->bind(); 
     {
+
+
+        float a[4] = {rand(),rand(), rand(), rand()};
+        //pathtrace_program->setUniformValue("frameCounter", frameCounter++);
+
+        GLint fl_loca = pathtrace_program->uniformLocation("frameCounter");
+        glUniform1ui(fl_loca, frameCounter++);
+        pathtrace_program->setUniformValueArray("rdSeed",a,4,1);
+
         glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
@@ -127,12 +135,10 @@ void Renderer::render(int width, int height)
         pathtrace_program->setUniformValue("hdrMap", 3);
 
 
-        pathtrace_program->setUniformValue("frameCounter", frameCounter++);
         //glBindVertexArray(VAO);
 
-        /*glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -149,9 +155,8 @@ void Renderer::render(int width, int height)
         mixframe_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
 
-       /* glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -167,9 +172,8 @@ void Renderer::render(int width, int height)
         m_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
 
-        /*glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
@@ -219,7 +223,7 @@ void Renderer::init()
     m_fbo = bindData(std::vector<GLuint>{m_texture});
     m_program.reset(getShaderProgram("./triangle.frag", "./triangle.vert"));
 
-    adjustSize();
+    //adjustSize();
 
 
 
@@ -300,6 +304,7 @@ void Renderer::updateprame()
         glDeleteBuffers(1, &tbo1);
         glDeleteTextures(1, &nodesTextureBuffer);
         glDeleteTextures(1, &hdrMap);
+
 
         glGenBuffers(1, &tbo0);
         glBindBuffer(GL_TEXTURE_BUFFER, tbo0);

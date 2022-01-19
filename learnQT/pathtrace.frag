@@ -1,4 +1,4 @@
-#version 330 core
+#version 440 core
 #define SIZE_TRIANGLE   12
 #define SIZE_BVHNODE    4
 #define INF 114514.0
@@ -16,7 +16,9 @@ uniform vec3 eye;
 uniform int nNodes;
 uniform int width;
 uniform int height;
-uniform int frameCounter;
+uniform uint frameCounter;
+
+uniform float rdSeed[4];
  
 uniform samplerBuffer triangles;
 uniform samplerBuffer nodes;
@@ -72,31 +74,97 @@ struct HitResult {
     Material material;      // 命中点的表面材质
 };
 
+const uint V[8*32] = uint[8*32](
+    2147483648, 1073741824, 536870912, 268435456, 134217728, 67108864, 33554432, 16777216, 8388608, 4194304, 2097152, 1048576, 524288, 262144, 131072, 65536, 32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1,
+    2147483648, 3221225472, 2684354560, 4026531840, 2281701376, 3422552064, 2852126720, 4278190080, 2155872256, 3233808384, 2694840320, 4042260480, 2290614272, 3435921408, 2863267840, 4294901760, 2147516416, 3221274624, 2684395520, 4026593280, 2281736192, 3422604288, 2852170240, 4278255360, 2155905152, 3233857728, 2694881440, 4042322160, 2290649224, 3435973836, 2863311530, 4294967295,
+    2147483648, 3221225472, 1610612736, 2415919104, 3892314112, 1543503872, 2382364672, 3305111552, 1753219072, 2629828608, 3999268864, 1435500544, 2154299392, 3231449088, 1626210304, 2421489664, 3900735488, 1556135936, 2388680704, 3314585600, 1751705600, 2627492864, 4008611328, 1431684352, 2147543168, 3221249216, 1610649184, 2415969680, 3892340840, 1543543964, 2382425838, 3305133397,
+    2147483648, 3221225472, 536870912, 1342177280, 4160749568, 1946157056, 2717908992, 2466250752, 3632267264, 624951296, 1507852288, 3872391168, 2013790208, 3020685312, 2181169152, 3271884800, 546275328, 1363623936, 4226424832, 1977167872, 2693105664, 2437829632, 3689389568, 635137280, 1484783744, 3846176960, 2044723232, 3067084880, 2148008184, 3222012020, 537002146, 1342505107,
+    2147483648, 1073741824, 536870912, 2952790016, 4160749568, 3690987520, 2046820352, 2634022912, 1518338048, 801112064, 2707423232, 4038066176, 3666345984, 1875116032, 2170683392, 1085997056, 579305472, 3016343552, 4217741312, 3719483392, 2013407232, 2617981952, 1510979072, 755882752, 2726789248, 4090085440, 3680870432, 1840435376, 2147625208, 1074478300, 537900666, 2953698205,
+    2147483648, 1073741824, 1610612736, 805306368, 2818572288, 335544320, 2113929216, 3472883712, 2290089984, 3829399552, 3059744768, 1127219200, 3089629184, 4199809024, 3567124480, 1891565568, 394297344, 3988799488, 920674304, 4193267712, 2950604800, 3977188352, 3250028032, 129093376, 2231568512, 2963678272, 4281226848, 432124720, 803643432, 1633613396, 2672665246, 3170194367,
+    2147483648, 3221225472, 2684354560, 3489660928, 1476395008, 2483027968, 1040187392, 3808428032, 3196059648, 599785472, 505413632, 4077912064, 1182269440, 1736704000, 2017853440, 2221342720, 3329785856, 2810494976, 3628507136, 1416089600, 2658719744, 864310272, 3863387648, 3076993792, 553150080, 272922560, 4167467040, 1148698640, 1719673080, 2009075780, 2149644390, 3222291575,
+    2147483648, 1073741824, 2684354560, 1342177280, 2281701376, 1946157056, 436207616, 2566914048, 2625634304, 3208642560, 2720006144, 2098200576, 111673344, 2354315264, 3464626176, 4027383808, 2886631424, 3770826752, 1691164672, 3357462528, 1993345024, 3752330240, 873073152, 2870150400, 1700563072, 87021376, 1097028000, 1222351248, 1560027592, 2977959924, 23268898, 437609937
+);
+// 格林码 
+uint grayCode(uint i) {
+	return i ^ (i>>1);
+}
+
+// 生成第 d 维度的第 i 个 sobol 数
+float sobol(uint d, uint i) {
+    uint result = uint(0);
+    uint offset = d * uint(32);
+    for(uint j = uint(0); i!=uint(0); i >>= 1, j++) 
+        if((i & uint(1))!=uint(0))
+            result ^= V[j+offset];
+
+    return float(result) * (1.0f/float(0xFFFFFFFFU));
+}
+vec2 sobolVec2(uint i, uint b) {
+    float u = sobol(b*uint(2), grayCode(i));
+    float v = sobol(b*uint(2)+uint(1), grayCode(i));
+    return vec2(u, v);
+}
+
+
+
 uint seed = uint(
     uint((pix.x * 0.5 + 0.5) * width)  * uint(1973) + 
     uint((pix.y * 0.5 + 0.5) * height) * uint(9277) + 
     uint(frameCounter) * uint(26699)) | uint(1);
-
 uint wang_hash(inout uint seed) {
-    seed = uint(seed ^ uint(61)) ^ uint(seed >> uint(16));
+    seed = (seed ^ uint(61)) ^ (seed >> uint(16));
     seed *= uint(9);
-    seed = seed ^ (seed >> 4);
+    seed = seed ^ (seed >> uint(4));
     seed *= uint(0x27d4eb2d);
-    seed = seed ^ (seed >> 15);
+    seed = seed ^ (seed >> uint(15));
     return seed;
-}
- 
+} 
 float rand() {
-    return float(wang_hash(seed)) / 4294967296.0;
+   return float(wang_hash(seed)) * (1.0 / 4294967296.0);
 }
 
+//int rdCnt = 0;
+//float RandXY(float x, float y){
+//    return fract(cos(dot(vec2(x,y), vec2(12.9898, 4.1414))) * 43758.5453);
+//}
+// 
+//float rand(){
+//    float a = RandXY(pix.x, rdSeed[0]);
+//    float b = RandXY(rdSeed[1], pix.y);
+//    float c = RandXY(rdCnt++, rdSeed[2]);
+//    float d = RandXY(rdSeed[3], a);
+//    float e = RandXY(b, c);
+//    float f = RandXY(d, e);
+// 
+//    return f;
+//}
+
+//vec2 CranleyPattersonRotation(vec2 p) {
+//    uint pseed = uint(
+//        uint((pix.x * 0.5 + 0.5) * width)  * uint(1973) + 
+//        uint((pix.y * 0.5 + 0.5) * height) * uint(9277) + 
+//        uint(114514/1919) * uint(26699)) | uint(1);
+//    
+//    float u = float(wang_hash(pseed)) / 4294967296.0;
+//    float v = float(wang_hash(pseed)) / 4294967296.0;
+//
+//    p.x += u;
+//    if(p.x>1) p.x -= 1;
+//    if(p.x<0) p.x += 1;
+//
+//    p.y += v;
+//    if(p.y>1) p.y -= 1;
+//    if(p.y<0) p.y += 1;
+//
+//    return p;
+//}
 // ----------------------------------------------------------------------------- //
 
 // 半球均匀采样
-vec3 SampleHemisphere() {
-    float z = rand();
+vec3 SampleHemisphere(float xi_1, float xi_2) {
+    float z = xi_1;
     float r = max(0, sqrt(1.0 - z*z));
-    float phi = 2.0 * PI * rand();
+    float phi = 2.0 * PI * xi_2;
     return vec3(r * cos(phi), r * sin(phi), z);
 }
 // 将向量 v 投影到 N 的法向半球
@@ -344,15 +412,19 @@ vec3 pathTracing(HitResult hit, int maxBounce) {
 
     for(int bounce=0; bounce<maxBounce; bounce++) {
         // 随机出射方向 wi
-        vec3 wi = toNormalHemisphere(SampleHemisphere(), hit.normal);
-
+       vec3 L = toNormalHemisphere(SampleHemisphere(rand(),rand()), hit.normal);
+       
+//       vec2 uv = sobolVec2(uint(frameCounter+1), uint(bounce));
+//       uv = CranleyPattersonRotation(uv);
+//       vec3 L = SampleHemisphere(uv.x, uv.y);
+//       L = toNormalHemisphere(L, hit.normal);	
         // 漫反射: 随机发射光线
         Ray randomRay;
         randomRay.startPoint = hit.hitPoint;
-        randomRay.direction = wi;
+        randomRay.direction = L;
         HitResult newHit = hitBVH(randomRay);
 
-        float pdf = 1.0 / (2.0 * PI);                                   // 半球均匀采样概率密度
+        float pdf = 1.0 / (2.0*PI);                                   // 半球均匀采样概率密度
         float cosine_o = max(0, dot(-hit.viewDir, hit.normal));         // 入射光和法线夹角余弦
         float cosine_i = max(0, dot(randomRay.direction, hit.normal));  // 出射光和法线夹角余弦
         vec3 f_r = hit.material.baseColor / PI;                         // 漫反射 BRDF
@@ -382,6 +454,7 @@ void main(void)
     ray.startPoint = eye;
    // ray.startPoint = vec3(0, 0, 4);
     vec2 AA = vec2((rand()-0.5)/float(width), (rand()-0.5)/float(height));
+   //vec2 AA = vec2(0);
     vec4 dir = view*vec4(pix.x*float(width) /float(height)+AA.x,pix.y+AA.y, -2.0,0.0);//- ray.startPoint;
     ray.direction = normalize(dir.xyz);
 
@@ -393,15 +466,48 @@ void main(void)
          color = sampleHdr(ray.direction);
     } else {
         vec3 Le = firstHit.material.emissive;
-        vec3 Li = pathTracing(firstHit,8);
+        vec3 Li = pathTracing(firstHit,2);
         color = Le + Li;
     }  
 
     vec3 lastColor = texture2D(lastFrame, pix.xy*0.5+0.5).rgb;
-    color = mix(lastColor, color, 1.0/float(frameCounter+1));
 
+
+
+
+    color = mix(lastColor, color, 1.0/float(frameCounter+uint(1)));
+    //color=(1-1.0/(frameCounter+1))*lastColor+1.0/(frameCounter+1)*color;
+    
     //else
        // color = vec3(0.0,0.0,0.0);
 
-     FragColor =vec4(color,1.0);
+
+//    vec3 color; 
+//    vec3 lastColor = texture2D(lastFrame, pix.xy*0.5+0.5).rgb;
+//    color = lastColor+ color;
+//    if(abs(pix.x-(rand()*2-1))<0.01&&abs(pix.y-(rand()*2-1))<0.01){
+//        color=vec3(1,0,0);
+//    }
+    
+    /*vec3 lastColor = texture2D(lastFrame, pix.xy*0.5+0.5).rgb;
+    color = mix(lastColor, color, 1.0/float(frameCounter+1));
+    vec2 point=vec2(pix.x,pix.y);
+    if(abs(float(1.0*(frameCounter%(width*height)/width)/height*2-1)-point.x)<0.005 &&abs(float(1.0*(frameCounter%width)/width*2-1)-point.y)<0.005)
+        color=vec3(1.0,0.0,0.0);*/
+
+    
+   
+       if(lastColor.x>1.1)
+        color=vec3(10,10,10);
+            if(lastColor.y>1.1)
+        color=vec3(10,10,10);
+            if(lastColor.z>1.1)
+        color=vec3(10,10,10);
+
+         
+
+
+
+      FragColor=vec4(color,1.0);
+    // gl_FragData[0] = vec4(color, 1.0);
 }

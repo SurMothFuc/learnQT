@@ -2,7 +2,7 @@
 #define GLWIDGET_H
 
 #include <QOpenGLWidget>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions_4_4_Core>
 #include <QOpenGLShaderProgram>
 #include "parameters.h"
 
@@ -14,7 +14,7 @@ class RenderThread;
 extern Pass_parameters param;
 extern QMutex param_mutex;
 
-class GLWidget : public QOpenGLWidget,protected QOpenGLFunctions_3_3_Core
+class GLWidget : public QOpenGLWidget,protected QOpenGLFunctions_4_4_Core
 {
     Q_OBJECT
 public:
