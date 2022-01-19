@@ -21,7 +21,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
 public:
-    explicit Renderer(QObject *parent = nullptr);
+    explicit Renderer(int width, int height,QObject *parent = nullptr);
     ~Renderer();
 
     void render(int width, int height);
@@ -32,7 +32,7 @@ public:
     void updateprame();
     bool needupdate = true;
 private:
-    void init();
+    void init(int width, int height);
     void uninit();
     void adjustSize();
 

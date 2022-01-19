@@ -36,7 +36,7 @@ void RenderThread::run()
 
     TextureBuffer::instance()->createTexture(m_renderContext);
 
-    Renderer renderer;    
+    Renderer renderer(m_width, m_height);
 
     point_render = &renderer;
 
@@ -59,6 +59,6 @@ void RenderThread::run()
 }
 void RenderThread::recMegFromMain()
 {
-    std::cout << 1;
+    //qDebug() << "update parameters" ;
     point_render->needupdate = true;
 }

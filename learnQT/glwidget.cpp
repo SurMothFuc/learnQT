@@ -149,7 +149,6 @@ void GLWidget::initRenderThread()
 void GLWidget::keyPressEvent(QKeyEvent* event)
 {
     int key = event->key();
-    qDebug() << 1;
     if (key >= 0 && key < 1024) {
         param_mutex.lock();
         {
@@ -164,7 +163,6 @@ void GLWidget::keyPressEvent(QKeyEvent* event)
 void GLWidget::keyReleaseEvent(QKeyEvent* event)
 {
     int key = event->key();
-    qDebug() << 2;
     if (key >= 0 && key < 1024) {
         param_mutex.lock();
         {

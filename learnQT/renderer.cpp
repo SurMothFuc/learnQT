@@ -58,16 +58,16 @@ GLuint Renderer::bindData(std::vector<GLuint> colorAttachments) {//colorAttachme
     }
     //}
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        qDebug() << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << glCheckFramebufferStatus(GL_FRAMEBUFFER) << endl;
+        qDebug() << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << glCheckFramebufferStatus(GL_FRAMEBUFFER);
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return FBO;
 }
 
-Renderer::Renderer(QObject *parent)
+Renderer::Renderer(int width, int height, QObject *parent)
     : QObject(parent)
 {  
-    init();
+    init(width,height);
 }
 
 Renderer::~Renderer()
@@ -87,6 +87,7 @@ void Renderer::render(int width, int height)
    // RAIITimer t("Renderer::render");
     if (m_width != width || m_height != height)
     {
+        qDebug() << "Adjust offscreen frame size to:" << width << height ;
         m_width = width;
         m_height = height;
         adjustSize();      
@@ -105,7 +106,7 @@ void Renderer::render(int width, int height)
 
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+    //glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    
@@ -135,8 +136,8 @@ void Renderer::render(int width, int height)
 
         //glBindVertexArray(VAO);
 
-        //glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
-     //   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -153,8 +154,8 @@ void Renderer::render(int width, int height)
         mixframe_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
 
-       // glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
-       // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -170,8 +171,8 @@ void Renderer::render(int width, int height)
         m_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
 
-      //  glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
-      //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
@@ -180,8 +181,14 @@ void Renderer::render(int width, int height)
     glFinish();
 }
 
-void Renderer::init()
+void Renderer::init(int width, int height)
 {
+    m_width = width;
+    m_height = height;
+    m_viewportX = 0;
+    m_viewportY = 0;
+    m_viewportWidth = m_width;
+    m_viewportHeight = m_height;
     initializeOpenGLFunctions();
 
 //    glEnable(GL_DEBUG_OUTPUT);

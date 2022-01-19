@@ -123,41 +123,25 @@ float rand() {
    return float(wang_hash(seed)) * (1.0 / 4294967296.0);
 }
 
-//int rdCnt = 0;
-//float RandXY(float x, float y){
-//    return fract(cos(dot(vec2(x,y), vec2(12.9898, 4.1414))) * 43758.5453);
-//}
-// 
-//float rand(){
-//    float a = RandXY(pix.x, rdSeed[0]);
-//    float b = RandXY(rdSeed[1], pix.y);
-//    float c = RandXY(rdCnt++, rdSeed[2]);
-//    float d = RandXY(rdSeed[3], a);
-//    float e = RandXY(b, c);
-//    float f = RandXY(d, e);
-// 
-//    return f;
-//}
+vec2 CranleyPattersonRotation(vec2 p) {
+    uint pseed = uint(
+        uint((pix.x * 0.5 + 0.5) * width)  * uint(1973) + 
+        uint((pix.y * 0.5 + 0.5) * height) * uint(9277) + 
+        uint(114514/1919) * uint(26699)) | uint(1);
+    
+    float u = float(wang_hash(pseed)) / 4294967296.0;
+    float v = float(wang_hash(pseed)) / 4294967296.0;
 
-//vec2 CranleyPattersonRotation(vec2 p) {
-//    uint pseed = uint(
-//        uint((pix.x * 0.5 + 0.5) * width)  * uint(1973) + 
-//        uint((pix.y * 0.5 + 0.5) * height) * uint(9277) + 
-//        uint(114514/1919) * uint(26699)) | uint(1);
-//    
-//    float u = float(wang_hash(pseed)) / 4294967296.0;
-//    float v = float(wang_hash(pseed)) / 4294967296.0;
-//
-//    p.x += u;
-//    if(p.x>1) p.x -= 1;
-//    if(p.x<0) p.x += 1;
-//
-//    p.y += v;
-//    if(p.y>1) p.y -= 1;
-//    if(p.y<0) p.y += 1;
-//
-//    return p;
-//}
+    p.x += u;
+    if(p.x>1) p.x -= 1;
+    if(p.x<0) p.x += 1;
+
+    p.y += v;
+    if(p.y>1) p.y -= 1;
+    if(p.y<0) p.y += 1;
+
+    return p;
+}
 // ----------------------------------------------------------------------------- //
 
 // 半球均匀采样
@@ -412,12 +396,12 @@ vec3 pathTracing(HitResult hit, int maxBounce) {
 
     for(int bounce=0; bounce<maxBounce; bounce++) {
         // 随机出射方向 wi
-       vec3 L = toNormalHemisphere(SampleHemisphere(rand(),rand()), hit.normal);
+      // vec3 L = toNormalHemisphere(SampleHemisphere(rand(),rand()), hit.normal);
        
-//       vec2 uv = sobolVec2(uint(frameCounter+1), uint(bounce));
-//       uv = CranleyPattersonRotation(uv);
-//       vec3 L = SampleHemisphere(uv.x, uv.y);
-//       L = toNormalHemisphere(L, hit.normal);	
+       vec2 uv = sobolVec2(uint(frameCounter+uint(1)), uint(bounce));
+       uv = CranleyPattersonRotation(uv);
+       vec3 L = SampleHemisphere(uv.x, uv.y);
+       L = toNormalHemisphere(L, hit.normal);	
         // 漫反射: 随机发射光线
         Ray randomRay;
         randomRay.startPoint = hit.hitPoint;
@@ -503,13 +487,7 @@ void main(void)
     if(abs(float(1.0*(frameCounter%(width*height)/width)/height*2-1)-point.x)<0.005 &&abs(float(1.0*(frameCounter%width)/width*2-1)-point.y)<0.005)
         color=vec3(1.0,0.0,0.0);*/
 
-         if(lastColor.x>1.1)
-        color=vec3(10,10,10);
-            if(lastColor.y>1.1)
-        color=vec3(10,10,10);
-            if(lastColor.z>1.1)
-        color=vec3(10,10,10);
-
+    
 
       FragColor=vec4(color,1.0);
     // gl_FragData[0] = vec4(color, 1.0);

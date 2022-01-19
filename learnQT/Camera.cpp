@@ -111,7 +111,6 @@ void Camera::processMouseScroll(float yoffset)
         this->zoom = 45.0f;
     if (this->zoom < 1.0f)
         this->zoom = 1.0f;*/
-    qDebug() << r;
     r += -yoffset * 0.001;
     position = QVector3D(-sin(radians(rotatAngle)) * cos(radians(upAngle)), sin(radians(upAngle)), cos(radians(rotatAngle)) * cos(radians(upAngle)));
     position *= r;
