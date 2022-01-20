@@ -6,10 +6,10 @@ Pass_parameters::Pass_parameters()
     Material m;
     m.baseColor = QVector3D(0.0f, 1.0f, 1.0f);
     // readObj("models/model_o_from_paraview.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.3, -1.3, 0), QVector3D(1.5, 1.5, 1.5)), true);
-    readObj("models/Stanford Bunny.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.0, 0, 0), QVector3D(1, 1, 1)), true);
+    readObj("models/Stanford Bunny.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.0, -0.2, 0), QVector3D(1, 1, 1)), true);
 
     m.baseColor = QVector3D(0.725, 0.71, 0.68);
-    readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.1, 0), QVector3D(18.83, 0.01, 18.83)), false);
+    readObj("models/quad.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.12, 0), QVector3D(18.83, 0.01, 18.83)), false);
 
     /*m.baseColor = QVector3D(1, 1, 1);
     m.emissive = QVector3D(10, 10, 10);

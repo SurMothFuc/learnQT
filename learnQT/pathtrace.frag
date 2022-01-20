@@ -451,7 +451,7 @@ void main(void)
                 color = sampleHdr(ray.direction);
         } else {
             vec3 Le = firstHit.material.emissive;
-            vec3 Li = pathTracing(firstHit,2);
+            vec3 Li = pathTracing(firstHit,4);
             color = Le + Li;
         }  
 
