@@ -35,7 +35,8 @@ Pass_parameters::Pass_parameters(){
     //mt.specular = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(0.0f, 1.0f, 1.0f);
-    readObj("models/Stanford Bunny.obj", triangles, mt, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.2, -0.7, 0), QVector3D(1,1, 1)), true);
+    readObj("models/sphere2.obj", triangles, mt, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0,0, 0), QVector3D(1,1, 1)), true);
+   // readObj("models/Stanford Bunny.obj", triangles, mt, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.2, -0.7, 0), QVector3D(1,1, 1)), true);
     
     mt = Material();
     mt.roughness = 0.1;
