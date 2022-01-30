@@ -76,9 +76,7 @@ Renderer::~Renderer()
 }
 
 void Renderer::render(int width, int height)
-{
-
-    std::cout << "\r" << frameCounter;
+{   
     if (needupdate) {
         updateprame();
         needupdate = false;
@@ -94,8 +92,13 @@ void Renderer::render(int width, int height)
         updateprame();
     }
 
-
-    
+    int nowtime = clock();
+    if (nowtime - lasttime >200) {
+        printf("\r                                                     ");
+        std::cout << "\rframeCounter: " << frameCounter<<" FPS: "<<int((frameCounter-lastframeCounter)/(1.0*(nowtime - lasttime)/1000.0));
+        lastframeCounter = frameCounter;
+        lasttime = nowtime;
+    }
 
    /* static float degree = 0.0f;
     degree += 1.0f;
@@ -132,6 +135,10 @@ void Renderer::render(int width, int height)
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, hdrMap);
         pathtrace_program->setUniformValue("hdrMap", 3);
+
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, hdrCache);
+        pathtrace_program->setUniformValue("hdrCache", 4);
 
 
         //glBindVertexArray(VAO);
@@ -312,6 +319,7 @@ void Renderer::updateprame()
         glDeleteBuffers(1, &tbo1);
         glDeleteTextures(1, &nodesTextureBuffer);
         glDeleteTextures(1, &hdrMap);
+        glDeleteTextures(1, &hdrCache);
 
 
         glGenBuffers(1, &tbo0);
@@ -330,6 +338,9 @@ void Renderer::updateprame()
 
         hdrMap = getTextureRGB32F(param.hdrRes.width, param.hdrRes.height);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, param.hdrRes.width, param.hdrRes.height, 0, GL_RGB, GL_FLOAT, param.hdrRes.cols);
+
+        hdrCache = getTextureRGB32F(param.hdrRes.width, param.hdrRes.height);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, param.hdrRes.width, param.hdrRes.height, 0, GL_RGB, GL_FLOAT, param.cache);
 
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -359,7 +370,12 @@ void Renderer::updateprame()
         pathtrace_program->setUniformValue("nNodes", (int)param.nodes_encoded.size());
         pathtrace_program->setUniformValue("width", m_width);
         pathtrace_program->setUniformValue("height", m_height);
+        pathtrace_program->setUniformValue("height", m_height);
+        pathtrace_program->setUniformValue("hdrResolution", param.hdrResolution);
         pathtrace_program->release();
+
+        lasttime = clock();
+        lastframeCounter = 0;
         frameCounter = 0;
     }
     param_mutex.unlock();

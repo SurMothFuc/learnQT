@@ -60,5 +60,7 @@ void RenderThread::run()
 void RenderThread::recMegFromMain()
 {
     //qDebug() << "update parameters" ;
+    if (point_render == NULL)
+        return;
     point_render->needupdate = true;
 }

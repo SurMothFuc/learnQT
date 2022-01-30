@@ -12,7 +12,7 @@ Camera::Camera(QVector3D position, QVector3D up, float yaw, float pitch) :
     mouseSensitivity(SENSITIVITY),
     zoom(ZOOM) {
     this->updateCameraVectors();
-
+    r = position.z();
     for (uint i = 0; i != 1024; ++i)
         keys[i] = false;
 }

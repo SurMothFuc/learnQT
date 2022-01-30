@@ -45,7 +45,7 @@ void GLWidget::initializeGL()
 {
     initRenderThread();
 
-    qDebug() << initializeOpenGLFunctions();
+    qDebug() << "initializeOpenGLFunctions:" << initializeOpenGLFunctions();
 
 //    glEnable(GL_DEBUG_OUTPUT);
 //    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);

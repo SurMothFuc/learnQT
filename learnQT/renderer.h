@@ -61,12 +61,19 @@ private:
     unsigned mixframe_texture = 0;
 
     unsigned int frameCounter = 0;
+    unsigned int lastframeCounter = 0;
+
+    
+    int lasttime = 0;
+
 
     GLuint tbo0;
     GLuint tbo1;
     GLuint trianglesTextureBuffer;
     GLuint nodesTextureBuffer;
     GLuint hdrMap;
+    GLuint hdrCache;
+
     std::unique_ptr<QOpenGLShaderProgram> m_program;
     std::unique_ptr<QOpenGLShaderProgram> pathtrace_program;
     std::unique_ptr<QOpenGLShaderProgram> mixframe_program;
