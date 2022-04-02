@@ -34,8 +34,8 @@ Pass_parameters::Pass_parameters(){
    // mt.roughness = 0.5;
     //mt.specular = 1.0;
     //mt.anisotropic = 1.0;
-    mt.baseColor = QVector3D(0.0f, 1.0f, 1.0f);
-    readObj("models/sphere2.obj", triangles, mt, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0,0, 0), QVector3D(1,1, 1)), true);
+    mt.baseColor = QVector3D(1.0, 1.0, 1.0);
+    readObj("models/10778_Toilet_V2.obj", triangles, mt, getTransformMatrix(QVector3D(-90.0, 0, 0), QVector3D(0.3,0, 0), QVector3D(1,1, 1)), true);
    // readObj("models/Stanford Bunny.obj", triangles, mt, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.2, -0.7, 0), QVector3D(1,1, 1)), true);
     
     mt = Material();
@@ -198,9 +198,9 @@ void Pass_parameters::readObj(std::string filepath, std::vector<Triangle>& trian
         std::istringstream sins(line);   // 以一行的数据作为 string stream 解析并且读取
         std::string type;
         float x, y, z;
-        int v0, v1, v2;
-        int vn0, vn1, vn2;
-        int vt0, vt1, vt2;
+        int v0, v1, v2,v3;
+        int vn0, vn1, vn2,  vn3;
+        int vt0, vt1, vt2, vt3;
         char slash;
 
         // 统计斜杆数目，用不同格式读取
@@ -222,6 +222,15 @@ void Pass_parameters::readObj(std::string filepath, std::vector<Triangle>& trian
                 sins >> v0 >> slash >> vt0 >> slash >> vn0;
                 sins >> v1 >> slash >> vt1 >> slash >> vn1;
                 sins >> v2 >> slash >> vt2 >> slash >> vn2;
+            }
+            else if (slashCnt == 8) {
+                sins >> v0 >> slash >> vt0 >> slash >> vn0 ;
+                sins >> v1 >> slash >> vt1 >> slash >> vn1 ;
+                sins >> v2 >> slash >> vt2 >> slash >> vn2 ;
+                sins >> v3 >> slash >> vt3 >> slash >> vn3;
+                indices.push_back(v2 - 1);
+                indices.push_back(v3 - 1);
+                indices.push_back(v0 - 1);
             }
             else if (slashCnt == 3) {
                 sins >> v0 >> slash >> vt0;
@@ -558,7 +567,7 @@ void Pass_parameters::updateMaterial(QVector3D emissive, QVector3D  baseColor,
     int nTriangles = triangles.size();
     for (int i = 0; i < nTriangles; i++) {       
         triangles_encoded[i].emissive = emissive;
-        triangles_encoded[i].baseColor = baseColor;
+        //triangles_encoded[i].baseColor = baseColor;
         triangles_encoded[i].param1 = QVector3D(subsurface, metallic, specular);
         triangles_encoded[i].param2 = QVector3D(specularTint, roughness, anisotropic);
         triangles_encoded[i].param3 = QVector3D(sheen, sheenTint, clearcoat);

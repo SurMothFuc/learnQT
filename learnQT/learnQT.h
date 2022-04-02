@@ -27,7 +27,7 @@ public slots:
     {
         param_mutex.lock();
         {
-            param.updateMaterial(QVector3D(0.0f, 0.0f, 0.0f) ,QVector3D(0.0f, 1.0f, 1.0f),
+            param.updateMaterial(QVector3D(0.0f, 0.0f, 0.0f) ,QVector3D(1.0, 1.0, 1.0),
                 ui.subsurfacelineEdit->text().toFloat(),ui.metalliclineEdit->text().toFloat(), ui.specularlineEdit->text().toFloat(),
                 ui.specularTintlineEdit->text().toFloat(),ui.roughnesslineEdit->text().toFloat(), 0,
                 ui.sheenlineEdit->text().toFloat(), ui.sheenTintlineEdit->text().toFloat(), ui.clearcoatlineEdit->text().toFloat(),
