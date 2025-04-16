@@ -358,7 +358,7 @@
   <customwidget>
    <class>GLWidget</class>
    <extends>QOpenGLWidget</extends>
-   <header location="global">learnQT/glwidget.h</header>
+   <header location="global">glwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources>
