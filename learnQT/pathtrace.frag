@@ -1,4 +1,4 @@
-﻿#version 330 core
+#version 330 core
 #define SIZE_TRIANGLE   12
 #define SIZE_BVHNODE    4
 #define INF 114514.0
@@ -858,29 +858,42 @@ void main(void)
    // ray.startPoint = vec3(0, 0, 4);
 
    
-        vec2 AA = vec2((rand()-0.5)/float(width), (rand()-0.5)/float(height));
-        //vec2 AA = vec2(0);
-        vec4 dir = view*vec4(pix.x*float(width) /float(height)+AA.x,pix.y+AA.y, -2.0,0.0);//- ray.startPoint;
-        ray.direction = normalize(dir.xyz);
-        vec3 color=vec3(0);
-        // primary hit
-        HitResult firstHit = hitBVH(ray);
-            if(!firstHit.isHit) {
-                color = vec3(0);
-                color = hdrColor(ray.direction);
-        } else {
-            vec3 Le = firstHit.material.emissive;
-            vec3 Li = pathTracingImportanceSampling(firstHit,2);
-            color = Le + Li;
-        }  
+    vec2 AA = vec2((rand()-0.5)/float(width), (rand()-0.5)/float(height));
+    //vec2 AA = vec2(0);
+    vec4 dir = view*vec4(pix.x*float(width) /float(height)+AA.x,pix.y+AA.y, -2.0,0.0);//- ray.startPoint;
+    ray.direction = normalize(dir.xyz);
+    vec3 color=vec3(0);
+    // primary hit
+    HitResult firstHit = hitBVH(ray);
+        if(!firstHit.isHit) {
+            color = vec3(0);
+            color = hdrColor(ray.direction);
+    } else {
+        vec3 Le = firstHit.material.emissive;
+        vec3 Li = pathTracingImportanceSampling(firstHit,2);
+        color = Le + Li;
+    }  
 
+    if(isnan(color.x))
+    {
+        color=vec3(1.0,0,0);
+    }
+    else if(isnan(color.y))
+    {
+        color=vec3(0,1.0,0);
+    }
+    else if(isnan(color.z))
+    {
+        color=vec3(0,0,1.0);
+    }
+    else
+    {
+        vec3 lastColor = texture2D(lastFrame, pix.xy*0.5+0.5).rgb;
+       // lastColor*=100.0; 
+        color = mix(lastColor, color, 1.0/float(frameCounter+1u));  
+    }
 
-    vec3 lastColor = texture2D(lastFrame, pix.xy*0.5+0.5).rgb;
-
-   // lastColor*=100.0;
-
-
-    color = mix(lastColor, color, 1.0/float(frameCounter+1u));
+    
 
     //color/=100.0;
     //color=(1-1.0/(frameCounter+1))*lastColor+1.0/(frameCounter+1)*color;

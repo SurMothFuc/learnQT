@@ -8,7 +8,7 @@
 #include <QMutex>
 #include <memory>
 #include <qtimer.h>
-#include "parameters.h"
+#include "Scene.h"
 
 class RenderThread;
 

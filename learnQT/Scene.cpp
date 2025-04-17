@@ -1,7 +1,7 @@
-﻿#include "parameters.h"
+﻿#include "Scene.h"
 
 
-Pass_parameters::Pass_parameters(){
+Scene::Scene(){
 
     camera = Camera(QVector3D(0.0f, 0.0f, 1.48f), QVector3D(0.0f, 1.0f, 0.0f));
     Material mt;
@@ -169,7 +169,7 @@ Pass_parameters::Pass_parameters(){
     hdrResolution = hdrRes.width;
 }
 
-void Pass_parameters::readObj(std::string filepath, std::vector<Triangle>& triangles, Material material, QMatrix4x4 trans, bool smoothNormal)
+void Scene::readObj(std::string filepath, std::vector<Triangle>& triangles, Material material, QMatrix4x4 trans, bool smoothNormal)
 {
     // 顶点位置，索引
     std::vector<QVector3D> vertices;
@@ -295,7 +295,7 @@ void Pass_parameters::readObj(std::string filepath, std::vector<Triangle>& trian
         t.material = material;
     }
 }
-QMatrix4x4 Pass_parameters::getTransformMatrix(QVector3D rotateCtrl, QVector3D translateCtrl, QVector3D scaleCtrl){
+QMatrix4x4 Scene::getTransformMatrix(QVector3D rotateCtrl, QVector3D translateCtrl, QVector3D scaleCtrl){
     QMatrix4x4 model;
     model.translate(translateCtrl);
     model.rotate(rotateCtrl.x(), QVector3D(1.0f, 0.0f, 0.0f));
@@ -556,7 +556,7 @@ float* calculateHdrCache(float* HDR, int width, int height) {
     return cache;
 }
 
-void Pass_parameters::updateMaterial(QVector3D emissive, QVector3D  baseColor,
+void Scene::updateMaterial(QVector3D emissive, QVector3D  baseColor,
     float subsurface, float  metallic, float  specular,
     float specularTint, float roughness, float anisotropic,
     float sheen, float sheenTint, float clearcoat, 

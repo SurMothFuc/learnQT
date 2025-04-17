@@ -6,8 +6,9 @@
 learnQT::learnQT(QWidget *parent)
     : QMainWindow(parent)
 {
+    Scene::getInstance();
     ui.setupUi(this);    
-    ;
+
     connect( ui.pushButton,SIGNAL(clicked(bool)), this, SLOT(upoff()));
     connect(ui.roughnessSlider, SIGNAL(valueChanged(int)), this, SLOT(roughnessSliderUp()));
     connect(ui.metallicSlider, SIGNAL(valueChanged(int)), this, SLOT(metallicSliderUp()));
@@ -19,7 +20,6 @@ learnQT::learnQT(QWidget *parent)
     connect(ui.clearcoatSlider, SIGNAL(valueChanged(int)), this, SLOT(clearcoatSliderUp()));
     connect(ui.clearcoatGlossSlider, SIGNAL(valueChanged(int)), this, SLOT(clearcoatGlossSliderUp()));
 
-    Pass_parameters::getInstance();
     
 }
 

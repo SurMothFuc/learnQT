@@ -14,7 +14,7 @@
 #include <QMatrix4x4>
 #include <iostream>
 #include <qmutex.h>
-#include "parameters.h"
+#include "Scene.h"
 #include <Eigen/Dense>
 
 class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core

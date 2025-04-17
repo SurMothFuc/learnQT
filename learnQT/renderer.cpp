@@ -323,23 +323,23 @@ void Renderer::updateprame()
 
         glGenBuffers(1, &tbo0);
         glBindBuffer(GL_TEXTURE_BUFFER, tbo0);
-        glBufferData(GL_TEXTURE_BUFFER, Pass_parameters::getInstance().triangles_encoded.size() * sizeof(Triangle_encoded), &Pass_parameters::getInstance().triangles_encoded[0], GL_STATIC_DRAW);
+        glBufferData(GL_TEXTURE_BUFFER, Scene::getInstance().triangles_encoded.size() * sizeof(Triangle_encoded), &Scene::getInstance().triangles_encoded[0], GL_STATIC_DRAW);
         glGenTextures(1, &trianglesTextureBuffer);
         glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
         glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo0);
 
         glGenBuffers(1, &tbo1);
         glBindBuffer(GL_TEXTURE_BUFFER, tbo1);
-        glBufferData(GL_TEXTURE_BUFFER, Pass_parameters::getInstance().nodes_encoded.size() * sizeof(BVHNode_encoded), &Pass_parameters::getInstance().nodes_encoded[0], GL_STATIC_DRAW);
+        glBufferData(GL_TEXTURE_BUFFER, Scene::getInstance().nodes_encoded.size() * sizeof(BVHNode_encoded), &Scene::getInstance().nodes_encoded[0], GL_STATIC_DRAW);
         glGenTextures(1, &nodesTextureBuffer);
         glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
         glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo1);
 
-        hdrMap = getTextureRGB32F(Pass_parameters::getInstance().hdrRes.width, Pass_parameters::getInstance().hdrRes.height);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, Pass_parameters::getInstance().hdrRes.width, Pass_parameters::getInstance().hdrRes.height, 0, GL_RGB, GL_FLOAT, Pass_parameters::getInstance().hdrRes.cols);
+        hdrMap = getTextureRGB32F(Scene::getInstance().hdrRes.width, Scene::getInstance().hdrRes.height);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, Scene::getInstance().hdrRes.width, Scene::getInstance().hdrRes.height, 0, GL_RGB, GL_FLOAT, Scene::getInstance().hdrRes.cols);
 
-        hdrCache = getTextureRGB32F(Pass_parameters::getInstance().hdrRes.width, Pass_parameters::getInstance().hdrRes.height);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, Pass_parameters::getInstance().hdrRes.width, Pass_parameters::getInstance().hdrRes.height, 0, GL_RGB, GL_FLOAT, Pass_parameters::getInstance().cache);
+        hdrCache = getTextureRGB32F(Scene::getInstance().hdrRes.width, Scene::getInstance().hdrRes.height);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, Scene::getInstance().hdrRes.width, Scene::getInstance().hdrRes.height, 0, GL_RGB, GL_FLOAT, Scene::getInstance().cache);
 
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -352,7 +352,7 @@ void Renderer::updateprame()
           // projection.perspective(Pass_parameters::getInstance().camera.zoom, 1.0f * m_width / m_height, 0.1f, 100.f);
           // m_program->setUniformValue("projection", projection);
 
-        QMatrix4x4 view = Pass_parameters::getInstance().camera.getViewMatrix();
+        QMatrix4x4 view = Scene::getInstance().camera.getViewMatrix();
         float viewStore[16];
         view.copyDataTo(viewStore);
         Eigen::Matrix4f viewM(viewStore);
@@ -364,13 +364,13 @@ void Renderer::updateprame()
         //  transform.translate(QVector3D(0.0f, -0.0f, -1.0f));
           //transform.rotate(Pass_parameters::getInstance().offx, QVector3D(0.0f, 1.0f, 1.0f));
           //m_program->setUniformValue("model", transform);
-        pathtrace_program->setUniformValue("eye", Pass_parameters::getInstance().camera.position);
-        pathtrace_program->setUniformValue("nTriangles", (int)Pass_parameters::getInstance().triangles.size());
-        pathtrace_program->setUniformValue("nNodes", (int)Pass_parameters::getInstance().nodes_encoded.size());
+        pathtrace_program->setUniformValue("eye", Scene::getInstance().camera.position);
+        pathtrace_program->setUniformValue("nTriangles", (int)Scene::getInstance().triangles.size());
+        pathtrace_program->setUniformValue("nNodes", (int)Scene::getInstance().nodes_encoded.size());
         pathtrace_program->setUniformValue("width", m_width);
         pathtrace_program->setUniformValue("height", m_height);
         pathtrace_program->setUniformValue("height", m_height);
-        pathtrace_program->setUniformValue("hdrResolution", Pass_parameters::getInstance().hdrResolution);
+        pathtrace_program->setUniformValue("hdrResolution", Scene::getInstance().hdrResolution);
         pathtrace_program->release();
 
         lasttime = clock();

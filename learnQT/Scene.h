@@ -55,18 +55,18 @@ struct BVHNode_encoded {
 
 
 
-class Pass_parameters {
+class Scene {
 	public:
 
-    Pass_parameters(const Pass_parameters&) = delete;
-    Pass_parameters& operator=(const Pass_parameters&) = delete;
+    Scene(const Scene&) = delete;
+    Scene& operator=(const Scene&) = delete;
 
-    static Pass_parameters& getInstance() {
-        static Pass_parameters instance; // 线程安全的静态局部变量
+    static Scene& getInstance() {
+        static Scene instance; // 线程安全的静态局部变量
         return instance;
     }
 
-	Pass_parameters();
+	Scene();
 
     void readObj(std::string filepath, std::vector<Triangle>& triangles, Material material,QMatrix4x4 trans, bool smoothNormal);
     QMatrix4x4 getTransformMatrix(QVector3D rotateCtrl, QVector3D translateCtrl, QVector3D scaleCtrl);
@@ -81,7 +81,6 @@ public:
     Camera camera;
     // 物体表面材质定义
 
-    float offx = -1.5;
     std::vector<Triangle> triangles;
     std::vector<BVHNode> nodes;
     std::vector<Triangle_encoded> triangles_encoded;

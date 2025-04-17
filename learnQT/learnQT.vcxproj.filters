@@ -55,7 +55,7 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parameters.cpp">
+    <ClCompile Include="Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="common.cpp">
@@ -83,7 +83,7 @@
     <ClInclude Include="texturebuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="parameters.h">
+    <ClInclude Include="Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
