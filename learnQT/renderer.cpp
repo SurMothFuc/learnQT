@@ -77,7 +77,7 @@ Renderer::~Renderer()
 void Renderer::render(int width, int height)
 {   
     if (needupdate) {
-        updateprame();
+        updateparam();
         needupdate = false;
     }
 
@@ -88,7 +88,7 @@ void Renderer::render(int width, int height)
         m_width = width;
         m_height = height;
         adjustSize();      
-        updateprame();
+        updateparam();
     }
 
     int nowtime = clock();
@@ -273,11 +273,34 @@ void Renderer::init(int width, int height)
 void Renderer::uninit()
 {
     //glDeleteRenderbuffers(1, &m_rbo);
-    glDeleteTextures(1, &m_texture);
     glDeleteFramebuffers(1, &m_fbo);
+    glDeleteFramebuffers(1, &pathtrace_fbo);
+    glDeleteFramebuffers(1, &mixframe_fbo);
     /*
     * .........还应该把剩余的添加进来
     */
+    // 删除所有纹理
+    glDeleteTextures(1, &m_texture);
+    glDeleteTextures(1, &pathtrace_texture);
+    glDeleteTextures(1, &mixframe_texture);
+    glDeleteTextures(1, &hdrMap);
+    glDeleteTextures(1, &hdrCache);
+    glDeleteTextures(1, &trianglesTextureBuffer);
+    glDeleteTextures(1, &nodesTextureBuffer);
+
+    // 删除顶点数组和缓冲对象
+    if (VAO) glDeleteVertexArrays(1, &VAO);
+    if (VBO) glDeleteBuffers(1, &VBO);
+
+    // 删除纹理缓冲对象
+    if (tbo0) glDeleteBuffers(1, &tbo0);
+    if (tbo1) glDeleteBuffers(1, &tbo1);
+
+    // 重置标识符防止重复删除
+    m_fbo = pathtrace_fbo = mixframe_fbo = 0;
+    m_texture = pathtrace_texture = mixframe_texture = 0;
+    hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = 0;
+    VAO = VBO = tbo0 = tbo1 = 0;
 }
 
 void Renderer::adjustSize()
@@ -306,7 +329,7 @@ void Renderer::adjustSize()
    
 }
 
-void Renderer::updateprame()
+void Renderer::updateparam()
 {
     param_mutex.lock();
     {

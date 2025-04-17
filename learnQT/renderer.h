@@ -29,7 +29,7 @@ public:
     GLuint getTextureRGB32F(int width, int height);
     GLuint bindData(std::vector<GLuint> colorAttachments);
     GLuint VBO, VAO, EBO;
-    void updateprame();
+    void updateparam();
     bool needupdate = true;
 private:
     void init(int width, int height);
