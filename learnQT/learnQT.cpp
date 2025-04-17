@@ -1,4 +1,4 @@
-#include "learnQT.h"
+﻿#include "learnQT.h"
 
 #include <QPushButton>
 
@@ -18,6 +18,8 @@ learnQT::learnQT(QWidget *parent)
     connect(ui.sheenTintSlider, SIGNAL(valueChanged(int)), this, SLOT(sheenTintSliderUp()));
     connect(ui.clearcoatSlider, SIGNAL(valueChanged(int)), this, SLOT(clearcoatSliderUp()));
     connect(ui.clearcoatGlossSlider, SIGNAL(valueChanged(int)), this, SLOT(clearcoatGlossSliderUp()));
+
+    Pass_parameters::getInstance();
     
 }
 

@@ -1,10 +1,11 @@
-#pragma once
+﻿#pragma once
 
 #include <QtWidgets/QMainWindow>
 #include "ui_learnQT.h"
+#include "parameters.h"
 #include <iostream>
 #include <QString>
-extern Pass_parameters param;
+
 extern QMutex param_mutex;
 
 class learnQT : public QMainWindow
@@ -27,7 +28,7 @@ public slots:
     {
         param_mutex.lock();
         {
-            param.updateMaterial(QVector3D(0.0f, 0.0f, 0.0f) ,QVector3D(1.0, 1.0, 1.0),
+            Pass_parameters::getInstance().updateMaterial(QVector3D(0.0f, 0.0f, 0.0f), QVector3D(1.0, 1.0, 1.0),
                 ui.subsurfacelineEdit->text().toFloat(),ui.metalliclineEdit->text().toFloat(), ui.specularlineEdit->text().toFloat(),
                 ui.specularTintlineEdit->text().toFloat(),ui.roughnesslineEdit->text().toFloat(), 0,
                 ui.sheenlineEdit->text().toFloat(), ui.sheenTintlineEdit->text().toFloat(), ui.clearcoatlineEdit->text().toFloat(),

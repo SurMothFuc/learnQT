@@ -1,4 +1,4 @@
-#ifndef RENDERER_H
+ï»¿#ifndef RENDERER_H
 #define RENDERER_H
 
 //#include "sierpinski.h"
@@ -36,7 +36,7 @@ private:
     void uninit();
     void adjustSize();
 
-private://¾²Ö¹¸³Öµ²Ù×÷
+private://é™æ­¢èµ‹å€¼æ“ä½œ
     Renderer(const Renderer &) = delete;
     Renderer &operator =(const Renderer &) = delete;
     Renderer(const Renderer &&) = delete;

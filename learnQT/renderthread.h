@@ -1,4 +1,4 @@
-#ifndef RENDERTHREAD_H
+ï»¿#ifndef RENDERTHREAD_H
 #define RENDERTHREAD_H
 
 #include <QThread>
@@ -30,7 +30,7 @@ signals:
     void imageReady();
 
 public slots:
-    //½ÓÊÕÖ÷Ïß³ÌµÄÏûÏ¢
+    //æ¥æ”¶ä¸»çº¿ç¨‹çš„æ¶ˆæ¯
     void recMegFromMain();
 
 protected:

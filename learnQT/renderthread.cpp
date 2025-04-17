@@ -1,4 +1,4 @@
-#include "renderthread.h"
+ï»¿#include "renderthread.h"
 
 
 RenderThread::RenderThread(QSurface *surface, QOpenGLContext *mainContext, QObject *parent)
@@ -30,7 +30,7 @@ void RenderThread::setNewSize(int width, int height)
 // called in render thread
 void RenderThread::run()
 {
-    //ÑÓ³Ù400ºÁÃëÔÚ½øĞĞäÖÈ¾£¬ÈÃÖ÷´°¿Úµ÷ÕûºÃ´óĞ¡
+    //å»¶è¿Ÿ400æ¯«ç§’åœ¨è¿›è¡Œæ¸²æŸ“ï¼Œè®©ä¸»çª—å£è°ƒæ•´å¥½å¤§å°
     Sleep(400);
     m_renderContext->makeCurrent(m_surface);
 

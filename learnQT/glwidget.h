@@ -1,17 +1,17 @@
-#ifndef GLWIDGET_H
+ï»¿#ifndef GLWIDGET_H
 #define GLWIDGET_H
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
-#include "parameters.h"
 
 #include <QMutex>
 #include <memory>
 #include <qtimer.h>
+#include "parameters.h"
 
 class RenderThread;
-extern Pass_parameters param;
+
 extern QMutex param_mutex;
 
 class GLWidget : public QOpenGLWidget,protected QOpenGLFunctions_3_3_Core
@@ -46,7 +46,7 @@ private:
     bool m_bLeftPressed;
     QPoint m_lastPos;
 signals:
-    //¸ø×ÓÏß³Ì·¢ÏûÏ¢
+    //ç»™å­çº¿ç¨‹å‘æ¶ˆæ¯
     void sengMsgToThread();
 };
 

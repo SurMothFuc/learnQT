@@ -1,4 +1,4 @@
-#include "glwidget.h"
+﻿#include "glwidget.h"
 #include "texturebuffer.h"
 #include "renderthread.h"
 //#include "debug.h"
@@ -11,7 +11,6 @@
 
 #include <iostream>
 
-Pass_parameters param;
 QMutex param_mutex;
 
 namespace
@@ -152,8 +151,8 @@ void GLWidget::keyPressEvent(QKeyEvent* event)
     if (key >= 0 && key < 1024) {
         param_mutex.lock();
         {
-            param.camera.keys[key] = true;
-            param.camera.processInput(1.0f);
+            Pass_parameters::getInstance().camera.keys[key] = true;
+            Pass_parameters::getInstance().camera.processInput(1.0f);
         }
         param_mutex.unlock();
         sendM();
@@ -166,7 +165,7 @@ void GLWidget::keyReleaseEvent(QKeyEvent* event)
     if (key >= 0 && key < 1024) {
         param_mutex.lock();
         {
-            param.camera.keys[key] = false;
+            Pass_parameters::getInstance().camera.keys[key] = false;
         }
         param_mutex.unlock();
     }
@@ -197,7 +196,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
         m_lastPos = event->pos();
         param_mutex.lock();
        {
-            param.camera.processMouseMovement(xoffset, yoffset);
+            Pass_parameters::getInstance().camera.processMouseMovement(xoffset, yoffset);
             //qDebug() << param.camera.yaw << "    " << param.camera.picth << "    " ;
        }
        param_mutex.unlock();
@@ -210,7 +209,7 @@ void GLWidget::wheelEvent(QWheelEvent* event)
     QPoint offset = event->angleDelta();
     param_mutex.lock();
     {
-        param.camera.processMouseScroll(offset.y());
+        Pass_parameters::getInstance().camera.processMouseScroll(offset.y());
     }
     param_mutex.unlock();
     sendM();

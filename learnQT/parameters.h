@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Camera.h"
 #include <iostream>
 #include <fstream>
@@ -6,33 +6,33 @@
 #include "hdrloader.h"
 
 struct Material {
-    QVector3D emissive = QVector3D(0, 0, 0);  // ×÷Îª¹âÔ´Ê±µÄ·¢¹âÑÕÉ«
-    QVector3D baseColor = QVector3D(1.0, 1.0, 1.0);//±íÃæÑÕÉ«
-    float subsurface = 0.0;//´Î±íÃæÉ¢Éä²ÎÊı
-    float metallic = 0.0;//½ğÊô¶È£¬¾ö¶¨ÁËÂş·´ÉäµÄ±ÈÀı
-    float specular = 0.0;//¾µÃæ·´ÉäÇ¿¶È¿ØÖÆ
-    float specularTint = 0.0;//¿ØÖÆ¾µÃæ·´ÉäµÄÑÕÉ«£¬¸ù¾İ¸Ã²ÎÊı£¬ÔÚ baseColor ºÍ vec3(1) Ö®¼ä²åÖµ
-    float roughness = 1.0;//´Ö²Ú¶È
-    float anisotropic = 0.0;//¸÷ÏòÒìĞÔ²ÎÊı
-    float sheen = 0.0;//Ä£ÄâÖ¯Îï²¼ÁÏ±ßÔµµÄÍ¸¹â
-    float sheenTint = 0.0;//¿ØÖÆÖ¯Îï¸ß¹âÑÕÉ«ÔÚ baseColor ºÍ vec3(1) Ö®¼ä²åÖµ
-    float clearcoat = 0.0;//ÇåÆáÇ¿¶È£¬Ä£Äâ´Ö²ÚÎïÌå±íÃæµÄ¹â»¬Í¿²ã£¨±ÈÈçÄ¾µØ°å£©
-    float clearcoatGloss = 0.0;// ÇåÆáµÄ ¡°´Ö²Ú¶È¡±£¬»òÕßËµ¹âÔó³Ì¶È
+    QVector3D emissive = QVector3D(0, 0, 0);  // ä½œä¸ºå…‰æºæ—¶çš„å‘å…‰é¢œè‰²
+    QVector3D baseColor = QVector3D(1.0, 1.0, 1.0);//è¡¨é¢é¢œè‰²
+    float subsurface = 0.0;//æ¬¡è¡¨é¢æ•£å°„å‚æ•°
+    float metallic = 0.0;//é‡‘å±åº¦ï¼Œå†³å®šäº†æ¼«åå°„çš„æ¯”ä¾‹
+    float specular = 0.0;//é•œé¢åå°„å¼ºåº¦æ§åˆ¶
+    float specularTint = 0.0;//æ§åˆ¶é•œé¢åå°„çš„é¢œè‰²ï¼Œæ ¹æ®è¯¥å‚æ•°ï¼Œåœ¨ baseColor å’Œ vec3(1) ä¹‹é—´æ’å€¼
+    float roughness = 1.0;//ç²—ç³™åº¦
+    float anisotropic = 0.0;//å„å‘å¼‚æ€§å‚æ•°
+    float sheen = 0.0;//æ¨¡æ‹Ÿç»‡ç‰©å¸ƒæ–™è¾¹ç¼˜çš„é€å…‰
+    float sheenTint = 0.0;//æ§åˆ¶ç»‡ç‰©é«˜å…‰é¢œè‰²åœ¨ baseColor å’Œ vec3(1) ä¹‹é—´æ’å€¼
+    float clearcoat = 0.0;//æ¸…æ¼†å¼ºåº¦ï¼Œæ¨¡æ‹Ÿç²—ç³™ç‰©ä½“è¡¨é¢çš„å…‰æ»‘æ¶‚å±‚ï¼ˆæ¯”å¦‚æœ¨åœ°æ¿ï¼‰
+    float clearcoatGloss = 0.0;// æ¸…æ¼†çš„ â€œç²—ç³™åº¦â€ï¼Œæˆ–è€…è¯´å…‰æ³½ç¨‹åº¦
     float IOR = 1.0;
     float transmission = 0.0;
 };
 
-// Èı½ÇĞÎ¶¨Òå
+// ä¸‰è§’å½¢å®šä¹‰
 struct Triangle {
-    QVector3D p1, p2, p3;    // ¶¥µã×ø±ê
-    QVector3D n1, n2, n3;    // ¶¥µã·¨Ïß
-    Material material;  // ²ÄÖÊ
+    QVector3D p1, p2, p3;    // é¡¶ç‚¹åæ ‡
+    QVector3D n1, n2, n3;    // é¡¶ç‚¹æ³•çº¿
+    Material material;  // æè´¨
 };
 struct Triangle_encoded {
-    QVector3D p1, p2, p3;    // ¶¥µã×ø±ê
-    QVector3D n1, n2, n3;    // ¶¥µã·¨Ïß
-    QVector3D emissive;      // ×Ô·¢¹â²ÎÊı
-    QVector3D baseColor;     // ÑÕÉ«
+    QVector3D p1, p2, p3;    // é¡¶ç‚¹åæ ‡
+    QVector3D n1, n2, n3;    // é¡¶ç‚¹æ³•çº¿
+    QVector3D emissive;      // è‡ªå‘å…‰å‚æ•°
+    QVector3D baseColor;     // é¢œè‰²
     QVector3D param1;        // (subsurface, metallic, specular)
     QVector3D param2;        // (specularTint, roughness, anisotropic)
     QVector3D param3;        // (sheen, sheenTint, clearcoat)
@@ -40,16 +40,16 @@ struct Triangle_encoded {
 };
 
 
-// BVH Ê÷½Úµã
+// BVH æ ‘èŠ‚ç‚¹
 struct BVHNode {
-    int left, right;    // ×óÓÒ×ÓÊ÷Ë÷Òı
-    int n, index;       // Ò¶×Ó½ÚµãĞÅÏ¢               
-    QVector3D AA, BB;        // Åö×²ºĞ
+    int left, right;    // å·¦å³å­æ ‘ç´¢å¼•
+    int n, index;       // å¶å­èŠ‚ç‚¹ä¿¡æ¯               
+    QVector3D AA, BB;        // ç¢°æ’ç›’
 };
 
 struct BVHNode_encoded {
-    QVector3D childs;        // (left, right, ±£Áô)
-    QVector3D leafInfo;      // (n, index, ±£Áô)
+    QVector3D childs;        // (left, right, ä¿ç•™)
+    QVector3D leafInfo;      // (n, index, ä¿ç•™)
     QVector3D AA, BB;
 };
 
@@ -57,8 +57,29 @@ struct BVHNode_encoded {
 
 class Pass_parameters {
 	public:
-	Camera camera;
-    // ÎïÌå±íÃæ²ÄÖÊ¶¨Òå
+
+    Pass_parameters(const Pass_parameters&) = delete;
+    Pass_parameters& operator=(const Pass_parameters&) = delete;
+
+    static Pass_parameters& getInstance() {
+        static Pass_parameters instance; // çº¿ç¨‹å®‰å…¨çš„é™æ€å±€éƒ¨å˜é‡
+        return instance;
+    }
+
+	Pass_parameters();
+
+    void readObj(std::string filepath, std::vector<Triangle>& triangles, Material material,QMatrix4x4 trans, bool smoothNormal);
+    QMatrix4x4 getTransformMatrix(QVector3D rotateCtrl, QVector3D translateCtrl, QVector3D scaleCtrl);
+    void updateMaterial(QVector3D emissive, QVector3D  baseColor,
+        float subsurface, float  metallic, float  specular,
+        float specularTint, float roughness, float anisotropic,
+        float sheen, float sheenTint, float clearcoat,
+        float clearcoatGloss, float IOR, float transmission);
+
+public:
+
+    Camera camera;
+    // ç‰©ä½“è¡¨é¢æè´¨å®šä¹‰
 
     float offx = -1.5;
     std::vector<Triangle> triangles;
@@ -68,18 +89,6 @@ class Pass_parameters {
     HDRLoaderResult hdrRes;
     float* cache;
     int hdrResolution;
-
-	Pass_parameters();
-    void readObj(std::string filepath, std::vector<Triangle>& triangles, Material material,QMatrix4x4 trans, bool smoothNormal);
-    QMatrix4x4 getTransformMatrix(QVector3D rotateCtrl, QVector3D translateCtrl, QVector3D scaleCtrl);
-
-
-
-    void updateMaterial(QVector3D emissive, QVector3D  baseColor,
-        float subsurface, float  metallic, float  specular,
-        float specularTint, float roughness, float anisotropic,
-        float sheen, float sheenTint, float clearcoat,
-        float clearcoatGloss, float IOR, float transmission);
 };
 
 int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& nodes, int l, int r, int n);

@@ -1,8 +1,7 @@
-#include "renderer.h"
+ï»¿#include "renderer.h"
 //#include "debug.h"
 
 
-extern Pass_parameters param;
 extern QMutex param_mutex;
 
 GLuint Renderer::getTextureRGB32F(int width, int height) {
@@ -39,18 +38,18 @@ QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::strin
     }
     return shaderProgram;
 }
-GLuint Renderer::bindData(std::vector<GLuint> colorAttachments) {//colorAttachmentsÎªÑÕÉ«»º³å º¯Êı·µ»ØÖµÎªFBO
+GLuint Renderer::bindData(std::vector<GLuint> colorAttachments) {//colorAttachmentsä¸ºé¢œè‰²ç¼“å†² å‡½æ•°è¿”å›å€¼ä¸ºFBO
     GLuint FBO=0;
     glGenFramebuffers(1, &FBO);
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
-    // ²»ÊÇ finalPass ÔòÉú³ÉÖ¡»º³åµÄÑÕÉ«¸½¼ş ¹Ø¼ü
+    // ä¸æ˜¯ finalPass åˆ™ç”Ÿæˆå¸§ç¼“å†²çš„é¢œè‰²é™„ä»¶ å…³é”®
     //if (!finalPass) {
     if (colorAttachments.size() != 0) {
         std::vector<GLenum> attachments;
         for (int i = 0; i < colorAttachments.size(); i++) {
             glBindTexture(GL_TEXTURE_2D, colorAttachments[i]);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorAttachments[i], 0);// ½«ÑÕÉ«ÎÆÀí°ó¶¨µ½ i ºÅÑÕÉ«¸½¼ş
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorAttachments[i], 0);// å°†é¢œè‰²çº¹ç†ç»‘å®šåˆ° i å·é¢œè‰²é™„ä»¶
             attachments.push_back(GL_COLOR_ATTACHMENT0 + i);
         }
         glDrawBuffers(attachments.size(), &attachments[0]);
@@ -216,7 +215,7 @@ void Renderer::init(int width, int height)
     
 
     //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0);
-    //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);//ÔİÊ±ÓÃ²»µ½Éî¶È»º³åĞÅÏ¢
+    //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);//æš‚æ—¶ç”¨ä¸åˆ°æ·±åº¦ç¼“å†²ä¿¡æ¯
 
    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -240,9 +239,9 @@ void Renderer::init(int width, int height)
 
 
    
-    glEnable(GL_DEPTH_TEST);//¿ªÆôÉî¶È»º³å
+    glEnable(GL_DEPTH_TEST);//å¼€å¯æ·±åº¦ç¼“å†²
 
-    //VAO£¬VBOÊı¾İ²¿·Ö
+    //VAOï¼ŒVBOæ•°æ®éƒ¨åˆ†
     std::vector<QVector3D> square = { QVector3D(-1, -1, 0), QVector3D(1, -1, 0), QVector3D(-1, 1, 0), QVector3D(1, 1, 0), QVector3D(-1, 1, 0), QVector3D(1, -1, 0) };
 
     glGenVertexArrays(1, &VAO);
@@ -251,21 +250,21 @@ void Renderer::init(int width, int height)
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D) * square.size(), NULL, GL_STATIC_DRAW);  //¶¥µãÊı¾İ¸´ÖÆµ½»º³å
+    glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D) * square.size(), NULL, GL_STATIC_DRAW);  //é¡¶ç‚¹æ•°æ®å¤åˆ¶åˆ°ç¼“å†²
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(QVector3D) * square.size(), &square[0]);
 
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
     glEnableVertexAttribArray(0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);//È¡ÏûVBOµÄ°ó¶¨, glVertexAttribPointerÒÑ¾­°Ñ¶¥µãÊôĞÔ¹ØÁªµ½¶¥µã»º³å¶ÔÏóÁË
+    glBindBuffer(GL_ARRAY_BUFFER, 0);//å–æ¶ˆVBOçš„ç»‘å®š, glVertexAttribPointerå·²ç»æŠŠé¡¶ç‚¹å±æ€§å…³è”åˆ°é¡¶ç‚¹ç¼“å†²å¯¹è±¡äº†
 
 //    remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
 //    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 //    You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
 //    VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-    //glBindVertexArray(0);   //È¡ÏûVAO°ó¶¨
+    //glBindVertexArray(0);   //å–æ¶ˆVAOç»‘å®š
 
    
 
@@ -277,7 +276,7 @@ void Renderer::uninit()
     glDeleteTextures(1, &m_texture);
     glDeleteFramebuffers(1, &m_fbo);
     /*
-    * .........»¹Ó¦¸Ã°ÑÊ£ÓàµÄÌí¼Ó½øÀ´
+    * .........è¿˜åº”è¯¥æŠŠå‰©ä½™çš„æ·»åŠ è¿›æ¥
     */
 }
 
@@ -311,9 +310,9 @@ void Renderer::updateprame()
 {
     param_mutex.lock();
     {
-        //°ó¶¨Èı½ÇĞÎµ½texture
+        //ç»‘å®šä¸‰è§’å½¢åˆ°texture
 
-        //¸üĞÂµÄÊ±ºòÒª°Ñ¾ÉµÄÎÆÀí»º³åÉ¾³ı£¬²»È»»áµ¼ÖÂÏÔ´æĞ¹Â©
+        //æ›´æ–°çš„æ—¶å€™è¦æŠŠæ—§çš„çº¹ç†ç¼“å†²åˆ é™¤ï¼Œä¸ç„¶ä¼šå¯¼è‡´æ˜¾å­˜æ³„æ¼
         glDeleteBuffers(1, &tbo0);
         glDeleteTextures(1, &trianglesTextureBuffer);
         glDeleteBuffers(1, &tbo1);
@@ -324,23 +323,23 @@ void Renderer::updateprame()
 
         glGenBuffers(1, &tbo0);
         glBindBuffer(GL_TEXTURE_BUFFER, tbo0);
-        glBufferData(GL_TEXTURE_BUFFER, param.triangles_encoded.size() * sizeof(Triangle_encoded), &param.triangles_encoded[0], GL_STATIC_DRAW);
+        glBufferData(GL_TEXTURE_BUFFER, Pass_parameters::getInstance().triangles_encoded.size() * sizeof(Triangle_encoded), &Pass_parameters::getInstance().triangles_encoded[0], GL_STATIC_DRAW);
         glGenTextures(1, &trianglesTextureBuffer);
         glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
         glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo0);
 
         glGenBuffers(1, &tbo1);
         glBindBuffer(GL_TEXTURE_BUFFER, tbo1);
-        glBufferData(GL_TEXTURE_BUFFER, param.nodes_encoded.size() * sizeof(BVHNode_encoded), &param.nodes_encoded[0], GL_STATIC_DRAW);
+        glBufferData(GL_TEXTURE_BUFFER, Pass_parameters::getInstance().nodes_encoded.size() * sizeof(BVHNode_encoded), &Pass_parameters::getInstance().nodes_encoded[0], GL_STATIC_DRAW);
         glGenTextures(1, &nodesTextureBuffer);
         glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
         glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo1);
 
-        hdrMap = getTextureRGB32F(param.hdrRes.width, param.hdrRes.height);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, param.hdrRes.width, param.hdrRes.height, 0, GL_RGB, GL_FLOAT, param.hdrRes.cols);
+        hdrMap = getTextureRGB32F(Pass_parameters::getInstance().hdrRes.width, Pass_parameters::getInstance().hdrRes.height);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, Pass_parameters::getInstance().hdrRes.width, Pass_parameters::getInstance().hdrRes.height, 0, GL_RGB, GL_FLOAT, Pass_parameters::getInstance().hdrRes.cols);
 
-        hdrCache = getTextureRGB32F(param.hdrRes.width, param.hdrRes.height);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, param.hdrRes.width, param.hdrRes.height, 0, GL_RGB, GL_FLOAT, param.cache);
+        hdrCache = getTextureRGB32F(Pass_parameters::getInstance().hdrRes.width, Pass_parameters::getInstance().hdrRes.height);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, Pass_parameters::getInstance().hdrRes.width, Pass_parameters::getInstance().hdrRes.height, 0, GL_RGB, GL_FLOAT, Pass_parameters::getInstance().cache);
 
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -350,28 +349,28 @@ void Renderer::updateprame()
         /*  QMatrix4x4 projection;
           float store[16];
           projection.copyDataTo(store);*/
-          // projection.perspective(param.camera.zoom, 1.0f * m_width / m_height, 0.1f, 100.f);
+          // projection.perspective(Pass_parameters::getInstance().camera.zoom, 1.0f * m_width / m_height, 0.1f, 100.f);
           // m_program->setUniformValue("projection", projection);
 
-        QMatrix4x4 view = param.camera.getViewMatrix();
+        QMatrix4x4 view = Pass_parameters::getInstance().camera.getViewMatrix();
         float viewStore[16];
         view.copyDataTo(viewStore);
         Eigen::Matrix4f viewM(viewStore);
-        viewM = Eigen::Matrix4f(viewM.inverse());//ÒòÎªÊÇÒªÇó¹âÏßµÄ·½Ïò£¬ËùÒÔÇóÄæ¾ØÕó
+        viewM = Eigen::Matrix4f(viewM.inverse());//å› ä¸ºæ˜¯è¦æ±‚å…‰çº¿çš„æ–¹å‘ï¼Œæ‰€ä»¥æ±‚é€†çŸ©é˜µ
         float* newViewStore = viewM.data();
         view = QMatrix4x4(newViewStore);
         pathtrace_program->setUniformValue("view", view);
         //  QMatrix4x4 transform;
         //  transform.translate(QVector3D(0.0f, -0.0f, -1.0f));
-          //transform.rotate(param.offx, QVector3D(0.0f, 1.0f, 1.0f));
+          //transform.rotate(Pass_parameters::getInstance().offx, QVector3D(0.0f, 1.0f, 1.0f));
           //m_program->setUniformValue("model", transform);
-        pathtrace_program->setUniformValue("eye", param.camera.position);
-        pathtrace_program->setUniformValue("nTriangles", (int)param.triangles.size());
-        pathtrace_program->setUniformValue("nNodes", (int)param.nodes_encoded.size());
+        pathtrace_program->setUniformValue("eye", Pass_parameters::getInstance().camera.position);
+        pathtrace_program->setUniformValue("nTriangles", (int)Pass_parameters::getInstance().triangles.size());
+        pathtrace_program->setUniformValue("nNodes", (int)Pass_parameters::getInstance().nodes_encoded.size());
         pathtrace_program->setUniformValue("width", m_width);
         pathtrace_program->setUniformValue("height", m_height);
         pathtrace_program->setUniformValue("height", m_height);
-        pathtrace_program->setUniformValue("hdrResolution", param.hdrResolution);
+        pathtrace_program->setUniformValue("hdrResolution", Pass_parameters::getInstance().hdrResolution);
         pathtrace_program->release();
 
         lasttime = clock();

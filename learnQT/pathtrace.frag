@@ -1,4 +1,4 @@
-#version 330 core
+ï»¿#version 330 core
 #define SIZE_TRIANGLE   12
 #define SIZE_BVHNODE    4
 #define INF 114514.0
@@ -27,23 +27,23 @@ uniform sampler2D lastFrame;
 uniform sampler2D hdrMap;
 uniform sampler2D hdrCache;
 
-// Triangle Êı¾İ¸ñÊ½
+// Triangle æ•°æ®æ ¼å¼
 struct Triangle {
-    vec3 p1, p2, p3;    // ¶¥µã×ø±ê
-    vec3 n1, n2, n3;    // ¶¥µã·¨Ïß
+    vec3 p1, p2, p3;    // é¡¶ç‚¹åæ ‡
+    vec3 n1, n2, n3;    // é¡¶ç‚¹æ³•çº¿
 };
-// BVH Ê÷½Úµã
+// BVH æ ‘èŠ‚ç‚¹
 struct BVHNode {
-    int left;           // ×ó×ÓÊ÷
-    int right;          // ÓÒ×ÓÊ÷
-    int n;              // °üº¬Èı½ÇĞÎÊıÄ¿
-    int index;          // Èı½ÇĞÎË÷Òı
-    vec3 AA, BB;        // Åö×²ºĞ
+    int left;           // å·¦å­æ ‘
+    int right;          // å³å­æ ‘
+    int n;              // åŒ…å«ä¸‰è§’å½¢æ•°ç›®
+    int index;          // ä¸‰è§’å½¢ç´¢å¼•
+    vec3 AA, BB;        // ç¢°æ’ç›’
 };
 
-// ÎïÌå±íÃæ²ÄÖÊ¶¨Òå
+// ç‰©ä½“è¡¨é¢æè´¨å®šä¹‰
 struct Material {
-    vec3 emissive;          // ×÷Îª¹âÔ´Ê±µÄ·¢¹âÑÕÉ«
+    vec3 emissive;          // ä½œä¸ºå…‰æºæ—¶çš„å‘å…‰é¢œè‰²
     vec3 baseColor;
     float subsurface;
     float metallic;
@@ -58,21 +58,21 @@ struct Material {
     float IOR;
     float transmission;
 };
-// ¹âÏß
+// å…‰çº¿
 struct Ray {
     vec3 startPoint;
     vec3 direction;
 };
 
-// ¹âÏßÇó½»½á¹û
+// å…‰çº¿æ±‚äº¤ç»“æœ
 struct HitResult {
-    bool isHit;             // ÊÇ·ñÃüÖĞ
-    bool isInside;          // ÊÇ·ñ´ÓÄÚ²¿ÃüÖĞ
-    float distance;         // Óë½»µãµÄ¾àÀë
-    vec3 hitPoint;          // ¹âÏßÃüÖĞµã
-    vec3 normal;            // ÃüÖĞµã·¨Ïß
-    vec3 viewDir;           // »÷ÖĞ¸ÃµãµÄ¹âÏßµÄ·½Ïò
-    Material material;      // ÃüÖĞµãµÄ±íÃæ²ÄÖÊ
+    bool isHit;             // æ˜¯å¦å‘½ä¸­
+    bool isInside;          // æ˜¯å¦ä»å†…éƒ¨å‘½ä¸­
+    float distance;         // ä¸äº¤ç‚¹çš„è·ç¦»
+    vec3 hitPoint;          // å…‰çº¿å‘½ä¸­ç‚¹
+    vec3 normal;            // å‘½ä¸­ç‚¹æ³•çº¿
+    vec3 viewDir;           // å‡»ä¸­è¯¥ç‚¹çš„å…‰çº¿çš„æ–¹å‘
+    Material material;      // å‘½ä¸­ç‚¹çš„è¡¨é¢æè´¨
 };
 const uint V[8*32] = uint[8*32](
     2147483648u, 1073741824u, 536870912u, 268435456u, 134217728u, 67108864u, 33554432u, 16777216u, 8388608u, 4194304u, 2097152u, 1048576u, 524288u, 262144u, 131072u, 65536u, 32768u, 16384u, 8192u, 4096u, 2048u, 1024u, 512u, 256u, 128u, 64u, 32u, 16u, 8u, 4u, 2u, 1u,
@@ -84,12 +84,12 @@ const uint V[8*32] = uint[8*32](
     2147483648u, 3221225472u, 2684354560u, 3489660928u, 1476395008u, 2483027968u, 1040187392u, 3808428032u, 3196059648u, 599785472u, 505413632u, 4077912064u, 1182269440u, 1736704000u, 2017853440u, 2221342720u, 3329785856u, 2810494976u, 3628507136u, 1416089600u, 2658719744u, 864310272u, 3863387648u, 3076993792u, 553150080u, 272922560u, 4167467040u, 1148698640u, 1719673080u, 2009075780u, 2149644390u, 3222291575u,
     2147483648u, 1073741824u, 2684354560u, 1342177280u, 2281701376u, 1946157056u, 436207616u, 2566914048u, 2625634304u, 3208642560u, 2720006144u, 2098200576u, 111673344u, 2354315264u, 3464626176u, 4027383808u, 2886631424u, 3770826752u, 1691164672u, 3357462528u, 1993345024u, 3752330240u, 873073152u, 2870150400u, 1700563072u, 87021376u, 1097028000u, 1222351248u, 1560027592u, 2977959924u, 23268898u, 437609937u
     );
-// ¸ñÁÖÂë 
+// æ ¼æ—ç  
 uint grayCode(uint i) {
 	return i ^ (i>>1);
 }
 
-// Éú³ÉµÚ d Î¬¶ÈµÄµÚ i ¸ö sobol Êı
+// ç”Ÿæˆç¬¬ d ç»´åº¦çš„ç¬¬ i ä¸ª sobol æ•°
 float sobol(uint d, uint i) {
     uint result = uint(0);
     uint offset = d * uint(32);
@@ -144,14 +144,14 @@ vec2 CranleyPattersonRotation(vec2 p) {
 }
 // ----------------------------------------------------------------------------- //
 
-// °ëÇò¾ùÔÈ²ÉÑù
+// åŠçƒå‡åŒ€é‡‡æ ·
 vec3 SampleHemisphere(float xi_1, float xi_2) {
     float z = xi_1;
     float r = max(0, sqrt(1.0 - z*z));
     float phi = 2.0 * PI * xi_2;
     return vec3(r * cos(phi), r * sin(phi), z);
 }
-// ½«ÏòÁ¿ v Í¶Ó°µ½ N µÄ·¨Ïò°ëÇò
+// å°†å‘é‡ v æŠ•å½±åˆ° N çš„æ³•å‘åŠçƒ
 vec3 toNormalHemisphere(vec3 v, vec3 N) {
     vec3 helper = vec3(1, 0, 0);
     if(abs(N.x)>0.999) helper = vec3(0, 0, 1);
@@ -165,16 +165,16 @@ vec3 toNormalHemisphere(vec3 v, vec3 N) {
 
 
 
-// »ñÈ¡µÚ i ÏÂ±êµÄÈı½ÇĞÎ
+// è·å–ç¬¬ i ä¸‹æ ‡çš„ä¸‰è§’å½¢
 Triangle getTriangle(int i) {
     int offset = i * SIZE_TRIANGLE;
     Triangle t;
 
-    // ¶¥µã×ø±ê
+    // é¡¶ç‚¹åæ ‡
     t.p1 = texelFetch(triangles, offset + 0).xyz;
     t.p2 = texelFetch(triangles, offset + 1).xyz;
     t.p3 = texelFetch(triangles, offset + 2).xyz;
-    // ·¨Ïß
+    // æ³•çº¿
     t.n1 = texelFetch(triangles, offset + 3).xyz;
     t.n2 = texelFetch(triangles, offset + 4).xyz;
     t.n3 = texelFetch(triangles, offset + 5).xyz;
@@ -182,7 +182,7 @@ Triangle getTriangle(int i) {
     return t;
 }
 
-// »ñÈ¡µÚ i ÏÂ±êµÄÈı½ÇĞÎµÄ²ÄÖÊ
+// è·å–ç¬¬ i ä¸‹æ ‡çš„ä¸‰è§’å½¢çš„æè´¨
 Material getMaterial(int i) {
     Material m;
 
@@ -210,7 +210,7 @@ Material getMaterial(int i) {
     return m;
 }
 
-// ¹âÏßºÍÈı½ÇĞÎÇó½» 
+// å…‰çº¿å’Œä¸‰è§’å½¢æ±‚äº¤ 
 HitResult hitTriangle(Triangle triangle, Ray ray) {
     HitResult res;
     res.distance = INF;
@@ -221,41 +221,41 @@ HitResult hitTriangle(Triangle triangle, Ray ray) {
     vec3 p2 = triangle.p2;
     vec3 p3 = triangle.p3;
 
-    vec3 S = ray.startPoint;    // ÉäÏßÆğµã
-    vec3 d = ray.direction;     // ÉäÏß·½Ïò
-    vec3 N = normalize(cross(p2-p1, p3-p1));    // ·¨ÏòÁ¿
+    vec3 S = ray.startPoint;    // å°„çº¿èµ·ç‚¹
+    vec3 d = ray.direction;     // å°„çº¿æ–¹å‘
+    vec3 N = normalize(cross(p2-p1, p3-p1));    // æ³•å‘é‡
 
-    // ´ÓÈı½ÇĞÎ±³ºó£¨Ä£ĞÍÄÚ²¿£©»÷ÖĞ
+    // ä»ä¸‰è§’å½¢èƒŒåï¼ˆæ¨¡å‹å†…éƒ¨ï¼‰å‡»ä¸­
     if (dot(N, d) > 0.0f) {
         N = -N;   
         res.isInside = true;
     }
 
-    // Èç¹ûÊÓÏßºÍÈı½ÇĞÎÆ½ĞĞ
+    // å¦‚æœè§†çº¿å’Œä¸‰è§’å½¢å¹³è¡Œ
     if (abs(dot(N, d)) < 0.00001f) return res;
 
-    // ¾àÀë
+    // è·ç¦»
     float t = (dot(N, p1) - dot(S, N)) / dot(d, N);
-    if (t < 0.0005f) return res;    // Èç¹ûÈı½ÇĞÎÔÚ¹âÏß±³Ãæ
+    if (t < 0.0005f) return res;    // å¦‚æœä¸‰è§’å½¢åœ¨å…‰çº¿èƒŒé¢
 
-    // ½»µã¼ÆËã
+    // äº¤ç‚¹è®¡ç®—
     vec3 P = S + d * t;
 
-    // ÅĞ¶Ï½»µãÊÇ·ñÔÚÈı½ÇĞÎÖĞ
+    // åˆ¤æ–­äº¤ç‚¹æ˜¯å¦åœ¨ä¸‰è§’å½¢ä¸­
     vec3 c1 = cross(p2 - p1, P - p1);
     vec3 c2 = cross(p3 - p2, P - p2);
     vec3 c3 = cross(p1 - p3, P - p3);
     bool r1 = (dot(c1, N) > 0 && dot(c2, N) > 0 && dot(c3, N) > 0);
     bool r2 = (dot(c1, N) < 0 && dot(c2, N) < 0 && dot(c3, N) < 0);
 
-    // ÃüÖĞ£¬·â×°·µ»Ø½á¹û
+    // å‘½ä¸­ï¼Œå°è£…è¿”å›ç»“æœ
     if (r1 || r2) {
         res.isHit = true;
         res.hitPoint = P;
         res.distance = t;
         res.normal = N;
         res.viewDir = d;
-        // ¸ù¾İ½»µãÎ»ÖÃ²åÖµ¶¥µã·¨Ïß
+        // æ ¹æ®äº¤ç‚¹ä½ç½®æ’å€¼é¡¶ç‚¹æ³•çº¿
         //float alpha = (-(P.x-p2.x)*(p3.y-p2.y) + (P.y-p2.y)*(p3.x-p2.x)) / (-(p1.x-p2.x-0.00005)*(p3.y-p2.y+0.00005) + (p1.y-p2.y+0.00005)*(p3.x-p2.x+0.00005));
        // float beta  = (-(P.x-p3.x)*(p1.y-p3.y) + (P.y-p3.y)*(p1.x-p3.x)) / (-(p2.x-p3.x-0.00005)*(p1.y-p3.y+0.00005) + (p2.y-p3.y+0.00005)*(p1.x-p3.x+0.00005));
           float alpha = (-(P.x-p2.x)*(p3.y-p2.y) + (P.y-p2.y)*(p3.x-p2.x)) / (-(p1.x-p2.x)*(p3.y-p2.y) + (p1.y-p2.y)*(p3.x-p2.x)+1e-7);
@@ -269,11 +269,11 @@ HitResult hitTriangle(Triangle triangle, Ray ray) {
 
     return res;
 }
-// »ñÈ¡µÚ i ÏÂ±êµÄ BVHNode ¶ÔÏó
+// è·å–ç¬¬ i ä¸‹æ ‡çš„ BVHNode å¯¹è±¡
 BVHNode getBVHNode(int i) {
     BVHNode node;
 
-    // ×óÓÒ×ÓÊ÷
+    // å·¦å³å­æ ‘
     int offset = i * SIZE_BVHNODE;
     ivec3 childs = ivec3(texelFetch(nodes, offset + 0).xyz);
     ivec3 leafInfo = ivec3(texelFetch(nodes, offset + 1).xyz);
@@ -282,7 +282,7 @@ BVHNode getBVHNode(int i) {
     node.n = int(leafInfo.x);
     node.index = int(leafInfo.y);
 
-    // °üÎ§ºĞ
+    // åŒ…å›´ç›’
     node.AA = texelFetch(nodes, offset + 2).xyz;
     node.BB = texelFetch(nodes, offset + 3).xyz;
 
@@ -290,7 +290,7 @@ BVHNode getBVHNode(int i) {
 }
 
 
-// ±©Á¦±éÀúÊı×éÏÂ±ê·¶Î§ [l, r] Çó×î½ü½»µã
+// æš´åŠ›éå†æ•°ç»„ä¸‹æ ‡èŒƒå›´ [l, r] æ±‚æœ€è¿‘äº¤ç‚¹
 HitResult hitArray(Ray ray, int l, int r) {
     HitResult res;
     res.isHit = false;
@@ -306,7 +306,7 @@ HitResult hitArray(Ray ray, int l, int r) {
     return res;
 }
 
-// ºÍ aabb ºĞ×ÓÇó½»£¬Ã»ÓĞ½»µãÔò·µ»Ø -1
+// å’Œ aabb ç›’å­æ±‚äº¤ï¼Œæ²¡æœ‰äº¤ç‚¹åˆ™è¿”å› -1
 float hitAABB(Ray r, vec3 AA, vec3 BB) {
     vec3 invdir = 1.0 / r.direction;
 
@@ -322,13 +322,13 @@ float hitAABB(Ray r, vec3 AA, vec3 BB) {
     return (t1 >= t0) ? ((t0 > 0.0) ? (t0) : (t1)) : (-1);
 }
  
- // ±éÀú BVH Çó½»
+ // éå† BVH æ±‚äº¤
 HitResult hitBVH(Ray ray) {
     HitResult res;
     res.isHit = false;
     res.distance = INF;
 
-    // Õ»
+    // æ ˆ
     int stack[256];
     int sp = 0;
 
@@ -337,7 +337,7 @@ HitResult hitBVH(Ray ray) {
         int top = stack[--sp];
         BVHNode node = getBVHNode(top);
         
-        // ÊÇÒ¶×Ó½Úµã£¬±éÀúÈı½ÇĞÎ£¬Çó×î½ü½»µã
+        // æ˜¯å¶å­èŠ‚ç‚¹ï¼Œéå†ä¸‰è§’å½¢ï¼Œæ±‚æœ€è¿‘äº¤ç‚¹
         if(node.n>0) {
             int L = node.index;
             int R = node.index + node.n - 1;
@@ -346,9 +346,9 @@ HitResult hitBVH(Ray ray) {
             continue;
         }
         
-        // ºÍ×óÓÒºĞ×Ó AABB Çó½»
-        float d1 = INF; // ×óºĞ×Ó¾àÀë
-        float d2 = INF; // ÓÒºĞ×Ó¾àÀë
+        // å’Œå·¦å³ç›’å­ AABB æ±‚äº¤
+        float d1 = INF; // å·¦ç›’å­è·ç¦»
+        float d2 = INF; // å³ç›’å­è·ç¦»
         if(node.left>0) {
             BVHNode leftNode = getBVHNode(node.left);
             d1 = hitAABB(ray, leftNode.AA, leftNode.BB);
@@ -358,18 +358,18 @@ HitResult hitBVH(Ray ray) {
             d2 = hitAABB(ray, rightNode.AA, rightNode.BB);
         }
 
-        // ÔÚ×î½üµÄºĞ×ÓÖĞËÑË÷
+        // åœ¨æœ€è¿‘çš„ç›’å­ä¸­æœç´¢
         if(d1>0 && d2>0) {
-            if(d1<d2) { // d1<d2, ×ó±ßÏÈ
+            if(d1<d2) { // d1<d2, å·¦è¾¹å…ˆ
                 stack[sp++] = node.right;
                 stack[sp++] = node.left;
-            } else {    // d2<d1, ÓÒ±ßÏÈ
+            } else {    // d2<d1, å³è¾¹å…ˆ
                 stack[sp++] = node.left;
                 stack[sp++] = node.right;
             }
-        } else if(d1>0) {   // ½öÃüÖĞ×ó±ß
+        } else if(d1>0) {   // ä»…å‘½ä¸­å·¦è¾¹
             stack[sp++] = node.left;
-        } else if(d2>0) {   // ½öÃüÖĞÓÒ±ß
+        } else if(d2>0) {   // ä»…å‘½ä¸­å³è¾¹
             stack[sp++] = node.right;
         }
     }
@@ -377,7 +377,7 @@ HitResult hitBVH(Ray ray) {
     return res;
 }
 
-// ½«ÈıÎ¬ÏòÁ¿ v ×ªÎª HDR map µÄÎÆÀí×ø±ê uv
+// å°†ä¸‰ç»´å‘é‡ v è½¬ä¸º HDR map çš„çº¹ç†åæ ‡ uv
 vec2 SampleSphericalMap(vec3 v) {
     vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
     uv /= vec2(2.0 * PI, PI);
@@ -389,16 +389,16 @@ float misMixWeight(float a, float b) {
     float t = a * a;
     return t / (b*b + t);
 }
-// ÓàÏÒ¼ÓÈ¨µÄ·¨Ïò°ëÇò²ÉÑù
+// ä½™å¼¦åŠ æƒçš„æ³•å‘åŠçƒé‡‡æ ·
 vec3 SampleCosineHemisphere(float xi_1, float xi_2, vec3 N) {
-    // ¾ùÔÈ²ÉÑù xy Ô²ÅÌÈ»ºóÍ¶Ó°µ½ z °ëÇò
+    // å‡åŒ€é‡‡æ · xy åœ†ç›˜ç„¶åæŠ•å½±åˆ° z åŠçƒ
     float r = sqrt(xi_1);
     float theta = xi_2 * 2.0 * PI;
     float x = r * cos(theta);
     float y = r * sin(theta);
     float z = sqrt(1.0 - x*x - y*y);
 
-    // ´Ó z °ëÇòÍ¶Ó°µ½·¨Ïò°ëÇò
+    // ä» z åŠçƒæŠ•å½±åˆ°æ³•å‘åŠçƒ
     vec3 L = toNormalHemisphere(vec3(x, y, z), N);
     return L;
 }
@@ -450,7 +450,7 @@ float smithG_GGX(float NdotV, float alphaG) {
 float smithG_GGX_aniso(float NdotV, float VdotX, float VdotY, float ax, float ay) {
     return 1 / (NdotV + sqrt( sqr(VdotX*ax) + sqr(VdotY*ay) + sqr(NdotV) ));
 }
-// ½«ÈıÎ¬ÏòÁ¿ v ×ªÎª HDR map µÄÎÆÀí×ø±ê uv
+// å°†ä¸‰ç»´å‘é‡ v è½¬ä¸º HDR map çš„çº¹ç†åæ ‡ uv
 vec2 toSphericalCoord(vec3 v) {
     vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
     uv /= vec2(2.0 * PI, PI);
@@ -458,42 +458,42 @@ vec2 toSphericalCoord(vec3 v) {
     uv.y = 1.0 - uv.y;
     return uv;
 }
-// ÊäÈë¹âÏß·½Ïò L »ñÈ¡ HDR ÔÚ¸ÃÎ»ÖÃµÄ¸ÅÂÊÃÜ¶È
-// hdr ·Ö±æÂÊÎª 4096 x 2048 --> hdrResolution = 4096
+// è¾“å…¥å…‰çº¿æ–¹å‘ L è·å– HDR åœ¨è¯¥ä½ç½®çš„æ¦‚ç‡å¯†åº¦
+// hdr åˆ†è¾¨ç‡ä¸º 4096 x 2048 --> hdrResolution = 4096
 float hdrPdf(vec3 L, int hdrResolution) {
-    vec2 uv = toSphericalCoord(normalize(L));   // ·½ÏòÏòÁ¿×ª uv ÎÆÀí×ø±ê
+    vec2 uv = toSphericalCoord(normalize(L));   // æ–¹å‘å‘é‡è½¬ uv çº¹ç†åæ ‡
   
-    float pdf = texture2D(hdrCache, uv).b;      // ²ÉÑù¸ÅÂÊÃÜ¶È
-    float theta = PI * (0.5-uv.y);            // theta ·¶Î§ [-pi/2 ~ pi/2]
+    float pdf = texture2D(hdrCache, uv).b;      // é‡‡æ ·æ¦‚ç‡å¯†åº¦
+    float theta = PI * (0.5-uv.y);            // theta èŒƒå›´ [-pi/2 ~ pi/2]
     float sin_theta = max(abs(sin(theta)),1e-10);
-    // Çò×ø±êºÍÍ¼Æ¬»ı·ÖÓòµÄ×ª»»ÏµÊı
+    // çƒåæ ‡å’Œå›¾ç‰‡ç§¯åˆ†åŸŸçš„è½¬æ¢ç³»æ•°
     float p_convert = float(hdrResolution * hdrResolution / 2) / (2.0 * PI * PI * sin_theta);  
     
     return pdf * p_convert;
     //return sin_theta;
 }
-// ²ÉÑùÔ¤¼ÆËãµÄ HDR cache
+// é‡‡æ ·é¢„è®¡ç®—çš„ HDR cache
 vec3 SampleHdr(float xi_1, float xi_2) {
     vec2 xy = texture2D(hdrCache, vec2(xi_1, xi_2)).rg; // x, y
     xy.y = 1.0 - xy.y; // flip y
 
-    // »ñÈ¡½Ç¶È
+    // è·å–è§’åº¦
     float phi = 2.0 * PI * (xy.x - 0.5);    // [-pi ~ pi]
     float theta = PI * (xy.y - 0.5);        // [-pi/2 ~ pi/2]   
 
-    // Çò×ø±ê¼ÆËã·½Ïò
+    // çƒåæ ‡è®¡ç®—æ–¹å‘
     vec3 L = vec3(cos(theta)*cos(phi), sin(theta), cos(theta)*sin(phi));
 
     return L;
 }
-// »ñÈ¡ HDR »·¾³ÑÕÉ«
+// è·å– HDR ç¯å¢ƒé¢œè‰²
 vec3 hdrColor(vec3 L) {
     vec2 uv = toSphericalCoord(normalize(L));
     vec3 color = texture2D(hdrMap, uv).rgb;
     return color;
 }
 
-// GTR2 ÖØÒªĞÔ²ÉÑù
+// GTR2 é‡è¦æ€§é‡‡æ ·
 vec3 SampleGTR2(float xi_1, float xi_2, vec3 V, vec3 N, float alpha) {
     
     float phi_h = 2.0 * PI * xi_1;
@@ -503,16 +503,16 @@ vec3 SampleGTR2(float xi_1, float xi_2, vec3 V, vec3 N, float alpha) {
     float cos_theta_h = sqrt((1.0-xi_2)/(1.0+(alpha*alpha-1.0)*xi_2));
     float sin_theta_h = sqrt(max(0.0, 1.0 - cos_theta_h * cos_theta_h));
 
-    // ²ÉÑù "Î¢Æ½Ãæ" µÄ·¨ÏòÁ¿ ×÷Îª¾µÃæ·´ÉäµÄ°ë½ÇÏòÁ¿ h 
+    // é‡‡æ · "å¾®å¹³é¢" çš„æ³•å‘é‡ ä½œä¸ºé•œé¢åå°„çš„åŠè§’å‘é‡ h 
     vec3 H = vec3(sin_theta_h*cos_phi_h, sin_theta_h*sin_phi_h, cos_theta_h);
-    H = toNormalHemisphere(H, N);   // Í¶Ó°µ½ÕæÕıµÄ·¨Ïò°ëÇò
+    H = toNormalHemisphere(H, N);   // æŠ•å½±åˆ°çœŸæ­£çš„æ³•å‘åŠçƒ
 
-    // ¸ù¾İ "Î¢·¨Ïß" ¼ÆËã·´Éä¹â·½Ïò
+    // æ ¹æ® "å¾®æ³•çº¿" è®¡ç®—åå°„å…‰æ–¹å‘
     vec3 L = reflect(-V, H);
 
     return L;
 }
-// GTR1 ÖØÒªĞÔ²ÉÑù
+// GTR1 é‡è¦æ€§é‡‡æ ·
 vec3 SampleGTR1(float xi_1, float xi_2, vec3 V, vec3 N, float alpha) {
     
     float phi_h = 2.0 * PI * xi_1;
@@ -522,11 +522,11 @@ vec3 SampleGTR1(float xi_1, float xi_2, vec3 V, vec3 N, float alpha) {
     float cos_theta_h = sqrt((1.0-pow(alpha*alpha, 1.0-xi_2))/(1.0-alpha*alpha));
     float sin_theta_h = sqrt(max(0.0, 1.0 - cos_theta_h * cos_theta_h));
 
-    // ²ÉÑù "Î¢Æ½Ãæ" µÄ·¨ÏòÁ¿ ×÷Îª¾µÃæ·´ÉäµÄ°ë½ÇÏòÁ¿ h 
+    // é‡‡æ · "å¾®å¹³é¢" çš„æ³•å‘é‡ ä½œä¸ºé•œé¢åå°„çš„åŠè§’å‘é‡ h 
     vec3 H = vec3(sin_theta_h*cos_phi_h, sin_theta_h*sin_phi_h, cos_theta_h);
-    H = toNormalHemisphere(H, N);   // Í¶Ó°µ½ÕæÕıµÄ·¨Ïò°ëÇò
+    H = toNormalHemisphere(H, N);   // æŠ•å½±åˆ°çœŸæ­£çš„æ³•å‘åŠçƒ
 
-    // ¸ù¾İ "Î¢·¨Ïß" ¼ÆËã·´Éä¹â·½Ïò
+    // æ ¹æ® "å¾®æ³•çº¿" è®¡ç®—åå°„å…‰æ–¹å‘
     vec3 L = reflect(-V, H);
 
     return L;
@@ -540,26 +540,26 @@ vec3 BRDF_Evaluate(vec3 V, vec3 N, vec3 L, in Material material) {
     float NdotH = dot(N, H);
     float LdotH = dot(L, H);
 
-    // ¸÷ÖÖÑÕÉ«
+    // å„ç§é¢œè‰²
     vec3 Cdlin = material.baseColor;
     float Cdlum = 0.3 * Cdlin.r + 0.6 * Cdlin.g  + 0.1 * Cdlin.b;
     vec3 Ctint = (Cdlum > 0) ? (Cdlin/Cdlum) : (vec3(1));   
     vec3 Cspec = material.specular * mix(vec3(1), Ctint, material.specularTint);
-    vec3 Cspec0 = mix(0.08*Cspec, Cdlin, material.metallic); // 0¡ã ¾µÃæ·´ÉäÑÕÉ«
-    vec3 Csheen = mix(vec3(1), Ctint, material.sheenTint);   // Ö¯ÎïÑÕÉ«
+    vec3 Cspec0 = mix(0.08*Cspec, Cdlin, material.metallic); // 0Â° é•œé¢åå°„é¢œè‰²
+    vec3 Csheen = mix(vec3(1), Ctint, material.sheenTint);   // ç»‡ç‰©é¢œè‰²
 
-    // Âş·´Éä
+    // æ¼«åå°„
     float Fd90 = 0.5 + 2.0 * LdotH * LdotH * material.roughness;
     float FL = SchlickFresnel(NdotL);
     float FV = SchlickFresnel(NdotV);
     float Fd = mix(1.0, Fd90, FL) * mix(1.0, Fd90, FV);
 
-    // ´Î±íÃæÉ¢Éä
+    // æ¬¡è¡¨é¢æ•£å°„
     float Fss90 = LdotH * LdotH * material.roughness;
     float Fss = mix(1.0, Fss90, FL) * mix(1.0, Fss90, FV);
     float ss = 1.25 * (Fss * (1.0 / (NdotL + NdotV) - 0.5) + 0.5);
      
-    // ¾µÃæ·´Éä -- ¸÷ÏòÍ¬ĞÔ
+    // é•œé¢åå°„ -- å„å‘åŒæ€§
     float alpha = max(0.001, sqr(material.roughness));
     float Ds = GTR2(NdotH, alpha);
     float FH = SchlickFresnel(LdotH);
@@ -567,7 +567,7 @@ vec3 BRDF_Evaluate(vec3 V, vec3 N, vec3 L, in Material material) {
     float Gs = smithG_GGX(NdotL, material.roughness);
     Gs *= smithG_GGX(NdotV, material.roughness);
 
-    // ÇåÆá
+    // æ¸…æ¼†
     float Dr = GTR1(NdotH, mix(0.1, 0.001, material.clearcoatGloss));
     float Fr = mix(0.04, 1.0, FH);
     float Gr = smithG_GGX(NdotL, 0.25) * smithG_GGX(NdotV, 0.25);
@@ -590,30 +590,30 @@ vec3 BRDF_Evaluate(vec3 V, vec3 N, vec3 L, vec3 X, vec3 Y, in Material material)
     float NdotH = dot(N, H);
     float LdotH = dot(L, H);
 
-    // ¸÷ÖÖÑÕÉ«
+    // å„ç§é¢œè‰²
     vec3 Cdlin = material.baseColor;
     float Cdlum = 0.3 * Cdlin.r + 0.6 * Cdlin.g  + 0.1 * Cdlin.b;
     vec3 Ctint = (Cdlum > 0) ? (Cdlin/Cdlum) : (vec3(1));   
     vec3 Cspec = material.specular * mix(vec3(1), Ctint, material.specularTint);
-    vec3 Cspec0 = mix(0.08*Cspec, Cdlin, material.metallic); // 0¡ã ¾µÃæ·´ÉäÑÕÉ«
-    vec3 Csheen = mix(vec3(1), Ctint, material.sheenTint);   // Ö¯ÎïÑÕÉ«
+    vec3 Cspec0 = mix(0.08*Cspec, Cdlin, material.metallic); // 0Â° é•œé¢åå°„é¢œè‰²
+    vec3 Csheen = mix(vec3(1), Ctint, material.sheenTint);   // ç»‡ç‰©é¢œè‰²
 
 	
-	// Âş·´Éä
+	// æ¼«åå°„
 	float Fd90 = 0.5 + 2.0 * LdotH * LdotH * material.roughness;
 	float FL = SchlickFresnel(NdotL);
 	float FV = SchlickFresnel(NdotV);
 	float Fd = mix(1.0, Fd90, FL) * mix(1.0, Fd90, FV);
 	
-    // ´Î±íÃæÉ¢Éä
+    // æ¬¡è¡¨é¢æ•£å°„
     float Fss90 = LdotH * LdotH * material.roughness;
     float Fss = mix(1.0, Fss90, FL) * mix(1.0, Fss90, FV);
     float ss = 1.25 * (Fss * (1.0 / (NdotL + NdotV) - 0.5) + 0.5);
 
     
-    //¸ß¹â
+    //é«˜å…‰
     /* 
-    // ¾µÃæ·´Éä -- ¸÷ÏòÍ¬ĞÔ
+    // é•œé¢åå°„ -- å„å‘åŒæ€§
     float alpha = material.roughness * material.roughness;
     float Ds = GTR2(NdotH, alpha);
     float FH = SchlickFresnel(LdotH);
@@ -621,7 +621,7 @@ vec3 BRDF_Evaluate(vec3 V, vec3 N, vec3 L, vec3 X, vec3 Y, in Material material)
     float Gs = smithG_GGX(NdotL, material.roughness);
     Gs *= smithG_GGX(NdotV, material.roughness);
     */
-    // ¾µÃæ·´Éä -- ¸÷ÏòÒìĞÔ
+    // é•œé¢åå°„ -- å„å‘å¼‚æ€§
     float aspect = sqrt(1.0 - material.anisotropic * 0.9);
     float ax = max(0.001, sqr(material.roughness)/aspect);
     float ay = max(0.001, sqr(material.roughness)*aspect);
@@ -633,7 +633,7 @@ vec3 BRDF_Evaluate(vec3 V, vec3 N, vec3 L, vec3 X, vec3 Y, in Material material)
     Gs *= smithG_GGX_aniso(NdotV, dot(V, X), dot(V, Y), ax, ay);
 	
 
-    // ÇåÆá
+    // æ¸…æ¼†
 	float Dr = GTR1(NdotH, mix(0.1, 0.001, material.clearcoatGloss));
 	float Fr = mix(0.04, 1.0, FH);
 	float Gr = smithG_GGX(NdotL, 0.25) * smithG_GGX(NdotV, 0.25);
@@ -648,40 +648,40 @@ vec3 BRDF_Evaluate(vec3 V, vec3 N, vec3 L, vec3 X, vec3 Y, in Material material)
 
 	return diffuse  * (1.0 - material.metallic) + specular + clearcoat;
 }
-// °´ÕÕ·øÉä¶È·Ö²¼·Ö±ğ²ÉÑùÈıÖÖ BRDF
+// æŒ‰ç…§è¾å°„åº¦åˆ†å¸ƒåˆ†åˆ«é‡‡æ ·ä¸‰ç§ BRDF
 vec3 SampleBRDF(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Material material) {
     float alpha_GTR1 = mix(0.1, 0.001, material.clearcoatGloss);
     float alpha_GTR2 = max(0.001, sqr(material.roughness));
     
-    // ·øÉä¶ÈÍ³¼Æ
+    // è¾å°„åº¦ç»Ÿè®¡
     float r_diffuse = (1.0 - material.metallic);
     float r_specular = 1.0;
     float r_clearcoat = 0.25 * material.clearcoat;
     float r_sum = r_diffuse + r_specular + r_clearcoat;
 
-    // ¸ù¾İ·øÉä¶È¼ÆËã¸ÅÂÊ
+    // æ ¹æ®è¾å°„åº¦è®¡ç®—æ¦‚ç‡
     float p_diffuse = r_diffuse / r_sum;
     float p_specular = r_specular / r_sum;
     float p_clearcoat = r_clearcoat / r_sum;
 
-    // °´ÕÕ¸ÅÂÊ²ÉÑù
+    // æŒ‰ç…§æ¦‚ç‡é‡‡æ ·
     float rd = xi_3;
 
-    // Âş·´Éä
+    // æ¼«åå°„
     if(rd <= p_diffuse) {
         return SampleCosineHemisphere(xi_1, xi_2, N);
     } 
-    // ¾µÃæ·´Éä
+    // é•œé¢åå°„
     else if(p_diffuse < rd && rd <= p_diffuse + p_specular) {    
         return SampleGTR2(xi_1, xi_2, V, N, alpha_GTR2);
     } 
-    // ÇåÆá
+    // æ¸…æ¼†
     else if(p_diffuse + p_specular < rd) {
         return SampleGTR1(xi_1, xi_2, V, N, alpha_GTR1);
     }
     return vec3(0, 1, 0);
 }
-// »ñÈ¡ BRDF ÔÚ L ·½ÏòÉÏµÄ¸ÅÂÊÃÜ¶È
+// è·å– BRDF åœ¨ L æ–¹å‘ä¸Šçš„æ¦‚ç‡å¯†åº¦
 float BRDF_Pdf(vec3 V, vec3 N, vec3 L, in Material material) {
     float NdotL = dot(N, L);
     float NdotV = dot(N, V);
@@ -691,28 +691,28 @@ float BRDF_Pdf(vec3 V, vec3 N, vec3 L, in Material material) {
     float NdotH = dot(N, H);
     float LdotH = dot(L, H);
      
-    // ¾µÃæ·´Éä -- ¸÷ÏòÍ¬ĞÔ
+    // é•œé¢åå°„ -- å„å‘åŒæ€§
     float alpha = max(0.001, sqr(material.roughness));
     float Ds = GTR2(NdotH, alpha); 
-    float Dr = GTR1(NdotH, mix(0.1, 0.001, material.clearcoatGloss));   // ÇåÆá
+    float Dr = GTR1(NdotH, mix(0.1, 0.001, material.clearcoatGloss));   // æ¸…æ¼†
 
-    // ·Ö±ğ¼ÆËãÈıÖÖ BRDF µÄ¸ÅÂÊÃÜ¶È
+    // åˆ†åˆ«è®¡ç®—ä¸‰ç§ BRDF çš„æ¦‚ç‡å¯†åº¦
     float pdf_diffuse = NdotL / PI;
     float pdf_specular = Ds * NdotH / (4.0 * dot(L, H));
     float pdf_clearcoat = Dr * NdotH / (4.0 * dot(L, H));
 
-    // ·øÉä¶ÈÍ³¼Æ
+    // è¾å°„åº¦ç»Ÿè®¡
     float r_diffuse = (1.0 - material.metallic);
     float r_specular = 1.0;
     float r_clearcoat = 0.25 * material.clearcoat;
     float r_sum = r_diffuse + r_specular + r_clearcoat;
 
-    // ¸ù¾İ·øÉä¶È¼ÆËãÑ¡ÔñÄ³ÖÖ²ÉÑù·½Ê½µÄ¸ÅÂÊ
+    // æ ¹æ®è¾å°„åº¦è®¡ç®—é€‰æ‹©æŸç§é‡‡æ ·æ–¹å¼çš„æ¦‚ç‡
     float p_diffuse = r_diffuse / r_sum;
     float p_specular = r_specular / r_sum;
     float p_clearcoat = r_clearcoat / r_sum;
 
-    // ¸ù¾İ¸ÅÂÊ»ìºÏ pdf
+    // æ ¹æ®æ¦‚ç‡æ··åˆ pdf
     float pdf = p_diffuse   * pdf_diffuse 
               + p_specular  * pdf_specular
               + p_clearcoat * pdf_clearcoat;
@@ -721,21 +721,21 @@ float BRDF_Pdf(vec3 V, vec3 N, vec3 L, in Material material) {
     return pdf;
 }
 
-// Â·¾¶×·×Ù
+// è·¯å¾„è¿½è¸ª
 vec3 pathTracing(HitResult hit, int maxBounce) {
 
-    vec3 Lo = vec3(0);      // ×îÖÕµÄÑÕÉ«
-    vec3 history = vec3(1); // µİ¹é»ıÀÛµÄÑÕÉ«
+    vec3 Lo = vec3(0);      // æœ€ç»ˆçš„é¢œè‰²
+    vec3 history = vec3(1); // é€’å½’ç§¯ç´¯çš„é¢œè‰²
 
     for(int bounce=0; bounce<maxBounce; bounce++) {
-        // Ëæ»ú³öÉä·½Ïò wi
+        // éšæœºå‡ºå°„æ–¹å‘ wi
       // vec3 L = toNormalHemisphere(SampleHemisphere(rand(),rand()), hit.normal);
        
        vec2 uv = sobolVec2(uint(frameCounter+uint(1)), uint(bounce));
        uv = CranleyPattersonRotation(uv);
        vec3 L = SampleHemisphere(uv.x, uv.y);
        L = toNormalHemisphere(L, hit.normal);	
-        // Âş·´Éä: Ëæ»ú·¢Éä¹âÏß
+        // æ¼«åå°„: éšæœºå‘å°„å…‰çº¿
         Ray randomRay;
         randomRay.startPoint = hit.hitPoint;
         randomRay.direction = L;
@@ -744,53 +744,53 @@ vec3 pathTracing(HitResult hit, int maxBounce) {
         vec3 V = -hit.viewDir;
         vec3 N = hit.normal;
 
-        float pdf = 1.0 / (2.0*PI);                                   // °ëÇò¾ùÔÈ²ÉÑù¸ÅÂÊÃÜ¶È
+        float pdf = 1.0 / (2.0*PI);                                   // åŠçƒå‡åŒ€é‡‡æ ·æ¦‚ç‡å¯†åº¦
         
-        float cosine_o = max(0, dot(V, N));                             // ÈëÉä¹âºÍ·¨Ïß¼Ğ½ÇÓàÏÒ
-        float cosine_i = max(0, dot(L, N));                             // ³öÉä¹âºÍ·¨Ïß¼Ğ½ÇÓàÏÒ
+        float cosine_o = max(0, dot(V, N));                             // å…¥å°„å…‰å’Œæ³•çº¿å¤¹è§’ä½™å¼¦
+        float cosine_i = max(0, dot(L, N));                             // å‡ºå°„å…‰å’Œæ³•çº¿å¤¹è§’ä½™å¼¦
         vec3 tangent, bitangent;
         getTangent(N, tangent, bitangent);
         vec3 f_r = BRDF_Evaluate(V, N, L, tangent, bitangent, hit.material);
-       // vec3 f_r = hit.material.baseColor / PI;                         // Âş·´Éä BRDF
+       // vec3 f_r = hit.material.baseColor / PI;                         // æ¼«åå°„ BRDF
 
-        // Î´ÃüÖĞ
+        // æœªå‘½ä¸­
         if(!newHit.isHit) {
             vec3 skyColor = hdrColor(randomRay.direction);
             Lo += history * skyColor * f_r * cosine_i / pdf;
             break;
         }
         
-        // ÃüÖĞ¹âÔ´»ıÀÛÑÕÉ«
+        // å‘½ä¸­å…‰æºç§¯ç´¯é¢œè‰²
         vec3 Le = newHit.material.emissive;
         Lo += history * Le * f_r * cosine_i / pdf;
         
-        // µİ¹é(²½½ø)
+        // é€’å½’(æ­¥è¿›)
         hit = newHit;
-        history *= f_r * cosine_i / pdf;  // ÀÛ»ıÑÕÉ«
+        history *= f_r * cosine_i / pdf;  // ç´¯ç§¯é¢œè‰²
     }
     
     return Lo;
 }
 vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
 
-    vec3 Lo = vec3(0);      // ×îÖÕµÄÑÕÉ«
-    vec3 history = vec3(1); // µİ¹é»ıÀÛµÄÑÕÉ«
+    vec3 Lo = vec3(0);      // æœ€ç»ˆçš„é¢œè‰²
+    vec3 history = vec3(1); // é€’å½’ç§¯ç´¯çš„é¢œè‰²
 
     for(int bounce=0; bounce<maxBounce; bounce++) {
         vec3 V = -hit.viewDir;
         vec3 N = hit.normal;       
 
 
-        // HDR »·¾³ÌùÍ¼ÖØÒªĞÔ²ÉÑù    
+        // HDR ç¯å¢ƒè´´å›¾é‡è¦æ€§é‡‡æ ·    
         Ray hdrTestRay;
         hdrTestRay.startPoint = hit.hitPoint;
         hdrTestRay.direction = SampleHdr(rand(), rand());
 
-        // ½øĞĞÒ»´ÎÇó½»²âÊÔ ÅĞ¶ÏÊÇ·ñÓĞÕÚµ²
-        if(dot(N, hdrTestRay.direction) > 0.0) { // Èç¹û²ÉÑù·½Ïò±³Ïòµã p Ôò·ÅÆú²âÊÔ, ÒòÎª N dot L < 0            
+        // è¿›è¡Œä¸€æ¬¡æ±‚äº¤æµ‹è¯• åˆ¤æ–­æ˜¯å¦æœ‰é®æŒ¡
+        if(dot(N, hdrTestRay.direction) > 0.0) { // å¦‚æœé‡‡æ ·æ–¹å‘èƒŒå‘ç‚¹ p åˆ™æ”¾å¼ƒæµ‹è¯•, å› ä¸º N dot L < 0            
             HitResult hdrHit = hitBVH(hdrTestRay);
     
-            // Ìì¿Õ¹â½öÔÚÃ»ÓĞÕÚµ²µÄÇé¿öÏÂ»ıÀÛÁÁ¶È
+            // å¤©ç©ºå…‰ä»…åœ¨æ²¡æœ‰é®æŒ¡çš„æƒ…å†µä¸‹ç§¯ç´¯äº®åº¦
             if(!hdrHit.isHit) {
                 vec3 L = hdrTestRay.direction;
                 vec3 color = hdrColor(L);
@@ -804,32 +804,32 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
             }
         }
         
-        // »ñÈ¡ 3 ¸öËæ»úÊı
+        // è·å– 3 ä¸ªéšæœºæ•°
         vec2 uv = sobolVec2(frameCounter+1u, uint(bounce));
         uv = CranleyPattersonRotation(uv);
         float xi_1 = uv.x;
         float xi_2 = uv.y; 
 //        float xi_1 = rand();
 //        float xi_2 = rand();
-        float xi_3 = rand();    // xi_3 ÊÇ¾ö¶¨²ÉÑùµÄËæ»úÊı, ÆÓËØ rand ¾ÍºÃ
+        float xi_3 = rand();    // xi_3 æ˜¯å†³å®šé‡‡æ ·çš„éšæœºæ•°, æœ´ç´  rand å°±å¥½
 
-        // ²ÉÑù BRDF µÃµ½Ò»¸ö·½Ïò L
+        // é‡‡æ · BRDF å¾—åˆ°ä¸€ä¸ªæ–¹å‘ L
         vec3 L = SampleBRDF(xi_1, xi_2, xi_3, V, N, hit.material); 
         float NdotL = dot(N, L);
         if(NdotL <= 0.0) break;
 
-        // ·¢Éä¹âÏß
+        // å‘å°„å…‰çº¿
         Ray randomRay;
         randomRay.startPoint = hit.hitPoint;
         randomRay.direction = L;
         HitResult newHit = hitBVH(randomRay);
 
-        // »ñÈ¡ L ·½ÏòÉÏµÄ BRDF ÖµºÍ¸ÅÂÊÃÜ¶È
+        // è·å– L æ–¹å‘ä¸Šçš„ BRDF å€¼å’Œæ¦‚ç‡å¯†åº¦
         vec3 f_r = BRDF_Evaluate(V, N, L, hit.material);
         float pdf_brdf = BRDF_Pdf(V, N, L, hit.material);
         if(pdf_brdf <= 0.0) break;
 
-       // Î´ÃüÖĞ        
+       // æœªå‘½ä¸­        
         if(!newHit.isHit) {
             vec3 color = hdrColor(L);
             float pdf_light = hdrPdf(L, hdrResolution); 
@@ -839,13 +839,13 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
             break;
         }
         
-        // ÃüÖĞ¹âÔ´»ıÀÛÑÕÉ«
+        // å‘½ä¸­å…‰æºç§¯ç´¯é¢œè‰²
         vec3 Le = newHit.material.emissive;
         Lo += history * Le * f_r * NdotL / pdf_brdf;             
 
-        // µİ¹é(²½½ø)
+        // é€’å½’(æ­¥è¿›)
         hit = newHit;
-        history *= f_r * NdotL / pdf_brdf;   // ÀÛ»ıÑÕÉ«
+        history *= f_r * NdotL / pdf_brdf;   // ç´¯ç§¯é¢œè‰²
     }
     
     return Lo;

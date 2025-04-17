@@ -1,4 +1,4 @@
-#ifndef TEXTUREBUFFER_H
+﻿#ifndef TEXTUREBUFFER_H
 #define TEXTUREBUFFER_H
 
 #include <QMutex>

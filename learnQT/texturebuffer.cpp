@@ -1,4 +1,4 @@
-#include "texturebuffer.h"
+﻿#include "texturebuffer.h"
 
 #include <QElapsedTimer>
 #include <QOpenGLFunctions>

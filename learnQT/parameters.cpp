@@ -1,9 +1,7 @@
-#include "parameters.h"
+ï»¿#include "parameters.h"
 
 
 Pass_parameters::Pass_parameters(){
-
-
 
     camera = Camera(QVector3D(0.0f, 0.0f, 1.48f), QVector3D(0.0f, 1.0f, 0.0f));
     Material mt;
@@ -118,9 +116,9 @@ Pass_parameters::Pass_parameters(){
      readObj("models/sphere.obj", triangles, m, getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0.7, 0.5), QVector3D(0.5, 0.5, 0.5)), false);*/
 
     int nTriangles = triangles.size();
-    std::cout << "Ä£ĞÍ¶ÁÈ¡Íê³É: ¹² " << nTriangles << " ¸öÈı½ÇĞÎ" << std::endl;
+    std::cout << "æ¨¡å‹è¯»å–å®Œæˆ: å…± " << nTriangles << " ä¸ªä¸‰è§’å½¢" << std::endl;
 
-    // ½¨Á¢ bvh
+    // å»ºç«‹ bvh
     BVHNode testNode;
     testNode.left = 255;
     testNode.right = 128;
@@ -130,22 +128,22 @@ Pass_parameters::Pass_parameters(){
     nodes= std::vector<BVHNode>{ testNode };
     buildBVHwithSAH(triangles, nodes, 0, triangles.size() - 1, 8);
     int nNodes = nodes.size();
-    std::cout << "BVH ½¨Á¢Íê³É: ¹² " << nNodes << " ¸ö½Úµã" << std::endl;
-    //½¨Á¢bvhĞèÒªÔÚÈı½ÇĞÎ±àÂëÖ®Ç°£¬ÒòÎªbvhµÄ¹¹½¨Ê¹ÓÃÁËÅÅĞò
+    std::cout << "BVH å»ºç«‹å®Œæˆ: å…± " << nNodes << " ä¸ªèŠ‚ç‚¹" << std::endl;
+    //å»ºç«‹bvhéœ€è¦åœ¨ä¸‰è§’å½¢ç¼–ç ä¹‹å‰ï¼Œå› ä¸ºbvhçš„æ„å»ºä½¿ç”¨äº†æ’åº
 
     triangles_encoded= std::vector<Triangle_encoded>(nTriangles);
     for (int i = 0; i < nTriangles; i++) {
         Triangle& t = triangles[i];
         Material& m = t.material;
-        // ¶¥µãÎ»ÖÃ
+        // é¡¶ç‚¹ä½ç½®
         triangles_encoded[i].p1 = t.p1;
         triangles_encoded[i].p2 = t.p2;
         triangles_encoded[i].p3 = t.p3;
-        // ¶¥µã·¨Ïß
+        // é¡¶ç‚¹æ³•çº¿
         triangles_encoded[i].n1 = t.n1;
         triangles_encoded[i].n2 = t.n2;
         triangles_encoded[i].n3 = t.n3;
-        // ²ÄÖÊ
+        // æè´¨
         triangles_encoded[i].emissive = m.emissive;
         triangles_encoded[i].baseColor = m.baseColor;
         triangles_encoded[i].param1 = QVector3D(m.subsurface, m.metallic, m.specular);
@@ -154,7 +152,7 @@ Pass_parameters::Pass_parameters(){
         triangles_encoded[i].param4 = QVector3D(m.clearcoatGloss, m.IOR, m.transmission);
     }
 
-    // ±àÂë BVHNode, aabb
+    // ç¼–ç  BVHNode, aabb
     nodes_encoded= std::vector<BVHNode_encoded>(nNodes);
     for (int i = 0; i < nNodes; i++) {
         nodes_encoded[i].childs = QVector3D(nodes[i].left, nodes[i].right, 0);
@@ -165,27 +163,27 @@ Pass_parameters::Pass_parameters(){
 
     qDebug()<<"load HDRtexture:" << HDRLoader::load("./peppermint_powerplant_4k.hdr", hdrRes);
 
-    // hdr ÖØÒªĞÔ²ÉÑù cache
-    std::cout << "¼ÆËã HDR ÌùÍ¼ÖØÒªĞÔ²ÉÑù Cache, µ±Ç°·Ö±æÂÊ: " << hdrRes.width << " " << hdrRes.height << std::endl;
+    // hdr é‡è¦æ€§é‡‡æ · cache
+    std::cout << "è®¡ç®— HDR è´´å›¾é‡è¦æ€§é‡‡æ · Cache, å½“å‰åˆ†è¾¨ç‡: " << hdrRes.width << " " << hdrRes.height << std::endl;
     cache = calculateHdrCache(hdrRes.cols, hdrRes.width, hdrRes.height);
     hdrResolution = hdrRes.width;
 }
 
 void Pass_parameters::readObj(std::string filepath, std::vector<Triangle>& triangles, Material material, QMatrix4x4 trans, bool smoothNormal)
 {
-    // ¶¥µãÎ»ÖÃ£¬Ë÷Òı
+    // é¡¶ç‚¹ä½ç½®ï¼Œç´¢å¼•
     std::vector<QVector3D> vertices;
     std::vector<unsigned int> indices;
 
-    // ´ò¿ªÎÄ¼şÁ÷
+    // æ‰“å¼€æ–‡ä»¶æµ
     std::ifstream fin(filepath);
     std::string line;
     if (!fin.is_open()) {
-        std::cout << "ÎÄ¼ş " << filepath << " ´ò¿ªÊ§°Ü" << std::endl;
+        std::cout << "æ–‡ä»¶ " << filepath << " æ‰“å¼€å¤±è´¥" << std::endl;
         exit(-1);
     }
 
-    // ¼ÆËã AABB ºĞ£¬¹éÒ»»¯Ä£ĞÍ´óĞ¡
+    // è®¡ç®— AABB ç›’ï¼Œå½’ä¸€åŒ–æ¨¡å‹å¤§å°
     float maxx = -11451419.19;
     float maxy = -11451419.19;
     float maxz = -11451419.19;
@@ -193,9 +191,9 @@ void Pass_parameters::readObj(std::string filepath, std::vector<Triangle>& trian
     float miny = 11451419.19;
     float minz = 11451419.19;
 
-    // °´ĞĞ¶ÁÈ¡
+    // æŒ‰è¡Œè¯»å–
     while (std::getline(fin, line)) {
-        std::istringstream sins(line);   // ÒÔÒ»ĞĞµÄÊı¾İ×÷Îª string stream ½âÎö²¢ÇÒ¶ÁÈ¡
+        std::istringstream sins(line);   // ä»¥ä¸€è¡Œçš„æ•°æ®ä½œä¸º string stream è§£æå¹¶ä¸”è¯»å–
         std::string type;
         float x, y, z;
         int v0, v1, v2,v3;
@@ -203,13 +201,13 @@ void Pass_parameters::readObj(std::string filepath, std::vector<Triangle>& trian
         int vt0, vt1, vt2, vt3;
         char slash;
 
-        // Í³¼ÆĞ±¸ËÊıÄ¿£¬ÓÃ²»Í¬¸ñÊ½¶ÁÈ¡
+        // ç»Ÿè®¡æ–œæ†æ•°ç›®ï¼Œç”¨ä¸åŒæ ¼å¼è¯»å–
         int slashCnt = 0;
         for (int i = 0; i < line.length(); i++) {
             if (line[i] == '/') slashCnt++;
         }
 
-        // ¶ÁÈ¡objÎÄ¼ş
+        // è¯»å–objæ–‡ä»¶
         sins >> type;
         if (type == "v") {
             sins >> x >> y >> z;
@@ -246,7 +244,7 @@ void Pass_parameters::readObj(std::string filepath, std::vector<Triangle>& trian
         }
     }
 
-    // Ä£ĞÍ´óĞ¡¹éÒ»»¯
+    // æ¨¡å‹å¤§å°å½’ä¸€åŒ–
     float lenx = maxx - minx;
     float leny = maxy - miny;
     float lenz = maxz - minz;
@@ -255,14 +253,14 @@ void Pass_parameters::readObj(std::string filepath, std::vector<Triangle>& trian
         v /= maxaxis;
     }
 
-    // Í¨¹ı¾ØÕó½øĞĞ×ø±ê±ä»»
+    // é€šè¿‡çŸ©é˜µè¿›è¡Œåæ ‡å˜æ¢
     for (auto& v : vertices) {
         QVector4D vv = QVector4D(v.x(), v.y(), v.z(), 1.0);
         vv = trans * vv;
         v = QVector3D(vv.x(), vv.y(), vv.z());
     }
 
-    // Éú³É·¨Ïß
+    // ç”Ÿæˆæ³•çº¿
     std::vector<QVector3D> normals(vertices.size(), QVector3D(0, 0, 0));
     for (int i = 0; i < indices.size(); i += 3) {
         QVector3D p1 = vertices[indices[i]];
@@ -274,12 +272,12 @@ void Pass_parameters::readObj(std::string filepath, std::vector<Triangle>& trian
         normals[indices[i + 2]] += n;
     }
 
-    // ¹¹½¨ Triangle ¶ÔÏóÊı×é
-    int offset = triangles.size();  // ÔöÁ¿¸üĞÂ
+    // æ„å»º Triangle å¯¹è±¡æ•°ç»„
+    int offset = triangles.size();  // å¢é‡æ›´æ–°
     triangles.resize(offset + indices.size() / 3);
     for (int i = 0; i < indices.size(); i += 3) {
         Triangle& t = triangles[offset + i / 3];
-        // ´«¶¥µãÊôĞÔ
+        // ä¼ é¡¶ç‚¹å±æ€§
         t.p1 = vertices[indices[i]];
         t.p2 = vertices[indices[i + 1]];
         t.p3 = vertices[indices[i + 2]];
@@ -293,7 +291,7 @@ void Pass_parameters::readObj(std::string filepath, std::vector<Triangle>& trian
             t.n3 = (normals[indices[i + 2]]).normalized();
         }
 
-        // ´«²ÄÖÊ
+        // ä¼ æè´¨
         t.material = material;
     }
 }
@@ -307,7 +305,7 @@ QMatrix4x4 Pass_parameters::getTransformMatrix(QVector3D rotateCtrl, QVector3D t
     return model;
 }
 
-// °´ÕÕÈı½ÇĞÎÖĞĞÄÅÅĞò -- ±È½Ïº¯Êı
+// æŒ‰ç…§ä¸‰è§’å½¢ä¸­å¿ƒæ’åº -- æ¯”è¾ƒå‡½æ•°
 bool cmpx(const Triangle& t1, const Triangle& t2) {
     QVector3D center1 = (t1.p1 + t1.p2 + t1.p3) / QVector3D(3, 3, 3);
     QVector3D center2 = (t2.p1 + t2.p2 + t2.p3) / QVector3D(3, 3, 3);
@@ -324,7 +322,7 @@ bool cmpz(const Triangle& t1, const Triangle& t2) {
     return center1.z() < center2.z();
 }
 
-// SAH ÓÅ»¯¹¹½¨ BVH
+// SAH ä¼˜åŒ–æ„å»º BVH
 int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& nodes, int l, int r, int n) {
     if (l > r) return 0;
 
@@ -334,16 +332,16 @@ int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& node
     nodes[id].AA = QVector3D(1145141919, 1145141919, 1145141919);
     nodes[id].BB = QVector3D(-1145141919, -1145141919, -1145141919);
 
-    // ¼ÆËã AABB
+    // è®¡ç®— AABB
     for (int i = l; i <= r; i++) {
-        // ×îĞ¡µã AA
+        // æœ€å°ç‚¹ AA
         float minx = std::min(triangles[i].p1.x(), std::min(triangles[i].p2.x(), triangles[i].p3.x()));
         float miny = std::min(triangles[i].p1.y(), std::min(triangles[i].p2.y(), triangles[i].p3.y()));
         float minz = std::min(triangles[i].p1.z(), std::min(triangles[i].p2.z(), triangles[i].p3.z()));
         nodes[id].AA[0] = std::min(nodes[id].AA.x(), minx);
         nodes[id].AA[1] = std::min(nodes[id].AA.y(), miny);
         nodes[id].AA[2] = std::min(nodes[id].AA.z(), minz);
-        // ×î´óµã BB
+        // æœ€å¤§ç‚¹ BB
         float maxx = std::max(triangles[i].p1.x(), std::max(triangles[i].p2.x(), triangles[i].p3.x()));
         float maxy = std::max(triangles[i].p1.y(), std::max(triangles[i].p2.y(), triangles[i].p3.y()));
         float maxz = std::max(triangles[i].p1.z(), std::max(triangles[i].p2.z(), triangles[i].p3.z()));
@@ -352,31 +350,31 @@ int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& node
         nodes[id].BB[2] = std::max(nodes[id].BB.z(), maxz);
     }
 
-    // ²»¶àÓÚ n ¸öÈı½ÇĞÎ ·µ»ØÒ¶×Ó½Úµã
+    // ä¸å¤šäº n ä¸ªä¸‰è§’å½¢ è¿”å›å¶å­èŠ‚ç‚¹
     if ((r - l + 1) <= n) {
         nodes[id].n = r - l + 1;
         nodes[id].index = l;
         return id;
     }
 
-    // ·ñÔòµİ¹é½¨Ê÷
+    // å¦åˆ™é€’å½’å»ºæ ‘
     float Cost = INF;
     int Axis = 0;
     int Split = (l + r) / 2;
     for (int axis = 0; axis < 3; axis++) {
-        // ·Ö±ğ°´ x£¬y£¬z ÖáÅÅĞò
+        // åˆ†åˆ«æŒ‰ xï¼Œyï¼Œz è½´æ’åº
         if (axis == 0) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpx);
         if (axis == 1) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpy);
         if (axis == 2) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpz);
 
-        // leftMax[i]: [l, i] ÖĞ×î´óµÄ xyz Öµ
-        // leftMin[i]: [l, i] ÖĞ×îĞ¡µÄ xyz Öµ
+        // leftMax[i]: [l, i] ä¸­æœ€å¤§çš„ xyz å€¼
+        // leftMin[i]: [l, i] ä¸­æœ€å°çš„ xyz å€¼
         std::vector<QVector3D> leftMax(r - l + 1, QVector3D(-INF, -INF, -INF));
         std::vector<QVector3D> leftMin(r - l + 1, QVector3D(INF, INF, INF));
-        // ¼ÆËãÇ°×º ×¢Òâ i-l ÒÔ¶ÔÆëµ½ÏÂ±ê 0
+        // è®¡ç®—å‰ç¼€ æ³¨æ„ i-l ä»¥å¯¹é½åˆ°ä¸‹æ ‡ 0
         for (int i = l; i <= r; i++) {
             Triangle& t = triangles[i];
-            int bias = (i == l) ? 0 : 1;  // µÚÒ»¸öÔªËØÌØÊâ´¦Àí
+            int bias = (i == l) ? 0 : 1;  // ç¬¬ä¸€ä¸ªå…ƒç´ ç‰¹æ®Šå¤„ç†
 
             leftMax[i - l][0] = std::max(leftMax[i - l - bias].x(), std::max(t.p1.x(), std::max(t.p2.x(), t.p3.x())));
             leftMax[i - l][1] = std::max(leftMax[i - l - bias].y(), std::max(t.p1.y(), std::max(t.p2.y(), t.p3.y())));
@@ -387,14 +385,14 @@ int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& node
             leftMin[i - l][2] = std::min(leftMin[i - l - bias].z(), std::min(t.p1.z(), std::min(t.p2.z(), t.p3.z())));
         }
 
-        // rightMax[i]: [i, r] ÖĞ×î´óµÄ xyz Öµ
-        // rightMin[i]: [i, r] ÖĞ×îĞ¡µÄ xyz Öµ
+        // rightMax[i]: [i, r] ä¸­æœ€å¤§çš„ xyz å€¼
+        // rightMin[i]: [i, r] ä¸­æœ€å°çš„ xyz å€¼
         std::vector<QVector3D> rightMax(r - l + 1, QVector3D(-INF, -INF, -INF));
         std::vector<QVector3D> rightMin(r - l + 1, QVector3D(INF, INF, INF));
-        // ¼ÆËãºó×º ×¢Òâ i-l ÒÔ¶ÔÆëµ½ÏÂ±ê 0
+        // è®¡ç®—åç¼€ æ³¨æ„ i-l ä»¥å¯¹é½åˆ°ä¸‹æ ‡ 0
         for (int i = r; i >= l; i--) {
             Triangle& t = triangles[i];
-            int bias = (i == r) ? 0 : 1;  // µÚÒ»¸öÔªËØÌØÊâ´¦Àí
+            int bias = (i == r) ? 0 : 1;  // ç¬¬ä¸€ä¸ªå…ƒç´ ç‰¹æ®Šå¤„ç†
 
             rightMax[i - l][0] = std::max(rightMax[i - l + bias].x(), std::max(t.p1.x(), std::max(t.p2.x(), t.p3.x())));
             rightMax[i - l][1] = std::max(rightMax[i - l + bias].y(), std::max(t.p1.y(), std::max(t.p2.y(), t.p3.y())));
@@ -405,12 +403,12 @@ int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& node
             rightMin[i - l][2] = std::min(rightMin[i - l + bias].z(), std::min(t.p1.z(), std::min(t.p2.z(), t.p3.z())));
         }
 
-        // ±éÀúÑ°ÕÒ·Ö¸î
+        // éå†å¯»æ‰¾åˆ†å‰²
         float cost = INF;
         int split = l;
         for (int i = l; i <= r - 1; i++) {
             float lenx, leny, lenz;
-            // ×ó²à [l, i]
+            // å·¦ä¾§ [l, i]
             QVector3D leftAA = leftMin[i - l];
             QVector3D leftBB = leftMax[i - l];
             lenx = leftBB.x() - leftAA.x();
@@ -419,7 +417,7 @@ int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& node
             float leftS = 2.0 * ((lenx * leny) + (lenx * lenz) + (leny * lenz));
             float leftCost = leftS * (i - l + 1);
 
-            // ÓÒ²à [i+1, r]
+            // å³ä¾§ [i+1, r]
             QVector3D rightAA = rightMin[i + 1 - l];
             QVector3D rightBB = rightMax[i + 1 - l];
             lenx = rightBB.x() - rightAA.x();
@@ -428,14 +426,14 @@ int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& node
             float rightS = 2.0 * ((lenx * leny) + (lenx * lenz) + (leny * lenz));
             float rightCost = rightS * (r - i);
 
-            // ¼ÇÂ¼Ã¿¸ö·Ö¸îµÄ×îĞ¡´ğ°¸
+            // è®°å½•æ¯ä¸ªåˆ†å‰²çš„æœ€å°ç­”æ¡ˆ
             float totalCost = leftCost + rightCost;
             if (totalCost < cost) {
                 cost = totalCost;
                 split = i;
             }
         }
-        // ¼ÇÂ¼Ã¿¸öÖáµÄ×î¼Ñ´ğ°¸
+        // è®°å½•æ¯ä¸ªè½´çš„æœ€ä½³ç­”æ¡ˆ
         if (cost < Cost) {
             Cost = cost;
             Axis = axis;
@@ -443,12 +441,12 @@ int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& node
         }
     }
 
-    // °´×î¼ÑÖá·Ö¸î
+    // æŒ‰æœ€ä½³è½´åˆ†å‰²
     if (Axis == 0) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpx);
     if (Axis == 1) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpy);
     if (Axis == 2) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpz);
 
-    // µİ¹é
+    // é€’å½’
     int left = buildBVHwithSAH(triangles, nodes, l, Split, n);
     int right = buildBVHwithSAH(triangles, nodes, Split + 1, r, n);
 
@@ -457,12 +455,12 @@ int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& node
 
     return id;
 }
-// ¼ÆËã HDR ÌùÍ¼Ïà¹Ø»º´æĞÅÏ¢
+// è®¡ç®— HDR è´´å›¾ç›¸å…³ç¼“å­˜ä¿¡æ¯
 float* calculateHdrCache(float* HDR, int width, int height) {
 
     float lumSum = 0.0;
 
-    // ³õÊ¼»¯ h ĞĞ w ÁĞµÄ¸ÅÂÊÃÜ¶È pdf ²¢ Í³¼Æ×ÜÁÁ¶È
+    // åˆå§‹åŒ– h è¡Œ w åˆ—çš„æ¦‚ç‡å¯†åº¦ pdf å¹¶ ç»Ÿè®¡æ€»äº®åº¦
     std::vector<std::vector<float>> pdf(height);
     for (auto& line : pdf) line.resize(width);
     for (int i = 0; i < height; i++) {
@@ -476,37 +474,37 @@ float* calculateHdrCache(float* HDR, int width, int height) {
         }
     }
 
-    // ¸ÅÂÊÃÜ¶È¹éÒ»»¯
+    // æ¦‚ç‡å¯†åº¦å½’ä¸€åŒ–
     for (int i = 0; i < height; i++)
         for (int j = 0; j < width; j++)
             pdf[i][j] /= lumSum;
 
-    // ÀÛ¼ÓÃ¿Ò»ÁĞµÃµ½ x µÄ±ßÔµ¸ÅÂÊÃÜ¶È
+    // ç´¯åŠ æ¯ä¸€åˆ—å¾—åˆ° x çš„è¾¹ç¼˜æ¦‚ç‡å¯†åº¦
     std::vector<float> pdf_x_margin;
     pdf_x_margin.resize(width);
     for (int j = 0; j < width; j++)
         for (int i = 0; i < height; i++)
             pdf_x_margin[j] += pdf[i][j];
 
-    // ¼ÆËã x µÄ±ßÔµ·Ö²¼º¯Êı
+    // è®¡ç®— x çš„è¾¹ç¼˜åˆ†å¸ƒå‡½æ•°
     std::vector<float> cdf_x_margin = pdf_x_margin;
     for (int i = 1; i < width; i++)
         cdf_x_margin[i] += cdf_x_margin[i - 1];
 
-    // ¼ÆËã y ÔÚ X=x ÏÂµÄÌõ¼ş¸ÅÂÊÃÜ¶Èº¯Êı
+    // è®¡ç®— y åœ¨ X=x ä¸‹çš„æ¡ä»¶æ¦‚ç‡å¯†åº¦å‡½æ•°
     std::vector<std::vector<float>> pdf_y_condiciton = pdf;
     for (int j = 0; j < width; j++)
         for (int i = 0; i < height; i++)
             pdf_y_condiciton[i][j] /= pdf_x_margin[j];
 
-    // ¼ÆËã y ÔÚ X=x ÏÂµÄÌõ¼ş¸ÅÂÊ·Ö²¼º¯Êı
+    // è®¡ç®— y åœ¨ X=x ä¸‹çš„æ¡ä»¶æ¦‚ç‡åˆ†å¸ƒå‡½æ•°
     std::vector<std::vector<float>> cdf_y_condiciton = pdf_y_condiciton;
     for (int j = 0; j < width; j++)
         for (int i = 1; i < height; i++)
             cdf_y_condiciton[i][j] += cdf_y_condiciton[i - 1][j];
 
-    // cdf_y_condiciton ×ªÖÃÎª°´ÁĞ´æ´¢
-    // cdf_y_condiciton[i] ±íÊ¾ y ÔÚ X=i ÏÂµÄÌõ¼ş¸ÅÂÊ·Ö²¼º¯Êı
+    // cdf_y_condiciton è½¬ç½®ä¸ºæŒ‰åˆ—å­˜å‚¨
+    // cdf_y_condiciton[i] è¡¨ç¤º y åœ¨ X=i ä¸‹çš„æ¡ä»¶æ¦‚ç‡åˆ†å¸ƒå‡½æ•°
     std::vector<std::vector<float>> temp = cdf_y_condiciton;
     cdf_y_condiciton = std::vector<std::vector<float>>(width);
     for (auto& line : cdf_y_condiciton) line.resize(height);
@@ -514,10 +512,10 @@ float* calculateHdrCache(float* HDR, int width, int height) {
         for (int i = 0; i < height; i++)
             cdf_y_condiciton[j][i] = temp[i][j];
 
-    // Çî¾Ù xi_1, xi_2 Ô¤¼ÆËãÑù±¾ xy
-    // sample_x[i][j] ±íÊ¾ xi_1=i/height, xi_2=j/width Ê± (x,y) ÖĞµÄ x
-    // sample_y[i][j] ±íÊ¾ xi_1=i/height, xi_2=j/width Ê± (x,y) ÖĞµÄ y
-    // sample_p[i][j] ±íÊ¾È¡ (i, j) µãÊ±µÄ¸ÅÂÊÃÜ¶È
+    // ç©·ä¸¾ xi_1, xi_2 é¢„è®¡ç®—æ ·æœ¬ xy
+    // sample_x[i][j] è¡¨ç¤º xi_1=i/height, xi_2=j/width æ—¶ (x,y) ä¸­çš„ x
+    // sample_y[i][j] è¡¨ç¤º xi_1=i/height, xi_2=j/width æ—¶ (x,y) ä¸­çš„ y
+    // sample_p[i][j] è¡¨ç¤ºå– (i, j) ç‚¹æ—¶çš„æ¦‚ç‡å¯†åº¦
     std::vector<std::vector<float>> sample_x(height);
     for (auto& line : sample_x) line.resize(width);
     std::vector<std::vector<float>> sample_y(height);
@@ -529,12 +527,12 @@ float* calculateHdrCache(float* HDR, int width, int height) {
             float xi_1 = float(i) / height;
             float xi_2 = float(j) / width;
 
-            // ÓÃ xi_1 ÔÚ cdf_x_margin ÖĞ lower bound µÃµ½Ñù±¾ x
+            // ç”¨ xi_1 åœ¨ cdf_x_margin ä¸­ lower bound å¾—åˆ°æ ·æœ¬ x
             int x = std::lower_bound(cdf_x_margin.begin(), cdf_x_margin.end(), xi_1) - cdf_x_margin.begin();
-            // ÓÃ xi_2 ÔÚ X=x µÄÇé¿öÏÂµÃµ½Ñù±¾ y
+            // ç”¨ xi_2 åœ¨ X=x çš„æƒ…å†µä¸‹å¾—åˆ°æ ·æœ¬ y
             int y = std::lower_bound(cdf_y_condiciton[x].begin(), cdf_y_condiciton[x].end(), xi_2) - cdf_y_condiciton[x].begin();
 
-            // ´æ´¢ÎÆÀí×ø±ê xy ºÍ xy Î»ÖÃ¶ÔÓ¦µÄ¸ÅÂÊÃÜ¶È
+            // å­˜å‚¨çº¹ç†åæ ‡ xy å’Œ xy ä½ç½®å¯¹åº”çš„æ¦‚ç‡å¯†åº¦
             sample_x[i][j] = float(x) / width;
             sample_y[i][j] = float(y) / height;
             sample_p[i][j] = pdf[i][j];
@@ -542,8 +540,8 @@ float* calculateHdrCache(float* HDR, int width, int height) {
         }
     }
 
-    // ÕûºÏ½á¹ûµ½ÎÆÀí
-    // R,G Í¨µÀ´æ´¢Ñù±¾ (x,y) ¶ø B Í¨µÀ´æ´¢ pdf(i, j)
+    // æ•´åˆç»“æœåˆ°çº¹ç†
+    // R,G é€šé“å­˜å‚¨æ ·æœ¬ (x,y) è€Œ B é€šé“å­˜å‚¨ pdf(i, j)
     float* cache = new float[width * height * 3];
     //for (int i = 0; i < width * height * 3; i++) cache[i] = 0.0;
 
