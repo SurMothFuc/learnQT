@@ -80,6 +80,7 @@ float maxComponent(vec3 v) {
     return max(max(v.r, v.g), v.b);
 }
 
+
 const uint V[8*32] = uint[8*32](
     2147483648u, 1073741824u, 536870912u, 268435456u, 134217728u, 67108864u, 33554432u, 16777216u, 8388608u, 4194304u, 2097152u, 1048576u, 524288u, 262144u, 131072u, 65536u, 32768u, 16384u, 8192u, 4096u, 2048u, 1024u, 512u, 256u, 128u, 64u, 32u, 16u, 8u, 4u, 2u, 1u,
     2147483648u, 3221225472u, 2684354560u, 4026531840u, 2281701376u, 3422552064u, 2852126720u, 4278190080u, 2155872256u, 3233808384u, 2694840320u, 4042260480u, 2290614272u, 3435921408u, 2863267840u, 4294901760u, 2147516416u, 3221274624u, 2684395520u, 4026593280u, 2281736192u, 3422604288u, 2852170240u, 4278255360u, 2155905152u, 3233857728u, 2694881440u, 4042322160u, 2290649224u, 3435973836u, 2863311530u, 4294967295u,
@@ -264,13 +265,43 @@ HitResult hitTriangle(Triangle triangle, Ray ray) {
         // 根据交点位置插值顶点法线
         //float alpha = (-(P.x-p2.x)*(p3.y-p2.y) + (P.y-p2.y)*(p3.x-p2.x)) / (-(p1.x-p2.x-0.00005)*(p3.y-p2.y+0.00005) + (p1.y-p2.y+0.00005)*(p3.x-p2.x+0.00005));
        // float beta  = (-(P.x-p3.x)*(p1.y-p3.y) + (P.y-p3.y)*(p1.x-p3.x)) / (-(p2.x-p3.x-0.00005)*(p1.y-p3.y+0.00005) + (p2.y-p3.y+0.00005)*(p1.x-p3.x+0.00005));
-          float alpha = (-(P.x-p2.x)*(p3.y-p2.y) + (P.y-p2.y)*(p3.x-p2.x)) / (-(p1.x-p2.x)*(p3.y-p2.y) + (p1.y-p2.y)*(p3.x-p2.x)+1e-7);
-        float beta  = (-(P.x-p3.x)*(p1.y-p3.y) + (P.y-p3.y)*(p1.x-p3.x)) / (-(p2.x-p3.x)*(p1.y-p3.y) + (p2.y-p3.y)*(p1.x-p3.x)+1e-7);
+       
+       // float alpha = (-(P.x-p2.x)*(p3.y-p2.y) + (P.y-p2.y)*(p3.x-p2.x)) / (-(p1.x-p2.x)*(p3.y-p2.y) + (p1.y-p2.y)*(p3.x-p2.x)+1e-7);
+       // float beta  = (-(P.x-p3.x)*(p1.y-p3.y) + (P.y-p3.y)*(p1.x-p3.x)) / (-(p2.x-p3.x)*(p1.y-p3.y) + (p2.y-p3.y)*(p1.x-p3.x)+1e-7);
         
-        float gama  = 1.0 - alpha - beta;
-        vec3 Nsmooth = alpha * triangle.n1 + beta * triangle.n2 + gama * triangle.n3;
-        //Nsmooth = N;
-        Nsmooth = normalize(Nsmooth);
+        //float gama  = 1.0 - alpha - beta;
+
+        // 选择最大投影轴 (防止退化三角形导致的分母接近零)
+        vec3 absNormal = abs(N);
+        int maxAxis = (absNormal.x > absNormal.y) ? 
+                     ((absNormal.x > absNormal.z) ? 0 : 2) :
+                     ((absNormal.y > absNormal.z) ? 1 : 2);
+
+        // 投影顶点到选定平面
+        vec2 p1_proj, p2_proj, p3_proj, P_proj;
+        if (maxAxis == 0) { // 投影到 YZ 平面
+            p1_proj = p1.yz; p2_proj = p2.yz; p3_proj = p3.yz; P_proj = P.yz;
+        } else if (maxAxis == 1) { // 投影到 XZ 平面
+            p1_proj = p1.xz; p2_proj = p2.xz; p3_proj = p3.xz; P_proj = P.xz;
+        } else { // 投影到 XY 平面
+            p1_proj = p1.xy; p2_proj = p2.xy; p3_proj = p3.xy; P_proj = P.xy;
+        }
+        
+        float alpha = abs(-( P_proj.x-p2_proj.x)*(p3_proj.y-p2_proj.y) + ( P_proj.y-p2_proj.y)*(p3_proj.x-p2_proj.x)) 
+        / (abs(-(p1_proj.x-p2_proj.x)*(p3_proj.y-p2_proj.y) + (p1_proj.y-p2_proj.y)*(p3_proj.x-p2_proj.x))+1e-7);
+        float beta  = abs(-( P_proj.x-p3_proj.x)*(p1_proj.y-p3_proj.y) + ( P_proj.y-p3_proj.y)*(p1_proj.x-p3_proj.x)) 
+        / (abs(-(p2_proj.x-p3_proj.x)*(p1_proj.y-p3_proj.y) + (p2_proj.y-p3_proj.y)*(p1_proj.x-p3_proj.x))+1e-7);
+        
+        float gamma  = 1.0 - alpha - beta;
+        vec3 Nsmooth = alpha * triangle.n1 + beta * triangle.n2 + gamma * triangle.n3;
+
+        const float EPS = 1e-6;
+        if (length(Nsmooth) < EPS) {
+            Nsmooth = N; // 防止接近零向量导致溢出
+        }
+
+        Nsmooth = normalize(Nsmooth);     
+        //Nsmooth = N;     
         res.normal = (res.isInside) ? (-Nsmooth) : (Nsmooth);
     }
 
@@ -785,9 +816,24 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
 
     for(int bounce=0; bounce<maxBounce; bounce++) {
         vec3 V = -hit.viewDir;
-        vec3 N = hit.normal;       
+        vec3 N = hit.normal;   
 
 
+        if(isnan(N.x))
+        {
+            Lo=vec3(1.0,0,0);
+            break;
+        }
+        else if(isnan(N.y))
+        {
+            Lo=vec3(0,1.0,0);
+            break;
+        }
+        else if(isnan(N.z))
+        {
+            Lo=vec3(0,0,1.0);
+            break;
+        }
         // HDR 环境贴图重要性采样    
         Ray hdrTestRay;
         hdrTestRay.startPoint = hit.hitPoint;
@@ -811,6 +857,7 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
             }
         }
         
+        
         // 获取 3 个随机数
         vec2 uv = sobolVec2(frameCounter+1u, uint(bounce));
         uv = CranleyPattersonRotation(uv);
@@ -830,6 +877,8 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
         randomRay.startPoint = hit.hitPoint;
         randomRay.direction = L;
         HitResult newHit = hitBVH(randomRay);
+
+
 
         // 获取 L 方向上的 BRDF 值和概率密度
         vec3 f_r = BRDF_Evaluate(V, N, L, hit.material);
@@ -888,24 +937,10 @@ void main(void)
         color = Le + Li;
     }  
 
-    if(isnan(color.x))
-    {
-        color=vec3(1.0,0,0);
-    }
-    else if(isnan(color.y))
-    {
-        color=vec3(0,1.0,0);
-    }
-    else if(isnan(color.z))
-    {
-        color=vec3(0,0,1.0);
-    }
-    else
-    {
+    
         vec3 lastColor = texture2D(lastFrame, pix.xy*0.5+0.5).rgb;
        // lastColor*=100.0; 
-        color = mix(lastColor, color, 1.0/float(frameCounter+1u));  
-    }
+        color = mix(lastColor, color, 1.0/float(frameCounter+1u)); 
 
     
 

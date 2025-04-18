@@ -289,6 +289,9 @@ void Scene::readObj(std::string filepath, std::vector<Triangle>& triangles, Mate
             t.n1 =(normals[indices[i]]).normalized();
             t.n2 =(normals[indices[i + 1]]).normalized();
             t.n3 = (normals[indices[i + 2]]).normalized();
+            if (t.n1.isNull() || t.n2.isNull() || t.n2.isNull()) {
+                std::cout << "zero normal Tri id: "+std::to_string(offset + i / 3) << std::endl;
+            }
         }
 
         // 传材质
