@@ -74,6 +74,12 @@ struct HitResult {
     vec3 viewDir;           // 击中该点的光线的方向
     Material material;      // 命中点的表面材质
 };
+
+// 返回 vec3 中最大的分量（r/g/b 中的最大值）
+float maxComponent(vec3 v) {
+    return max(max(v.r, v.g), v.b);
+}
+
 const uint V[8*32] = uint[8*32](
     2147483648u, 1073741824u, 536870912u, 268435456u, 134217728u, 67108864u, 33554432u, 16777216u, 8388608u, 4194304u, 2097152u, 1048576u, 524288u, 262144u, 131072u, 65536u, 32768u, 16384u, 8192u, 4096u, 2048u, 1024u, 512u, 256u, 128u, 64u, 32u, 16u, 8u, 4u, 2u, 1u,
     2147483648u, 3221225472u, 2684354560u, 4026531840u, 2281701376u, 3422552064u, 2852126720u, 4278190080u, 2155872256u, 3233808384u, 2694840320u, 4042260480u, 2290614272u, 3435921408u, 2863267840u, 4294901760u, 2147516416u, 3221274624u, 2684395520u, 4026593280u, 2281736192u, 3422604288u, 2852170240u, 4278255360u, 2155905152u, 3233857728u, 2694881440u, 4042322160u, 2290649224u, 3435973836u, 2863311530u, 4294967295u,
@@ -263,6 +269,7 @@ HitResult hitTriangle(Triangle triangle, Ray ray) {
         
         float gama  = 1.0 - alpha - beta;
         vec3 Nsmooth = alpha * triangle.n1 + beta * triangle.n2 + gama * triangle.n3;
+        //Nsmooth = N;
         Nsmooth = normalize(Nsmooth);
         res.normal = (res.isInside) ? (-Nsmooth) : (Nsmooth);
     }
@@ -846,6 +853,13 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
         // 递归(步进)
         hit = newHit;
         history *= f_r * NdotL / pdf_brdf;   // 累积颜色
+
+        // 加入俄罗斯轮盘赌 (关键位置)
+        float rrSurvivalProb = min(1.0, max(maxComponent(history), 0.05)); // 保持最小5%存活率
+        if (bounce >= 2) { // 前3次反弹不启用RR减少噪声
+            if (rand() > rrSurvivalProb) break;     // 终止路径
+            history /= rrSurvivalProb;              // 保持无偏
+        }
     }
     
     return Lo;
@@ -870,7 +884,7 @@ void main(void)
             color = hdrColor(ray.direction);
     } else {
         vec3 Le = firstHit.material.emissive;
-        vec3 Li = pathTracingImportanceSampling(firstHit,2);
+        vec3 Li = pathTracingImportanceSampling(firstHit,6);
         color = Le + Li;
     }  
 
