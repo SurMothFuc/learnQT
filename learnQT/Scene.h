@@ -1,17 +1,9 @@
 ﻿#pragma once
 #include "Camera.h"
-#include <iostream>
-#include <fstream>
-#include <sstream>
 #include "hdrloader.h"
-#include "Material.h"
+#include <Mesh.h>
+#include "BVH.h"
 
-// 三角形定义
-struct Triangle {
-    QVector3D p1, p2, p3;    // 顶点坐标
-    QVector3D n1, n2, n3;    // 顶点法线
-    Material material;  // 材质
-};
 struct Triangle_encoded {
     QVector3D p1, p2, p3;    // 顶点坐标
     QVector3D n1, n2, n3;    // 顶点法线
@@ -23,20 +15,11 @@ struct Triangle_encoded {
     QVector3D param4;        // (clearcoatGloss, IOR, transmission)
 };
 
-
-// BVH 树节点
-struct BVHNode {
-    int left, right;    // 左右子树索引
-    int n, index;       // 叶子节点信息               
-    QVector3D AA, BB;        // 碰撞盒
-};
-
 struct BVHNode_encoded {
     QVector3D childs;        // (left, right, 保留)
     QVector3D leafInfo;      // (n, index, 保留)
     QVector3D AA, BB;
 };
-
 
 
 class Scene {
@@ -50,10 +33,10 @@ class Scene {
         return instance;
     }
 
-	Scene();
+	Scene();    
+    
+    void DataEncode(int nTriangles, int nNodes);
 
-    void readObj(std::string filepath, std::vector<Triangle>& triangles, Material material,QMatrix4x4 trans, bool smoothNormal);
-    QMatrix4x4 getTransformMatrix(QVector3D rotateCtrl, QVector3D translateCtrl, QVector3D scaleCtrl);
     void updateMaterial(QVector3D emissive, QVector3D  baseColor,
         float subsurface, float  metallic, float  specular,
         float specularTint, float roughness, float anisotropic,
@@ -63,8 +46,8 @@ class Scene {
 public:
 
     Camera camera;
-    // 物体表面材质定义
 
+    //data store
     std::vector<Triangle> triangles;
     std::vector<BVHNode> nodes;
     std::vector<Triangle_encoded> triangles_encoded;
@@ -74,8 +57,5 @@ public:
     int hdrResolution;
 };
 
-int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& nodes, int l, int r, int n);
-bool cmpz(const Triangle& t1, const Triangle& t2);
-bool cmpx(const Triangle& t1, const Triangle& t2);
-bool cmpy(const Triangle& t1, const Triangle& t2); 
-float* calculateHdrCache(float* HDR, int width, int height);
+
+

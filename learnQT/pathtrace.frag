@@ -818,22 +818,6 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
         vec3 V = -hit.viewDir;
         vec3 N = hit.normal;   
 
-
-        if(isnan(N.x))
-        {
-            Lo=vec3(1.0,0,0);
-            break;
-        }
-        else if(isnan(N.y))
-        {
-            Lo=vec3(0,1.0,0);
-            break;
-        }
-        else if(isnan(N.z))
-        {
-            Lo=vec3(0,0,1.0);
-            break;
-        }
         // HDR 环境贴图重要性采样    
         Ray hdrTestRay;
         hdrTestRay.startPoint = hit.hitPoint;
