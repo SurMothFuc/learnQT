@@ -10,14 +10,13 @@ Scene::Scene(){
     mt = Material();
     mt.roughness = 0.1;
     mt.specular = 1.0;
-    mt.subsurface = 1.0;
-    mt.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
+    mt.baseColor = QVector3D(0.0f, 0.0f, 1.0f);
     MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.0, 0.0, 0), QVector3D(1,1, 1)), true);
     
     mt = Material();
     mt.roughness = 0.1;
     mt.specular = 1.0;
-    mt.subsurface = 1.0;
+    //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(0.725, 0.71, 0.68);
     MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.7, 0), QVector3D(18.83, 0.01, 18.83)), false);

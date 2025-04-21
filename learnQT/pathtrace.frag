@@ -888,8 +888,8 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
         history *= f_r * NdotL / pdf_brdf;   // 累积颜色
 
         // 加入俄罗斯轮盘赌 (关键位置)
-        float rrSurvivalProb = min(1.0, max(maxComponent(history), 0.05)); // 保持最小5%存活率
         if (bounce >= 2) { // 前3次反弹不启用RR减少噪声
+            float rrSurvivalProb = min(1.0, max(maxComponent(history), 0.05)); // 保持最小5%存活率
             if (rand() > rrSurvivalProb) break;     // 终止路径
             history /= rrSurvivalProb;              // 保持无偏
         }
