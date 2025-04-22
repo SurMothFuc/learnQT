@@ -1,5 +1,6 @@
 ﻿#include "Camera.h"
 #include <QDebug>
+#include <qmath.h>
 
 
 Camera::Camera(QVector3D position, QVector3D up, float yaw, float pitch) :
@@ -12,7 +13,18 @@ Camera::Camera(QVector3D position, QVector3D up, float yaw, float pitch) :
     mouseSensitivity(SENSITIVITY),
     zoom(ZOOM) {
     this->updateCameraVectors();
-    r = position.z();
+    r = position.length();
+
+    QVector3D n_posi = position.normalized();
+    upAngle = qRadiansToDegrees(asin(n_posi.y()));
+
+    float cosUp = cos(qDegreesToRadians(upAngle));
+    if (qAbs(cosUp) > 1e-6) {  // 避免除以接近零的值
+        rotatAngle = qRadiansToDegrees(atan2(-n_posi.x(), n_posi.z()));
+    }
+    else {
+        rotatAngle = 0.0f;  // 默认值
+    }
     for (uint i = 0; i != 1024; ++i)
         keys[i] = false;
 }
@@ -99,6 +111,7 @@ void Camera::processMouseMovement(float xoffset, float yoffset, bool constraintP
 
     position = QVector3D(-sin(radians(rotatAngle)) * cos(radians(upAngle)), sin(radians(upAngle)), cos(radians(rotatAngle)) * cos(radians(upAngle)));
     position *= r;
+    qDebug() << position << " " << rotatAngle << " " << upAngle;
     this->updateCameraVectors();
 }
 

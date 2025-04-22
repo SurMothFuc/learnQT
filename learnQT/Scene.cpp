@@ -5,13 +5,13 @@
 
 Scene::Scene(){
 
-    camera = Camera(QVector3D(3.0f, 0.0f, 1.48f), QVector3D(0.0f, 1.0f, 0.0f));
+    camera = Camera(QVector3D(0.1f, 0.8f, 1.5f), QVector3D(0.0f, 1.0f, 0.0f));
     Material mt;
     mt = Material();
     mt.roughness = 0.1;
     mt.specular = 1.0;
-    mt.baseColor = QVector3D(0.0f, 0.0f, 1.0f);
-    MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.0, 0.0, 0), QVector3D(1,1, 1)), true);
+    mt.baseColor = QVector3D(92.0f/255.0f, 1.0f, 69.0f / 255.0f);
+    MeshLoader::readObj("models/untitld.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(-90.0, 0, 0), QVector3D(0.0,0.1, 0.0), QVector3D(1,1, 1)), false);
     
     mt = Material();
     mt.roughness = 0.1;

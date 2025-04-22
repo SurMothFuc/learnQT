@@ -125,7 +125,7 @@ void MeshLoader::readObj(std::string filepath, std::vector<Triangle>& triangles,
             t.n2 = (normals[indices[i + 1]]).normalized();
             t.n3 = (normals[indices[i + 2]]).normalized();
             if (t.n1.isNull() || t.n2.isNull() || t.n2.isNull()) {
-                std::cout << "zero normal Tri id: " + std::to_string(offset + i / 3) << std::endl;
+                std::cout << "zero normal Tri id: " + std::to_string(offset + i / 3) << std::endl;//如果某个三角面过小，很容易导致算得零向量
             }
         }
 
