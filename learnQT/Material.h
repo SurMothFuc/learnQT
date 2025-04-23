@@ -17,6 +17,6 @@ public:
     float sheenTint = 0.0;//控制织物高光颜色在 baseColor 和 vec3(1) 之间插值
     float clearcoat = 0.0;//清漆强度，模拟粗糙物体表面的光滑涂层（比如木地板）
     float clearcoatGloss = 0.0;// 清漆的 “粗糙度”，或者说光泽程度
-    float IOR = 1.0;
+    float IOR = 1.0;//折射率
     float transmission = 0.0;
 };
