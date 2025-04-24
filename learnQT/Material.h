@@ -2,6 +2,22 @@
 
 #include <QVector3D>
 
+
+
+/**
+ * baseColor（固有色）：表面颜色，通常由纹理贴图提供。
+ * subsurface（次表面）：使用次表面近似控制漫反射形状。
+ * metallic（金属度）：金属（0 = 电介质，1 =金属）。这是两种不同模型之间的线性混合。金属模型没有漫反射成分，并且还具有等于基础色的着色入射镜面反射。
+ * specular（镜面反射强度）：入射镜面反射量。用于取代折射率。
+ * specularTint（镜面反射颜色）：对美术控制的让步，用于对基础色（basecolor）的入射镜面反射进行颜色控制。掠射镜面反射仍然是非彩色的。
+ * roughness（粗糙度）：表面粗糙度，控制漫反射和镜面反射。
+ * anisotropic（各向异性强度）：各向异性程度。用于控制镜面反射高光的纵横比。（0 =各向同性，1 =最大各向异性。）
+ * sheen（光泽度）：一种额外的掠射分量（grazing component），主要用于布料。
+ * sheenTint（光泽颜色）：对sheen（光泽度）的颜色控制。
+ * clearcoat（清漆强度）：有特殊用途的第二个镜面波瓣（specular lobe）。
+ * clearcoatGloss（清漆光泽度）：控制透明涂层光泽度，0 = “缎面（satin）”外观，1 = “光泽（gloss）”外观。
+ */
+
 class Material {
 public:
 
