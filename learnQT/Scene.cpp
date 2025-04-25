@@ -4,16 +4,14 @@
 
 
 Scene::Scene(){
-
-    camera = Camera(QVector3D(0.1f,0.0f, 1.5f), QVector3D(0.0f, 1.0f, 0.0f));
+    camera = Camera(QVector3D(3.0f, 0.0f, 1.48f), QVector3D(0.0f, 1.0f, 0.0f));
     Material mt;
     mt = Material();
     mt.roughness = 0.1;
     mt.specular = 1.0;
-    mt.baseColor = QVector3D(92.0f/255.0f, 1.0f, 69.0f / 255.0f);
-    mt.emissive = QVector3D(1.0f, 1.0f,1.0f);
-    MeshLoader::readObj("models/untitld.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(-90.0, 0, 0), QVector3D(0.0,0.1, 0.0), QVector3D(1,1, 1)), false);
-    
+    mt.baseColor = QVector3D(0.0f, 0.0f, 1.0f);
+    MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.0, 0.0, 0), QVector3D(1, 1, 1)), true);
+
     mt = Material();
     mt.roughness = 0.1;
     mt.specular = 1.0;
@@ -21,7 +19,6 @@ Scene::Scene(){
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(0.725, 0.71, 0.68);
     MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.7, 0), QVector3D(18.83, 0.01, 18.83)), false);
-
      
     int nTriangles = triangles.size();
     std::cout << "模型读取完成: 共 " << nTriangles << " 个三角形" << std::endl;
