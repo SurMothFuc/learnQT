@@ -493,16 +493,10 @@ float GTR2(float NdotH, float a) {
     float t = 1 + (a2-1)*NdotH*NdotH;
     return a2 / (PI * t*t);
 }
-float GTR2_aniso(float NdotH, float HdotX, float HdotY, float ax, float ay) {
-    return 1 / (PI * ax*ay * sqr( sqr(HdotX/ax) + sqr(HdotY/ay) + NdotH*NdotH ));
-}
 float smithG_GGX(float NdotV, float alphaG) {
     float a = alphaG*alphaG;
     float b = NdotV*NdotV;
     return 1 / (NdotV + sqrt(a + b - a*b));
-}
-float smithG_GGX_aniso(float NdotV, float VdotX, float VdotY, float ax, float ay) {
-    return 1 / (NdotV + sqrt( sqr(VdotX*ax) + sqr(VdotY*ay) + sqr(NdotV) ));
 }
 // 将三维向量 v 转为 HDR map 的纹理坐标 uv
 vec2 toSphericalCoord(vec3 v) {
@@ -585,10 +579,13 @@ vec3 SampleGTR1(float xi_1, float xi_2, vec3 V, vec3 N, float alpha) {
 
     return L;
 }
-vec3 BRDF_Evaluate(vec3 V, vec3 N, vec3 L, in Material material) {
+vec3 Cal_BRDF(vec3 V, vec3 N, vec3 L, in Material material,inout float pdf){
     float NdotL = dot(N, L);
     float NdotV = dot(N, V);
-    if(NdotL < 0 || NdotV < 0) return vec3(0);
+    if(NdotL < 0 || NdotV < 0){
+        pdf=0.0;
+        return vec3(0);
+    }
 
     vec3 H = normalize(L + V);
     float NdotH = dot(N, H);
@@ -612,7 +609,7 @@ vec3 BRDF_Evaluate(vec3 V, vec3 N, vec3 L, in Material material) {
     float Fss90 = LdotH * LdotH * material.roughness;
     float Fss = mix(1.0, Fss90, FL) * mix(1.0, Fss90, FV);
     float ss = 1.25 * (Fss * (1.0 / (NdotL + NdotV) - 0.5) + 0.5);
-     
+
     // 镜面反射 -- 各向同性
     float alpha = max(0.001, sqr(material.roughness));
     float Ds = GTR2(NdotH, alpha);
@@ -628,80 +625,35 @@ vec3 BRDF_Evaluate(vec3 V, vec3 N, vec3 L, in Material material) {
 
     // sheen
     vec3 Fsheen = FH * material.sheen * Csheen;
-    
+
+    /// 计算pdf
+    // 分别计算三种 BRDF 的概率密度
+    float pdf_diffuse = NdotL / PI;
+    float pdf_specular = Ds * NdotH / (4.0 * LdotH);
+    float pdf_clearcoat = Dr * NdotH / (4.0 * LdotH);
+
+    // 辐射度统计
+    float r_diffuse = (1.0 - material.metallic);
+    float r_specular = 1.0;
+    float r_clearcoat = 0.25 * material.clearcoat;
+    float r_sum = r_diffuse + r_specular + r_clearcoat;
+    // 根据辐射度计算选择某种采样方式的概率
+    float p_diffuse = r_diffuse / r_sum;
+    float p_specular = r_specular / r_sum;
+    float p_clearcoat = r_clearcoat / r_sum;
+    // 根据概率混合 pdf
+    pdf = p_diffuse   * pdf_diffuse 
+          + p_specular  * pdf_specular
+          + p_clearcoat * pdf_clearcoat;
+    pdf = max(1e-10, pdf);
+
+    ///计算brdf
     vec3 diffuse = (1.0/PI) * mix(Fd, ss, material.subsurface) * Cdlin + Fsheen;
     vec3 specular = Gs * Fs * Ds;
     vec3 clearcoat = vec3(0.25 * Gr * Fr * Dr * material.clearcoat);
-
     return diffuse * (1.0 - material.metallic) + specular + clearcoat;
 }
-vec3 BRDF_Evaluate(vec3 V, vec3 N, vec3 L, vec3 X, vec3 Y, in Material material){
-    float NdotL = dot(N, L);
-    float NdotV = dot(N, V);
-    if(NdotL < 0 || NdotV < 0) return vec3(0);
 
-    vec3 H = normalize(L + V);
-    float NdotH = dot(N, H);
-    float LdotH = dot(L, H);
-
-    // 各种颜色
-    vec3 Cdlin = material.baseColor;
-    float Cdlum = 0.3 * Cdlin.r + 0.6 * Cdlin.g  + 0.1 * Cdlin.b;
-    vec3 Ctint = (Cdlum > 0) ? (Cdlin/Cdlum) : (vec3(1));   
-    vec3 Cspec = material.specular * mix(vec3(1), Ctint, material.specularTint);
-    vec3 Cspec0 = mix(0.08*Cspec, Cdlin, material.metallic); // 0° 镜面反射颜色
-    vec3 Csheen = mix(vec3(1), Ctint, material.sheenTint);   // 织物颜色
-
-	
-	// 漫反射
-	float Fd90 = 0.5 + 2.0 * LdotH * LdotH * material.roughness;
-	float FL = SchlickFresnel(NdotL);
-	float FV = SchlickFresnel(NdotV);
-	float Fd = mix(1.0, Fd90, FL) * mix(1.0, Fd90, FV);
-	
-    // 次表面散射
-    float Fss90 = LdotH * LdotH * material.roughness;
-    float Fss = mix(1.0, Fss90, FL) * mix(1.0, Fss90, FV);
-    float ss = 1.25 * (Fss * (1.0 / (NdotL + NdotV) - 0.5) + 0.5);
-
-    
-    //高光
-    /* 
-    // 镜面反射 -- 各向同性
-    float alpha = material.roughness * material.roughness;
-    float Ds = GTR2(NdotH, alpha);
-    float FH = SchlickFresnel(LdotH);
-    vec3 Fs = mix(Cspec0, vec3(1), FH);
-    float Gs = smithG_GGX(NdotL, material.roughness);
-    Gs *= smithG_GGX(NdotV, material.roughness);
-    */
-    // 镜面反射 -- 各向异性
-    float aspect = sqrt(1.0 - material.anisotropic * 0.9);
-    float ax = max(0.001, sqr(material.roughness)/aspect);
-    float ay = max(0.001, sqr(material.roughness)*aspect);
-    float Ds = GTR2_aniso(NdotH, dot(H, X), dot(H, Y), ax, ay);
-    float FH = SchlickFresnel(LdotH);
-    vec3 Fs = mix(Cspec0, vec3(1), FH);
-    float Gs;
-    Gs  = smithG_GGX_aniso(NdotL, dot(L, X), dot(L, Y), ax, ay);
-    Gs *= smithG_GGX_aniso(NdotV, dot(V, X), dot(V, Y), ax, ay);
-	
-
-    // 清漆
-	float Dr = GTR1(NdotH, mix(0.1, 0.001, material.clearcoatGloss));
-	float Fr = mix(0.04, 1.0, FH);
-	float Gr = smithG_GGX(NdotL, 0.25) * smithG_GGX(NdotV, 0.25);
-	
-    
-     // sheen
-    vec3 Fsheen = FH * material.sheen * Csheen;
-
-    vec3 diffuse = (1.0/PI) * mix(Fd, ss, material.subsurface) * Cdlin + Fsheen;
-    vec3 specular = Gs * Fs * Ds;
-    vec3 clearcoat = vec3(0.25 * Gr * Fr * Dr * material.clearcoat);
-
-	return diffuse  * (1.0 - material.metallic) + specular + clearcoat;
-}
 // 按照辐射度分布分别采样三种 BRDF
 vec3 SampleBRDF(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Material material) {
     float alpha_GTR1 = mix(0.1, 0.001, material.clearcoatGloss);
@@ -735,96 +687,7 @@ vec3 SampleBRDF(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Material 
     }
     return vec3(0, 1, 0);
 }
-// 获取 BRDF 在 L 方向上的概率密度
-float BRDF_Pdf(vec3 V, vec3 N, vec3 L, in Material material) {
-    float NdotL = dot(N, L);
-    float NdotV = dot(N, V);
-    if(NdotL < 0 || NdotV < 0) return 0;
 
-    vec3 H = normalize(L + V);
-    float NdotH = dot(N, H);
-    float LdotH = dot(L, H);
-     
-    // 镜面反射 -- 各向同性
-    float alpha = max(0.001, sqr(material.roughness));
-    float Ds = GTR2(NdotH, alpha); 
-    float Dr = GTR1(NdotH, mix(0.1, 0.001, material.clearcoatGloss));   // 清漆
-
-    // 分别计算三种 BRDF 的概率密度
-    float pdf_diffuse = NdotL / PI;
-    float pdf_specular = Ds * NdotH / (4.0 * dot(L, H));
-    float pdf_clearcoat = Dr * NdotH / (4.0 * dot(L, H));
-
-    // 辐射度统计
-    float r_diffuse = (1.0 - material.metallic);
-    float r_specular = 1.0;
-    float r_clearcoat = 0.25 * material.clearcoat;
-    float r_sum = r_diffuse + r_specular + r_clearcoat;
-
-    // 根据辐射度计算选择某种采样方式的概率
-    float p_diffuse = r_diffuse / r_sum;
-    float p_specular = r_specular / r_sum;
-    float p_clearcoat = r_clearcoat / r_sum;
-
-    // 根据概率混合 pdf
-    float pdf = p_diffuse   * pdf_diffuse 
-              + p_specular  * pdf_specular
-              + p_clearcoat * pdf_clearcoat;
-
-    pdf = max(1e-10, pdf);
-    return pdf;
-}
-
-// 路径追踪
-vec3 pathTracing(HitResult hit, int maxBounce) {
-
-    vec3 Lo = vec3(0);      // 最终的颜色
-    vec3 history = vec3(1); // 递归积累的颜色
-
-    for(int bounce=0; bounce<maxBounce; bounce++) {
-        // 随机出射方向 wi
-      // vec3 L = toNormalHemisphere(SampleHemisphere(rand(),rand()), hit.normal);
-       
-       vec2 uv = sobolVec2(uint(frameCounter+uint(1)), uint(bounce));
-       uv = CranleyPattersonRotation(uv);
-       vec3 L = SampleHemisphere(uv.x, uv.y);
-       L = toNormalHemisphere(L, hit.normal);	
-        // 漫反射: 随机发射光线
-        Ray randomRay;
-        randomRay.startPoint = hit.hitPoint;
-        randomRay.direction = L;
-        HitResult newHit = hitBVH(randomRay);
-
-        vec3 V = -hit.viewDir;
-        vec3 N = hit.normal;
-
-        float pdf = 1.0 / (2.0*PI);                                   // 半球均匀采样概率密度
-        
-        float cosine_o = max(0, dot(V, N));                             // 入射光和法线夹角余弦
-        float cosine_i = max(0, dot(L, N));                             // 出射光和法线夹角余弦
-        vec3 tangent, bitangent;
-        getTangent(N, tangent, bitangent);
-        vec3 f_r = BRDF_Evaluate(V, N, L, tangent, bitangent, hit.material);
-       // vec3 f_r = hit.material.baseColor / PI;                         // 漫反射 BRDF
-
-        // 未命中
-        if(!newHit.isHit) {
-            vec3 skyColor = hdrColor(randomRay.direction);
-            Lo += history * skyColor * f_r * cosine_i / pdf;
-            break;
-        }
-        
-        // 命中光源积累颜色
-        vec3 Le = newHit.material.emissive;
-        Lo += history * Le * f_r * cosine_i / pdf;
-        
-        // 递归(步进)
-        hit = newHit;
-        history *= f_r * cosine_i / pdf;  // 累积颜色
-    }
-    
-    return Lo;
-}
 vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
 
     vec3 Lo = vec3(0);      // 最终的颜色
@@ -850,9 +713,8 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
                 vec3 L = hdrTestRay.direction;
                 vec3 color = hdrColor(L);
                 float pdf_light =hdrPdf(L, hdrResolution);
-                vec3 f_r = BRDF_Evaluate(V, N, L, hit.material);
-                float pdf_brdf = BRDF_Pdf(V, N, L, hit.material);
-
+                float pdf_brdf=0.0;
+                vec3 f_r = Cal_BRDF(V, N, L, hit.material,pdf_brdf);
                 float mis_weight = misMixWeight(pdf_light, pdf_brdf);
                 Lo += mis_weight * history * color * f_r * dot(N, L) / pdf_light;
                 //Lo=L*0.5+0.5;
@@ -883,8 +745,8 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
 
 
         // 获取 L 方向上的 BRDF 值和概率密度
-        vec3 f_r = BRDF_Evaluate(V, N, L, hit.material);
-        float pdf_brdf = BRDF_Pdf(V, N, L, hit.material);
+        float pdf_brdf=0.0;
+        vec3 f_r = Cal_BRDF(V, N, L, hit.material,pdf_brdf);
         if(pdf_brdf <= 0.0) break;
 
        // 未命中        
