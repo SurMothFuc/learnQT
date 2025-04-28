@@ -476,7 +476,7 @@ float sqr(float x) {
 
 
 float SchlickFresnel(float u) {
-    float m = clamp(1-u, 0, 1);
+    float m = clamp(1-u, 0.0, 1.0);
     float m2 = m*m;
     return m2*m2*m; // pow(m,5)
 }
@@ -695,6 +695,192 @@ vec3 SampleBRDF(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Material 
     return vec3(0, 1, 0);
 }
 
+
+void Onb(in vec3 N, inout vec3 T, inout vec3 B)
+{
+    vec3 up = abs(N.z) < 0.9999999 ? vec3(0, 0, 1) : vec3(1, 0, 0);
+    T = normalize(cross(up, N));
+    B = cross(N, T);
+}
+vec3 ToLocal(vec3 X, vec3 Y, vec3 Z, vec3 V)
+{
+    return vec3(dot(V, X), dot(V, Y), dot(V, Z));
+}
+vec3 ToWorld(vec3 X, vec3 Y, vec3 Z, vec3 V)
+{
+    return V.x * X + V.y * Y + V.z * Z;
+}
+vec3 CosineSampleHemisphere(float r1, float r2)
+{
+    vec3 dir;
+    float r = sqrt(r1);
+    float phi = 2.0*PI * r2;
+    dir.x = r * cos(phi);
+    dir.y = r * sin(phi);
+    dir.z = sqrt(max(0.0, 1.0 - dir.x * dir.x - dir.y * dir.y));
+    return dir;
+}
+vec3 SampleGGXVNDF(vec3 V, float ax, float ay, float r1, float r2)
+{
+    vec3 Vh = normalize(vec3(ax * V.x, ay * V.y, V.z));
+
+    float lensq = Vh.x * Vh.x + Vh.y * Vh.y;
+    vec3 T1 = lensq > 0 ? vec3(-Vh.y, Vh.x, 0) * inversesqrt(lensq) : vec3(1, 0, 0);
+    vec3 T2 = cross(Vh, T1);
+
+    float r = sqrt(r1);
+    float phi = 2.0 * PI * r2;
+    float t1 = r * cos(phi);
+    float t2 = r * sin(phi);
+    float s = 0.5 * (1.0 + Vh.z);
+    t2 = (1.0 - s) * sqrt(1.0 - t1 * t1) + s * t2;
+
+    vec3 Nh = t1 * T1 + t2 * T2 + sqrt(max(0.0, 1.0 - t1 * t1 - t2 * t2)) * Vh;
+
+    return normalize(vec3(ax * Nh.x, ay * Nh.y, max(0.0, Nh.z)));
+}
+
+//计算菲涅尔反射率
+float DielectricFresnel(float cosThetaI, float eta)
+{
+    float sinThetaTSq = eta * eta * (1.0f - cosThetaI * cosThetaI);
+
+    // Total internal reflection
+    if (sinThetaTSq > 1.0)
+        return 1.0;
+
+    float cosThetaT = sqrt(max(1.0 - sinThetaTSq, 0.0));
+
+    float rs = (eta * cosThetaT - cosThetaI) / (eta * cosThetaT + cosThetaI);
+    float rp = (eta * cosThetaI - cosThetaT) / (eta * cosThetaI + cosThetaT);
+
+    return 0.5f * (rs * rs + rp * rp);
+}
+
+vec3 SampleGTR1(float rgh, float r1, float r2)
+{
+    float a = max(0.001, rgh);
+    float a2 = a * a;
+
+    float phi = r1 * 2.0 * PI;
+
+    float cosTheta = sqrt((1.0 - pow(a2, 1.0 - r2)) / (1.0 - a2));
+    float sinTheta = clamp(sqrt(1.0 - (cosTheta * cosTheta)), 0.0, 1.0);
+    float sinPhi = sin(phi);
+    float cosPhi = cos(phi);
+
+    return vec3(sinTheta * cosPhi, sinTheta * sinPhi, cosTheta);
+}
+
+
+vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Material material)
+{
+    float eta=dot(-V, N) < 0.0 ? (1.0 / material.IOR) :material.IOR;
+    float aspect = sqrt(1.0 - material.anisotropic * 0.9);
+    float ax = max(0.001, material.roughness / aspect);
+    float ay = max(0.001, material.roughness * aspect);
+
+    vec3 L;
+
+    // TODO: Tangent and bitangent should be calculated from mesh (provided, the mesh has proper uvs)
+    vec3 T, B;
+    Onb(N, T, B);
+
+    // Transform to shading space to simplify operations (NDotL = L.z; NDotV = V.z; NDotH = H.z)
+    V = ToLocal(T, B, N, V);
+
+    // Tint colors
+    float lum = Luminance(material.baseColor);
+    vec3 ctint = lum > 0.0 ? material.baseColor / lum : vec3(1.0);
+    float F0 = (1.0 - eta) / (1.0 + eta);
+    F0 *= F0;    
+    vec3 Cspec0 = F0 * mix(vec3(1.0), ctint, material.specularTint);
+
+    // Model weights
+    float dielectricWt = (1.0 - material.metallic) * (1.0 - material.transmission);
+    float metalWt =material.metallic;
+    float glassWt = (1.0 - material.metallic) * material.transmission;
+
+    // Lobe probabilities
+    float schlickWt = SchlickFresnel(V.z);
+
+    float diffPr = dielectricWt *lum;
+    float dielectricPr = dielectricWt * Luminance(mix(Cspec0, vec3(1.0), schlickWt));
+    float metalPr = metalWt * Luminance(mix(material.baseColor, vec3(1.0), schlickWt));
+    float glassPr = glassWt;
+    float clearCtPr = 0.25 * material.clearcoat;
+
+    // Normalize probabilities
+    float invTotalWt = 1.0 / (diffPr + dielectricPr + metalPr + glassPr + clearCtPr);
+    diffPr *= invTotalWt;
+    dielectricPr *= invTotalWt;
+    metalPr *= invTotalWt;
+    glassPr *= invTotalWt;
+    clearCtPr *= invTotalWt;
+
+    // CDF of the sampling probabilities
+    float cdf[5];
+    cdf[0] = diffPr;
+    cdf[1] = cdf[0] + dielectricPr;
+    cdf[2] = cdf[1] + metalPr;
+    cdf[3] = cdf[2] + glassPr;
+    cdf[4] = cdf[3] + clearCtPr;
+
+
+    if (xi_3 < cdf[0]) // Diffuse
+    {
+        L = CosineSampleHemisphere(xi_1, xi_2);
+    }
+    else if (xi_3 < cdf[2]) // Dielectric + Metallic reflection
+    {
+        vec3 H = SampleGGXVNDF(V, ax, ay, xi_1, xi_2);
+        if (H.z < 0.0)
+            H = -H;
+
+        L = normalize(reflect(-V, H));
+    }
+    else if (xi_3 < cdf[3]) // Glass
+    {
+        vec3 H = SampleGGXVNDF(V, ax, ay, xi_1, xi_2);
+        float F = DielectricFresnel(abs(dot(V, H)), eta);
+
+        if (H.z < 0.0)
+            H = -H;
+
+        // Rescale random number for reuse
+        xi_3 = (xi_3 - cdf[2]) / (cdf[3] - cdf[2]);
+
+        // Reflection
+        if (xi_3 < F)
+        {
+            L = normalize(reflect(-V, H));
+        }
+        else // Transmission
+        {
+            L = normalize(refract(-V, H, eta));
+        }
+    }
+    else // Clearcoat
+    {
+        vec3 H = SampleGTR1(material.clearcoatGloss,xi_1, xi_2);
+
+        if (H.z < 0.0)
+            H = -H;
+
+        L = normalize(reflect(-V, H));
+    }
+
+    L = ToWorld(T, B, N, L);
+    V = ToWorld(T, B, N, V);
+
+    return L;
+}
+
+
+
+
+
+
 vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
 
     vec3 Lo = vec3(0);      // 最终的颜色
@@ -739,7 +925,8 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
         float xi_3 = rand();    // xi_3 是决定采样的随机数, 朴素 rand 就好
 
         // 采样 BRDF 得到一个方向 L
-        vec3 L = SampleBRDF(xi_1, xi_2, xi_3, V, N, hit.material); 
+        //vec3 L = SampleBRDF(xi_1, xi_2, xi_3, V, N, hit.material); 
+        vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, N, hit.material); 
         float NdotL = dot(N, L);
         if(NdotL <= 0.0) break;
 
@@ -804,7 +991,7 @@ void main(void)
             color = hdrColor(ray.direction);
     } else {
         vec3 Le = firstHit.material.emissive;
-        vec3 Li = pathTracingImportanceSampling(firstHit,2);
+        vec3 Li = pathTracingImportanceSampling(firstHit,6);
         color = Le + Li;
     }  
 
