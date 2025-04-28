@@ -450,7 +450,7 @@ vec3 SampleCosineHemisphere(float xi_1, float xi_2, vec3 N) {
     float theta = xi_2 * 2.0 * PI;
     float x = r * cos(theta);
     float y = r * sin(theta);
-    float z = sqrt(1.0 - x*x - y*y);
+    float z = sqrt(max(0.0,1.0 - x*x - y*y));
 
     // 从 z 半球投影到法向半球
     vec3 L = toNormalHemisphere(vec3(x, y, z), N);
@@ -593,7 +593,7 @@ vec3 Cal_BRDF(vec3 V, vec3 N, vec3 L, in Material material,inout float pdf){
 
     // 各种颜色
     vec3 Cdlin = material.baseColor;
-    float Cdlum = 0.3 * Cdlin.r + 0.6 * Cdlin.g  + 0.1 * Cdlin.b;
+    float Cdlum = 0.212671 * Cdlin.r + 0.715160 * Cdlin.g  + 0.072169 * Cdlin.b;
     vec3 Ctint = (Cdlum > 0) ? (Cdlin/Cdlum) : (vec3(1));   
     vec3 Cspec = material.specular * mix(vec3(1), Ctint, material.specularTint);
     vec3 Cspec0 = mix(0.08*Cspec, Cdlin, material.metallic); // 0° 镜面反射颜色
@@ -653,6 +653,13 @@ vec3 Cal_BRDF(vec3 V, vec3 N, vec3 L, in Material material,inout float pdf){
     vec3 clearcoat = vec3(0.25 * Gr * Fr * Dr * material.clearcoat);
     return diffuse * (1.0 - material.metallic) + specular + clearcoat;
 }
+
+float Luminance(vec3 c)
+{
+    return 0.212671 * c.x + 0.715160 * c.y + 0.072169 * c.z;
+}
+
+
 
 // 按照辐射度分布分别采样三种 BRDF
 vec3 SampleBRDF(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Material material) {
@@ -768,8 +775,8 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
         history *= f_r * NdotL / pdf_brdf;   // 累积颜色
 
         // 加入俄罗斯轮盘赌 (关键位置)
-        if (bounce >= 2) { // 前3次反弹不启用RR减少噪声
-            float rrSurvivalProb = min(1.0, max(maxComponent(history), 0.05)); // 保持最小5%存活率
+        if (bounce >= 2) { // 前2次反弹不启用RR减少噪声
+            float rrSurvivalProb = min(0.95, max(maxComponent(history), 0.05)); // 保持最小5%存活率
             if (rand() > rrSurvivalProb) break;     // 终止路径
             history /= rrSurvivalProb;              // 保持无偏
         }
