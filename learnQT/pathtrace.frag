@@ -579,7 +579,7 @@ vec3 SampleGTR1(float xi_1, float xi_2, vec3 V, vec3 N, float alpha) {
 
     return L;
 }
-vec3 Cal_BRDF(vec3 V, vec3 N, vec3 L, in Material material,inout float pdf){
+vec3 Cal_BRDF(vec3 V, vec3 N, vec3 L, in Material material,out float pdf){
     float NdotL = dot(N, L);
     float NdotV = dot(N, V);
     if(NdotL < 0 || NdotV < 0){
@@ -797,14 +797,17 @@ void main(void)
             color = hdrColor(ray.direction);
     } else {
         vec3 Le = firstHit.material.emissive;
-        vec3 Li = pathTracingImportanceSampling(firstHit,6);
+        vec3 Li = pathTracingImportanceSampling(firstHit,2);
         color = Le + Li;
     }  
 
     
         vec3 lastColor = texture2D(lastFrame, pix.xy*0.5+0.5).rgb;
        // lastColor*=100.0; 
-        color = mix(lastColor, color, 1.0/float(frameCounter+1u)); 
+       if(isnan(color.x)||isnan(color.x)||isnan(color.x))
+            color=lastColor;
+       else
+            color = mix(lastColor, color, 1.0/float(frameCounter+1u)); 
 
     
 
