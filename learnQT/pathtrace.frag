@@ -2,7 +2,8 @@
 #define SIZE_TRIANGLE   12
 #define SIZE_BVHNODE    4
 #define INF 114514.0
-#define PI 3.1415926
+#define PI 3.14159265358979323
+#define INV_PI 0.31830988618379067
 
 out vec4 FragColor;
 in vec3 pix;
@@ -319,6 +320,7 @@ HitResult hitTriangle(Triangle triangle, Ray ray) {
         Nsmooth = normalize(Nsmooth);     
         //Nsmooth = N;     
         res.normal = (res.isInside) ? (-Nsmooth) : (Nsmooth);
+        //res.normal = Nsmooth;
     }
 
     return res;
@@ -583,8 +585,8 @@ vec3 Cal_BRDF(vec3 V, vec3 N, vec3 L, in Material material,out float pdf){
     float NdotL = dot(N, L);
     float NdotV = dot(N, V);
     if(NdotL < 0 || NdotV < 0){
-        pdf=0.0;
-        return vec3(0);
+       pdf=0.0;
+       return vec3(0);
     }
 
     vec3 H = normalize(L + V);
@@ -876,9 +878,218 @@ vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Materia
     return L;
 }
 
+vec3 EvalDisneyDiffuse( Material material, vec3 Csheen, vec3 V, vec3 L, vec3 H, out float pdf)
+{
+    pdf = 0.0;
+    if (L.z <= 0.0)
+        return vec3(0.0);
 
+    float LDotH = dot(L, H);
 
+    float Rr = 2.0 * material.roughness * LDotH * LDotH;
 
+    // Diffuse
+    float FL = SchlickFresnel(L.z);
+    float FV = SchlickFresnel(V.z);
+    float Fretro = Rr * (FL + FV + FL * FV * (Rr - 1.0));
+    float Fd = (1.0 - 0.5 * FL) * (1.0 - 0.5 * FV);
+
+    // Fake subsurface
+    float Fss90 = 0.5 * Rr;
+    float Fss = mix(1.0, Fss90, FL) * mix(1.0, Fss90, FV);
+    float ss = 1.25 * (Fss * (1.0 / (L.z + V.z) - 0.5) + 0.5);
+
+    // Sheen
+    float FH = SchlickFresnel(LDotH);
+    vec3 Fsheen = FH * material.sheen * Csheen;
+
+    pdf = L.z * INV_PI;
+    return INV_PI * material.baseColor * mix(Fd + Fretro, ss, material.subsurface) + Fsheen;
+}
+float GTR2Aniso(float NDotH, float HDotX, float HDotY, float ax, float ay)
+{
+    float a = HDotX / ax;
+    float b = HDotY / ay;
+    float c = a * a + b * b + NDotH * NDotH;
+    return 1.0 / (PI * ax * ay * c * c);
+}
+float SmithGAniso(float NDotV, float VDotX, float VDotY, float ax, float ay)
+{
+    float a = VDotX * ax;
+    float b = VDotY * ay;
+    float c = NDotV;
+    return (2.0 * NDotV) / (NDotV + sqrt(a * a + b * b + c * c));
+}
+
+vec3 EvalMicrofacetReflection(float ax,float ay, vec3 V, vec3 L, vec3 H, vec3 F, out float pdf)
+{
+    pdf = 0.0;
+    if (L.z <= 0.0)
+        return vec3(0.0);
+
+    float D = GTR2Aniso(H.z, H.x, H.y, ax, ay);
+    float G1 = SmithGAniso(abs(V.z), V.x, V.y,  ax,  ay);
+    float G2 = G1 * SmithGAniso(abs(L.z), L.x, L.y,  ax,  ay);
+
+    pdf = G1 * D / (4.0 * V.z);
+    return F * D * G2 / (4.0 * L.z * V.z);
+}
+vec3 EvalMicrofacetRefraction(vec3 baseColor, float ax,float ay, float eta, vec3 V, vec3 L, vec3 H, vec3 F, out float pdf)
+{
+    pdf = 0.0;
+    if (L.z >= 0.0)
+        return vec3(0.0);
+
+    float LDotH = dot(L, H);
+    float VDotH = dot(V, H);
+
+    float D = GTR2Aniso(H.z, H.x, H.y, ax, ay);
+    float G1 = SmithGAniso(abs(V.z), V.x, V.y, ax, ay);
+    float G2 = G1 * SmithGAniso(abs(L.z), L.x, L.y, ax, ay);
+    float denom = LDotH + VDotH * eta;
+    denom *= denom;
+    float eta2 = eta * eta;
+    float jacobian = abs(LDotH) / denom;
+
+    pdf = G1 * max(0.0, VDotH) * D * jacobian / V.z;
+    return pow(baseColor, vec3(0.5)) * (1.0 - F) * D * G2 * abs(VDotH) * jacobian * eta2 / abs(L.z * V.z);
+}
+float SmithG(float NDotV, float alphaG)
+{
+    float a = alphaG * alphaG;
+    float b = NDotV * NDotV;
+    return (2.0 * NDotV) / (NDotV + sqrt(a + b - a * b));
+}
+vec3 EvalClearcoat(float clearcoatRoughness, vec3 V, vec3 L, vec3 H, out float pdf)
+{
+    pdf = 0.0;
+    if (L.z <= 0.0)
+        return vec3(0.0);
+
+    float VDotH = dot(V, H);
+
+    float F = mix(0.04, 1.0, SchlickFresnel(VDotH));
+    float D = GTR1(H.z, clearcoatRoughness);
+    float G = SmithG(L.z, 0.25) * SmithG(V.z, 0.25);
+    float jacobian = 1.0 / (4.0 * VDotH);
+
+    pdf = D * H.z * jacobian;
+    return vec3(F) * D * G;
+}
+vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,out float pdf)
+{
+    float eta=dot(-V, N) < 0.0 ? (1.0 / material.IOR) :material.IOR;
+    float aspect = sqrt(1.0 - material.anisotropic * 0.9);
+    float ax = max(0.001, material.roughness / aspect);
+    float ay = max(0.001, material.roughness * aspect);
+    pdf = 0.0;
+    vec3 f = vec3(0.0);
+
+    // TODO: Tangent and bitangent should be calculated from mesh (provided, the mesh has proper uvs)
+    vec3 T, B;
+    Onb(N, T, B);
+
+    // Transform to shading space to simplify operations (NDotL = L.z; NDotV = V.z; NDotH = H.z)
+    V = ToLocal(T, B, N, V);
+    L = ToLocal(T, B, N, L);
+
+    vec3 H;
+    if (L.z > 0.0)
+        H = normalize(L + V);
+    else
+        H = normalize(L + V * eta);
+
+    if (H.z < 0.0)
+        H = -H;
+
+    float lum = Luminance(material.baseColor);
+    vec3 ctint = lum > 0.0 ? material.baseColor / lum : vec3(1.0);
+    float F0 = (1.0 - eta) / (1.0 + eta);
+    F0 *= F0;
+    vec3  Cspec0 = F0 * mix(vec3(1.0), ctint, material.specularTint);
+    vec3 Csheen = mix(vec3(1.0), ctint, material.sheenTint);
+
+    // Model weights
+    float dielectricWt = (1.0 -  material.metallic) * (1.0 -  material.transmission);
+    float metalWt =  material.metallic;
+    float glassWt = (1.0 -  material.metallic) *  material.transmission;
+
+    // Lobe probabilities
+    float schlickWt = SchlickFresnel(V.z);
+
+    float diffPr = dielectricWt * lum;
+    float dielectricPr = dielectricWt * Luminance(mix(Cspec0, vec3(1.0), schlickWt));
+    float metalPr = metalWt * Luminance(mix(material.baseColor, vec3(1.0), schlickWt));
+    float glassPr = glassWt;
+    float clearCtPr = 0.25 * material.clearcoat;
+
+    // Normalize probabilities
+    float invTotalWt = 1.0 / (diffPr + dielectricPr + metalPr + glassPr + clearCtPr);
+    diffPr *= invTotalWt;
+    dielectricPr *= invTotalWt;
+    metalPr *= invTotalWt;
+    glassPr *= invTotalWt;
+    clearCtPr *= invTotalWt;
+
+    bool reflect = L.z * V.z > 0;
+
+    float tmpPdf = 0.0;
+    float VDotH = abs(dot(V, H));
+
+    // Diffuse
+    if (diffPr > 0.0 && reflect)
+    {
+        f += EvalDisneyDiffuse(material, Csheen, V, L, H, tmpPdf) * dielectricWt;
+        pdf += tmpPdf * diffPr;
+    }
+
+    // Dielectric Reflection
+    if (dielectricPr > 0.0 && reflect)
+    {
+        // Normalize for interpolating based on Cspec0
+        float F = (DielectricFresnel(VDotH, 1.0 / material.IOR) - F0) / (1.0 - F0);
+
+        f += EvalMicrofacetReflection(ax,ay, V, L, H, mix(Cspec0, vec3(1.0), F), tmpPdf) * dielectricWt;
+        pdf += tmpPdf * dielectricPr;
+    }
+
+    // Metallic Reflection
+    if (metalPr > 0.0 && reflect)
+    {
+        // Tinted to base color
+        vec3 F = mix(material.baseColor, vec3(1.0), SchlickFresnel(VDotH));
+
+        f += EvalMicrofacetReflection(ax,ay, V, L, H, F, tmpPdf) * metalWt;
+        pdf += tmpPdf * metalPr;
+    }
+
+    // Glass/Specular BSDF
+    if (glassPr > 0.0)
+    {
+        // Dielectric fresnel (achromatic)
+        float F = DielectricFresnel(VDotH, eta);
+
+        if (reflect)
+        {
+            f += EvalMicrofacetReflection(ax,ay ,V, L, H, vec3(F), tmpPdf) * glassWt;
+            pdf += tmpPdf * glassPr * F;
+        }
+        else
+        {
+            f += EvalMicrofacetRefraction(material.baseColor,ax,ay,eta, V, L, H, vec3(F), tmpPdf) * glassWt;
+            pdf += tmpPdf * glassPr * (1.0 - F);
+        }
+    }
+
+    // Clearcoat
+    if (clearCtPr > 0.0 && reflect)
+    {
+        f += EvalClearcoat(material.clearcoatGloss, V, L, H, tmpPdf) * 0.25 * material.clearcoat;
+        pdf += tmpPdf * clearCtPr;
+    }
+
+    return f;
+}
 
 
 vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
@@ -907,7 +1118,7 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
                 vec3 color = hdrColor(L);
                 float pdf_light =hdrPdf(L, hdrResolution);
                 float pdf_brdf=0.0;
-                vec3 f_r = Cal_BRDF(V, N, L, hit.material,pdf_brdf);
+                vec3 f_r = DisneyEval(V, N, L, hit.material,pdf_brdf);
                 float mis_weight = misMixWeight(pdf_light, pdf_brdf);
                 Lo += mis_weight * history * color * f_r * dot(N, L) / pdf_light;
                 //Lo=L*0.5+0.5;
@@ -927,8 +1138,8 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
         // 采样 BRDF 得到一个方向 L
         //vec3 L = SampleBRDF(xi_1, xi_2, xi_3, V, N, hit.material); 
         vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, N, hit.material); 
-        float NdotL = dot(N, L);
-        if(NdotL <= 0.0) break;
+        float NdotL =abs(dot(N, L));//有折射情况 取绝对值
+       // if(NdotL <= 0.0) break;
 
         // 发射光线
         Ray randomRay;
@@ -940,7 +1151,7 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
 
         // 获取 L 方向上的 BRDF 值和概率密度
         float pdf_brdf=0.0;
-        vec3 f_r = Cal_BRDF(V, N, L, hit.material,pdf_brdf);
+        vec3 f_r = DisneyEval(V, N, L, hit.material,pdf_brdf);
         if(pdf_brdf <= 0.0) break;
 
        // 未命中        
