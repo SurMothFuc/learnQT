@@ -33,9 +33,10 @@ Scene::Scene(){
     testNode.AA = QVector3D(1, 1, 0);
     testNode.BB = QVector3D(0, 1, 0);
     nodes= std::vector<BVHNode>{ testNode };
-    BuildBVH::buildBVHwithSAH(triangles, nodes, 0, triangles.size() - 1, 8);
+    int max_deep = 0;
+    BuildBVH::buildBVHwithSAH(triangles, nodes, 0, triangles.size() - 1, 8,0, max_deep);
     int nNodes = nodes.size();
-    std::cout << "BVH 建立完成: 共 " << nNodes << " 个节点" << std::endl;
+    std::cout << "BVH 建立完成: 共 " << nNodes << " 个节点， 深度 " <<max_deep <<std::endl;
     //建立bvh需要在三角形编码之前，因为bvh的构建使用了排序
 
     

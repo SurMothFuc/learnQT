@@ -15,12 +15,6 @@ class learnQT : public QMainWindow
 public:
     learnQT(QWidget *parent = Q_NULLPTR);
 public slots:
-    void print() {        
-        std::cout << 123 << std::endl;
-    };
-    void sed() {
-        ui.openGLWidget->sendM();
-    }
     void upoff() {
         updateMaterial();
     }
@@ -32,7 +26,7 @@ public slots:
                 ui.subsurfacelineEdit->text().toFloat(),ui.metalliclineEdit->text().toFloat(), ui.specularlineEdit->text().toFloat(),
                 ui.specularTintlineEdit->text().toFloat(),ui.roughnesslineEdit->text().toFloat(), 0,
                 ui.sheenlineEdit->text().toFloat(), ui.sheenTintlineEdit->text().toFloat(), ui.clearcoatlineEdit->text().toFloat(),
-                ui.clearcoatGlosslineEdit->text().toFloat(),1.0,0);
+                ui.clearcoatGlosslineEdit->text().toFloat(), ui.IORlineEdit->text().toFloat(), ui.transmissionlineEdit->text().toFloat());
         }
         param_mutex.unlock();
         ui.openGLWidget->sendM();
@@ -80,6 +74,16 @@ public slots:
     void clearcoatGlossSliderUp() {
         int cleG= ui.clearcoatGlossSlider->value();
         ui.clearcoatGlosslineEdit->setText(QString::number(cleG / 100.0, 'f', 2));
+        updateMaterial();
+    }
+    void IORSliderUp() {
+        int cleG = ui.IORSlider->value();
+        ui.IORlineEdit->setText(QString::number(cleG / 100.0, 'f', 2));
+        updateMaterial();
+    }
+    void transmissionSliderUp() {
+        int cleG = ui.transmissionSlider->value();
+        ui.transmissionlineEdit->setText(QString::number(cleG / 100.0, 'f', 2));
         updateMaterial();
     }
 protected:

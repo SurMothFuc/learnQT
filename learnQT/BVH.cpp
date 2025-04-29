@@ -1,10 +1,11 @@
 ﻿#include "BVH.h"
 #include "common.h"
 
-int BuildBVH::buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& nodes, int l, int r, int n)
+int BuildBVH::buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& nodes, int l, int r, int n,int deep,int& max_deep)
 {
     if (l > r) return 0;
-
+    if (deep > max_deep)
+        max_deep = deep;
     nodes.push_back(BVHNode());
     int id = nodes.size() - 1;
     nodes[id].left = nodes[id].right = nodes[id].n = nodes[id].index = 0;
@@ -126,8 +127,8 @@ int BuildBVH::buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHN
     if (Axis == 2) std::sort(&triangles[0] + l, &triangles[0] + r + 1, cmpz);
 
     // 递归
-    int left = buildBVHwithSAH(triangles, nodes, l, Split, n);
-    int right = buildBVHwithSAH(triangles, nodes, Split + 1, r, n);
+    int left = buildBVHwithSAH(triangles, nodes, l, Split, n,deep+1,max_deep);
+    int right = buildBVHwithSAH(triangles, nodes, Split + 1, r, n, deep+1, max_deep);
 
     nodes[id].left = left;
     nodes[id].right = right;
