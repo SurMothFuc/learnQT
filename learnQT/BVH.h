@@ -13,7 +13,7 @@ struct BVHNode {
 class BuildBVH
 {
 public:
-    static int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& nodes, int l, int r, int n);
+    static int buildBVHwithSAH(std::vector<Triangle>& triangles, std::vector<BVHNode>& nodes, int l, int r, int n,int deep, int& max_deep);
 
     static bool cmpz(const Triangle& t1, const Triangle& t2);
     static bool cmpx(const Triangle& t1, const Triangle& t2);

@@ -327,6 +327,65 @@
           </item>
          </layout>
         </item>
+		   <item>
+			   <widget class="QLabel" name="label_11">
+				   <property name="text">
+					   <string>IOR:</string>
+				   </property>
+			   </widget>
+		   </item>
+		   <item>
+			   <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="6,1">
+				   <item>
+					   <widget class="QSlider" name="IORSlider">
+						   <property name="maximum">
+							   <number>100</number>
+						   </property>
+						   <property name="orientation">
+							   <enum>Qt::Horizontal</enum>
+						   </property>
+					   </widget>
+				   </item>
+				   <item>
+					   <widget class="QLineEdit" name="IORlineEdit">
+						   <property name="text">
+							   <string>0.00</string>
+						   </property>
+					   </widget>
+				   </item>
+			   </layout>
+		   </item>
+		   <item>
+			   <widget class="QLabel" name="label_11">
+				   <property name="text">
+					   <string>transmissionGloss:</string>
+				   </property>
+			   </widget>
+		   </item>
+		   <item>
+			   <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="6,1">
+				   <item>
+					   <widget class="QSlider" name="transmissionSlider">
+						   <property name="maximum">
+							   <number>100</number>
+						   </property>
+						   <property name="value">
+							   <number>100</number>
+						   </property>
+						   <property name="orientation">
+							   <enum>Qt::Horizontal</enum>
+						   </property>
+					   </widget>
+				   </item>
+				   <item>
+					   <widget class="QLineEdit" name="transmissionlineEdit">
+						   <property name="text">
+							   <string>1.00</string>
+						   </property>
+					   </widget>
+				   </item>
+			   </layout>
+		   </item>
        </layout>
       </item>
      </layout>

@@ -19,12 +19,14 @@ learnQT::learnQT(QWidget *parent)
     connect(ui.sheenTintSlider, SIGNAL(valueChanged(int)), this, SLOT(sheenTintSliderUp()));
     connect(ui.clearcoatSlider, SIGNAL(valueChanged(int)), this, SLOT(clearcoatSliderUp()));
     connect(ui.clearcoatGlossSlider, SIGNAL(valueChanged(int)), this, SLOT(clearcoatGlossSliderUp()));
+    connect(ui.IORSlider, SIGNAL(valueChanged(int)), this, SLOT(IORSliderUp()));
+    connect(ui.transmissionSlider, SIGNAL(valueChanged(int)), this, SLOT(transmissionSliderUp()));
 
     
 }
 
 void learnQT::keyPressEvent(QKeyEvent* event) {
-    QApplication::sendEvent(ui.openGLWidget,event);
+    QApplication::sendEvent(ui.openGLWidget, event);
 }
 void  learnQT::keyReleaseEvent(QKeyEvent* event) {
     QApplication::sendEvent(ui.openGLWidget, event);
