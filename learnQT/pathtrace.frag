@@ -1139,7 +1139,7 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
 
         // 采样 BRDF 得到一个方向 L
         //vec3 L = SampleBRDF(xi_1, xi_2, xi_3, V, N, hit.material); 
-        vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, N, hit.material); 
+        vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, inMedium?-N:N, hit.material); 
         float NdotL =abs(dot(N, L));//有折射情况 取绝对值
        // if(NdotL <= 0.0) break;
 
