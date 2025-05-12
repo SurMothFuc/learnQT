@@ -775,9 +775,9 @@ vec3 SampleGTR1(float rgh, float r1, float r2)
 }
 
 
-vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Material material)
+vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Material material,float eta)
 {
-    float eta=dot(-V, N) < 0.0 ? (1.0 / material.IOR) :material.IOR;
+    //float eta=dot(-V, N) < 0.0 ? (1.0 / material.IOR) :material.IOR;
     float aspect = sqrt(1.0 - material.anisotropic * 0.9);
     float ax = max(0.001, material.roughness / aspect);
     float ay = max(0.001, material.roughness * aspect);
@@ -976,9 +976,8 @@ vec3 EvalClearcoat(float clearcoatRoughness, vec3 V, vec3 L, vec3 H, out float p
     pdf = D * H.z * jacobian;
     return vec3(F) * D * G;
 }
-vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,out float pdf)
+vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float pdf)
 {
-    float eta=dot(-V, N) < 0.0 ? (1.0 / material.IOR) :material.IOR;
     float aspect = sqrt(1.0 - material.anisotropic * 0.9);
     float ax = max(0.001, material.roughness / aspect);
     float ay = max(0.001, material.roughness * aspect);
@@ -1108,6 +1107,7 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
         hdrTestRay.startPoint = hit.hitPoint;
         hdrTestRay.direction = SampleHdr(rand(), rand());
 
+        /*
         // 进行一次求交测试 判断是否有遮挡
         if(dot(N, hdrTestRay.direction) > 0.0) { // 如果采样方向背向点 p 则放弃测试, 因为 N dot L < 0            
             HitResult hdrHit = hitBVH(hdrTestRay);
@@ -1124,7 +1124,7 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
                 //Lo=L*0.5+0.5;
             }
         }
-        
+        */
         
         // 获取 3 个随机数
         vec2 uv = sobolVec2(frameCounter+1u, uint(bounce));
@@ -1137,7 +1137,8 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
 
         // 采样 BRDF 得到一个方向 L
         //vec3 L = SampleBRDF(xi_1, xi_2, xi_3, V, N, hit.material); 
-        vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, N, hit.material); 
+        float eta =hit.isInside ? hit.material.IOR:(1.0 / hit.material.IOR) ;
+        vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, N, hit.material,eta); 
         float NdotL =abs(dot(N, L));//有折射情况 取绝对值
        // if(NdotL <= 0.0) break;
 
@@ -1151,7 +1152,7 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
 
         // 获取 L 方向上的 BRDF 值和概率密度
         float pdf_brdf=0.0;
-        vec3 f_r = DisneyEval(V, N, L, hit.material,pdf_brdf);
+        vec3 f_r = DisneyEval(V, N, L, hit.material,eta,pdf_brdf);
         if(pdf_brdf <= 0.0) break;
 
        // 未命中        
@@ -1159,7 +1160,8 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
             vec3 color = hdrColor(L);
             float pdf_light = hdrPdf(L, hdrResolution); 
 
-            float mis_weight = misMixWeight(pdf_brdf, pdf_light);   // f(a,b) = a^2 / (a^2 + b^2)
+            //float mis_weight = misMixWeight(pdf_brdf, pdf_light);   // f(a,b) = a^2 / (a^2 + b^2)
+            float mis_weight = 1.0;   // f(a,b) = a^2 / (a^2 + b^2)
             Lo += mis_weight * history * color * f_r * NdotL / pdf_brdf;
             break;
         }
@@ -1198,7 +1200,6 @@ void main(void)
     // primary hit
     HitResult firstHit = hitBVH(ray);
         if(!firstHit.isHit) {
-            color = vec3(0);
             color = hdrColor(ray.direction);
     } else {
         vec3 Le = firstHit.material.emissive;
