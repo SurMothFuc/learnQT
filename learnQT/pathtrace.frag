@@ -1096,16 +1096,17 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
     vec3 Lo = vec3(0);      // 最终的颜色
     vec3 history = vec3(1); // 递归积累的颜色
 
-
+    bool inMedium=false;//判断是否在介质内
     for(int bounce=0; bounce<maxBounce; bounce++) {
         vec3 V = -hit.viewDir;
         vec3 N = hit.normal;   
 
 
         // HDR 环境贴图重要性采样    
-        Ray hdrTestRay;
-        hdrTestRay.startPoint = hit.hitPoint;
-        hdrTestRay.direction = SampleHdr(rand(), rand());
+        if(!inMedium){
+            Ray hdrTestRay;
+            hdrTestRay.startPoint = hit.hitPoint;
+            hdrTestRay.direction = SampleHdr(rand(), rand());
 
         /*
         // 进行一次求交测试 判断是否有遮挡
