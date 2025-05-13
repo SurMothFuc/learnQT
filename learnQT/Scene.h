@@ -23,7 +23,7 @@ struct BVHNode_encoded {
 
 
 class Scene {
-	public:
+public:
 
     Scene(const Scene&) = delete;
     Scene& operator=(const Scene&) = delete;
@@ -55,6 +55,8 @@ public:
     HDRLoaderResult hdrRes;
     float* cache;
     int hdrResolution;
+    bool useEnvironmentMap;
+
 };
 
 

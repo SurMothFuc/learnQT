@@ -4,22 +4,72 @@
 
 
 Scene::Scene(){
-    camera = Camera(QVector3D(3.0f, 0.0f, 1.48f), QVector3D(0.0f, 1.0f, 0.0f));
+    useEnvironmentMap = false;
+    camera = Camera(QVector3D(0.0f, 1.17f, 4.0f), QVector3D(0.0f, 1.0f, 0.0f));
     Material mt;
+    //light
     mt = Material();
-    mt.roughness = 0.01;
+    mt.emissive = QVector3D(5.0, 5.0, 5.0);
+    //mt.roughness = 0.1;
+    //mt.subsurface = 1.0;
+    //mt.anisotropic = 1.0;
+    mt.baseColor = QVector3D(1.0, 1.0, 1.0);
+    MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.0, 0), QVector3D(1.0, 0.01, 1.0)), false);
+
+
+
+
+    mt = Material();
+    mt.roughness = 0.001;
     mt.transmission = 1.0;
     mt.IOR = 1.5;
     mt.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
-    MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.0, 0.0, 0), QVector3D(1, 1, 1)), true);
+    MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.6, 0.2, 0.6), QVector3D(1, 1, 1)), true);
 
+    mt = Material();;
+    mt.roughness = 0.05;
+    mt.metallic = 0.9;
+    //mt.subsurface = 1.0;
+    //mt.anisotropic = 1.0;
+    mt.baseColor = QVector3D(1.0, 1.0, 1.0);
+    MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.2,0.2), QVector3D(1.0,1.0, 1.0)), false);
+
+
+    
     mt = Material();
     mt.roughness = 0.1;
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(0.725, 0.71, 0.68);
     MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.7, 0), QVector3D(18.83, 0.01, 18.83)), false);
-     
+    mt = Material();
+    mt.roughness = 0.1;
+    //mt.subsurface = 1.0;
+    //mt.anisotropic = 1.0;
+    mt.baseColor = QVector3D(0, 1, 0);
+    MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(-2, 0.0, 0), QVector3D(0.01,18.83,  18.83)), false);
+    mt = Material();
+    mt.roughness = 0.1;
+    //mt.subsurface = 1.0;
+    //mt.anisotropic = 1.0;
+    mt.baseColor = QVector3D(1, 0,0);
+    MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(2, 0.0, 0), QVector3D(0.01, 18.83, 18.83)), false);
+    mt = Material();
+    mt.roughness = 0.1;
+    //mt.subsurface = 1.0;
+    //mt.anisotropic = 1.0;
+    mt.baseColor = QVector3D(0.725, 0.71, 0.68);
+    MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.001, 0), QVector3D(18.83, 0.01, 18.83)), false);
+    mt = Material();
+    mt.roughness = 0.1;
+    //mt.subsurface = 1.0;
+    //mt.anisotropic = 1.0;
+    mt.baseColor = QVector3D(0.725, 0.71, 0.68);
+    MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, -2), QVector3D(18.83,  18.83,0.01)), false);
+
+
+
+
     int nTriangles = triangles.size();
     std::cout << "模型读取完成: 共 " << nTriangles << " 个三角形" << std::endl;
 

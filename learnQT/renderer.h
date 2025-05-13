@@ -43,6 +43,7 @@ private://静止赋值操作
     Renderer &operator =(const Renderer &&) = delete;
 
 private:
+    
     int m_width = 0;
     int m_height = 0;
     int m_viewportX = 0;
@@ -65,7 +66,7 @@ private:
 
     
     int lasttime = 0;
-
+    bool first_render = true;
 
     GLuint tbo0;
     GLuint tbo1;

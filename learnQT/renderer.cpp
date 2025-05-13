@@ -111,34 +111,34 @@ void Renderer::render(int width, int height)
     //glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   
     
     pathtrace_program->bind(); 
     {
         GLint fl_loca = pathtrace_program->uniformLocation("frameCounter");
-        glUniform1ui(fl_loca, frameCounter++);
+        glUniform1ui(fl_loca, frameCounter++);        
 
         glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
-        pathtrace_program->setUniformValue("triangles", 0);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
-        pathtrace_program->setUniformValue("nodes", 1);
-
-        glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D,mixframe_texture);
-        pathtrace_program->setUniformValue("lastFrame", 2);
-
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, hdrMap);
+        pathtrace_program->setUniformValue("lastFrame", 0);
+        pathtrace_program->setUniformValue("triangles", 1);
+        pathtrace_program->setUniformValue("nodes", 2);
         pathtrace_program->setUniformValue("hdrMap", 3);
-
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, hdrCache);
         pathtrace_program->setUniformValue("hdrCache", 4);
+        if (first_render) {
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
 
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
+
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, hdrMap);
+
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_2D, hdrCache);
+            first_render = false;
+        }
 
         //glBindVertexArray(VAO);
 
@@ -173,7 +173,7 @@ void Renderer::render(int width, int height)
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, mixframe_texture);
+        glBindTexture(GL_TEXTURE_2D, pathtrace_texture);
         m_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
 
@@ -392,13 +392,15 @@ void Renderer::updateparam()
         pathtrace_program->setUniformValue("nNodes", (int)Scene::getInstance().nodes_encoded.size());
         pathtrace_program->setUniformValue("width", m_width);
         pathtrace_program->setUniformValue("height", m_height);
-        pathtrace_program->setUniformValue("height", m_height);
         pathtrace_program->setUniformValue("hdrResolution", Scene::getInstance().hdrResolution);
+        pathtrace_program->setUniformValue("useEnvironmentMap", Scene::getInstance().useEnvironmentMap);
         pathtrace_program->release();
 
         lasttime = clock();
         lastframeCounter = 0;
         frameCounter = 0;
+
+        first_render = true;
     }
     param_mutex.unlock();
 }

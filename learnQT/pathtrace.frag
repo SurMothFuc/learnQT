@@ -21,6 +21,7 @@ uniform int width;
 uniform int height;
 uniform uint frameCounter;
 uniform int hdrResolution;
+uniform bool useEnvironmentMap;
 
  
 uniform samplerBuffer triangles;
@@ -487,6 +488,10 @@ vec3 SampleHdr(float xi_1, float xi_2) {
 }
 // 获取 HDR 环境颜色
 vec3 hdrColor(vec3 L) {
+    if(!useEnvironmentMap)
+    {
+        return vec3(0);
+    }
     vec2 uv = toSphericalCoord(normalize(L));
     vec3 color = texture2D(hdrMap, uv).rgb;
     return color;
@@ -979,7 +984,7 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
        // 未命中        
         if(!newHit.isHit) {
             vec3 color = hdrColor(L);
-            float pdf_light = hdrPdf(L, hdrResolution); 
+            //float pdf_light = hdrPdf(L, hdrResolution); 
 
             //float mis_weight = misMixWeight(pdf_brdf, pdf_light);   // f(a,b) = a^2 / (a^2 + b^2)
             float mis_weight = 1.0;   // f(a,b) = a^2 / (a^2 + b^2)
