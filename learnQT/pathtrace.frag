@@ -225,75 +225,43 @@ HitResult hitTriangle(Triangle triangle, Ray ray) {
     vec3 p2 = triangle.p2;
     vec3 p3 = triangle.p3;
 
-    vec3 S = ray.startPoint;    // 射线起点
-    vec3 d = ray.direction;     // 射线方向
-    vec3 N = normalize(cross(p2-p1, p3-p1));    // 法向量
+    vec3 e0 = p2.xyz - p1.xyz;
+    vec3 e1 = p3.xyz - p1.xyz;
+    vec3 pv = cross(ray.direction, e1);
+    float det = dot(e0, pv);
 
-    // 从三角形背后（模型内部）击中
-    if (dot(N, d) > 0.0f) {
-        N = -N;   
-        res.isInside = true;
-    }
+    vec3 tv = ray.startPoint - p1.xyz;
+    vec3 qv = cross(tv, e0);
 
-    // 如果视线和三角形平行
-    if (abs(dot(N, d)) < 0.00001f) return res;
-
-    // 距离
-    float t = (dot(N, p1) - dot(S, N)) / dot(d, N);
-    if (t < 0.0005f) return res;    // 如果三角形在光线背面
-
-    // 交点计算
-    vec3 P = S + d * t;
-
-    // 判断交点是否在三角形中
-    vec3 c1 = cross(p2 - p1, P - p1);
-    vec3 c2 = cross(p3 - p2, P - p2);
-    vec3 c3 = cross(p1 - p3, P - p3);
-    bool r1 = (dot(c1, N) > 0 && dot(c2, N) > 0 && dot(c3, N) > 0);
-    bool r2 = (dot(c1, N) < 0 && dot(c2, N) < 0 && dot(c3, N) < 0);
-
-    // 命中，封装返回结果
-    if (r1 || r2) {
+    vec4 uvt;
+    uvt.x = dot(tv, pv);
+    uvt.y = dot(ray.direction, qv);
+    uvt.z = dot(e1, qv);
+    uvt.xyz = uvt.xyz / det;
+    uvt.w = 1.0 - uvt.x - uvt.y;
+    
+    if (all(greaterThanEqual(uvt, vec4(0.0))) && uvt.z < res.distance)
+    {
         res.isHit = true;
-        res.hitPoint = P;
-        res.distance = t;
-        res.normal = N;
-        res.viewDir = d;
+        res.hitPoint = ray.startPoint + ray.direction * uvt.z;
+        res.distance = uvt.z;
+        res.viewDir = ray.direction;
+
         // 根据交点位置插值顶点法线 
-
-        // 选择最大投影轴 (防止退化三角形导致的分母接近零)
-        vec3 absNormal = abs(N);
-        int maxAxis = (absNormal.x > absNormal.y) ? 
-                     ((absNormal.x > absNormal.z) ? 0 : 2) :
-                     ((absNormal.y > absNormal.z) ? 1 : 2);
-
-        // 投影顶点到选定平面
-        vec2 p1_proj, p2_proj, p3_proj, P_proj;
-        if (maxAxis == 0) { // 投影到 YZ 平面
-            p1_proj = p1.yz; p2_proj = p2.yz; p3_proj = p3.yz; P_proj = P.yz;
-        } else if (maxAxis == 1) { // 投影到 XZ 平面
-            p1_proj = p1.xz; p2_proj = p2.xz; p3_proj = p3.xz; P_proj = P.xz;
-        } else { // 投影到 XY 平面
-            p1_proj = p1.xy; p2_proj = p2.xy; p3_proj = p3.xy; P_proj = P.xy;
-        }
-        
-        float alpha = abs(-( P_proj.x-p2_proj.x)*(p3_proj.y-p2_proj.y) + ( P_proj.y-p2_proj.y)*(p3_proj.x-p2_proj.x)) 
-        / (abs(-(p1_proj.x-p2_proj.x)*(p3_proj.y-p2_proj.y) + (p1_proj.y-p2_proj.y)*(p3_proj.x-p2_proj.x))+1e-7);
-        float beta  = abs(-( P_proj.x-p3_proj.x)*(p1_proj.y-p3_proj.y) + ( P_proj.y-p3_proj.y)*(p1_proj.x-p3_proj.x)) 
-        / (abs(-(p2_proj.x-p3_proj.x)*(p1_proj.y-p3_proj.y) + (p2_proj.y-p3_proj.y)*(p1_proj.x-p3_proj.x))+1e-7);
-        
-        float gamma  = 1.0 - alpha - beta;
-        vec3 Nsmooth = alpha * triangle.n1 + beta * triangle.n2 + gamma * triangle.n3;
-
-        
+        vec3 Nsmooth = uvt.w * triangle.n1 + uvt.x * triangle.n2 + uvt.y * triangle.n3;
         if (length(Nsmooth) < EPS) {
-            Nsmooth = N; // 防止接近零向量导致溢出
+            Nsmooth = normalize(cross(p2-p1, p3-p1)); // 防止接近零向量导致溢出
+        }else{
+            Nsmooth = normalize(Nsmooth);
+        }
+        // 从三角形背后（模型内部）击中
+        if (dot(Nsmooth, ray.direction) > 0.0f) {
+            res.isInside = true;
+            res.normal =-Nsmooth;
+        }else{
+            res.normal=Nsmooth;
         }
 
-        Nsmooth = normalize(Nsmooth);     
-        //Nsmooth = N;     
-        res.normal = (res.isInside) ? (-Nsmooth) : (Nsmooth);
-        //res.normal = Nsmooth;
     }
 
     return res;
@@ -356,6 +324,11 @@ HitResult hitBVH(Ray ray) {
     HitResult res;
     res.isHit = false;
     res.distance = INF;
+    vec3 bary;
+    int triID = -1;
+    vec3 vert1;
+    vec3 vert2;
+    vec3 vert3;
 
     // 栈
     int stack[256];
@@ -370,8 +343,48 @@ HitResult hitBVH(Ray ray) {
         if(node.n>0) {
             int L = node.index;
             int R = node.index + node.n - 1;
-            HitResult r = hitArray(ray, L, R);
-            if(r.isHit && r.distance<res.distance) res = r;
+            for(int i=L; i<=R; i++) {
+                int offset = i * SIZE_TRIANGLE;
+                
+                // 顶点坐标
+                vec3 p1 = texelFetch(triangles, offset + 0).xyz;
+                vec3 p2 = texelFetch(triangles, offset + 1).xyz;
+                vec3 p3 = texelFetch(triangles, offset + 2).xyz;
+
+                vec3 e0 = p2.xyz - p1.xyz;
+                vec3 e1 = p3.xyz - p1.xyz;
+                vec3 pv = cross(ray.direction, e1);
+                float det = dot(e0, pv);
+
+                if (abs(det) < 0.00001) 
+                    continue;
+
+                vec3 tv = ray.startPoint - p1.xyz;
+                vec3 qv = cross(tv, e0);
+
+                vec4 uvt;
+                uvt.x = dot(tv, pv);
+                uvt.y = dot(ray.direction, qv);
+                uvt.z = dot(e1, qv);
+                uvt.xyz = uvt.xyz / det;
+                uvt.w = 1.0 - uvt.x - uvt.y;
+                
+                if(uvt.z<0.0005)
+                    continue;
+
+                if (all(greaterThanEqual(uvt, vec4(0.0))) && uvt.z < res.distance)
+                {
+                    res.isHit = true;
+                    res.hitPoint = ray.startPoint + ray.direction * uvt.z;
+                    res.distance = uvt.z;
+                    res.viewDir = ray.direction;
+                    bary = uvt.wxy;
+                    triID=i;
+                    vert1=p1,vert2=p2,vert3=p3;
+
+                    
+                }
+            }
             continue;
         }
         
@@ -402,6 +415,36 @@ HitResult hitBVH(Ray ray) {
             stack[sp++] = node.right;
         }
     }
+    if(res.isHit){
+        // 根据交点位置插值顶点法线 
+        
+        int offset = triID * SIZE_TRIANGLE;
+        // 法线
+        vec3 n1 = texelFetch(triangles, offset + 3).xyz;
+        vec3 n2 = texelFetch(triangles, offset + 4).xyz;
+        vec3 n3 = texelFetch(triangles, offset + 5).xyz;
+
+        vec3 Nsmooth =bary.x * n1 +bary.y * n2 + bary.z * n3;
+        if (length(Nsmooth) < EPS) {
+            Nsmooth = normalize(cross(vert2-vert1, vert3-vert1)); // 防止接近零向量导致溢出
+        }else{
+            Nsmooth = normalize(Nsmooth);
+        }
+        // 从三角形背后（模型内部）击中
+        if (dot(Nsmooth, ray.direction) > 0.0f) {
+            res.isInside = true;
+            res.normal =-Nsmooth;
+        }else{
+            res.isInside=false;
+            res.normal=Nsmooth;
+        }
+
+        res.material = getMaterial(triID);
+    }
+
+
+
+
 
     return res;
 }
