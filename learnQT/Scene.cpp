@@ -9,33 +9,14 @@ Scene::Scene(){
     Material mt;
     //light
     mt = Material();
-    mt.emissive = QVector3D(5.0, 5.0, 5.0);
+    mt.emissive = QVector3D(10.0, 10.0, 10.0);
     //mt.roughness = 0.1;
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(1.0, 1.0, 1.0);
     MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.0, 0), QVector3D(1.0, 0.01, 1.0)), false);
 
-
-
-
-    mt = Material();
-    mt.roughness = 0.001;
-    mt.transmission = 1.0;
-    mt.IOR = 1.5;
-    mt.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
-    MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.6, 0.2, 0.6), QVector3D(1, 1, 1)), true);
-
-    mt = Material();;
-    mt.roughness = 0.05;
-    mt.metallic = 0.9;
-    //mt.subsurface = 1.0;
-    //mt.anisotropic = 1.0;
-    mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-    MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.2,0.2), QVector3D(1.0,1.0, 1.0)), false);
-
-
-    
+    //box    
     mt = Material();
     mt.roughness = 0.1;
     //mt.subsurface = 1.0;
@@ -67,6 +48,34 @@ Scene::Scene(){
     mt.baseColor = QVector3D(0.725, 0.71, 0.68);
     MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, -2), QVector3D(18.83,  18.83,0.01)), false);
 
+
+
+
+    //object
+    mt = Material();
+    mt.roughness = 0.001;
+    mt.transmission = 1.0;
+    mt.IOR = 1.5;
+    mt.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
+    MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.6, 0.2, 0.6), QVector3D(1, 1, 1)), true);
+
+    mt = Material();;
+    mt.roughness = 0.01;
+    mt.metallic = 1.0;
+    //mt.subsurface = 1.0;
+    //mt.anisotropic = 1.0;
+    mt.baseColor = QVector3D(1.0, 1.0, 1.0);
+    MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.2, 0.2), QVector3D(1.0, 1.0, 1.0)), false);
+
+    mt = Material();;
+    mt.roughness = 0.001;
+    mt.transmission = 1.0;
+    mt.IOR = 1.5;
+    //mt.metallic = 1.0;
+    //mt.subsurface = 1.0;
+    //mt.anisotropic = 1.0;
+    mt.baseColor = QVector3D(1.0, 1.0, 1.0);
+   // MeshLoader::readObj("models/10778_Toilet_V2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(-90, 0, 0), QVector3D(0.2, 0,0), QVector3D(1.0, 1.0, 1.0)), true);
 
 
 
