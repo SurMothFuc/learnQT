@@ -392,13 +392,34 @@ HitResult hitBVH(Ray ray) {
         // 和左右盒子 AABB 求交
         float d1 = INF; // 左盒子距离
         float d2 = INF; // 右盒子距离
+        vec3 invdir = 1.0 / ray.direction;
         if(node.left>0) {
             BVHNode leftNode = getBVHNode(node.left);
-            d1 = hitAABB(ray, leftNode.AA, leftNode.BB);
+
+            vec3 f = (leftNode.BB - ray.startPoint) * invdir;
+            vec3 n = (leftNode.AA - ray.startPoint) * invdir;
+
+            vec3 tmax = max(f, n);
+            vec3 tmin = min(f, n);
+
+            float t1 = min(tmax.x, min(tmax.y, tmax.z));
+            float t0 = max(tmin.x, max(tmin.y, tmin.z));
+
+            d1= (t1 >= t0) ? ((t0 > 0.0) ? ( t0<res.distance?(t0):0.0 ) : (t1)) : (-1);
         }
         if(node.right>0) {
             BVHNode rightNode = getBVHNode(node.right);
-            d2 = hitAABB(ray, rightNode.AA, rightNode.BB);
+
+            vec3 f = ( rightNode.BB - ray.startPoint) * invdir;
+            vec3 n = ( rightNode.AA - ray.startPoint) * invdir;
+
+            vec3 tmax = max(f, n);
+            vec3 tmin = min(f, n);
+
+            float t1 = min(tmax.x, min(tmax.y, tmax.z));
+            float t0 = max(tmin.x, max(tmin.y, tmin.z));
+
+            d2= (t1 >= t0) ? ((t0 > 0.0) ? (t0<res.distance?(t0):0.0) : (t1)) : (-1);
         }
 
         // 在最近的盒子中搜索

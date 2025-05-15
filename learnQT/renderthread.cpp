@@ -27,6 +27,13 @@ void RenderThread::setNewSize(int width, int height)
     m_height = height;
 }
 
+void RenderThread::setRenderLow(bool _renderlow)
+{
+    if (point_render == NULL)
+        return;
+    point_render->renderLow = _renderlow;
+}
+
 // called in render thread
 void RenderThread::run()
 {

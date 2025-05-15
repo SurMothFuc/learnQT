@@ -87,9 +87,17 @@ void Renderer::render(int width, int height)
         qDebug() << "Adjust offscreen frame size to:" << width << height ;
         m_width = width;
         m_height = height;
+        calResolution();
         adjustSize();      
-        updateparam();
+        updateSizeParam();
     }
+    int old_w = render_width;
+    calResolution();
+    if (old_w != render_width) {
+        adjustSize();
+        updateSizeParam();
+    }
+
 
     int nowtime = clock();
     if (nowtime - lasttime >200) {
@@ -142,7 +150,7 @@ void Renderer::render(int width, int height)
 
         //glBindVertexArray(VAO);
 
-        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+        glViewport(m_viewportX, m_viewportY, render_width, render_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -160,7 +168,7 @@ void Renderer::render(int width, int height)
         mixframe_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
 
-        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+        glViewport(m_viewportX, m_viewportY, render_width, render_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -177,7 +185,7 @@ void Renderer::render(int width, int height)
         m_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
 
-        glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
+        glViewport(m_viewportX, m_viewportY, m_width, m_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -191,10 +199,9 @@ void Renderer::init(int width, int height)
 {
     m_width = width;
     m_height = height;
+    calResolution();
     m_viewportX = 0;
     m_viewportY = 0;
-    m_viewportWidth = m_width;
-    m_viewportHeight = m_height;
     initializeOpenGLFunctions();
 
 //    glEnable(GL_DEBUG_OUTPUT);
@@ -222,12 +229,12 @@ void Renderer::init(int width, int height)
 
 
     pathtrace_program.reset(getShaderProgram("./pathtrace.frag", "./triangle.vert"));
-    pathtrace_texture = getTextureRGB32F(m_width, m_height);
+    pathtrace_texture = getTextureRGB32F(render_width, render_height);
     pathtrace_fbo = bindData(std::vector<GLuint>{ pathtrace_texture});
 
 
     mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
-    mixframe_texture = getTextureRGB32F(m_width, m_height);
+    mixframe_texture = getTextureRGB32F(render_width, render_height);
     mixframe_fbo = bindData(std::vector<GLuint>{ mixframe_texture});
 
 
@@ -306,27 +313,47 @@ void Renderer::uninit()
 void Renderer::adjustSize()
 {
     glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,  m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glBindTexture(GL_TEXTURE_2D, pathtrace_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glBindTexture(GL_TEXTURE_2D, mixframe_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     /*glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);*/
 
-
     m_viewportX = 0;
     m_viewportY = 0;
-    m_viewportWidth = m_width;
-    m_viewportHeight = m_height;
    
+}
+
+void Renderer::calResolution()
+{
+    if (renderLow) {
+        if (m_width <= MAX_LOW_RESOLUTION && m_height <= MAX_LOW_RESOLUTION)
+            return;
+        double div = 1.0*m_width / MAX_LOW_RESOLUTION;
+        int newh = m_height / div;
+        if (newh <= MAX_LOW_RESOLUTION) {
+            render_height = newh;
+            render_width = MAX_LOW_RESOLUTION;
+        }
+        else {
+            render_height = MAX_LOW_RESOLUTION;
+            render_width = m_width / (1.0*m_height / MAX_LOW_RESOLUTION);
+        }
+    }
+    else {
+        render_width = m_width;
+        render_height = m_height;
+    }
+
 }
 
 void Renderer::updateparam()
@@ -390,8 +417,8 @@ void Renderer::updateparam()
         pathtrace_program->setUniformValue("eye", Scene::getInstance().camera.position);
         pathtrace_program->setUniformValue("nTriangles", (int)Scene::getInstance().triangles.size());
         pathtrace_program->setUniformValue("nNodes", (int)Scene::getInstance().nodes_encoded.size());
-        pathtrace_program->setUniformValue("width", m_width);
-        pathtrace_program->setUniformValue("height", m_height);
+        pathtrace_program->setUniformValue("width", render_width);
+        pathtrace_program->setUniformValue("height", render_height);
         pathtrace_program->setUniformValue("hdrResolution", Scene::getInstance().hdrResolution);
         pathtrace_program->setUniformValue("useEnvironmentMap", Scene::getInstance().useEnvironmentMap);
         pathtrace_program->release();
@@ -401,6 +428,21 @@ void Renderer::updateparam()
         frameCounter = 0;
 
         first_render = true;
+    }
+    param_mutex.unlock();
+}
+
+void Renderer::updateSizeParam()
+{
+    param_mutex.lock();
+    {
+        pathtrace_program->bind();
+        pathtrace_program->setUniformValue("width", render_width);
+        pathtrace_program->setUniformValue("height", render_height);
+        pathtrace_program->release();
+        lasttime = clock();
+        lastframeCounter = 0;
+        frameCounter = 0;
     }
     param_mutex.unlock();
 }

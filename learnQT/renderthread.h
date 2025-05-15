@@ -24,7 +24,7 @@ public:
     ~RenderThread();
 
     void setNewSize(int width, int height);
-    
+    void setRenderLow(bool _renderlow);
 
 signals:
     void imageReady();
@@ -32,6 +32,7 @@ signals:
 public slots:
     //接收主线程的消息
     void recMegFromMain();
+    
 
 protected:
     void run() override;

@@ -30,12 +30,15 @@ public:
     GLuint bindData(std::vector<GLuint> colorAttachments);
     GLuint VBO, VAO, EBO;
     void updateparam();
+    void updateSizeParam();
+
     bool needupdate = true;
+    bool renderLow = false;
 private:
     void init(int width, int height);
     void uninit();
     void adjustSize();
-
+    void calResolution();
 private://静止赋值操作
     Renderer(const Renderer &) = delete;
     Renderer &operator =(const Renderer &) = delete;
@@ -46,10 +49,10 @@ private:
     
     int m_width = 0;
     int m_height = 0;
+    int render_width = 0;
+    int render_height = 0;
     int m_viewportX = 0;
     int m_viewportY = 0;
-    int m_viewportWidth = 0;
-    int m_viewportHeight = 0;
     bool m_sizeChanged = true;
 
 

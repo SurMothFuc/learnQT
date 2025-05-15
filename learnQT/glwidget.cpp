@@ -176,6 +176,7 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
     if (event->button() == Qt::LeftButton) {
         m_bLeftPressed = true;
         m_lastPos = event->pos();
+        m_thread->setRenderLow(true);
     }
 }
 
@@ -183,6 +184,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     Q_UNUSED(event);
     m_bLeftPressed = false;
+    m_thread->setRenderLow(false);
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent* event)
