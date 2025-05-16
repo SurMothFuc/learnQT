@@ -332,7 +332,7 @@ HitResult hitBVH(Ray ray) {
     vec3 vert3;
 
     // 栈
-    int stack[256];
+    int stack[64];
     int sp = 0;
 
     stack[sp++] = 1;
