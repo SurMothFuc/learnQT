@@ -308,8 +308,8 @@ HitResult hitBVH(Ray ray) {
                 vec3 pv = cross(ray.direction, e1);
                 float det = dot(e0, pv);
 
-                if (abs(det) < 0.00001) 
-                    continue;
+                //if (abs(det) < 0.00001) 
+                   // continue;
 
                 vec3 tv = ray.startPoint - p1.xyz;
                 vec3 qv = cross(tv, e0);
@@ -321,7 +321,7 @@ HitResult hitBVH(Ray ray) {
                 uvt.xyz = uvt.xyz / det;
                 uvt.w = 1.0 - uvt.x - uvt.y;
                 
-                if(uvt.z<0.0005)
+                if(uvt.z<0.00005)
                     continue;
 
                 if (all(greaterThanEqual(uvt, vec4(0.0))) && uvt.z < res.distance)

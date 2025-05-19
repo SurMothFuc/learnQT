@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <QMatrix4x4>
+#include "common.h"
 
 void MeshLoader::readObj(std::string filepath, std::vector<Triangle>& triangles, Material material, QMatrix4x4 trans, bool smoothNormal)
 {
@@ -101,12 +102,13 @@ void MeshLoader::readObj(std::string filepath, std::vector<Triangle>& triangles,
         QVector3D p1 = vertices[indices[i]];
         QVector3D p2 = vertices[indices[i + 1]];
         QVector3D p3 = vertices[indices[i + 2]];
-        QVector3D n = (QVector3D::crossProduct(p2 - p1, p3 - p1)).normalized();
+        QVector3D n=(vec3(p2) - vec3(p1)).cross(vec3(p3) - vec3(p1)).normalized().toQvector();
+        // QVector3D n = (QVector3D::crossProduct(p2 - p1, p3 - p1)).normalized();
         normals[indices[i]] += n;
         normals[indices[i + 1]] += n;
         normals[indices[i + 2]] += n;
     }
-
+    
     // 构建 Triangle 对象数组
     int offset = triangles.size();  // 增量更新
     triangles.resize(offset + indices.size() / 3);
@@ -117,18 +119,18 @@ void MeshLoader::readObj(std::string filepath, std::vector<Triangle>& triangles,
         t.p2 = vertices[indices[i + 1]];
         t.p3 = vertices[indices[i + 2]];
         if (!smoothNormal) {
-            QVector3D n = (QVector3D::crossProduct(t.p2 - t.p1, t.p3 - t.p1)).normalized();
+            QVector3D n = (vec3(t.p2) - vec3(t.p1)).cross(vec3(t.p3) - vec3(t.p1)).normalized().toQvector();
             t.n1 = n; t.n2 = n; t.n3 = n;
         }
         else {
             t.n1 = (normals[indices[i]]).normalized();
             t.n2 = (normals[indices[i + 1]]).normalized();
             t.n3 = (normals[indices[i + 2]]).normalized();
-            if (t.n1.isNull() || t.n2.isNull() || t.n2.isNull()) {
-                std::cout << "zero normal Tri id: " + std::to_string(offset + i / 3) << std::endl;//如果某个三角面过小，很容易导致算得零向量
-            }
+           
         }
-
+        if (t.n1.isNull() || t.n2.isNull() || t.n2.isNull()) {
+            std::cout << "zero normal Tri id: " + std::to_string(offset + i / 3) << std::endl;//如果某个三角面过小，很容易导致算得零向量
+        }
         // 传材质
         t.material = material;
     }

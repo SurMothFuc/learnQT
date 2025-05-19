@@ -57,7 +57,7 @@ Scene::Scene(){
     mt.transmission = 1.0;
     mt.IOR = 1.5;
     mt.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
-    MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.6, 0.2, 0.6), QVector3D(1, 1, 1)), true);
+   // MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.6, 0.2, 0.6), QVector3D(1, 1, 1)), true);
 
     mt = Material();;
     mt.roughness = 0.01;
@@ -65,7 +65,7 @@ Scene::Scene(){
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-    MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.2, 0.2), QVector3D(1.0, 1.0, 1.0)), false);
+    //MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.2, 0.2), QVector3D(1.0, 1.0, 1.0)), false);
 
     mt = Material();;
     mt.roughness = 0.001;
@@ -76,7 +76,18 @@ Scene::Scene(){
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(1.0, 1.0, 1.0);
    // MeshLoader::readObj("models/10778_Toilet_V2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(-90, 0, 0), QVector3D(0.2, 0,0), QVector3D(1.0, 1.0, 1.0)), true);
+    
+    mt = Material();;
+    mt.roughness = 0.001; 
+    mt.transmission = 1.0;
+    mt.IOR = 1.5;
+    //mt.metallic = 1.0;
+    //mt.subsurface = 1.0;
+    //mt.anisotropic = 1.0;
+    mt.baseColor = QVector3D(1.0, 1.0, 1.0);
+    MeshLoader::readObj("models/untitld.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(-90, 0, 0), QVector3D(0, 0,0), QVector3D(1.2, 1.2, 1.2)),true);
 
+    
 
 
     int nTriangles = triangles.size();
