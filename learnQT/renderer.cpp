@@ -66,7 +66,8 @@ GLuint Renderer::bindData(std::vector<GLuint> colorAttachments) {//colorAttachme
 Renderer::Renderer(int width, int height, QObject *parent)
     : QObject(parent)
 {  
-    init(width,height);
+    init(width, height); 
+
 }
 
 Renderer::~Renderer()
@@ -114,16 +115,19 @@ void Renderer::render(int width, int height)
     rotate.setToIdentity();
     rotate.rotate(degree, 0, 0, 1);*/
 
-
+    
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     //glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    
+    auto sobel_number = getSobelRandomNumber(frameCounter, 12);
+
     pathtrace_program->bind(); 
     {
         GLint fl_loca = pathtrace_program->uniformLocation("frameCounter");
-        glUniform1ui(fl_loca, frameCounter++);        
+        glUniform1ui(fl_loca, frameCounter++);   
+        GLint sobel_loca = pathtrace_program->uniformLocation("sobelNumber");
+        glUniform1fv(sobel_loca, 12, sobel_number.data());
 
         glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
         glActiveTexture(GL_TEXTURE0);
