@@ -7,6 +7,14 @@
 #define INV_PI 0.31830988618379067
 #define EPS 1e-6
 
+#define ALPHA_MODE_OPAQUE 0
+#define ALPHA_MODE_TRANSPARENT 1
+
+#define MEDIUM_NONE 0
+#define MEDIUM_ABSORB 1
+#define MEDIUM_SCATTER 2
+#define MEDIUM_EMISSIVE 3
+
 out vec4 FragColor;
 in vec3 pix;
 
@@ -52,7 +60,7 @@ struct Material {
     vec3 baseColor;
     float subsurface;
     float metallic;
-    float specular;
+    //float specular;
     float specularTint;
     float roughness;
     float anisotropic;
@@ -62,6 +70,14 @@ struct Material {
     float clearcoatGloss;
     float IOR;
     float transmission;
+    int alphaMode;
+    int mediumtype;
+    float mediumDensity;
+    vec3 mediumColor;
+    float mediumAnisotropy;
+
+    float ax;
+    float ay;
 };
 // 光线
 struct Ray {
@@ -121,48 +137,45 @@ vec2 CranleyPattersonRotation(vec2 p) {
     return p;
 }
 
-// 获取第 i 下标的三角形
-Triangle getTriangle(int i) {
-    int offset = i * SIZE_TRIANGLE;
-    Triangle t;
-
-    // 顶点坐标
-    t.p1 = texelFetch(triangles, offset + 0).xyz;
-    t.p2 = texelFetch(triangles, offset + 1).xyz;
-    t.p3 = texelFetch(triangles, offset + 2).xyz;
-    // 法线
-    t.n1 = texelFetch(triangles, offset + 3).xyz;
-    t.n2 = texelFetch(triangles, offset + 4).xyz;
-    t.n3 = texelFetch(triangles, offset + 5).xyz;
-
-    return t;
-}
-
 // 获取第 i 下标的三角形的材质
 Material getMaterial(int i) {
     Material m;
 
     int offset = i * SIZE_TRIANGLE;
-    vec3 param1 = texelFetch(triangles, offset + 8).xyz;
-    vec3 param2 = texelFetch(triangles, offset + 9).xyz;
-    vec3 param3 = texelFetch(triangles, offset + 10).xyz;
-    vec3 param4 = texelFetch(triangles, offset + 11).xyz;
+    vec4 param1 = texelFetch(triangles, offset + 6);
+    vec4 param2 = texelFetch(triangles, offset + 7);
+    vec4 param3 = texelFetch(triangles, offset + 8);
+    vec4 param4 = texelFetch(triangles, offset + 9);
+    vec4 param5 = texelFetch(triangles, offset + 10);
+    vec4 param6 = texelFetch(triangles, offset + 11);
     
-    m.emissive = texelFetch(triangles, offset + 6).xyz;
-    m.baseColor = texelFetch(triangles, offset + 7).xyz;
-    m.subsurface = param1.x;
-    m.metallic = param1.y;
-    m.specular = param1.z;
-    m.specularTint = param2.x;
-    m.roughness = param2.y;
-    m.anisotropic = param2.z;
-    m.sheen = param3.x;
-    m.sheenTint = param3.y;
-    m.clearcoat = param3.z;
-    m.clearcoatGloss = param4.x;
-    m.IOR = param4.y;
-    m.transmission = param4.z;
+    m.emissive = param1.xyz;
+    m.sheenTint= param1.w;
 
+    m.baseColor = param2.xyz;
+    m.clearcoat = param2.w;
+
+    m.mediumColor=param3.xyz;
+    m.mediumAnisotropy=clamp(param3.w,-0.9, 0.9);
+
+    m.clearcoatGloss=mix(0.1, 0.001,param4.x);
+    m.IOR=param4.y;
+    m.transmission=param4.z;
+    m.alphaMode=int(param4.w);
+
+    m.mediumtype=int(param5.x);
+    m.mediumDensity=param5.y;
+    m.subsurface=param5.z;
+    m.metallic=param5.w;
+
+    m.specularTint=param6.x;
+    m.roughness=max(param6.y,0.001);
+    m.anisotropic=param6.z;
+    m.sheen=param6.w;
+
+    float aspect = sqrt(1.0 - m.anisotropic * 0.9);
+    m.ax = max(0.001, m.roughness / aspect);
+    m.ay = max(0.001, m.roughness * aspect);
     return m;
 }
 
@@ -236,23 +249,6 @@ BVHNode getBVHNode(int i) {
     node.BB = texelFetch(nodes, offset + 3).xyz;
 
     return node;
-}
-
-
-// 暴力遍历数组下标范围 [l, r] 求最近交点
-HitResult hitArray(Ray ray, int l, int r) {
-    HitResult res;
-    res.isHit = false;
-    res.distance = INF;
-    for(int i=l; i<=r; i++) {
-        Triangle triangle = getTriangle(i);
-        HitResult r = hitTriangle(triangle, ray);
-        if(r.isHit && r.distance<res.distance) {
-            res = r;
-            res.material = getMaterial(i);
-        }
-    }
-    return res;
 }
 
 // 和 aabb 盒子求交，没有交点则返回 -1
@@ -575,11 +571,6 @@ vec3 SampleGTR1(float rgh, float r1, float r2)
 
 vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Material material,float eta)
 {
-    //float eta=dot(-V, N) < 0.0 ? (1.0 / material.IOR) :material.IOR;
-    float aspect = sqrt(1.0 - material.anisotropic * 0.9);
-    float ax = max(0.001, material.roughness / aspect);
-    float ay = max(0.001, material.roughness * aspect);
-
     vec3 L;
 
     // TODO: Tangent and bitangent should be calculated from mesh (provided, the mesh has proper uvs)
@@ -633,7 +624,7 @@ vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Materia
     }
     else if (xi_3 < cdf[2]) // Dielectric + Metallic reflection
     {
-        vec3 H = SampleGGXVNDF(V, ax, ay, xi_1, xi_2);
+        vec3 H = SampleGGXVNDF(V, material.ax, material.ay, xi_1, xi_2);
         if (H.z < 0.0)
             H = -H;
 
@@ -641,7 +632,7 @@ vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Materia
     }
     else if (xi_3 < cdf[3]) // Glass
     {
-        vec3 H = SampleGGXVNDF(V, ax, ay, xi_1, xi_2);
+        vec3 H = SampleGGXVNDF(V, material.ax, material.ay, xi_1, xi_2);
         float F = DielectricFresnel(abs(dot(V, H)), eta);
 
         if (H.z < 0.0)
@@ -776,9 +767,6 @@ vec3 EvalClearcoat(float clearcoatRoughness, vec3 V, vec3 L, vec3 H, out float p
 }
 vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float pdf)
 {
-    float aspect = sqrt(1.0 - material.anisotropic * 0.9);
-    float ax = max(0.001, material.roughness / aspect);
-    float ay = max(0.001, material.roughness * aspect);
     pdf = 0.0;
     vec3 f = vec3(0.0);
 
@@ -846,7 +834,7 @@ vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float
         // Normalize for interpolating based on Cspec0
         float F = (DielectricFresnel(VDotH, 1.0 / material.IOR) - F0) / (1.0 - F0);
 
-        f += EvalMicrofacetReflection(ax,ay, V, L, H, mix(Cspec0, vec3(1.0), F), tmpPdf) * dielectricWt;
+        f += EvalMicrofacetReflection(material.ax,material.ay, V, L, H, mix(Cspec0, vec3(1.0), F), tmpPdf) * dielectricWt;
         pdf += tmpPdf * dielectricPr;
     }
 
@@ -856,7 +844,7 @@ vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float
         // Tinted to base color
         vec3 F = mix(material.baseColor, vec3(1.0), SchlickFresnel(VDotH));
 
-        f += EvalMicrofacetReflection(ax,ay, V, L, H, F, tmpPdf) * metalWt;
+        f += EvalMicrofacetReflection(material.ax,material.ay, V, L, H, F, tmpPdf) * metalWt;
         pdf += tmpPdf * metalPr;
     }
 
@@ -868,12 +856,12 @@ vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float
 
         if (reflect)
         {
-            f += EvalMicrofacetReflection(ax,ay ,V, L, H, vec3(F), tmpPdf) * glassWt;
+            f += EvalMicrofacetReflection(material.ax,material.ay ,V, L, H, vec3(F), tmpPdf) * glassWt;
             pdf += tmpPdf * glassPr * F;
         }
         else
         {
-            f += EvalMicrofacetRefraction(material.baseColor,ax,ay,eta, V, L, H, vec3(F), tmpPdf) * glassWt;
+            f += EvalMicrofacetRefraction(material.baseColor,material.ax,material.ay,eta, V, L, H, vec3(F), tmpPdf) * glassWt;
             pdf += tmpPdf * glassPr * (1.0 - F);
         }
     }

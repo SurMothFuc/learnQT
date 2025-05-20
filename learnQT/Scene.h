@@ -5,14 +5,14 @@
 #include "BVH.h"
 
 struct Triangle_encoded {
-    QVector3D p1, p2, p3;    // 顶点坐标
-    QVector3D n1, n2, n3;    // 顶点法线
-    QVector3D emissive;      // 自发光参数
-    QVector3D baseColor;     // 颜色
-    QVector3D param1;        // (subsurface, metallic, specular)
-    QVector3D param2;        // (specularTint, roughness, anisotropic)
-    QVector3D param3;        // (sheen, sheenTint, clearcoat)
-    QVector3D param4;        // (clearcoatGloss, IOR, transmission)
+	QVector4D p1, p2, p3;   // 顶点坐标
+	QVector4D n1, n2, n3;   // 顶点法线 
+	QVector4D param1;       // 自发光参数 sheenTint
+	QVector4D param2;       // 颜色 clearcoat
+	QVector4D param3;       // mediumColor mediumAnisotropy                   
+	QVector4D param4;       // (clearcoatGloss, IOR, transmission alphaMode)
+	QVector4D param5;       // (mediumtype, mediumDensity,subsurface, metallic,)
+	QVector4D param6;       // (specularTint, roughness, anisotropic,sheen)
 };
 
 struct BVHNode_encoded {
