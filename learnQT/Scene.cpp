@@ -57,7 +57,7 @@ Scene::Scene(){
     mt.transmission = 1.0;
     mt.IOR = 1.5;
     mt.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
-   // MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.6, 0.2, 0.6), QVector3D(1, 1, 1)), true);
+    MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.6, 0.2, 0.6), QVector3D(1, 1, 1)), true);
 
     mt = Material();;
     mt.roughness = 0.01;
@@ -65,7 +65,7 @@ Scene::Scene(){
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-    //MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.2, 0.2), QVector3D(1.0, 1.0, 1.0)), false);
+    MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.2, 0.2), QVector3D(1.0, 1.0, 1.0)), false);
 
     mt = Material();;
     mt.roughness = 0.001;
@@ -85,7 +85,7 @@ Scene::Scene(){
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-    MeshLoader::readObj("models/untitld.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(-90, 0, 0), QVector3D(0, 0,0), QVector3D(1.2, 1.2, 1.2)),true);
+    //MeshLoader::readObj("models/untitld.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(-90, 0, 0), QVector3D(0, 0,0), QVector3D(1.2, 1.2, 1.2)),true);
 
     
 
@@ -126,20 +126,20 @@ void Scene::DataEncode(int nTriangles,int nNodes)
         Triangle& t = triangles[i];
         Material& m = t.material;
         // 顶点位置
-        triangles_encoded[i].p1 = t.p1;
-        triangles_encoded[i].p2 = t.p2;
-        triangles_encoded[i].p3 = t.p3;
+        triangles_encoded[i].p1 = QVector4D(t.p1);
+        triangles_encoded[i].p2 = QVector4D(t.p2) ;
+        triangles_encoded[i].p3 = QVector4D(t.p3) ;
         // 顶点法线
-        triangles_encoded[i].n1 = t.n1;
-        triangles_encoded[i].n2 = t.n2;
-        triangles_encoded[i].n3 = t.n3;
+        triangles_encoded[i].n1 = QVector4D(t.n1) ;
+        triangles_encoded[i].n2 = QVector4D(t.n2);
+        triangles_encoded[i].n3 = QVector4D(t.n3);
         // 材质
-        triangles_encoded[i].emissive = m.emissive;
-        triangles_encoded[i].baseColor = m.baseColor;
-        triangles_encoded[i].param1 = QVector3D(m.subsurface, m.metallic, m.specular);
-        triangles_encoded[i].param2 = QVector3D(m.specularTint, m.roughness, m.anisotropic);
-        triangles_encoded[i].param3 = QVector3D(m.sheen, m.sheenTint, m.clearcoat);
-        triangles_encoded[i].param4 = QVector3D(m.clearcoatGloss, m.IOR, m.transmission);
+        triangles_encoded[i].param1 = QVector4D(m.emissive,m.sheenTint);
+        triangles_encoded[i].param2 = QVector4D(m.baseColor,m.clearcoat);
+        triangles_encoded[i].param3 = QVector4D(m.mediumColor,m.mediumDensity);
+        triangles_encoded[i].param4 = QVector4D(m.clearcoatGloss, m.IOR, m.transmission,m.alphaMode);
+        triangles_encoded[i].param5 = QVector4D(m.mediumtype, m.mediumDensity, m.subsurface, m.metallic);
+        triangles_encoded[i].param6 = QVector4D(m.specularTint,m.roughness, m.anisotropic, m.sheen);
     }
 
     // 编码 BVHNode, aabb
@@ -160,13 +160,13 @@ void Scene::updateMaterial(QVector3D emissive, QVector3D  baseColor,
     float sheen, float sheenTint, float clearcoat, 
     float clearcoatGloss, float IOR, float transmission)
 {
-    int nTriangles = triangles.size();
-    for (int i = 0; i < nTriangles; i++) {       
-        triangles_encoded[i].emissive = emissive;
-        //triangles_encoded[i].baseColor = baseColor;
-        triangles_encoded[i].param1 = QVector3D(subsurface, metallic, specular);
-        triangles_encoded[i].param2 = QVector3D(specularTint, roughness, anisotropic);
-        triangles_encoded[i].param3 = QVector3D(sheen, sheenTint, clearcoat);
-        triangles_encoded[i].param4 = QVector3D(clearcoatGloss, IOR, transmission);
-    }
+    //int nTriangles = triangles.size();
+    //for (int i = 0; i < nTriangles; i++) {       
+    //    triangles_encoded[i].emissive = emissive;
+    //    //triangles_encoded[i].baseColor = baseColor;
+    //    triangles_encoded[i].param1 = QVector3D(subsurface, metallic, specular);
+    //    triangles_encoded[i].param2 = QVector3D(specularTint, roughness, anisotropic);
+    //    triangles_encoded[i].param3 = QVector3D(sheen, sheenTint, clearcoat);
+    //    triangles_encoded[i].param4 = QVector3D(clearcoatGloss, IOR, transmission);
+    //}
 }

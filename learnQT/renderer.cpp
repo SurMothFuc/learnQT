@@ -380,7 +380,7 @@ void Renderer::updateparam()
         glBufferData(GL_TEXTURE_BUFFER, Scene::getInstance().triangles_encoded.size() * sizeof(Triangle_encoded), &Scene::getInstance().triangles_encoded[0], GL_STATIC_DRAW);
         glGenTextures(1, &trianglesTextureBuffer);
         glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
-        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo0);
+        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, tbo0);
 
         glGenBuffers(1, &tbo1);
         glBindBuffer(GL_TEXTURE_BUFFER, tbo1);
