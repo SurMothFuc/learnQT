@@ -127,7 +127,7 @@ void Renderer::render(int width, int height)
         GLint fl_loca = pathtrace_program->uniformLocation("frameCounter");
         glUniform1ui(fl_loca, frameCounter++);   
         GLint sobel_loca = pathtrace_program->uniformLocation("sobelNumber");
-        glUniform1fv(sobel_loca, 12, sobel_number.data());
+        glUniform1fv(sobel_loca, 24, sobel_number.data());
 
         glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
         glActiveTexture(GL_TEXTURE0);
