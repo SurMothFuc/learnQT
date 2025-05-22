@@ -876,43 +876,58 @@ vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float
     return f;
 }
 
+//{
+// HDR 环境贴图重要性采样    
+//Ray hdrTestRay;
+//hdrTestRay.startPoint = hit.hitPoint;
+//hdrTestRay.direction = SampleHdr(rand(), rand());
 
-vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
+/*
+// 进行一次求交测试 判断是否有遮挡
+if(dot(N, hdrTestRay.direction) > 0.0) { // 如果采样方向背向点 p 则放弃测试, 因为 N dot L < 0            
+    HitResult hdrHit = hitBVH(hdrTestRay);
+    
+    // 天空光仅在没有遮挡的情况下积累亮度
+    if(!hdrHit.isHit) {
+        vec3 L = hdrTestRay.direction;
+        vec3 color = hdrColor(L);
+        float pdf_light =hdrPdf(L, hdrResolution);
+        float pdf_brdf=0.0;
+        vec3 f_r = DisneyEval(V, N, L, hit.material,pdf_brdf);
+        float mis_weight = misMixWeight(pdf_light, pdf_brdf);
+        Lo += mis_weight * history * color * f_r * dot(N, L) / pdf_light;
+        //Lo=L*0.5+0.5;
+    }
+}
+*/
+//}
+
+vec3 pathTracingImportanceSampling(Ray r, int maxBounce) {
 
     vec3 Lo = vec3(0);      // 最终的颜色
     vec3 history = vec3(1); // 递归积累的颜色
 
+    float pdf_brdf;
+    float NdotL;
+    vec3 f_r;
 
     for(int bounce=0; bounce<maxBounce; bounce++) {
-        vec3 V = -hit.viewDir;
-        vec3 N = hit.normal;   
-
-
-        // HDR 环境贴图重要性采样    
-        //Ray hdrTestRay;
-        //hdrTestRay.startPoint = hit.hitPoint;
-        //hdrTestRay.direction = SampleHdr(rand(), rand());
-
-        /*
-        // 进行一次求交测试 判断是否有遮挡
-        if(dot(N, hdrTestRay.direction) > 0.0) { // 如果采样方向背向点 p 则放弃测试, 因为 N dot L < 0            
-            HitResult hdrHit = hitBVH(hdrTestRay);
-    
-            // 天空光仅在没有遮挡的情况下积累亮度
-            if(!hdrHit.isHit) {
-                vec3 L = hdrTestRay.direction;
-                vec3 color = hdrColor(L);
-                float pdf_light =hdrPdf(L, hdrResolution);
-                float pdf_brdf=0.0;
-                vec3 f_r = DisneyEval(V, N, L, hit.material,pdf_brdf);
-                float mis_weight = misMixWeight(pdf_light, pdf_brdf);
-                Lo += mis_weight * history * color * f_r * dot(N, L) / pdf_light;
-                //Lo=L*0.5+0.5;
-            }
-        }
-        */
         
-        // 获取 3 个随机数
+         HitResult newHit = hitBVH(r);
+
+         // 未命中   
+         
+        if(!newHit.isHit) {
+            vec3 color = hdrColor(r.direction);
+            //float pdf_light = hdrPdf(L, hdrResolution); 
+            //float mis_weight = misMixWeight(pdf_brdf, pdf_light);   // f(a,b) = a^2 / (a^2 + b^2)
+            float mis_weight = 1.0;   // f(a,b) = a^2 / (a^2 + b^2)
+            Lo += mis_weight * history * color;
+            break;
+        }
+        
+        // 命中光源积累颜色      
+        Lo +=  history *newHit.material.emissive;
 
         vec2 uv;
         uv.x=sobelNumber[bounce*2];
@@ -920,57 +935,28 @@ vec3 pathTracingImportanceSampling(HitResult hit, int maxBounce) {
         uv = CranleyPattersonRotation(uv);
         float xi_1 = uv.x;
         float xi_2 = uv.y; 
-        //float xi_1 = rand();
-        //float xi_2 = rand();
-        float xi_3 = rand();    // xi_3 是决定采样的随机数, 朴素 rand 就好
-
+        float xi_3 = rand();   
+        float eta =newHit.isInside ? newHit.material.IOR:(1.0 / newHit.material.IOR) ;
+        vec3 V = -newHit.viewDir;
+        vec3 N = newHit.normal;   
         // 采样 BRDF 得到一个方向 L
-        //vec3 L = SampleBRDF(xi_1, xi_2, xi_3, V, N, hit.material); 
-        float eta =hit.isInside ? hit.material.IOR:(1.0 / hit.material.IOR) ;
-        vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, N, hit.material,eta); 
-        float NdotL =abs(dot(N, L));//有折射情况 取绝对值
-       // if(NdotL <= 0.0) break;
-
-        // 发射光线
-        Ray randomRay;
-        randomRay.startPoint = hit.hitPoint;
-        randomRay.direction = L;
-        HitResult newHit = hitBVH(randomRay);
-
-
-
-        // 获取 L 方向上的 BRDF 值和概率密度
-        float pdf_brdf=0.0;
-        vec3 f_r = DisneyEval(V, N, L, hit.material,eta,pdf_brdf);
+        vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, N, newHit.material,eta); 
+        NdotL =abs(dot(N, L));
+        f_r = DisneyEval(V, N, L, newHit.material,eta,pdf_brdf);
         if(pdf_brdf <= 0.0) break;
 
-       // 未命中        
-        if(!newHit.isHit) {
-            vec3 color = hdrColor(L);
-            //float pdf_light = hdrPdf(L, hdrResolution); 
+        history *= f_r * NdotL / pdf_brdf;  // 累积颜色
 
-            //float mis_weight = misMixWeight(pdf_brdf, pdf_light);   // f(a,b) = a^2 / (a^2 + b^2)
-            float mis_weight = 1.0;   // f(a,b) = a^2 / (a^2 + b^2)
-            Lo += mis_weight * history * color * f_r * NdotL / pdf_brdf;
-            break;
-        }
-        
-        // 命中光源积累颜色
-        vec3 Le = newHit.material.emissive;
-        Lo += history * Le * f_r * NdotL / pdf_brdf;             
-
-        // 递归(步进)
-        hit = newHit;
-        history *= f_r * NdotL / pdf_brdf;   // 累积颜色
+        r.direction = L;
+        r.startPoint = newHit.hitPoint;        
 
         // 加入俄罗斯轮盘赌 (关键位置)
-        if (bounce >= 2) { // 前2次反弹不启用RR减少噪声
+        if (bounce >= 3) { // 前3次反弹不启用RR减少噪声
             float rrSurvivalProb = min(0.95, max(maxComponent(history), 0.05)); // 保持最小5%存活率
             if (rand() > rrSurvivalProb) break;     // 终止路径
             history /= rrSurvivalProb;              // 保持无偏
         }
     }
-    
     return Lo;
 }
 
@@ -985,16 +971,8 @@ void main(void)
     //vec2 AA = vec2(0);
     vec4 dir = view*vec4(pix.x*float(width) /float(height)+AA.x,pix.y+AA.y, -2.0,0.0);//- ray.startPoint;
     ray.direction = normalize(dir.xyz);
-    vec3 color=vec3(0);
-    // primary hit
-    HitResult firstHit = hitBVH(ray);
-        if(!firstHit.isHit) {
-            color = hdrColor(ray.direction);
-    } else {
-        vec3 Le = firstHit.material.emissive;
-        vec3 Li = pathTracingImportanceSampling(firstHit,6);
-        color = Le + Li;
-    }  
+    // primary hit   
+    vec3 color = pathTracingImportanceSampling(ray,7);
 
     
     vec3 lastColor = texture2D(lastFrame, pix.xy*0.5+0.5).rgb;
