@@ -910,8 +910,9 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce) {
     float pdf_brdf;
     float NdotL;
     vec3 f_r;
+    bool inMedium = false;
 
-    for(int bounce=0; bounce<maxBounce; bounce++) {
+    for(int bounce=0;; bounce++) {
         
          HitResult newHit = hitBVH(r);
 
@@ -926,29 +927,49 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce) {
             break;
         }
         
-        // 命中光源积累颜色      
+        // 命中光源积累颜色  
         Lo +=  history *newHit.material.emissive;
 
-        vec2 uv;
-        uv.x=sobelNumber[bounce*2];
-        uv.y=sobelNumber[bounce*2+1];
-        uv = CranleyPattersonRotation(uv);
-        float xi_1 = uv.x;
-        float xi_2 = uv.y; 
-        float xi_3 = rand();   
-        float eta =newHit.isInside ? newHit.material.IOR:(1.0 / newHit.material.IOR) ;
-        vec3 V = -newHit.viewDir;
-        vec3 N = newHit.normal;   
-        // 采样 BRDF 得到一个方向 L
-        vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, N, newHit.material,eta); 
-        NdotL =abs(dot(N, L));
-        f_r = DisneyEval(V, N, L, newHit.material,eta,pdf_brdf);
-        if(pdf_brdf <= 0.0) break;
+       
 
-        history *= f_r * NdotL / pdf_brdf;  // 累积颜色
 
-        r.direction = L;
+
+        if(newHit.material.alphaMode==ALPHA_MODE_TRANSPARENT){
+            //如果是透明的直接穿透 并沿用之前的光线方向
+            bounce--;
+        }else{
+            if(bounce == maxBounce)//将maxBounce放置在这里是为了maxBounce为1时正确处理透明效果
+                break;
+            vec2 uv;
+            uv.x=sobelNumber[bounce*2];
+            uv.y=sobelNumber[bounce*2+1];
+            uv = CranleyPattersonRotation(uv);
+            float xi_1 = uv.x;
+            float xi_2 = uv.y; 
+            float xi_3 = rand();   
+            float eta =newHit.isInside ? newHit.material.IOR:(1.0 / newHit.material.IOR) ;
+            vec3 V = -newHit.viewDir;
+            vec3 N = newHit.normal;   
+            // 采样 BRDF 得到一个方向 L
+            vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, N, newHit.material,eta); 
+            NdotL =abs(dot(N, L));
+            f_r = DisneyEval(V, N, L, newHit.material,eta,pdf_brdf);
+            if(pdf_brdf <= 0.0) break;
+            history *= f_r * NdotL / pdf_brdf;  // 累积颜色
+            r.direction = L;
+        }        
         r.startPoint = newHit.hitPoint;        
+
+        //这里至少要单独存储 medium ，之后要引入体积栈
+        if(!newHit.isInside &&
+        dot(r.direction,newHit.normal)<0 &&
+        newHit.material.mediumtype!=MEDIUM_NONE){
+            inMedium = true;
+        }
+        else if(newHit.material.mediumtype!=MEDIUM_NONE){
+            inMedium = false;
+        }
+
 
         // 加入俄罗斯轮盘赌 (关键位置)
         if (bounce >= 3) { // 前3次反弹不启用RR减少噪声
@@ -972,7 +993,7 @@ void main(void)
     vec4 dir = view*vec4(pix.x*float(width) /float(height)+AA.x,pix.y+AA.y, -2.0,0.0);//- ray.startPoint;
     ray.direction = normalize(dir.xyz);
     // primary hit   
-    vec3 color = pathTracingImportanceSampling(ray,7);
+    vec3 color = pathTracingImportanceSampling(ray,6);
 
     
     vec3 lastColor = texture2D(lastFrame, pix.xy*0.5+0.5).rgb;

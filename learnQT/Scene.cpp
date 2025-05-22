@@ -60,12 +60,13 @@ Scene::Scene(){
     MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.6, 0.2, 0.6), QVector3D(1, 1, 1)), true);
 
     mt = Material();;
-    mt.roughness = 0.01;
-    mt.metallic = 1.0;
+    mt.roughness = 0.1;
+    //mt.alphaMode = AlphaMode::Transparent;
+    //mt.metallic = 1.0;
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-    MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.2, 0.2), QVector3D(1.0, 1.0, 1.0)), false);
+    MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.1, 0.2), QVector3D(1.0, 1.0, 1.0)), false);
 
     mt = Material();;
     mt.roughness = 0.001;
