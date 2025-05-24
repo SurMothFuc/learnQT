@@ -60,12 +60,15 @@ Scene::Scene(){
     MeshLoader::readObj("models/sphere2.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.6, 0.2, 0.6), QVector3D(1, 1, 1)), true);
 
     mt = Material();;
-    mt.roughness = 0.1;
-    //mt.alphaMode = AlphaMode::Transparent;
+    //mt.roughness = 0.1;
+    mt.alphaMode = (int)AlphaMode::Transparent;
+    mt.mediumColor = QVector3D(0.458, 0.95, 1.0);
+    mt.mediumDensity =5.0;
+    mt.mediumtype = (int)MediumType::Scatter;
     //mt.metallic = 1.0;
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
-    mt.baseColor = QVector3D(1.0, 1.0, 1.0);
+    //mt.baseColor = QVector3D(1.0, 1.0, 1.0);
     MeshLoader::readObj("models/quad.obj", triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.1, 0.2), QVector3D(1.0, 1.0, 1.0)), false);
 
     mt = Material();;
@@ -137,7 +140,7 @@ void Scene::DataEncode(int nTriangles,int nNodes)
         // 材质
         triangles_encoded[i].param1 = QVector4D(m.emissive,m.sheenTint);
         triangles_encoded[i].param2 = QVector4D(m.baseColor,m.clearcoat);
-        triangles_encoded[i].param3 = QVector4D(m.mediumColor,m.mediumDensity);
+        triangles_encoded[i].param3 = QVector4D(m.mediumColor,m.mediumAnisotropy);
         triangles_encoded[i].param4 = QVector4D(m.clearcoatGloss, m.IOR, m.transmission,m.alphaMode);
         triangles_encoded[i].param5 = QVector4D(m.mediumtype, m.mediumDensity, m.subsurface, m.metallic);
         triangles_encoded[i].param6 = QVector4D(m.specularTint,m.roughness, m.anisotropic, m.sheen);

@@ -5,6 +5,7 @@
 #define PI 3.14159265358979323
 #define TWO_PI 6.28318530717958648
 #define INV_PI 0.31830988618379067
+#define INV_4_PI 0.07957747154594766
 #define EPS 1e-6
 
 #define ALPHA_MODE_OPAQUE 0
@@ -89,7 +90,7 @@ struct Ray {
 struct HitResult {
     bool isHit;             // 是否命中
     bool isInside;          // 是否从内部命中
-    float distance;         // 与交点的距离
+    float hitDistance;         // 与交点的距离
     vec3 hitPoint;          // 光线命中点
     vec3 normal;            // 命中点法线
     vec3 viewDir;           // 击中该点的光线的方向
@@ -178,59 +179,6 @@ Material getMaterial(int i) {
     m.ay = max(0.001, m.roughness * aspect);
     return m;
 }
-
-// 光线和三角形求交 
-HitResult hitTriangle(Triangle triangle, Ray ray) {
-    HitResult res;
-    res.distance = INF;
-    res.isHit = false;
-    res.isInside = false;
-
-    vec3 p1 = triangle.p1;
-    vec3 p2 = triangle.p2;
-    vec3 p3 = triangle.p3;
-
-    vec3 e0 = p2.xyz - p1.xyz;
-    vec3 e1 = p3.xyz - p1.xyz;
-    vec3 pv = cross(ray.direction, e1);
-    float det = dot(e0, pv);
-
-    vec3 tv = ray.startPoint - p1.xyz;
-    vec3 qv = cross(tv, e0);
-
-    vec4 uvt;
-    uvt.x = dot(tv, pv);
-    uvt.y = dot(ray.direction, qv);
-    uvt.z = dot(e1, qv);
-    uvt.xyz = uvt.xyz / det;
-    uvt.w = 1.0 - uvt.x - uvt.y;
-    
-    if (all(greaterThanEqual(uvt, vec4(0.0))) && uvt.z < res.distance)
-    {
-        res.isHit = true;
-        res.hitPoint = ray.startPoint + ray.direction * uvt.z;
-        res.distance = uvt.z;
-        res.viewDir = ray.direction;
-
-        // 根据交点位置插值顶点法线 
-        vec3 Nsmooth = uvt.w * triangle.n1 + uvt.x * triangle.n2 + uvt.y * triangle.n3;
-        if (length(Nsmooth) < EPS) {
-            Nsmooth = normalize(cross(p2-p1, p3-p1)); // 防止接近零向量导致溢出
-        }else{
-            Nsmooth = normalize(Nsmooth);
-        }
-        // 从三角形背后（模型内部）击中
-        if (dot(Nsmooth, ray.direction) > 0.0f) {
-            res.isInside = true;
-            res.normal =-Nsmooth;
-        }else{
-            res.normal=Nsmooth;
-        }
-
-    }
-
-    return res;
-}
 // 获取第 i 下标的 BVHNode 对象
 BVHNode getBVHNode(int i) {
     BVHNode node;
@@ -271,7 +219,7 @@ float hitAABB(Ray r, vec3 AA, vec3 BB) {
 HitResult hitBVH(Ray ray) {
     HitResult res;
     res.isHit = false;
-    res.distance = INF;
+    res.hitDistance = INF;
     vec3 bary;
     int triID = -1;
     vec3 vert1;
@@ -320,11 +268,11 @@ HitResult hitBVH(Ray ray) {
                 if(uvt.z<0.00005)
                     continue;
 
-                if (all(greaterThanEqual(uvt, vec4(0.0))) && uvt.z < res.distance)
+                if (all(greaterThanEqual(uvt, vec4(0.0))) && uvt.z < res.hitDistance)
                 {
                     res.isHit = true;
                     res.hitPoint = ray.startPoint + ray.direction * uvt.z;
-                    res.distance = uvt.z;
+                    res.hitDistance = uvt.z;
                     res.viewDir = ray.direction;
                     bary = uvt.wxy;
                     triID=i;
@@ -352,7 +300,7 @@ HitResult hitBVH(Ray ray) {
             float t1 = min(tmax.x, min(tmax.y, tmax.z));
             float t0 = max(tmin.x, max(tmin.y, tmin.z));
 
-            d1= (t1 >= t0) ? ((t0 > 0.0) ? ( t0<res.distance?(t0):0.0 ) : (t1)) : (-1);
+            d1= (t1 >= t0) ? ((t0 > 0.0) ? ( t0<res.hitDistance?(t0):0.0 ) : (t1)) : (-1);
         }
         if(node.right>0) {
             BVHNode rightNode = getBVHNode(node.right);
@@ -366,7 +314,7 @@ HitResult hitBVH(Ray ray) {
             float t1 = min(tmax.x, min(tmax.y, tmax.z));
             float t0 = max(tmin.x, max(tmin.y, tmin.z));
 
-            d2= (t1 >= t0) ? ((t0 > 0.0) ? (t0<res.distance?(t0):0.0) : (t1)) : (-1);
+            d2= (t1 >= t0) ? ((t0 > 0.0) ? (t0<res.hitDistance?(t0):0.0) : (t1)) : (-1);
         }
 
         // 在最近的盒子中搜索
@@ -765,6 +713,34 @@ vec3 EvalClearcoat(float clearcoatRoughness, vec3 V, vec3 L, vec3 H, out float p
     pdf = D * H.z * jacobian;
     return vec3(F) * D * G;
 }
+vec3 SampleHG(vec3 V, float g, float r1, float r2)
+{
+    float cosTheta;
+
+    if (abs(g) < 0.001)
+        cosTheta = 1 - 2 * r2;
+    else 
+    {
+        float sqrTerm = (1 - g * g) / (1 + g - 2 * g * r2);
+        cosTheta = -(1 + g * g - sqrTerm * sqrTerm) / (2 * g);
+    }
+
+    float phi = r1 * TWO_PI;
+    float sinTheta = clamp(sqrt(1.0 - (cosTheta * cosTheta)), 0.0, 1.0);
+    float sinPhi = sin(phi);
+    float cosPhi = cos(phi);
+
+    vec3 v1, v2;
+    Onb(V, v1, v2);
+
+    return sinTheta * cosPhi * v1 + sinTheta * sinPhi * v2 + cosTheta * V;
+}
+
+float PhaseHG(float cosTheta, float g)
+{
+    float denom = 1 + g * g + 2 * g * cosTheta;
+    return INV_4_PI * (1 - g * g) / (denom * sqrt(denom));
+}
 vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float pdf)
 {
     pdf = 0.0;
@@ -910,7 +886,10 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce) {
     float pdf_brdf;
     float NdotL;
     vec3 f_r;
+
     bool inMedium = false;
+    bool mediumSampled = false;
+    bool surfaceScatter = false;
 
     for(int bounce=0;; bounce++) {
         
@@ -931,43 +910,85 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce) {
         Lo +=  history *newHit.material.emissive;
 
        
+        mediumSampled = false;
+        surfaceScatter = false;
 
+        if(inMedium)
+        {        
+            if(newHit.material.mediumtype== MEDIUM_ABSORB)
+            {
+                history *= exp(-(1.0 -newHit.material.mediumColor) * newHit.hitDistance * newHit.material.mediumDensity);
+            }
+            else if(newHit.material.mediumtype == MEDIUM_EMISSIVE)
+            {
+                Lo  +=newHit.material.mediumColor * newHit.hitDistance * newHit.material.mediumDensity * history;
+            }
+            else
+            {
+                // Sample a distance in the medium
+                float scatterDist = min(-log(rand()) / newHit.material.mediumDensity, newHit.hitDistance);
+                mediumSampled = scatterDist < newHit.hitDistance;
 
+                if (mediumSampled)
+                {
+                    if(bounce == maxBounce)//将maxBounce放置在这里是为了maxBounce为1时正确处理透明效果
+                        break;
+                    history *= newHit.material.mediumColor;
 
-        if(newHit.material.alphaMode==ALPHA_MODE_TRANSPARENT){
-            //如果是透明的直接穿透 并沿用之前的光线方向
-            bounce--;
-        }else{
-            if(bounce == maxBounce)//将maxBounce放置在这里是为了maxBounce为1时正确处理透明效果
-                break;
-            vec2 uv;
-            uv.x=sobelNumber[bounce*2];
-            uv.y=sobelNumber[bounce*2+1];
-            uv = CranleyPattersonRotation(uv);
-            float xi_1 = uv.x;
-            float xi_2 = uv.y; 
-            float xi_3 = rand();   
-            float eta =newHit.isInside ? newHit.material.IOR:(1.0 / newHit.material.IOR) ;
-            vec3 V = -newHit.viewDir;
-            vec3 N = newHit.normal;   
-            // 采样 BRDF 得到一个方向 L
-            vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, N, newHit.material,eta); 
-            NdotL =abs(dot(N, L));
-            f_r = DisneyEval(V, N, L, newHit.material,eta,pdf_brdf);
-            if(pdf_brdf <= 0.0) break;
-            history *= f_r * NdotL / pdf_brdf;  // 累积颜色
-            r.direction = L;
-        }        
-        r.startPoint = newHit.hitPoint;        
+                    // Move ray origin to scattering position
+                    r.startPoint += r.direction * scatterDist;
+                    //state.fhp = r.origin;
 
-        //这里至少要单独存储 medium ，之后要引入体积栈
-        if(!newHit.isInside &&
-        dot(r.direction,newHit.normal)<0 &&
-        newHit.material.mediumtype!=MEDIUM_NONE){
-            inMedium = true;
+                    // Transmittance Evaluation
+                    
+
+                    // Pick a new direction based on the phase function
+                    vec3 scatterDir = SampleHG(-r.direction, newHit.material.mediumAnisotropy, rand(), rand());
+                    //scatterSample.pdf = PhaseHG(dot(-r.direction, scatterDir), state.medium.anisotropy);//在体积散射多重重要性采样里使用
+                    r.direction = scatterDir;
+                }
+            }
+
         }
-        else if(newHit.material.mediumtype!=MEDIUM_NONE){
-            inMedium = false;
+
+        if (!mediumSampled)
+        {
+            if(newHit.material.alphaMode==ALPHA_MODE_TRANSPARENT){
+                //如果是透明的直接穿透 并沿用之前的光线方向
+                bounce--;
+            }else{
+                if(bounce == maxBounce)//将maxBounce放置在这里是为了maxBounce为1时正确处理透明效果
+                    break;
+                surfaceScatter = true;
+                vec2 uv;
+                uv.x=sobelNumber[bounce*2];
+                uv.y=sobelNumber[bounce*2+1];
+                uv = CranleyPattersonRotation(uv);
+                float xi_1 = uv.x;
+                float xi_2 = uv.y; 
+                float xi_3 = rand();   
+                float eta =newHit.isInside ? newHit.material.IOR:(1.0 / newHit.material.IOR) ;
+                vec3 V = -newHit.viewDir;
+                vec3 N = newHit.normal;   
+                // 采样 BRDF 得到一个方向 L
+                vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, N, newHit.material,eta); 
+                NdotL =abs(dot(N, L));
+                f_r = DisneyEval(V, N, L, newHit.material,eta,pdf_brdf);
+                if(pdf_brdf <= 0.0) break;
+                history *= f_r * NdotL / pdf_brdf;  // 累积颜色
+                r.direction = L;
+            }        
+            r.startPoint = newHit.hitPoint;        
+
+            //这里至少要单独存储 medium ，之后要引入体积栈
+            if(!newHit.isInside &&
+            dot(r.direction,newHit.normal)<0 &&
+            newHit.material.mediumtype!=MEDIUM_NONE){
+                inMedium = true;
+            }
+            else if(newHit.material.mediumtype!=MEDIUM_NONE){
+                inMedium = false;
+            }
         }
 
 
