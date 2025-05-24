@@ -8,6 +8,10 @@ qt离线渲染应用 https://blog.csdn.net/imred/article/details/97612963
 
 ![example1](./learnQT/output/Snipaste_2025-05-14_21-09-38.png)
 
-![example1](./learnQT/output/Snipaste_2022-01-26_22-08-29.png)
+![example2](./learnQT/output/Snipaste_2022-01-26_22-08-29.png)
 
-![example1](./learnQT/output/Snipaste_2025-05-19_23-27-42.png)
+![example3](./learnQT/output/Snipaste_2025-05-19_23-27-42.png)
+
+![example4](./learnQT/output/Snipaste_2025-05-24_23-22-24.png)
+
+![example5](./learnQT/output/Snipaste_2025-05-25_07-27-55.png)
