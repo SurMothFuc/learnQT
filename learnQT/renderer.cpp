@@ -125,7 +125,7 @@ void Renderer::render(int width, int height)
     pathtrace_program->bind(); 
     {
         GLint fl_loca = pathtrace_program->uniformLocation("frameCounter");
-        glUniform1ui(fl_loca, frameCounter++);   
+        glUniform1ui(fl_loca, frameCounter);   
         GLint sobel_loca = pathtrace_program->uniformLocation("sobelNumber");
         glUniform1fv(sobel_loca, 24, sobel_number.data());
 
@@ -234,7 +234,11 @@ void Renderer::init(int width, int height)
 
     pathtrace_program.reset(getShaderProgram("./pathtrace.frag", "./triangle.vert"));
     pathtrace_texture = getTextureRGB32F(render_width, render_height);
-    pathtrace_fbo = bindData(std::vector<GLuint>{ pathtrace_texture});
+
+    directLightTex = getTextureRGB32F(render_width, render_height);
+    indirectLightTex = getTextureRGB32F(render_width, render_height);
+
+    pathtrace_fbo = bindData(std::vector<GLuint>{ pathtrace_texture,directLightTex, indirectLightTex});
 
 
     mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
@@ -246,6 +250,8 @@ void Renderer::init(int width, int height)
     m_texture = getTextureRGB32F(m_width, m_height);
     m_fbo = bindData(std::vector<GLuint>{m_texture});
     //adjustSize();
+
+
 
 
 

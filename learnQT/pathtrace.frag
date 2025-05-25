@@ -16,7 +16,12 @@
 #define MEDIUM_SCATTER 2
 #define MEDIUM_EMISSIVE 3
 
-out vec4 FragColor;
+
+// 定义多个输出目标
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 DirectLightResult;
+layout(location = 2) out vec4 IndirectLightResult;
+
 in vec3 pix;
 
 
@@ -878,10 +883,12 @@ if(dot(N, hdrTestRay.direction) > 0.0) { // 如果采样方向背向点 p 则放
 */
 //}
 
-vec3 pathTracingImportanceSampling(Ray r, int maxBounce) {
+vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out vec3 indirect_Lo) {
 
     vec3 Lo = vec3(0);      // 最终的颜色
     vec3 history = vec3(1); // 递归积累的颜色
+    direct_Lo=vec3(0);
+    indirect_Lo=vec3(0);
 
     float pdf_brdf;
     float NdotL;
@@ -909,6 +916,14 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce) {
         // 命中光源积累颜色  
         Lo +=  history *newHit.material.emissive;
 
+
+        if(bounce==1){
+            direct_Lo+=history *newHit.material.emissive;
+        }
+        if(bounce>1){
+            indirect_Lo+=history *newHit.material.emissive;
+        }
+
        
         mediumSampled = false;
         surfaceScatter = false;
@@ -921,7 +936,7 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce) {
             }
             else if(newHit.material.mediumtype == MEDIUM_EMISSIVE)
             {
-                Lo  +=newHit.material.mediumColor * newHit.hitDistance * newHit.material.mediumDensity * history;
+                Lo +=newHit.material.mediumColor * newHit.hitDistance * newHit.material.mediumDensity * history;
             }
             else
             {
@@ -1014,16 +1029,24 @@ void main(void)
     vec4 dir = view*vec4(pix.x*float(width) /float(height)+AA.x,pix.y+AA.y, -2.0,0.0);//- ray.startPoint;
     ray.direction = normalize(dir.xyz);
     // primary hit   
-    vec3 color = pathTracingImportanceSampling(ray,6);
+    vec3 direct_color;
+    vec3 indirect_color;
+
+    vec3 color = pathTracingImportanceSampling(ray,6,direct_color,indirect_color);
 
     
     vec3 lastColor = texture2D(lastFrame, pix.xy*0.5+0.5).rgb;
+
     // lastColor*=100.0; 
-    if(isnan(color.x)||isnan(color.x)||isnan(color.x))
-        color=lastColor;
-    else
-        color = mix(lastColor, color, 1.0/float(frameCounter+1u)); 
+    //if(isnan(color.x)||isnan(color.x)||isnan(color.x))
+       // color=lastColor;
+   // else
+       // color = mix(lastColor, color, 1.0/float(frameCounter+1u)); 
 
     
-     FragColor=vec4(color,1.0);
+    FragColor=vec4(color,1.0);
+
+    DirectLightResult=vec4(direct_color,1.0);
+    IndirectLightResult=vec4(indirect_color,1.0);
+
 }

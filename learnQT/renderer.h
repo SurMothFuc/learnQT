@@ -64,6 +64,10 @@ private:
     unsigned pathtrace_texture = 0;
     unsigned mixframe_texture = 0;
 
+    unsigned directLightTex = 0;
+    unsigned indirectLightTex = 0;
+
+
     unsigned int frameCounter = 0;
     unsigned int lastframeCounter = 0;
 
