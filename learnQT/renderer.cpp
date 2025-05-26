@@ -119,13 +119,15 @@ void Renderer::render(int width, int height)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     //glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    auto sobel_number = getSobelRandomNumber(frameCounter, 12);
+    frameCounter++;
+    auto sobel_number = getSobelRandomNumber(0, 12);
+    //auto sobel_number = getSobelRandomNumber(frameCounter, 12);
 
     pathtrace_program->bind(); 
     {
         GLint fl_loca = pathtrace_program->uniformLocation("frameCounter");
-        glUniform1ui(fl_loca, frameCounter);   
+        glUniform1ui(fl_loca, 0);   
+       // glUniform1ui(fl_loca, frameCounter++);   
         GLint sobel_loca = pathtrace_program->uniformLocation("sobelNumber");
         glUniform1fv(sobel_loca, 24, sobel_number.data());
 
