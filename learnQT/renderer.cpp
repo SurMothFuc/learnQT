@@ -130,8 +130,8 @@ void Renderer::render(int width, int height)
         glUniform1fv(sobel_loca, 24, sobel_number.data());
 
         glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D,mixframe_texture);
+        //glActiveTexture(GL_TEXTURE0);
+        //glBindTexture(GL_TEXTURE_2D,mixframe_texture);
         pathtrace_program->setUniformValue("lastFrame", 0);
         pathtrace_program->setUniformValue("triangles", 1);
         pathtrace_program->setUniformValue("nodes", 2);
@@ -165,18 +165,30 @@ void Renderer::render(int width, int height)
 
     mixframe_program->bind();
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, mixframe_fbo);
+        for (int index = 1; index <= 5; index++) {
+            if(index%2==1)
+                glBindFramebuffer(GL_FRAMEBUFFER, mixframe_fbo_ping);
+            else 
+                glBindFramebuffer(GL_FRAMEBUFFER, mixframe_fbo_pong);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, pathtrace_texture);
-        mixframe_program->setUniformValue("texPass0", 0);
-        //glBindVertexArray(VAO);
+            glActiveTexture(GL_TEXTURE0);
+            if(index==1)
+                glBindTexture(GL_TEXTURE_2D, directLightTex);
+            else if (index % 2 == 1) {
+                glBindTexture(GL_TEXTURE_2D, filteredTexture_pong);
+            }
+            else {
+                glBindTexture(GL_TEXTURE_2D, filteredTexture_ping);
+            }
+            mixframe_program->setUniformValue("texPass0", 0);
+            mixframe_program->setUniformValue("offsetScale", index);
 
-        glViewport(m_viewportX, m_viewportY, render_width, render_height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glViewport(m_viewportX, m_viewportY, render_width, render_height);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);       
+        }
     }
     mixframe_program->release();
 
@@ -185,7 +197,7 @@ void Renderer::render(int width, int height)
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, pathtrace_texture);
+        glBindTexture(GL_TEXTURE_2D, filteredTexture_ping);
         m_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
 
@@ -233,17 +245,19 @@ void Renderer::init(int width, int height)
 
 
     pathtrace_program.reset(getShaderProgram("./pathtrace.frag", "./triangle.vert"));
-    pathtrace_texture = getTextureRGB32F(render_width, render_height);
+    //pathtrace_texture = getTextureRGB32F(render_width, render_height);
 
     directLightTex = getTextureRGB32F(render_width, render_height);
     indirectLightTex = getTextureRGB32F(render_width, render_height);
 
-    pathtrace_fbo = bindData(std::vector<GLuint>{ pathtrace_texture,directLightTex, indirectLightTex});
-
+    pathtrace_fbo = bindData(std::vector<GLuint>{ directLightTex, indirectLightTex});
 
     mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
-    mixframe_texture = getTextureRGB32F(render_width, render_height);
-    mixframe_fbo = bindData(std::vector<GLuint>{ mixframe_texture});
+    filteredTexture_ping = getTextureRGB32F(render_width, render_height);
+    filteredTexture_pong = getTextureRGB32F(render_width, render_height);
+
+    mixframe_fbo_ping = bindData(std::vector<GLuint>{filteredTexture_ping});
+    mixframe_fbo_pong = bindData(std::vector<GLuint>{filteredTexture_pong});
 
 
     m_program.reset(getShaderProgram("./triangle.frag", "./triangle.vert"));
@@ -292,14 +306,18 @@ void Renderer::uninit()
     //glDeleteRenderbuffers(1, &m_rbo);
     glDeleteFramebuffers(1, &m_fbo);
     glDeleteFramebuffers(1, &pathtrace_fbo);
-    glDeleteFramebuffers(1, &mixframe_fbo);
+    glDeleteFramebuffers(1, &mixframe_fbo_ping);
+    glDeleteFramebuffers(1, &mixframe_fbo_pong);
     /*
     * .........还应该把剩余的添加进来
     */
     // 删除所有纹理
     glDeleteTextures(1, &m_texture);
-    glDeleteTextures(1, &pathtrace_texture);
-    glDeleteTextures(1, &mixframe_texture);
+    //glDeleteTextures(1, &pathtrace_texture);
+    glDeleteTextures(1, &directLightTex);
+    glDeleteTextures(1, &indirectLightTex);
+    glDeleteTextures(1, &filteredTexture_ping);
+    glDeleteTextures(1, &filteredTexture_pong);
     glDeleteTextures(1, &hdrMap);
     glDeleteTextures(1, &hdrCache);
     glDeleteTextures(1, &trianglesTextureBuffer);
@@ -314,8 +332,8 @@ void Renderer::uninit()
     if (tbo1) glDeleteBuffers(1, &tbo1);
 
     // 重置标识符防止重复删除
-    m_fbo = pathtrace_fbo = mixframe_fbo = 0;
-    m_texture = pathtrace_texture = mixframe_texture = 0;
+    m_fbo = pathtrace_fbo = mixframe_fbo_ping= mixframe_fbo_pong = 0;
+    m_texture = directLightTex= indirectLightTex = filteredTexture_ping= filteredTexture_pong = 0;
     hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = 0;
     VAO = VBO = tbo0 = tbo1 = 0;
 }
@@ -326,11 +344,19 @@ void Renderer::adjustSize()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,  m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glBindTexture(GL_TEXTURE_2D, pathtrace_texture);
+    glBindTexture(GL_TEXTURE_2D, directLightTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
+    glBindTexture(GL_TEXTURE_2D, indirectLightTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glBindTexture(GL_TEXTURE_2D, mixframe_texture);
+    glBindTexture(GL_TEXTURE_2D, filteredTexture_ping);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindTexture(GL_TEXTURE_2D, filteredTexture_pong);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -433,6 +459,13 @@ void Renderer::updateparam()
         pathtrace_program->setUniformValue("useEnvironmentMap", Scene::getInstance().useEnvironmentMap);
         pathtrace_program->release();
 
+        mixframe_program->bind();
+        mixframe_program->setUniformValue("width", render_width);
+        mixframe_program->setUniformValue("height", render_height);
+        mixframe_program->release();
+
+
+
         lasttime = clock();
         lastframeCounter = 0;
         frameCounter = 0;
@@ -450,6 +483,12 @@ void Renderer::updateSizeParam()
         pathtrace_program->setUniformValue("width", render_width);
         pathtrace_program->setUniformValue("height", render_height);
         pathtrace_program->release();
+
+        mixframe_program->bind();
+        mixframe_program->setUniformValue("width", render_width);
+        mixframe_program->setUniformValue("height", render_height);
+        mixframe_program->release();
+
         lasttime = clock();
         lastframeCounter = 0;
         frameCounter = 0;

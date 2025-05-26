@@ -58,14 +58,19 @@ private:
 
     unsigned m_fbo = 0;
     unsigned pathtrace_fbo = 0;
-    unsigned mixframe_fbo = 0;
+
+    unsigned mixframe_fbo_ping = 0;
+    unsigned mixframe_fbo_pong = 0;
+
     //unsigned m_rbo = 0;
     unsigned m_texture = 0;
-    unsigned pathtrace_texture = 0;
-    unsigned mixframe_texture = 0;
+    //unsigned pathtrace_texture = 0;
+    //unsigned mixframe_texture = 0;
 
     unsigned directLightTex = 0;
     unsigned indirectLightTex = 0;
+    unsigned filteredTexture_ping = 0;
+    unsigned filteredTexture_pong = 0;
 
 
     unsigned int frameCounter = 0;

@@ -18,9 +18,9 @@
 
 
 // 定义多个输出目标
-layout(location = 0) out vec4 FragColor;
-layout(location = 1) out vec4 DirectLightResult;
-layout(location = 2) out vec4 IndirectLightResult;
+//layout(location = 0) out vec4 FragColor;
+layout(location = 0) out vec4 DirectLightResult;
+layout(location = 1) out vec4 IndirectLightResult;
 
 in vec3 pix;
 
@@ -42,7 +42,6 @@ uniform float sobelNumber[24];
 uniform samplerBuffer triangles;
 uniform samplerBuffer nodes;
 
-uniform sampler2D lastFrame;
 uniform sampler2D hdrMap;
 uniform sampler2D hdrCache;
 
@@ -1035,7 +1034,6 @@ void main(void)
     vec3 color = pathTracingImportanceSampling(ray,6,direct_color,indirect_color);
 
     
-    vec3 lastColor = texture2D(lastFrame, pix.xy*0.5+0.5).rgb;
 
     // lastColor*=100.0; 
     //if(isnan(color.x)||isnan(color.x)||isnan(color.x))
@@ -1044,7 +1042,7 @@ void main(void)
        // color = mix(lastColor, color, 1.0/float(frameCounter+1u)); 
 
     
-    FragColor=vec4(color,1.0);
+    //FragColor=vec4(color,1.0);
 
     DirectLightResult=vec4(direct_color,1.0);
     IndirectLightResult=vec4(indirect_color,1.0);
