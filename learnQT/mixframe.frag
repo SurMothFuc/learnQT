@@ -4,6 +4,7 @@ layout(location = 0) out vec4 FilteredColor;
 in vec3 pix;
 
 uniform sampler2D texPass0;
+uniform sampler2D texPass1;
 
 uniform int width;
 uniform int height;
@@ -25,20 +26,28 @@ int g_h[25]=int[25]( 1, 4, 6, 4, 1,
 void main(void)
 {
     
-
+    float SigmaN = 128.0f;
     vec3 totalColorWeight = vec3(0);
     vec3 totalColor = vec3(0);
 
-    float px=(pix.x*0.5+0.5)*width;
-    float py=(pix.y*0.5+0.5)*height;
+    float px=(pix.x*0.5+0.5);
+    float py=(pix.y*0.5+0.5);
+    vec3 p_normal=texture2D(texPass1,vec2(px,py)).rgb*2.0-1.0;
+    px=px*width;
+    py=py*height;
+
+    
     for (int i = 0; i < 25; i++)
     {
         float npx=(px+offsetScale*g_offsets[i*2])/width;
         float npy=(py+offsetScale*g_offsets[i*2+1])/height;
         npx=max(0.0,min(1.0,npx));
         npy=max(0.0,min(1.0,npy));
-        totalColor += g_h[i]*texture2D(texPass0,vec2(npx,npy)).rgb;
-        totalColorWeight +=  g_h[i];
+        vec3 q_normal=texture2D(texPass1,vec2(npx,npy)).rgb*2.0-1.0;
+        float wn=pow(max(0.0,dot(p_normal,q_normal)),SigmaN);
+
+        totalColor += wn*g_h[i]*texture2D(texPass0,vec2(npx,npy)).rgb;
+        totalColorWeight +=  wn*g_h[i];
     }
     totalColor /= totalColorWeight;
 

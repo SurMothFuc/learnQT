@@ -917,8 +917,8 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out v
         Lo +=  history *newHit.material.emissive;
 
 
-        if(bounce==1){
-            direct_Lo+=history *newHit.material.emissive;
+        if(bounce == 1){
+            direct_Lo+=history * newHit.material.emissive;
         }
         if(bounce>1){
             indirect_Lo+=history *newHit.material.emissive;
@@ -945,9 +945,7 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out v
                 mediumSampled = scatterDist < newHit.hitDistance;
 
                 if (mediumSampled)
-                {                
-                    if(bounce==0)        
-                        normal_color=newHit.normal;
+                {       
                     if(bounce == maxBounce)//将maxBounce放置在这里是为了maxBounce为1时正确处理透明效果
                         break;
                     history *= newHit.material.mediumColor;
@@ -961,6 +959,12 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out v
 
                     // Pick a new direction based on the phase function
                     vec3 scatterDir = SampleHG(-r.direction, newHit.material.mediumAnisotropy, rand(), rand());
+
+                    //这里计算一个虚拟法向
+                    if(bounce==0){     
+                        //normal_color=normalize(normalize(scatterDir)-newHit.viewDir);
+                        normal_color=-newHit.viewDir;
+                    }
                     //scatterSample.pdf = PhaseHG(dot(-r.direction, scatterDir), state.medium.anisotropy);//在体积散射多重重要性采样里使用
                     r.direction = scatterDir;
                 }
@@ -1053,6 +1057,6 @@ void main(void)
 
     DirectLightResult=vec4(direct_color,1.0);
     IndirectLightResult=vec4(indirect_color,1.0);
-    NormalResult=vec4((normal_color+1)/2.0,1.0);
+    NormalResult=vec4((normal_color+1.0)/2.0,1.0);
 
 }

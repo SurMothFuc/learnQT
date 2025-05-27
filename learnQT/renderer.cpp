@@ -160,6 +160,7 @@ void Renderer::render(int width, int height)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        glFinish();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     pathtrace_program->release();
@@ -181,13 +182,17 @@ void Renderer::render(int width, int height)
             else {
                 glBindTexture(GL_TEXTURE_2D, filteredTexture_ping);
             }
+            glActiveTexture(GL_TEXTURE5);
+            glBindTexture(GL_TEXTURE_2D, normal_texture);
             mixframe_program->setUniformValue("texPass0", 0);
             mixframe_program->setUniformValue("offsetScale", index);
+            mixframe_program->setUniformValue("texPass1", 5);
 
             glViewport(m_viewportX, m_viewportY, render_width, render_height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glDrawArrays(GL_TRIANGLES, 0, 6);
+            glFinish();
             glBindFramebuffer(GL_FRAMEBUFFER, 0);       
         }
     }
@@ -198,7 +203,7 @@ void Renderer::render(int width, int height)
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, normal_texture);
+        glBindTexture(GL_TEXTURE_2D, filteredTexture_ping);
         m_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
 
@@ -206,10 +211,11 @@ void Renderer::render(int width, int height)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        glFinish();
     }
     m_program->release();
 
-    //glFinish();
+    glFinish();
 }
 
 void Renderer::init(int width, int height)
