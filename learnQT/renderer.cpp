@@ -160,7 +160,6 @@ void Renderer::render(int width, int height)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
-
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     pathtrace_program->release();
@@ -199,7 +198,7 @@ void Renderer::render(int width, int height)
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, filteredTexture_ping);
+        glBindTexture(GL_TEXTURE_2D, normal_texture);
         m_program->setUniformValue("texPass0", 0);
         //glBindVertexArray(VAO);
 
@@ -210,7 +209,7 @@ void Renderer::render(int width, int height)
     }
     m_program->release();
 
-    glFinish();
+    //glFinish();
 }
 
 void Renderer::init(int width, int height)
@@ -251,8 +250,9 @@ void Renderer::init(int width, int height)
 
     directLightTex = getTextureRGB32F(render_width, render_height);
     indirectLightTex = getTextureRGB32F(render_width, render_height);
+    normal_texture = getTextureRGB32F(render_width, render_height);
 
-    pathtrace_fbo = bindData(std::vector<GLuint>{ directLightTex, indirectLightTex});
+    pathtrace_fbo = bindData(std::vector<GLuint>{ directLightTex, indirectLightTex, normal_texture});
 
     mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
     filteredTexture_ping = getTextureRGB32F(render_width, render_height);
@@ -318,6 +318,7 @@ void Renderer::uninit()
     //glDeleteTextures(1, &pathtrace_texture);
     glDeleteTextures(1, &directLightTex);
     glDeleteTextures(1, &indirectLightTex);
+    glDeleteTextures(1, &normal_texture);
     glDeleteTextures(1, &filteredTexture_ping);
     glDeleteTextures(1, &filteredTexture_pong);
     glDeleteTextures(1, &hdrMap);
@@ -351,6 +352,10 @@ void Renderer::adjustSize()
     glBindTexture(GL_TEXTURE_2D, 0);
     
     glBindTexture(GL_TEXTURE_2D, indirectLightTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
+    glBindTexture(GL_TEXTURE_2D, normal_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
