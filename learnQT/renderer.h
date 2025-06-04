@@ -72,6 +72,7 @@ private:
     unsigned filteredTexture_ping = 0;
     unsigned filteredTexture_pong = 0;
     unsigned normal_texture = 0;
+    unsigned baseColorTex = 0;
 
     unsigned int frameCounter = 0;
     unsigned int lastframeCounter = 0;

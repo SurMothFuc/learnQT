@@ -22,6 +22,7 @@
 layout(location = 0) out vec4 DirectLightResult;
 layout(location = 1) out vec4 IndirectLightResult;
 layout(location = 2) out vec4 NormalResult;
+layout(location = 3) out vec4 BaseColorResult;
 
 in vec3 pix;
 
@@ -883,7 +884,7 @@ if(dot(N, hdrTestRay.direction) > 0.0) { // 如果采样方向背向点 p 则放
 */
 //}
 
-vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out vec3 indirect_Lo,out vec3 normal_color) {
+vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out vec3 indirect_Lo,out vec3 normal_color,out vec3 base_color) {
 
     vec3 Lo = vec3(0);      // 最终的颜色
     vec3 history = vec3(1); // 递归积累的颜色
@@ -963,7 +964,8 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out v
                     //这里计算一个虚拟法向
                     if(bounce==0){     
                         //normal_color=normalize(normalize(scatterDir)-newHit.viewDir);
-                        normal_color=-newHit.viewDir;
+                        normal_color=-newHit.viewDir;                        
+                        base_color=newHit.material.mediumColor;
                     }
                     //scatterSample.pdf = PhaseHG(dot(-r.direction, scatterDir), state.medium.anisotropy);//在体积散射多重重要性采样里使用
                     r.direction = scatterDir;
@@ -979,8 +981,10 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out v
                 bounce--;
             }else{
             
-                if(bounce==0)        
+                if(bounce==0){        
                     normal_color=newHit.normal;
+                    base_color=newHit.material.baseColor;
+                 }
                 if(bounce == maxBounce)//将maxBounce放置在这里是为了maxBounce为1时正确处理透明效果
                     break;
                 surfaceScatter = true;
@@ -1041,8 +1045,9 @@ void main(void)
     vec3 direct_color;
     vec3 indirect_color;
     vec3 normal_color;
+    vec3 base_color;
 
-    vec3 color = pathTracingImportanceSampling(ray,6,direct_color,indirect_color,normal_color);
+    vec3 color = pathTracingImportanceSampling(ray,6,direct_color,indirect_color,normal_color,base_color);
 
     
 
@@ -1054,9 +1059,11 @@ void main(void)
 
     
     //FragColor=vec4(color,1.0);
+    
 
-    DirectLightResult=vec4(direct_color,1.0);
-    IndirectLightResult=vec4(indirect_color,1.0);
+
+    DirectLightResult=vec4(direct_color/max(base_color,1e-3),1.0);
+    IndirectLightResult=vec4(indirect_color/max(base_color,1e-3),1.0);
     NormalResult=vec4((normal_color+1.0)/2.0,1.0);
-
+    BaseColorResult=vec4(base_color,1.0);
 }

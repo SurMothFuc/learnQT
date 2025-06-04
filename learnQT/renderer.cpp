@@ -202,9 +202,15 @@ void Renderer::render(int width, int height)
     {        
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, indirectLightTex);
+        m_program->setUniformValue("texPass1", 5);
+        glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, filteredTexture_ping);
-        m_program->setUniformValue("texPass0", 0);
+        m_program->setUniformValue("texPass2", 6);
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(GL_TEXTURE_2D, baseColorTex);
+        m_program->setUniformValue("texPass3", 7);
         //glBindVertexArray(VAO);
 
         glViewport(m_viewportX, m_viewportY, m_width, m_height);
@@ -257,8 +263,9 @@ void Renderer::init(int width, int height)
     directLightTex = getTextureRGB32F(render_width, render_height);
     indirectLightTex = getTextureRGB32F(render_width, render_height);
     normal_texture = getTextureRGB32F(render_width, render_height);
+    baseColorTex = getTextureRGB32F(render_width, render_height);
 
-    pathtrace_fbo = bindData(std::vector<GLuint>{ directLightTex, indirectLightTex, normal_texture});
+    pathtrace_fbo = bindData(std::vector<GLuint>{ directLightTex, indirectLightTex, normal_texture, baseColorTex});
 
     mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
     filteredTexture_ping = getTextureRGB32F(render_width, render_height);
@@ -325,6 +332,7 @@ void Renderer::uninit()
     glDeleteTextures(1, &directLightTex);
     glDeleteTextures(1, &indirectLightTex);
     glDeleteTextures(1, &normal_texture);
+    glDeleteTextures(1, &baseColorTex);
     glDeleteTextures(1, &filteredTexture_ping);
     glDeleteTextures(1, &filteredTexture_pong);
     glDeleteTextures(1, &hdrMap);
@@ -342,7 +350,7 @@ void Renderer::uninit()
 
     // 重置标识符防止重复删除
     m_fbo = pathtrace_fbo = mixframe_fbo_ping= mixframe_fbo_pong = 0;
-    m_texture = directLightTex= indirectLightTex = filteredTexture_ping= filteredTexture_pong = 0;
+    m_texture = directLightTex= indirectLightTex = filteredTexture_ping= filteredTexture_pong = baseColorTex= 0;
     hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = 0;
     VAO = VBO = tbo0 = tbo1 = 0;
 }
@@ -362,6 +370,10 @@ void Renderer::adjustSize()
     glBindTexture(GL_TEXTURE_2D, 0);
     
     glBindTexture(GL_TEXTURE_2D, normal_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindTexture(GL_TEXTURE_2D, baseColorTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
