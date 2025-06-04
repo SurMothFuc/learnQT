@@ -92,7 +92,7 @@ private:
     std::unique_ptr<QOpenGLShaderProgram> pathtrace_program;
     std::unique_ptr<QOpenGLShaderProgram> mixframe_program;
 
-    
+    std::vector<unsigned> batchTextureSettings;
    // std::unique_ptr<Sierpinski> m_sierpinski;
 };
 

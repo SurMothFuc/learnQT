@@ -206,7 +206,7 @@ void Renderer::render(int width, int height)
         glBindTexture(GL_TEXTURE_2D, indirectLightTex);
         m_program->setUniformValue("texPass1", 5);
         glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, filteredTexture_ping);
+        glBindTexture(GL_TEXTURE_2D, directLightTex);
         m_program->setUniformValue("texPass2", 6);
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, baseColorTex);
@@ -226,6 +226,7 @@ void Renderer::render(int width, int height)
 
 void Renderer::init(int width, int height)
 {
+    batchTextureSettings.clear();
     m_width = width;
     m_height = height;
     calResolution();
@@ -264,12 +265,14 @@ void Renderer::init(int width, int height)
     indirectLightTex = getTextureRGB32F(render_width, render_height);
     normal_texture = getTextureRGB32F(render_width, render_height);
     baseColorTex = getTextureRGB32F(render_width, render_height);
+    batchTextureSettings.insert(batchTextureSettings.end(),{ directLightTex,indirectLightTex,normal_texture,baseColorTex });
 
     pathtrace_fbo = bindData(std::vector<GLuint>{ directLightTex, indirectLightTex, normal_texture, baseColorTex});
 
     mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
     filteredTexture_ping = getTextureRGB32F(render_width, render_height);
     filteredTexture_pong = getTextureRGB32F(render_width, render_height);
+    batchTextureSettings.insert(batchTextureSettings.end(), { filteredTexture_ping ,filteredTexture_pong });
 
     mixframe_fbo_ping = bindData(std::vector<GLuint>{filteredTexture_ping});
     mixframe_fbo_pong = bindData(std::vector<GLuint>{filteredTexture_pong});
@@ -329,12 +332,11 @@ void Renderer::uninit()
     // 删除所有纹理
     glDeleteTextures(1, &m_texture);
     //glDeleteTextures(1, &pathtrace_texture);
-    glDeleteTextures(1, &directLightTex);
-    glDeleteTextures(1, &indirectLightTex);
-    glDeleteTextures(1, &normal_texture);
-    glDeleteTextures(1, &baseColorTex);
-    glDeleteTextures(1, &filteredTexture_ping);
-    glDeleteTextures(1, &filteredTexture_pong);
+    for (auto& per_tex : batchTextureSettings) {
+        glDeleteTextures(1, &per_tex);
+        per_tex = 0;
+    }
+
     glDeleteTextures(1, &hdrMap);
     glDeleteTextures(1, &hdrCache);
     glDeleteTextures(1, &trianglesTextureBuffer);
@@ -350,7 +352,7 @@ void Renderer::uninit()
 
     // 重置标识符防止重复删除
     m_fbo = pathtrace_fbo = mixframe_fbo_ping= mixframe_fbo_pong = 0;
-    m_texture = directLightTex= indirectLightTex = filteredTexture_ping= filteredTexture_pong = baseColorTex= 0;
+    m_texture = 0;
     hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = 0;
     VAO = VBO = tbo0 = tbo1 = 0;
 }
@@ -361,29 +363,12 @@ void Renderer::adjustSize()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,  m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glBindTexture(GL_TEXTURE_2D, directLightTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    
-    glBindTexture(GL_TEXTURE_2D, indirectLightTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    
-    glBindTexture(GL_TEXTURE_2D, normal_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
-    glBindTexture(GL_TEXTURE_2D, 0);
 
-    glBindTexture(GL_TEXTURE_2D, baseColorTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glBindTexture(GL_TEXTURE_2D, filteredTexture_ping);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glBindTexture(GL_TEXTURE_2D, filteredTexture_pong);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    for (auto& per_tex : batchTextureSettings) {
+        glBindTexture(GL_TEXTURE_2D, per_tex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, NULL);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
     /*glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
