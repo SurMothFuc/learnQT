@@ -160,40 +160,54 @@ void Renderer::render(int width, int height)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        glFinish();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     pathtrace_program->release();
 
     mixframe_program->bind();
     {
-        for (int index = 1; index <= 5; index++) {
-            if(index%2==1)
-                glBindFramebuffer(GL_FRAMEBUFFER, mixframe_fbo_ping);
-            else 
-                glBindFramebuffer(GL_FRAMEBUFFER, mixframe_fbo_pong);
+        for (int di_or_in = 0; di_or_in < 2; di_or_in++) {
+            int filter_count = 5;
+            for (int index = 1; index <= filter_count; index++) {
+                //set fbo
+                if (index == filter_count) {
+                    if(di_or_in==0)
+                        glBindFramebuffer(GL_FRAMEBUFFER, directLight_fbo_filtered);
+                    else
+                        glBindFramebuffer(GL_FRAMEBUFFER, indirectLight_fbo_filtered);
+                }
+                else if (index % 2 == 1)
+                    glBindFramebuffer(GL_FRAMEBUFFER, mixframe_fbo_ping);
+                else
+                    glBindFramebuffer(GL_FRAMEBUFFER, mixframe_fbo_pong);
 
-            glActiveTexture(GL_TEXTURE0);
-            if(index==1)
-                glBindTexture(GL_TEXTURE_2D, directLightTex);
-            else if (index % 2 == 1) {
-                glBindTexture(GL_TEXTURE_2D, filteredTexture_pong);
+                //set input
+                glActiveTexture(GL_TEXTURE0);
+                if (index == 1) {
+                    if (di_or_in == 0)
+                        glBindTexture(GL_TEXTURE_2D, directLightTex);
+                    else 
+                        glBindTexture(GL_TEXTURE_2D, indirectLightTex);
+                }
+                else if (index % 2 == 1) {
+                    glBindTexture(GL_TEXTURE_2D, filteredTexture_pong);
+                }
+                else {
+                    glBindTexture(GL_TEXTURE_2D, filteredTexture_ping);
+                }
+
+                glActiveTexture(GL_TEXTURE5);
+                glBindTexture(GL_TEXTURE_2D, normal_texture);
+                mixframe_program->setUniformValue("texPass0", 0);
+                mixframe_program->setUniformValue("offsetScale", index);
+                mixframe_program->setUniformValue("texPass1", 5);
+
+                glViewport(m_viewportX, m_viewportY, render_width, render_height);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                glDrawArrays(GL_TRIANGLES, 0, 6);
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
             }
-            else {
-                glBindTexture(GL_TEXTURE_2D, filteredTexture_ping);
-            }
-            glActiveTexture(GL_TEXTURE5);
-            glBindTexture(GL_TEXTURE_2D, normal_texture);
-            mixframe_program->setUniformValue("texPass0", 0);
-            mixframe_program->setUniformValue("offsetScale", index);
-            mixframe_program->setUniformValue("texPass1", 5);
-
-            glViewport(m_viewportX, m_viewportY, render_width, render_height);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-            glFinish();
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);       
         }
     }
     mixframe_program->release();
@@ -203,10 +217,10 @@ void Renderer::render(int width, int height)
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, indirectLightTex);
+        glBindTexture(GL_TEXTURE_2D, indirectLightTexfiltered);
         m_program->setUniformValue("texPass1", 5);
         glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, directLightTex);
+        glBindTexture(GL_TEXTURE_2D, directLightTexfiltered);
         m_program->setUniformValue("texPass2", 6);
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, baseColorTex);
@@ -217,11 +231,10 @@ void Renderer::render(int width, int height)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        glFinish();
     }
     m_program->release();
 
-    glFinish();
+    //glFinish();
 }
 
 void Renderer::init(int width, int height)
@@ -272,10 +285,14 @@ void Renderer::init(int width, int height)
     mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
     filteredTexture_ping = getTextureRGB32F(render_width, render_height);
     filteredTexture_pong = getTextureRGB32F(render_width, render_height);
-    batchTextureSettings.insert(batchTextureSettings.end(), { filteredTexture_ping ,filteredTexture_pong });
+    directLightTexfiltered = getTextureRGB32F(render_width, render_height);
+    indirectLightTexfiltered = getTextureRGB32F(render_width, render_height);
+    batchTextureSettings.insert(batchTextureSettings.end(), { filteredTexture_ping ,filteredTexture_pong,directLightTexfiltered,indirectLightTexfiltered });
 
     mixframe_fbo_ping = bindData(std::vector<GLuint>{filteredTexture_ping});
     mixframe_fbo_pong = bindData(std::vector<GLuint>{filteredTexture_pong});
+    directLight_fbo_filtered = bindData(std::vector<GLuint>{directLightTexfiltered});
+    indirectLight_fbo_filtered = bindData(std::vector<GLuint>{indirectLightTexfiltered});
 
 
     m_program.reset(getShaderProgram("./triangle.frag", "./triangle.vert"));

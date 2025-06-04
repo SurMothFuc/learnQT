@@ -62,6 +62,9 @@ private:
     unsigned mixframe_fbo_ping = 0;
     unsigned mixframe_fbo_pong = 0;
 
+    unsigned directLight_fbo_filtered = 0;
+    unsigned indirectLight_fbo_filtered = 0;
+
     //unsigned m_rbo = 0;
     unsigned m_texture = 0;
     //unsigned pathtrace_texture = 0;
@@ -73,6 +76,9 @@ private:
     unsigned filteredTexture_pong = 0;
     unsigned normal_texture = 0;
     unsigned baseColorTex = 0;
+    unsigned directLightTexfiltered = 0;
+    unsigned indirectLightTexfiltered = 0;
+
 
     unsigned int frameCounter = 0;
     unsigned int lastframeCounter = 0;
