@@ -75,6 +75,7 @@ private:
     unsigned filteredTexture_ping = 0;
     unsigned filteredTexture_pong = 0;
     unsigned normal_texture = 0;
+    unsigned depth_texture = 0;
     unsigned baseColorTex = 0;
     unsigned directLightTexfiltered = 0;
     unsigned indirectLightTexfiltered = 0;
