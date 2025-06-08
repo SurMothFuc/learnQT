@@ -21,14 +21,14 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
 public:
-    explicit Renderer(int width, int height,QObject *parent = nullptr);
+    explicit Renderer(int width, int height, QObject* parent = nullptr);
     ~Renderer();
 
     void render(int width, int height);
     QOpenGLShaderProgram* getShaderProgram(std::string fshader, std::string vshader);
     GLuint getTextureRGB32F(int width, int height);
     GLuint bindData(std::vector<GLuint> colorAttachments);
-    GLuint VBO, VAO, EBO;
+    GLuint VBO = 0, VAO = 0, EBO = 0;
     void updateparam();
     void updateSizeParam();
 
@@ -40,13 +40,13 @@ private:
     void adjustSize();
     void calResolution();
 private://静止赋值操作
-    Renderer(const Renderer &) = delete;
-    Renderer &operator =(const Renderer &) = delete;
-    Renderer(const Renderer &&) = delete;
-    Renderer &operator =(const Renderer &&) = delete;
+    Renderer(const Renderer&) = delete;
+    Renderer& operator =(const Renderer&) = delete;
+    Renderer(const Renderer&&) = delete;
+    Renderer& operator =(const Renderer&&) = delete;
 
 private:
-    
+
     int m_width = 0;
     int m_height = 0;
     int render_width = 0;
@@ -80,27 +80,26 @@ private:
     unsigned directLightTexfiltered = 0;
     unsigned indirectLightTexfiltered = 0;
 
-
     unsigned int frameCounter = 0;
     unsigned int lastframeCounter = 0;
 
-    
+
     int lasttime = 0;
     bool first_render = true;
 
-    GLuint tbo0;
-    GLuint tbo1;
-    GLuint trianglesTextureBuffer;
-    GLuint nodesTextureBuffer;
-    GLuint hdrMap;
-    GLuint hdrCache;
+    GLuint tbo0 = 0;
+    GLuint tbo1 = 0;
+    GLuint trianglesTextureBuffer = 0;
+    GLuint nodesTextureBuffer = 0;
+    GLuint hdrMap = 0;
+    GLuint hdrCache = 0;
 
-    std::unique_ptr<QOpenGLShaderProgram> m_program;
-    std::unique_ptr<QOpenGLShaderProgram> pathtrace_program;
-    std::unique_ptr<QOpenGLShaderProgram> mixframe_program;
+    std::unique_ptr<QOpenGLShaderProgram> m_program = nullptr;
+    std::unique_ptr<QOpenGLShaderProgram> pathtrace_program = nullptr;
+    std::unique_ptr<QOpenGLShaderProgram> mixframe_program = nullptr;
 
     std::vector<unsigned> batchTextureSettings;
-   // std::unique_ptr<Sierpinski> m_sierpinski;
+    // std::unique_ptr<Sierpinski> m_sierpinski;
 };
 
 #endif // RENDERER_H
