@@ -120,41 +120,49 @@ void Renderer::render(int width, int height)
     //glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     frameCounter++;
-    auto sobel_number = getSobelRandomNumber(0, 12);
+    auto sobel_number = getSobelRandomNumber(frameCounter, 12);
     //auto sobel_number = getSobelRandomNumber(frameCounter, 12);
 
     pathtrace_program->bind(); 
     {
         GLint fl_loca = pathtrace_program->uniformLocation("frameCounter");
-        glUniform1ui(fl_loca, 0);   
+        glUniform1ui(fl_loca, frameCounter);
        // glUniform1ui(fl_loca, frameCounter++);   
-        GLint sobel_loca = pathtrace_program->uniformLocation("sobelNumber");
+        GLint sobel_loca = pathtrace_program->uniformLocation("sobelNumber"); 
         glUniform1fv(sobel_loca, 24, sobel_number.data());
 
         glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
         //glActiveTexture(GL_TEXTURE0);
         //glBindTexture(GL_TEXTURE_2D,mixframe_texture);
-        pathtrace_program->setUniformValue("lastFrame", 0);
-        pathtrace_program->setUniformValue("triangles", 1);
-        pathtrace_program->setUniformValue("nodes", 2);
-        pathtrace_program->setUniformValue("hdrMap", 3);
-        pathtrace_program->setUniformValue("hdrCache", 4);
-        if (first_render) {
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
+        pathtrace_program->setUniformValue("triangles", 0);
+        pathtrace_program->setUniformValue("nodes", 1);
+        pathtrace_program->setUniformValue("hdrMap", 2);
+        pathtrace_program->setUniformValue("hdrCache", 3);
+       // if (first_render) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
 
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
 
-            glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_2D, hdrMap);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, hdrMap);
 
-            glActiveTexture(GL_TEXTURE4);
-            glBindTexture(GL_TEXTURE_2D, hdrCache);
-            first_render = false;
-        }
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, hdrCache);
+            //first_render = false;
+        //}
 
-        //glBindVertexArray(VAO);
+        pathtrace_program->setUniformValue("preDirect", 4);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, preDirectLightTex);
+        pathtrace_program->setUniformValue("preIndirect", 5);
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, preIndirectLightTex);
+        pathtrace_program->setUniformValue("preMovment", 6);
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D, preMovmentTex);
+
 
         glViewport(m_viewportX, m_viewportY, render_width, render_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -197,7 +205,7 @@ void Renderer::render(int width, int height)
                 }
 
                 glActiveTexture(GL_TEXTURE5);
-                glBindTexture(GL_TEXTURE_2D, normal_texture);
+                glBindTexture(GL_TEXTURE_2D, normal_depth_texture);
                 mixframe_program->setUniformValue("texPass0", 0);
                 mixframe_program->setUniformValue("offsetScale", index);
                 mixframe_program->setUniformValue("texPass1", 5);
@@ -217,14 +225,17 @@ void Renderer::render(int width, int height)
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, depth_texture);
+        glBindTexture(GL_TEXTURE_2D, directLightTexfiltered);
         m_program->setUniformValue("texPass1", 5);
         glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, depth_texture);
+        glBindTexture(GL_TEXTURE_2D, indirectLightTexfiltered);
         m_program->setUniformValue("texPass2", 6);
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, baseColorTex);
         m_program->setUniformValue("texPass3", 7);
+        glActiveTexture(GL_TEXTURE8);
+        glBindTexture(GL_TEXTURE_2D, emissionTex);
+        m_program->setUniformValue("texPass4", 8);
         //glBindVertexArray(VAO);
 
         glViewport(m_viewportX, m_viewportY, m_width, m_height);
@@ -274,21 +285,33 @@ void Renderer::init(int width, int height)
     pathtrace_program.reset(getShaderProgram("./pathtrace.frag", "./triangle.vert"));
     //pathtrace_texture = getTextureRGB32F(render_width, render_height);
 
+    preMovmentTex = getTextureRGB32F(render_width, render_height);
+    movmentTex = getTextureRGB32F(render_width, render_height);
+    preDirectLightTex = getTextureRGB32F(render_width, render_height);
+    preIndirectLightTex = getTextureRGB32F(render_width, render_height);
     directLightTex = getTextureRGB32F(render_width, render_height);
     indirectLightTex = getTextureRGB32F(render_width, render_height);
-    normal_texture = getTextureRGB32F(render_width, render_height);
+    normal_depth_texture = getTextureRGB32F(render_width, render_height);
     baseColorTex = getTextureRGB32F(render_width, render_height);
-    depth_texture = getTextureRGB32F(render_width, render_height);
-    batchTextureSettings.insert(batchTextureSettings.end(),{ directLightTex,indirectLightTex,normal_texture,baseColorTex,depth_texture });
+    emissionTex= getTextureRGB32F(render_width, render_height);
+    batchTextureSettings.insert(batchTextureSettings.end(),
+        { preMovmentTex,movmentTex, preDirectLightTex, preIndirectLightTex, 
+        directLightTex,indirectLightTex,normal_depth_texture,baseColorTex,
+        movmentTex,emissionTex }
+    );
 
-    pathtrace_fbo = bindData(std::vector<GLuint>{ directLightTex, indirectLightTex, normal_texture, baseColorTex, depth_texture});
+	pathtrace_fbo = bindData(std::vector<GLuint>{
+        directLightTex, indirectLightTex, normal_depth_texture,
+        baseColorTex, movmentTex, emissionTex});
 
     mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
     filteredTexture_ping = getTextureRGB32F(render_width, render_height);
     filteredTexture_pong = getTextureRGB32F(render_width, render_height);
     directLightTexfiltered = getTextureRGB32F(render_width, render_height);
     indirectLightTexfiltered = getTextureRGB32F(render_width, render_height);
-    batchTextureSettings.insert(batchTextureSettings.end(), { filteredTexture_ping ,filteredTexture_pong,directLightTexfiltered,indirectLightTexfiltered });
+    batchTextureSettings.insert(batchTextureSettings.end(), 
+        { filteredTexture_ping ,filteredTexture_pong,directLightTexfiltered,
+        indirectLightTexfiltered });
 
     mixframe_fbo_ping = bindData(std::vector<GLuint>{filteredTexture_ping});
     mixframe_fbo_pong = bindData(std::vector<GLuint>{filteredTexture_pong});

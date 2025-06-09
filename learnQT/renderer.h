@@ -70,12 +70,17 @@ private:
     //unsigned pathtrace_texture = 0;
     //unsigned mixframe_texture = 0;
 
-    unsigned directLightTex = 0;
-    unsigned indirectLightTex = 0;
+    unsigned preDirectLightTex = 0;
+    unsigned preIndirectLightTex = 0;
+    unsigned preMovmentTex = 0;
+
+    unsigned directLightTex = 0;//最后一位是方差
+    unsigned indirectLightTex = 0;//最后一位是方差
+    unsigned movmentTex = 0;
+    unsigned emissionTex = 0;
     unsigned filteredTexture_ping = 0;
     unsigned filteredTexture_pong = 0;
-    unsigned normal_texture = 0;
-    unsigned depth_texture = 0;
+    unsigned normal_depth_texture = 0;
     unsigned baseColorTex = 0;
     unsigned directLightTexfiltered = 0;
     unsigned indirectLightTexfiltered = 0;

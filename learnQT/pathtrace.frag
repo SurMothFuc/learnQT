@@ -21,9 +21,10 @@
 //layout(location = 0) out vec4 FragColor;
 layout(location = 0) out vec4 DirectLightResult;
 layout(location = 1) out vec4 IndirectLightResult;
-layout(location = 2) out vec4 NormalResult;
+layout(location = 2) out vec4 NormalDepthResult;
 layout(location = 3) out vec4 BaseColorResult;
-layout(location = 4) out vec4 DepthResult;
+layout(location = 4) out vec4 MovementResult;
+layout(location = 5) out vec4 emissionResult;
 
 in vec3 pix;
 
@@ -47,6 +48,19 @@ uniform samplerBuffer nodes;
 
 uniform sampler2D hdrMap;
 uniform sampler2D hdrCache;
+
+uniform sampler2D preDirect;
+uniform sampler2D preIndirect;
+uniform sampler2D preMovment;
+
+struct OutputColor{
+    vec3 direct_color;
+    vec3 indirect_color;
+    vec3 normal_color;
+    vec3 base_color;
+    vec3 depth_point;
+    vec3 emission_color;
+};
 
 // Triangle 数据格式
 struct Triangle {
@@ -885,11 +899,13 @@ if(dot(N, hdrTestRay.direction) > 0.0) { // 如果采样方向背向点 p 则放
 */
 //}
 
-vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out vec3 indirect_Lo,out vec3 normal_color,out vec3 base_color,out vec3 depth_point) {
-    vec3 Lo = vec3(0);      // 最终的颜色
+OutputColor pathTracingImportanceSampling(Ray r, int maxBounce) {
+    OutputColor o_c;
+    //vec3 Lo = vec3(0);      // 最终的颜色
     vec3 history = vec3(1); // 递归积累的颜色
-    direct_Lo=vec3(0);
-    indirect_Lo=vec3(0);
+    o_c.direct_color=vec3(0);
+    o_c.indirect_color=vec3(0);
+    o_c.emission_color=vec3(0);
 
     float pdf_brdf;
     float NdotL;
@@ -910,19 +926,31 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out v
             //float pdf_light = hdrPdf(L, hdrResolution); 
             //float mis_weight = misMixWeight(pdf_brdf, pdf_light);   // f(a,b) = a^2 / (a^2 + b^2)
             float mis_weight = 1.0;   // f(a,b) = a^2 / (a^2 + b^2)
-            Lo += mis_weight * history * color;
+            //Lo += mis_weight * history * color;
+
+            if(bounce==0){
+                o_c.emission_color+=mis_weight * history * color;
+            }
+            else if(bounce == 1){
+                o_c.direct_color+=mis_weight * history * color;
+            }
+            else{
+                o_c.indirect_color+=mis_weight * history * color;
+            }
             break;
         }
         
         // 命中光源积累颜色  
-        Lo +=  history *newHit.material.emissive;
+       // Lo +=  history *newHit.material.emissive;
 
-
-        if(bounce == 1){
-            direct_Lo+=history * newHit.material.emissive;
+        if(bounce==0){
+            o_c.emission_color+=history *newHit.material.emissive;
         }
-        if(bounce>1){
-            indirect_Lo+=history *newHit.material.emissive;
+        else if(bounce == 1){
+            o_c.direct_color+=history * newHit.material.emissive;
+        }
+        else{
+            o_c.indirect_color+=history *newHit.material.emissive;
         }
 
        
@@ -937,7 +965,18 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out v
             }
             else if(newHit.material.mediumtype == MEDIUM_EMISSIVE)
             {
-                Lo +=newHit.material.mediumColor * newHit.hitDistance * newHit.material.mediumDensity * history;
+                vec3 light_st=newHit.material.mediumColor * newHit.hitDistance * newHit.material.mediumDensity * history;
+                
+                if(bounce==0){
+                    o_c.emission_color+=light_st;
+                }
+                else if(bounce == 1){
+                    o_c.direct_color+=light_st;
+                }
+                else{
+                    o_c.indirect_color+=light_st;
+                }
+            
             }
             else
             {
@@ -964,9 +1003,9 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out v
                     //这里计算一个虚拟法向
                     if(bounce==0){     
                         //normal_color=normalize(normalize(scatterDir)-newHit.viewDir);
-                        normal_color=-newHit.viewDir;                        
-                        base_color=newHit.material.mediumColor;
-                        depth_point=newHit.hitPoint;
+                        o_c.normal_color=-newHit.viewDir;                        
+                        o_c.base_color=newHit.material.mediumColor;
+                        o_c.depth_point=newHit.hitPoint;
                     }
                     //scatterSample.pdf = PhaseHG(dot(-r.direction, scatterDir), state.medium.anisotropy);//在体积散射多重重要性采样里使用
                     r.direction = scatterDir;
@@ -983,9 +1022,9 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out v
             }else{
             
                 if(bounce==0){        
-                    normal_color=newHit.normal;
-                    base_color=newHit.material.baseColor;
-                    depth_point=newHit.hitPoint;
+                    o_c.normal_color=newHit.normal;
+                    o_c.base_color=newHit.material.baseColor;
+                    o_c.depth_point=newHit.hitPoint;
                  }
                 if(bounce == maxBounce)//将maxBounce放置在这里是为了maxBounce为1时正确处理透明效果
                     break;
@@ -1029,7 +1068,8 @@ vec3 pathTracingImportanceSampling(Ray r, int maxBounce,out vec3 direct_Lo,out v
             history /= rrSurvivalProb;              // 保持无偏
         }
     }
-    return Lo;
+   // return Lo;
+   return o_c;
 }
 
 void main(void)
@@ -1043,14 +1083,9 @@ void main(void)
     //vec2 AA = vec2(0);
     vec4 dir = view*vec4(pix.x*float(width) /float(height)+AA.x,pix.y+AA.y, -2.0,0.0);//- ray.startPoint;
     ray.direction = normalize(dir.xyz);
-    // primary hit   
-    vec3 direct_color;
-    vec3 indirect_color;
-    vec3 normal_color;
-    vec3 base_color;
-    vec3 depth_point;
+    // primary hit  
 
-    vec3 color = pathTracingImportanceSampling(ray,6,direct_color,indirect_color,normal_color,base_color,depth_point);
+    OutputColor color = pathTracingImportanceSampling(ray,6);
 
     
 
@@ -1063,11 +1098,36 @@ void main(void)
     
     //FragColor=vec4(color,1.0);
     
+    // 计算混合因子    
+    DirectLightResult=vec4(color.direct_color/max(color.base_color,1e-3),1.0);
+    IndirectLightResult=vec4(color.indirect_color/max(color.base_color,1e-3),1.0);
+    NormalDepthResult=vec4((color.normal_color+1.0)/2.0,length(color.depth_point-eye));
+    BaseColorResult=vec4(color.base_color,1.0);
+    emissionResult=vec4(color.emission_color,1.0);
+
+    float alpha = max(1.0/frameCounter,1.0/32);//该项控制累计帧数
+    float alphaMoments =  max(1.0/frameCounter,1.0/32);//该项控制累计帧数
 
 
-    DirectLightResult=vec4(direct_color/max(base_color,1e-3),1.0);
-    IndirectLightResult=vec4(indirect_color/max(base_color,1e-3),1.0);
-    NormalResult=vec4((normal_color+1.0)/2.0,1.0);
-    BaseColorResult=vec4(base_color,1.0);
-    DepthResult=vec4(vec3(length(depth_point-eye)/70.0),1.0);
+    vec3 prevIllum_dir= texture2D(preDirect, pix.xy*0.5+0.5).rgb;
+    vec3 prevIllum_indir = texture2D(preDirect, pix.xy*0.5+0.5).rgb;
+    vec4 prevMoments = texture2D(preMovment, pix.xy*0.5+0.5);
+
+    float lumi_dir = Luminance(DirectLightResult.rgb);
+    float lumi_indir = Luminance(IndirectLightResult.rgb);
+
+    MovementResult.rg = mix(prevMoments.rg, vec2(lumi_dir, lumi_dir*lumi_dir), alphaMoments);
+    MovementResult.bw = mix(prevMoments.bw, vec2(lumi_indir, lumi_indir*lumi_indir), alphaMoments);
+
+    // 混合光照
+    DirectLightResult.rgb = mix(prevIllum_dir.rgb, DirectLightResult.rgb, alpha);
+    IndirectLightResult.rgb = mix(prevIllum_indir.rgb, IndirectLightResult.rgb, alpha);
+
+     // 计算方差
+    float variance_dir = max(0.0, MovementResult.g -MovementResult.r * MovementResult.r);
+    float variance_indir = max(0.0, MovementResult.w -MovementResult.b * MovementResult.b);
+    DirectLightResult.w=variance_dir;
+    IndirectLightResult.w=variance_indir;
+
+
 }
