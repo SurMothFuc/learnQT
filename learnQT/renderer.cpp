@@ -119,14 +119,13 @@ void Renderer::render(int width, int height)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     //glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    frameCounter++;
     auto sobel_number = getSobelRandomNumber(frameCounter, 12);
     //auto sobel_number = getSobelRandomNumber(frameCounter, 12);
 
     pathtrace_program->bind(); 
     {
         GLint fl_loca = pathtrace_program->uniformLocation("frameCounter");
-        glUniform1ui(fl_loca, frameCounter);
+        glUniform1ui(fl_loca, frameCounter++);
        // glUniform1ui(fl_loca, frameCounter++);   
         GLint sobel_loca = pathtrace_program->uniformLocation("sobelNumber"); 
         glUniform1fv(sobel_loca, 24, sobel_number.data());
@@ -168,6 +167,22 @@ void Renderer::render(int width, int height)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        //复制纹理到prev中
+
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        glBindTexture(GL_TEXTURE_2D, preDirectLightTex);
+        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, render_width, render_height, 0);
+        glReadBuffer(GL_COLOR_ATTACHMENT1);
+        glBindTexture(GL_TEXTURE_2D, preIndirectLightTex);
+        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, render_width, render_height, 0);
+        glReadBuffer(GL_COLOR_ATTACHMENT4);
+        glBindTexture(GL_TEXTURE_2D, preMovmentTex);
+        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, render_width, render_height, 0);
+
+
+
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     pathtrace_program->release();
@@ -225,10 +240,10 @@ void Renderer::render(int width, int height)
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, directLightTexfiltered);
+        glBindTexture(GL_TEXTURE_2D, directLightTex);
         m_program->setUniformValue("texPass1", 5);
         glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, indirectLightTexfiltered);
+        glBindTexture(GL_TEXTURE_2D, indirectLightTex);
         m_program->setUniformValue("texPass2", 6);
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_2D, baseColorTex);
@@ -245,7 +260,7 @@ void Renderer::render(int width, int height)
     }
     m_program->release();
 
-    //glFinish();
+    glFinish();
 }
 
 void Renderer::init(int width, int height)
@@ -296,8 +311,7 @@ void Renderer::init(int width, int height)
     emissionTex= getTextureRGB32F(render_width, render_height);
     batchTextureSettings.insert(batchTextureSettings.end(),
         { preMovmentTex,movmentTex, preDirectLightTex, preIndirectLightTex, 
-        directLightTex,indirectLightTex,normal_depth_texture,baseColorTex,
-        movmentTex,emissionTex }
+        directLightTex,indirectLightTex,normal_depth_texture,baseColorTex,emissionTex }
     );
 
 	pathtrace_fbo = bindData(std::vector<GLuint>{

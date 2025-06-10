@@ -1098,15 +1098,15 @@ void main(void)
     
     //FragColor=vec4(color,1.0);
     
-    // 计算混合因子    
     DirectLightResult=vec4(color.direct_color/max(color.base_color,1e-3),1.0);
     IndirectLightResult=vec4(color.indirect_color/max(color.base_color,1e-3),1.0);
     NormalDepthResult=vec4((color.normal_color+1.0)/2.0,length(color.depth_point-eye));
     BaseColorResult=vec4(color.base_color,1.0);
     emissionResult=vec4(color.emission_color,1.0);
-
-    float alpha = max(1.0/frameCounter,1.0/32);//该项控制累计帧数
-    float alphaMoments =  max(1.0/frameCounter,1.0/32);//该项控制累计帧数
+    
+    // 计算混合因子    
+    float alpha =1.0/(frameCounter+1.0); //max(1.0/frameCounter,1.0/32);//该项控制累计帧数
+    float alphaMoments =1.0/(frameCounter+1.0);//  max(1.0/frameCounter,1.0/32);//该项控制累计帧数
 
 
     vec3 prevIllum_dir= texture2D(preDirect, pix.xy*0.5+0.5).rgb;
