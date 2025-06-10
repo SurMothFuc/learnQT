@@ -169,26 +169,32 @@ void Renderer::render(int width, int height)
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         //复制纹理到prev中
-
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, preDirectLightTex);
-        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, render_width, render_height, 0);
-        glReadBuffer(GL_COLOR_ATTACHMENT1);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, preIndirectLightTex);
-        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, render_width, render_height, 0);
-        glReadBuffer(GL_COLOR_ATTACHMENT4);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, preMovmentTex);
-        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, render_width, render_height, 0);
-
-
-
-
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     pathtrace_program->release();
+
+    historysave_program->bind(); 
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, historysave_fbo);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, directLightTex);
+        historysave_program->setUniformValue("DirectLight", 0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, indirectLightTex);
+        historysave_program->setUniformValue("IndirectLight", 1);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, movmentTex);
+        historysave_program->setUniformValue("Movement", 2);
+        //glBindVertexArray(VAO);
+
+        glViewport(m_viewportX, m_viewportY, render_width, render_height);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    historysave_program->release();
 
     mixframe_program->bind();
     {
@@ -321,6 +327,10 @@ void Renderer::init(int width, int height)
         directLightTex, indirectLightTex, normal_depth_texture,
         baseColorTex, movmentTex, emissionTex});
 
+    historysave_program.reset(getShaderProgram("./historysave.frag", "./triangle.vert"));
+    historysave_fbo= bindData(std::vector<GLuint>{preDirectLightTex,preIndirectLightTex,preMovmentTex});
+
+
     mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
     filteredTexture_ping = getTextureRGB32F(render_width, render_height);
     filteredTexture_pong = getTextureRGB32F(render_width, render_height);
@@ -384,6 +394,9 @@ void Renderer::uninit()
     glDeleteFramebuffers(1, &pathtrace_fbo);
     glDeleteFramebuffers(1, &mixframe_fbo_ping);
     glDeleteFramebuffers(1, &mixframe_fbo_pong);
+    glDeleteFramebuffers(1, &historysave_fbo);
+    glDeleteFramebuffers(1, &directLight_fbo_filtered);
+    glDeleteFramebuffers(1, &indirectLight_fbo_filtered);
     /*
     * .........还应该把剩余的添加进来
     */
@@ -409,7 +422,7 @@ void Renderer::uninit()
     if (tbo1) glDeleteBuffers(1, &tbo1);
 
     // 重置标识符防止重复删除
-    m_fbo = pathtrace_fbo = mixframe_fbo_ping= mixframe_fbo_pong = 0;
+    historysave_fbo= m_fbo = pathtrace_fbo = mixframe_fbo_ping= mixframe_fbo_pong= directLight_fbo_filtered=indirectLight_fbo_filtered = 0;
     m_texture = 0;
     hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = 0;
     VAO = VBO = tbo0 = tbo1 = 0;

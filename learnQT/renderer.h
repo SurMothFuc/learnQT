@@ -65,6 +65,8 @@ private:
     unsigned directLight_fbo_filtered = 0;
     unsigned indirectLight_fbo_filtered = 0;
 
+    unsigned historysave_fbo = 0;
+
     //unsigned m_rbo = 0;
     unsigned m_texture = 0;
     //unsigned pathtrace_texture = 0;
@@ -102,6 +104,7 @@ private:
     std::unique_ptr<QOpenGLShaderProgram> m_program = nullptr;
     std::unique_ptr<QOpenGLShaderProgram> pathtrace_program = nullptr;
     std::unique_ptr<QOpenGLShaderProgram> mixframe_program = nullptr;
+    std::unique_ptr<QOpenGLShaderProgram> historysave_program = nullptr;
 
     std::vector<unsigned> batchTextureSettings;
     // std::unique_ptr<Sierpinski> m_sierpinski;

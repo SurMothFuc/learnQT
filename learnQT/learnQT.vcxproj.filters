@@ -87,6 +87,7 @@
     <None Include="triangle.vert">
       <Filter>Shader</Filter>
     </None>
+    <None Include="historysave.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="texturebuffer.h">

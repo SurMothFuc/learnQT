@@ -103,6 +103,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="historysave.frag" />
     <None Include="mixframe.frag" />
     <None Include="pathtrace.frag" />
     <None Include="triangle.frag" />
