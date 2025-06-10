@@ -171,12 +171,15 @@ void Renderer::render(int width, int height)
         //复制纹理到prev中
 
         glReadBuffer(GL_COLOR_ATTACHMENT0);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, preDirectLightTex);
         glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, render_width, render_height, 0);
         glReadBuffer(GL_COLOR_ATTACHMENT1);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, preIndirectLightTex);
         glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, render_width, render_height, 0);
         glReadBuffer(GL_COLOR_ATTACHMENT4);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, preMovmentTex);
         glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, render_width, render_height, 0);
 

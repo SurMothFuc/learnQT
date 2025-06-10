@@ -1104,13 +1104,14 @@ void main(void)
     BaseColorResult=vec4(color.base_color,1.0);
     emissionResult=vec4(color.emission_color,1.0);
     
+
     // 计算混合因子    
-    float alpha =1.0/(frameCounter+1.0); //max(1.0/frameCounter,1.0/32);//该项控制累计帧数
-    float alphaMoments =1.0/(frameCounter+1.0);//  max(1.0/frameCounter,1.0/32);//该项控制累计帧数
+    float alpha =1.0/(frameCounter+1.0);//该项控制累计帧数
+    float alphaMoments =1.0/(frameCounter+1.0);//该项控制累计帧数
 
 
     vec3 prevIllum_dir= texture2D(preDirect, pix.xy*0.5+0.5).rgb;
-    vec3 prevIllum_indir = texture2D(preDirect, pix.xy*0.5+0.5).rgb;
+    vec3 prevIllum_indir = texture2D(preIndirect, pix.xy*0.5+0.5).rgb;
     vec4 prevMoments = texture2D(preMovment, pix.xy*0.5+0.5);
 
     float lumi_dir = Luminance(DirectLightResult.rgb);
