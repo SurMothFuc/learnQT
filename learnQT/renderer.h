@@ -59,11 +59,11 @@ private:
     unsigned m_fbo = 0;
     unsigned pathtrace_fbo = 0;
 
-    unsigned mixframe_fbo_ping = 0;
-    unsigned mixframe_fbo_pong = 0;
+   // unsigned mixframe_fbo_ping = 0;
+    //unsigned mixframe_fbo_pong = 0;
 
-    unsigned directLight_fbo_filtered = 0;
-    unsigned indirectLight_fbo_filtered = 0;
+   // unsigned directLight_fbo_filtered = 0;
+   // unsigned indirectLight_fbo_filtered = 0;
 
     unsigned historysave_fbo = 0;
 
@@ -72,20 +72,13 @@ private:
     //unsigned pathtrace_texture = 0;
     //unsigned mixframe_texture = 0;
 
-    unsigned preDirectLightTex = 0;
-    unsigned preIndirectLightTex = 0;
-    unsigned preMovmentTex = 0;
+    unsigned preRenderColorTex = 0;
 
-    unsigned directLightTex = 0;//最后一位是方差
-    unsigned indirectLightTex = 0;//最后一位是方差
-    unsigned movmentTex = 0;
+    unsigned RenderColorTex = 0;
     unsigned emissionTex = 0;
-    unsigned filteredTexture_ping = 0;
-    unsigned filteredTexture_pong = 0;
-    unsigned normal_depth_texture = 0;
+    unsigned normal_texture = 0;
     unsigned baseColorTex = 0;
-    unsigned directLightTexfiltered = 0;
-    unsigned indirectLightTexfiltered = 0;
+    unsigned RenderColorTexfiltered = 0;
 
     unsigned int frameCounter = 0;
     unsigned int lastframeCounter = 0;
@@ -103,7 +96,7 @@ private:
 
     std::unique_ptr<QOpenGLShaderProgram> m_program = nullptr;
     std::unique_ptr<QOpenGLShaderProgram> pathtrace_program = nullptr;
-    std::unique_ptr<QOpenGLShaderProgram> mixframe_program = nullptr;
+    //std::unique_ptr<QOpenGLShaderProgram> mixframe_program = nullptr;
     std::unique_ptr<QOpenGLShaderProgram> historysave_program = nullptr;
 
     std::vector<unsigned> batchTextureSettings;

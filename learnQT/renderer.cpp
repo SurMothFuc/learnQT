@@ -1,6 +1,6 @@
 ﻿#include "renderer.h"
 //#include "debug.h"
-
+#include "OpenImageDenoise/oidn.hpp"
 
 extern QMutex param_mutex;
 
@@ -152,15 +152,9 @@ void Renderer::render(int width, int height)
             //first_render = false;
         //}
 
-        pathtrace_program->setUniformValue("preDirect", 4);
+        pathtrace_program->setUniformValue("preRenderColor", 4);
         glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, preDirectLightTex);
-        pathtrace_program->setUniformValue("preIndirect", 5);
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, preIndirectLightTex);
-        pathtrace_program->setUniformValue("preMovment", 6);
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, preMovmentTex);
+        glBindTexture(GL_TEXTURE_2D, preRenderColorTex);
 
 
         glViewport(m_viewportX, m_viewportY, render_width, render_height);
@@ -178,14 +172,8 @@ void Renderer::render(int width, int height)
         glBindFramebuffer(GL_FRAMEBUFFER, historysave_fbo);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, directLightTex);
-        historysave_program->setUniformValue("DirectLight", 0);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, indirectLightTex);
-        historysave_program->setUniformValue("IndirectLight", 1);
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, movmentTex);
-        historysave_program->setUniformValue("Movement", 2);
+        glBindTexture(GL_TEXTURE_2D, RenderColorTex);
+        historysave_program->setUniformValue("RenderColor", 0);
         //glBindVertexArray(VAO);
 
         glViewport(m_viewportX, m_viewportY, render_width, render_height);
@@ -196,70 +184,95 @@ void Renderer::render(int width, int height)
     }
     historysave_program->release();
 
-    mixframe_program->bind();
+    if(frameCounter%100==0 || frameCounter ==1)
     {
-        for (int di_or_in = 0; di_or_in < 2; di_or_in++) {
-            int filter_count = 5;
-            for (int index = 1; index <= filter_count; index++) {
-                //set fbo
-                if (index == filter_count) {
-                    if(di_or_in==0)
-                        glBindFramebuffer(GL_FRAMEBUFFER, directLight_fbo_filtered);
-                    else
-                        glBindFramebuffer(GL_FRAMEBUFFER, indirectLight_fbo_filtered);
-                }
-                else if (index % 2 == 1)
-                    glBindFramebuffer(GL_FRAMEBUFFER, mixframe_fbo_ping);
-                else
-                    glBindFramebuffer(GL_FRAMEBUFFER, mixframe_fbo_pong);
+        glFinish();
+        // 1. 读取 OpenGL RGBA 纹理
+        std::vector<float> rgbaData(render_width* render_height * 4);
+        std::vector<float> normalData4(render_width* render_height * 4);
+        std::vector<float> baseColorData4(render_width* render_height * 4);
+        glActiveTexture(GL_TEXTURE0);
 
-                //set input
-                glActiveTexture(GL_TEXTURE0);
-                if (index == 1) {
-                    if (di_or_in == 0)
-                        glBindTexture(GL_TEXTURE_2D, directLightTex);
-                    else 
-                        glBindTexture(GL_TEXTURE_2D, indirectLightTex);
-                }
-                else if (index % 2 == 1) {
-                    glBindTexture(GL_TEXTURE_2D, filteredTexture_pong);
-                }
-                else {
-                    glBindTexture(GL_TEXTURE_2D, filteredTexture_ping);
-                }
-
-                glActiveTexture(GL_TEXTURE5);
-                glBindTexture(GL_TEXTURE_2D, normal_depth_texture);
-                mixframe_program->setUniformValue("texPass0", 0);
-                mixframe_program->setUniformValue("offsetScale", index);
-                mixframe_program->setUniformValue("texPass1", 5);
-
-                glViewport(m_viewportX, m_viewportY, render_width, render_height);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-                glDrawArrays(GL_TRIANGLES, 0, 6);
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            }
+        glBindTexture(GL_TEXTURE_2D, normal_texture);
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, normalData4.data());
+        std::vector<float> normalData(render_width* render_height * 3);
+        for (int i = 0; i < render_width * render_height; i++) {
+            normalData[i * 3 + 0] = normalData4[i * 4 + 0];
+            normalData[i * 3 + 1] = normalData4[i * 4 + 1];
+            normalData[i * 3 + 2] = normalData4[i * 4 + 2];
         }
+
+        glBindTexture(GL_TEXTURE_2D, baseColorTex);
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, baseColorData4.data());
+        std::vector<float> baseColorData(render_width * render_height * 3);
+        for (int i = 0; i < render_width * render_height; i++) {
+            baseColorData[i * 3 + 0] = baseColorData4[i * 4 + 0];
+            baseColorData[i * 3 + 1] = baseColorData4[i * 4 + 1];
+            baseColorData[i * 3 + 2] = baseColorData4[i * 4 + 2];
+        }
+
+        glBindTexture(GL_TEXTURE_2D, RenderColorTex);
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, rgbaData.data());
+        std::vector<float> rgbData(render_width* render_height * 3);
+        for (int i = 0; i < render_width * render_height; i++) {
+            rgbData[i * 3 + 0] = rgbaData[i * 4 + 0];
+            rgbData[i * 3 + 1] = rgbaData[i * 4 + 1];
+            rgbData[i * 3 + 2] = rgbaData[i * 4 + 2];
+        }
+
+        // 3. OIDN 降噪 RGB
+        oidn::DeviceRef device = oidn::newDevice();
+        device.commit();
+        oidn::BufferRef inputBuf = device.newBuffer(rgbData.size() * sizeof(float));
+        oidn::BufferRef albedoBuf = device.newBuffer(baseColorData.size() * sizeof(float));
+        oidn::BufferRef normalBuf = device.newBuffer(normalData.size() * sizeof(float));
+        oidn::BufferRef outputBuf = device.newBuffer(rgbData.size() * sizeof(float));
+        std::memcpy(inputBuf.getData(), rgbData.data(), inputBuf.getSize());
+
+        oidn::FilterRef filter = device.newFilter("RT");
+        filter.setImage("color", inputBuf, oidn::Format::Float3, render_width, render_height); 
+        filter.setImage("albedo", albedoBuf, oidn::Format::Float3, render_width, render_height); // auxiliary
+        filter.setImage("normal", normalBuf, oidn::Format::Float3, render_width, render_height); // auxiliary
+
+        filter.setImage("output", outputBuf, oidn::Format::Float3, render_width, render_height);
+        filter.set("hdr", true);
+        filter.commit();
+        filter.execute();
+
+        const char* errorMessage;
+        if (device.getError(errorMessage) != oidn::Error::None)
+            std::cout << "Error: " << errorMessage << std::endl;
+
+        // 4. 获取降噪后的 RGB
+        std::vector<float> denoisedRGB(render_width * render_height * 3);
+        std::memcpy(denoisedRGB.data(), outputBuf.getData(), outputBuf.getSize());
+
+        // 5. 合并降噪 RGB + 原始 Alpha
+        std::vector<float> denoisedRGBA(render_width * render_height * 4);
+        for (int i = 0; i < render_width * render_height; i++) {
+            denoisedRGBA[i * 4 + 0] = denoisedRGB[i * 3 + 0];
+            denoisedRGBA[i * 4 + 1] = denoisedRGB[i * 3 + 1];
+            denoisedRGBA[i * 4 + 2] = denoisedRGB[i * 3 + 2];
+            denoisedRGBA[i * 4 + 3] = rgbaData[i * 4 + 3]; // Alpha 不变
+        }
+        // 6. 写回 OpenGL 纹理
+        glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, render_width, render_height, GL_RGBA, GL_FLOAT, denoisedRGBA.data());
+
     }
-    mixframe_program->release();
 
     m_program->bind();
     {        
+        
+        ///////////////////////////////////////////
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, directLightTex);
+        glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
         m_program->setUniformValue("texPass1", 5);
         glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, indirectLightTex);
-        m_program->setUniformValue("texPass2", 6);
-        glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D, baseColorTex);
-        m_program->setUniformValue("texPass3", 7);
-        glActiveTexture(GL_TEXTURE8);
         glBindTexture(GL_TEXTURE_2D, emissionTex);
-        m_program->setUniformValue("texPass4", 8);
+        m_program->setUniformValue("texPass2", 6);
         //glBindVertexArray(VAO);
 
         glViewport(m_viewportX, m_viewportY, m_width, m_height);
@@ -309,41 +322,39 @@ void Renderer::init(int width, int height)
     pathtrace_program.reset(getShaderProgram("./pathtrace.frag", "./triangle.vert"));
     //pathtrace_texture = getTextureRGB32F(render_width, render_height);
 
-    preMovmentTex = getTextureRGB32F(render_width, render_height);
-    movmentTex = getTextureRGB32F(render_width, render_height);
-    preDirectLightTex = getTextureRGB32F(render_width, render_height);
-    preIndirectLightTex = getTextureRGB32F(render_width, render_height);
-    directLightTex = getTextureRGB32F(render_width, render_height);
-    indirectLightTex = getTextureRGB32F(render_width, render_height);
-    normal_depth_texture = getTextureRGB32F(render_width, render_height);
+    preRenderColorTex = getTextureRGB32F(render_width, render_height);
+    RenderColorTex = getTextureRGB32F(render_width, render_height);
+    normal_texture = getTextureRGB32F(render_width, render_height);
     baseColorTex = getTextureRGB32F(render_width, render_height);
     emissionTex= getTextureRGB32F(render_width, render_height);
     batchTextureSettings.insert(batchTextureSettings.end(),
-        { preMovmentTex,movmentTex, preDirectLightTex, preIndirectLightTex, 
-        directLightTex,indirectLightTex,normal_depth_texture,baseColorTex,emissionTex }
+        { preRenderColorTex,RenderColorTex,normal_texture,baseColorTex,emissionTex }
     );
 
 	pathtrace_fbo = bindData(std::vector<GLuint>{
-        directLightTex, indirectLightTex, normal_depth_texture,
-        baseColorTex, movmentTex, emissionTex});
+        RenderColorTex, normal_texture,
+        baseColorTex,  emissionTex});
 
     historysave_program.reset(getShaderProgram("./historysave.frag", "./triangle.vert"));
-    historysave_fbo= bindData(std::vector<GLuint>{preDirectLightTex,preIndirectLightTex,preMovmentTex});
+    historysave_fbo= bindData(std::vector<GLuint>{preRenderColorTex});
 
-
-    mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
+    RenderColorTexfiltered= getTextureRGB32F(render_width, render_height); 
+    batchTextureSettings.insert(batchTextureSettings.end(),
+        { RenderColorTexfiltered }
+    );
+    /*mixframe_program.reset(getShaderProgram("./mixframe.frag", "./triangle.vert"));
     filteredTexture_ping = getTextureRGB32F(render_width, render_height);
     filteredTexture_pong = getTextureRGB32F(render_width, render_height);
     directLightTexfiltered = getTextureRGB32F(render_width, render_height);
     indirectLightTexfiltered = getTextureRGB32F(render_width, render_height);
     batchTextureSettings.insert(batchTextureSettings.end(), 
         { filteredTexture_ping ,filteredTexture_pong,directLightTexfiltered,
-        indirectLightTexfiltered });
+        indirectLightTexfiltered });*/
 
-    mixframe_fbo_ping = bindData(std::vector<GLuint>{filteredTexture_ping});
+   /* mixframe_fbo_ping = bindData(std::vector<GLuint>{filteredTexture_ping});
     mixframe_fbo_pong = bindData(std::vector<GLuint>{filteredTexture_pong});
     directLight_fbo_filtered = bindData(std::vector<GLuint>{directLightTexfiltered});
-    indirectLight_fbo_filtered = bindData(std::vector<GLuint>{indirectLightTexfiltered});
+    indirectLight_fbo_filtered = bindData(std::vector<GLuint>{indirectLightTexfiltered});*/
 
 
     m_program.reset(getShaderProgram("./triangle.frag", "./triangle.vert"));
@@ -392,11 +403,7 @@ void Renderer::uninit()
     //glDeleteRenderbuffers(1, &m_rbo);
     glDeleteFramebuffers(1, &m_fbo);
     glDeleteFramebuffers(1, &pathtrace_fbo);
-    glDeleteFramebuffers(1, &mixframe_fbo_ping);
-    glDeleteFramebuffers(1, &mixframe_fbo_pong);
     glDeleteFramebuffers(1, &historysave_fbo);
-    glDeleteFramebuffers(1, &directLight_fbo_filtered);
-    glDeleteFramebuffers(1, &indirectLight_fbo_filtered);
     /*
     * .........还应该把剩余的添加进来
     */
@@ -422,7 +429,7 @@ void Renderer::uninit()
     if (tbo1) glDeleteBuffers(1, &tbo1);
 
     // 重置标识符防止重复删除
-    historysave_fbo= m_fbo = pathtrace_fbo = mixframe_fbo_ping= mixframe_fbo_pong= directLight_fbo_filtered=indirectLight_fbo_filtered = 0;
+    historysave_fbo= m_fbo = pathtrace_fbo  = 0;
     m_texture = 0;
     hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = 0;
     VAO = VBO = tbo0 = tbo1 = 0;
@@ -540,10 +547,10 @@ void Renderer::updateparam()
         pathtrace_program->setUniformValue("useEnvironmentMap", Scene::getInstance().useEnvironmentMap);
         pathtrace_program->release();
 
-        mixframe_program->bind();
+        /*mixframe_program->bind();
         mixframe_program->setUniformValue("width", render_width);
         mixframe_program->setUniformValue("height", render_height);
-        mixframe_program->release();
+        mixframe_program->release();*/
 
 
 
@@ -565,10 +572,10 @@ void Renderer::updateSizeParam()
         pathtrace_program->setUniformValue("height", render_height);
         pathtrace_program->release();
 
-        mixframe_program->bind();
+       /* mixframe_program->bind();
         mixframe_program->setUniformValue("width", render_width);
         mixframe_program->setUniformValue("height", render_height);
-        mixframe_program->release();
+        mixframe_program->release();*/
 
         lasttime = clock();
         lastframeCounter = 0;
