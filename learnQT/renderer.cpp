@@ -220,6 +220,7 @@ void Renderer::render(int width, int height)
             rgbData[i * 3 + 2] = rgbaData[i * 4 + 2];
         }
 
+
         // 3. OIDN 降噪 RGB
         oidn::DeviceRef device = oidn::newDevice();
         device.commit();
