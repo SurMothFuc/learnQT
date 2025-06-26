@@ -86,6 +86,11 @@ public slots:
         ui.transmissionlineEdit->setText(QString::number(cleG / 100.0, 'f', 2));
         updateMaterial();
     }
+    void DenoiseCheckBoxChanged() {
+        bool ck = ui.DeNoisecheckBox->isChecked();
+        emit ui.openGLWidget->sendSetDenoise(ck);
+    }
+
 protected:
     void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE;
     void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE;

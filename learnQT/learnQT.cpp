@@ -22,6 +22,7 @@ learnQT::learnQT(QWidget *parent)
     connect(ui.IORSlider, SIGNAL(valueChanged(int)), this, SLOT(IORSliderUp()));
     connect(ui.transmissionSlider, SIGNAL(valueChanged(int)), this, SLOT(transmissionSliderUp()));
 
+    connect(ui.DeNoisecheckBox, SIGNAL(toggled(bool)), this, SLOT(DenoiseCheckBoxChanged()));
     
 }
 

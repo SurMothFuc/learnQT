@@ -36,6 +36,8 @@ public:
 
     bool needupdate = true;
     bool renderLow = false;
+    bool denoise = true;
+    bool updateDenoise = true;
 private:
     void init(int width, int height);
     void initOIDN();
@@ -72,7 +74,7 @@ private:
     unsigned historysave_fbo = 0;
 
     //unsigned m_rbo = 0;
-    unsigned m_texture = 0;
+    unsigned m_texture = 0; 
     //unsigned pathtrace_texture = 0;
     //unsigned mixframe_texture = 0;
 

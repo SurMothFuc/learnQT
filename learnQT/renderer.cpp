@@ -183,14 +183,15 @@ void Renderer::render(int width, int height)
     }
     historysave_program->release();
 
-    if(frameCounter%100==0 || frameCounter ==1)
+    if(updateDenoise || (denoise && (frameCounter%100==0 || frameCounter ==1)))
     {
+        updateDenoise = false;
         // 使用PBO异步读取数据
         GLenum formats[] = { GL_RGB, GL_RGB, GL_RGB };
-        GLuint textures[] = { RenderColorTex, normal_texture, baseColorTex };
+        GLuint textures[] = { normal_texture, baseColorTex,RenderColorTex };
 
         float* srcPtrs[3];
-        for (int i = 0; i < 3; i++) {
+        for (int i = frameCounter == 1 ?0:2; i < 3; i++) {
             glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
             glBindTexture(GL_TEXTURE_2D, textures[i]);
             glGetTexImage(GL_TEXTURE_2D, 0, formats[i], GL_FLOAT, 0);
@@ -202,23 +203,27 @@ void Renderer::render(int width, int height)
 
 
         // 直接拷贝到OIDN缓冲区（避免格式转换）
-        std::memcpy(oidnColorBuf.getData(), srcPtrs[0], oidnColorBuf.getSize());
-        std::memcpy(oidnNormalBuf.getData(), srcPtrs[1], oidnNormalBuf.getSize());
-        std::memcpy(oidnAlbedoBuf.getData(), srcPtrs[2], oidnAlbedoBuf.getSize());
+        if (frameCounter == 1) {
+            std::memcpy(oidnNormalBuf.getData(), srcPtrs[0], oidnNormalBuf.getSize());
+            std::memcpy(oidnAlbedoBuf.getData(), srcPtrs[1], oidnAlbedoBuf.getSize());
+        }
+        std::memcpy(oidnColorBuf.getData(), srcPtrs[2], oidnColorBuf.getSize());
 
         // 解绑PBO
-        for (int i = 0; i < 3; i++) {
+        for (int i = frameCounter == 1 ? 0 : 2; i < 3; i++) {
             glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
         }
 
         // ======= 预过滤辅助特征 =======
-        // 1. 预过滤反照率
-        oidnAlbedoFilter.execute();
+        if (frameCounter == 1) {
+            // 1. 预过滤反照率
+            oidnAlbedoFilter.execute();
 
-        // 2. 预过滤法线
-        oidnNormalFilter.execute();
+            // 2. 预过滤法线
+            oidnNormalFilter.execute();
+        }
 
         // 3. 使用预过滤后的辅助特征降噪主颜色
         oidnMainFilter.execute();
@@ -235,79 +240,6 @@ void Renderer::render(int width, int height)
             GL_RGB, GL_FLOAT, oidnOutputBuf.getData());
 
 
-        //// 1. 读取 OpenGL RGBA 纹理
-        //std::vector<float> rgbaData(render_width* render_height * 4);
-        //std::vector<float> normalData4(render_width* render_height * 4);
-        //std::vector<float> baseColorData4(render_width* render_height * 4);
-        //glActiveTexture(GL_TEXTURE0);
-
-        //glBindTexture(GL_TEXTURE_2D, normal_texture);
-        //glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, normalData4.data());
-        //std::vector<float> normalData(render_width* render_height * 3);
-        //for (int i = 0; i < render_width * render_height; i++) {
-        //    normalData[i * 3 + 0] = normalData4[i * 4 + 0];
-        //    normalData[i * 3 + 1] = normalData4[i * 4 + 1];
-        //    normalData[i * 3 + 2] = normalData4[i * 4 + 2];
-        //}
-
-        //glBindTexture(GL_TEXTURE_2D, baseColorTex);
-        //glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, baseColorData4.data());
-        //std::vector<float> baseColorData(render_width * render_height * 3);
-        //for (int i = 0; i < render_width * render_height; i++) {
-        //    baseColorData[i * 3 + 0] = baseColorData4[i * 4 + 0];
-        //    baseColorData[i * 3 + 1] = baseColorData4[i * 4 + 1];
-        //    baseColorData[i * 3 + 2] = baseColorData4[i * 4 + 2];
-        //}
-
-        //glBindTexture(GL_TEXTURE_2D, RenderColorTex);
-        //glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, rgbaData.data());
-        //std::vector<float> rgbData(render_width* render_height * 3);
-        //for (int i = 0; i < render_width * render_height; i++) {
-        //    rgbData[i * 3 + 0] = rgbaData[i * 4 + 0];
-        //    rgbData[i * 3 + 1] = rgbaData[i * 4 + 1];
-        //    rgbData[i * 3 + 2] = rgbaData[i * 4 + 2];
-        //}
-
-
-        //// 3. OIDN 降噪 RGB
-        //oidn::DeviceRef device = oidn::newDevice();
-        //device.commit();
-        //oidn::BufferRef inputBuf = device.newBuffer(rgbData.size() * sizeof(float));
-        //oidn::BufferRef albedoBuf = device.newBuffer(baseColorData.size() * sizeof(float));
-        //oidn::BufferRef normalBuf = device.newBuffer(normalData.size() * sizeof(float));
-        //oidn::BufferRef outputBuf = device.newBuffer(rgbData.size() * sizeof(float));
-        //std::memcpy(inputBuf.getData(), rgbData.data(), inputBuf.getSize());
-
-        //oidn::FilterRef filter = device.newFilter("RT");
-        //filter.setImage("color", inputBuf, oidn::Format::Float3, render_width, render_height); 
-        //filter.setImage("albedo", albedoBuf, oidn::Format::Float3, render_width, render_height); // auxiliary
-        //filter.setImage("normal", normalBuf, oidn::Format::Float3, render_width, render_height); // auxiliary
-
-        //filter.setImage("output", outputBuf, oidn::Format::Float3, render_width, render_height);
-        //filter.set("hdr", true);
-        //filter.commit();
-        //filter.execute();
-
-        //const char* errorMessage;
-        //if (device.getError(errorMessage) != oidn::Error::None)
-        //    std::cout << "Error: " << errorMessage << std::endl;
-
-        //// 4. 获取降噪后的 RGB
-        //std::vector<float> denoisedRGB(render_width * render_height * 3);
-        //std::memcpy(denoisedRGB.data(), outputBuf.getData(), outputBuf.getSize());
-
-        //// 5. 合并降噪 RGB + 原始 Alpha
-        //std::vector<float> denoisedRGBA(render_width * render_height * 4);
-        //for (int i = 0; i < render_width * render_height; i++) {
-        //    denoisedRGBA[i * 4 + 0] = denoisedRGB[i * 3 + 0];
-        //    denoisedRGBA[i * 4 + 1] = denoisedRGB[i * 3 + 1];
-        //    denoisedRGBA[i * 4 + 2] = denoisedRGB[i * 3 + 2];
-        //    denoisedRGBA[i * 4 + 3] = rgbaData[i * 4 + 3]; // Alpha 不变
-        //}
-        //// 6. 写回 OpenGL 纹理
-        //glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
-        //glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, render_width, render_height, GL_RGBA, GL_FLOAT, denoisedRGBA.data());
-
     }
 
     m_program->bind();
@@ -317,7 +249,10 @@ void Renderer::render(int width, int height)
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
+        if(denoise)
+            glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
+        else
+            glBindTexture(GL_TEXTURE_2D, RenderColorTex);
         m_program->setUniformValue("texPass1", 5);
         glActiveTexture(GL_TEXTURE6);
         glBindTexture(GL_TEXTURE_2D, emissionTex);
@@ -461,6 +396,10 @@ void Renderer::initOIDN()
     oidnMainFilter.set("hdr", true);
     oidnMainFilter.set("cleanAux", true); // 启用cleanAux参数
 
+    /*oidnAlbedoFilter.set("quality", oidn::Quality::Fast); 
+    oidnNormalFilter.set("quality", oidn::Quality::Fast);
+    oidnMainFilter.set("quality", oidn::Quality::Fast);*/
+ 
     // 创建PBO
     glGenBuffers(3, pboIds);
 

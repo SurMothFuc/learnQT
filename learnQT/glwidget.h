@@ -48,6 +48,7 @@ private:
 signals:
     //给子线程发消息
     void sengMsgToThread();
+    void sendSetDenoise(bool isChecked);
 };
 
 #endif // GLWIDGET_H

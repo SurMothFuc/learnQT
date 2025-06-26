@@ -34,6 +34,14 @@ void RenderThread::setRenderLow(bool _renderlow)
     point_render->renderLow = _renderlow;
 }
 
+void RenderThread::setDenoise(bool _isdenoise)
+{
+    if (point_render == NULL)
+        return;
+    point_render->denoise= _isdenoise;
+    point_render->updateDenoise = true;//保证降噪一次
+}
+
 // called in render thread
 void RenderThread::run()
 {

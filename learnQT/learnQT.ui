@@ -37,7 +37,7 @@
        </widget>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
         <property name="spacing">
          <number>6</number>
         </property>
@@ -53,6 +53,19 @@
         <property name="rightMargin">
          <number>0</number>
         </property>
+        <item>
+         <widget class="QCheckBox" name="DeNoisecheckBox">
+          <property name="text">
+           <string>Denoise</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QPushButton" name="pushButton">
           <property name="sizePolicy">
@@ -327,68 +340,68 @@
           </item>
          </layout>
         </item>
-		   <item>
-			   <widget class="QLabel" name="label_11">
-				   <property name="text">
-					   <string>IOR:</string>
-				   </property>
-			   </widget>
-		   </item>
-		   <item>
-			   <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="6,1">
-				   <item>
-					   <widget class="QSlider" name="IORSlider">
-						   <property name="maximum">
-							   <number>100</number>
-						   </property>
-						   <property name="value">
-							   <number>100</number>
-						   </property>
-						   <property name="orientation">
-							   <enum>Qt::Horizontal</enum>
-						   </property>
-					   </widget>
-				   </item>
-				   <item>
-					   <widget class="QLineEdit" name="IORlineEdit">
-						   <property name="text">
-							   <string>1.00</string>
-						   </property>
-					   </widget>
-				   </item>
-			   </layout>
-		   </item>
-		   <item>
-			   <widget class="QLabel" name="label_11">
-				   <property name="text">
-					   <string>transmissionGloss:</string>
-				   </property>
-			   </widget>
-		   </item>
-		   <item>
-			   <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="6,1">
-				   <item>
-					   <widget class="QSlider" name="transmissionSlider">
-						   <property name="maximum">
-							   <number>100</number>
-						   </property>
-						   <property name="value">
-							   <number>0</number>
-						   </property>
-						   <property name="orientation">
-							   <enum>Qt::Horizontal</enum>
-						   </property>
-					   </widget>
-				   </item>
-				   <item>
-					   <widget class="QLineEdit" name="transmissionlineEdit">
-						   <property name="text">
-							   <string>0.00</string>
-						   </property>
-					   </widget>
-				   </item>
-			   </layout>
-		   </item>
+        <item>
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>IOR:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="6,1">
+          <item>
+           <widget class="QSlider" name="IORSlider">
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="IORlineEdit">
+            <property name="text">
+             <string>1.00</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>transmissionGloss:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="6,1">
+          <item>
+           <widget class="QSlider" name="transmissionSlider">
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="transmissionlineEdit">
+            <property name="text">
+             <string>0.00</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
        </layout>
       </item>
      </layout>
@@ -401,7 +414,7 @@
      <x>0</x>
      <y>0</y>
      <width>913</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

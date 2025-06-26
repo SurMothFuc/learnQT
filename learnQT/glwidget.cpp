@@ -142,8 +142,9 @@ void GLWidget::initRenderThread()
     m_thread->start();
 
     connect(this, &GLWidget::sengMsgToThread, m_thread, &RenderThread::recMegFromMain);
-    
+    connect(this, &GLWidget::sendSetDenoise, m_thread, &RenderThread::setDenoise);
 }
+
 
 void GLWidget::keyPressEvent(QKeyEvent* event)
 {

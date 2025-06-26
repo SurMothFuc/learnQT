@@ -111,7 +111,7 @@ void Camera::processMouseMovement(float xoffset, float yoffset, bool constraintP
 
     position = QVector3D(-sin(radians(rotatAngle)) * cos(radians(upAngle)), sin(radians(upAngle)), cos(radians(rotatAngle)) * cos(radians(upAngle)));
     position *= r;
-    qDebug() << position << " " << rotatAngle << " " << upAngle;
+    //qDebug() << position << " " << rotatAngle << " " << upAngle;
     this->updateCameraVectors();
 }
 

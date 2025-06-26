@@ -25,13 +25,13 @@ public:
 
     void setNewSize(int width, int height);
     void setRenderLow(bool _renderlow);
-
 signals:
     void imageReady();
 
 public slots:
     //接收主线程的消息
     void recMegFromMain();
+    void setDenoise(bool _isdenoise);
     
 
 protected:
