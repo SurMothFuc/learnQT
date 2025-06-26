@@ -17,6 +17,8 @@
 #include "Scene.h"
 #include <Eigen/Dense>
 
+#include "OpenImageDenoise/oidn.hpp"
+
 class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
@@ -36,7 +38,9 @@ public:
     bool renderLow = false;
 private:
     void init(int width, int height);
+    void initOIDN();
     void uninit();
+    void updateOIDNBuffers();
     void adjustSize();
     void calResolution();
 private://静止赋值操作
@@ -100,6 +104,20 @@ private:
     std::unique_ptr<QOpenGLShaderProgram> historysave_program = nullptr;
 
     std::vector<unsigned> batchTextureSettings;
+
+    //OIDN
+    oidn::DeviceRef oidnDevice;
+    oidn::FilterRef oidnMainFilter;
+    oidn::FilterRef oidnAlbedoFilter;
+    oidn::FilterRef oidnNormalFilter;
+    oidn::BufferRef oidnColorBuf;
+    oidn::BufferRef oidnAlbedoBuf;
+    oidn::BufferRef oidnNormalBuf;
+    oidn::BufferRef oidnOutputBuf;
+
+    // PBO对象
+    GLuint pboIds[3] = { 0, 0, 0 }; // 分别用于color, normal, albedo
+
     // std::unique_ptr<Sierpinski> m_sierpinski;
 };
 
