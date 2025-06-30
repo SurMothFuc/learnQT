@@ -81,7 +81,6 @@ private:
     unsigned preRenderColorTex = 0;
 
     unsigned RenderColorTex = 0;
-    unsigned emissionTex = 0;
     unsigned normal_texture = 0;
     unsigned baseColorTex = 0;
     unsigned RenderColorTexfiltered = 0;

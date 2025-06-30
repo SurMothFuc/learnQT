@@ -22,7 +22,6 @@
 layout(location = 0) out vec4 RenderColorResult;
 layout(location = 1) out vec4 NormalResult;
 layout(location = 2) out vec4 BaseColorResult;
-layout(location = 3) out vec4 emissionResult;
 
 in vec3 pix;
 
@@ -53,7 +52,6 @@ struct OutputColor{
     vec3 render_color;
     vec3 normal_color;
     vec3 base_color;
-    vec3 emission_color;
 };
 
 // Triangle 数据格式
@@ -898,7 +896,6 @@ OutputColor pathTracingImportanceSampling(Ray r, int maxBounce) {
     //vec3 Lo = vec3(0);      // 最终的颜色
     vec3 history = vec3(1); // 递归积累的颜色
     o_c.render_color=vec3(0);
-    o_c.emission_color=vec3(0);
 
     o_c.normal_color=vec3(0);//对于环境光贴图的位置设为0
     o_c.base_color=vec3(0);
@@ -925,24 +922,15 @@ OutputColor pathTracingImportanceSampling(Ray r, int maxBounce) {
             float mis_weight = 1.0;   // f(a,b) = a^2 / (a^2 + b^2)
             //Lo += mis_weight * history * color;
 
-            if(bounce==0){
-                o_c.emission_color+=mis_weight * history * color;
-            }
-            else{
-                 o_c.render_color+=mis_weight * history * color;
-            }
+            o_c.render_color+=mis_weight * history * color;
+           
             break;
         }
         
         // 命中光源积累颜色  
        // Lo +=  history *newHit.material.emissive;
 
-        if(bounce==0){
-            o_c.emission_color+=history *newHit.material.emissive;
-        }
-        else{
-            o_c.render_color+=history *newHit.material.emissive;
-        }
+        o_c.render_color+=history *newHit.material.emissive;
 
        
         mediumSampled = false;
@@ -958,12 +946,8 @@ OutputColor pathTracingImportanceSampling(Ray r, int maxBounce) {
             {
                 vec3 light_st=newHit.material.mediumColor * newHit.hitDistance * newHit.material.mediumDensity * history;
                 
-                if(bounce==0){
-                    o_c.emission_color+=light_st;
-                }
-                else{
-                    o_c.render_color+=light_st;
-                }
+                o_c.render_color+=light_st;
+                
             
             }
             else
@@ -1097,7 +1081,6 @@ void main(void)
     RenderColorResult=vec4(color.render_color,1.0);
     NormalResult=vec4((color.normal_color+1.0)/2.0,0.0);
     BaseColorResult=vec4(color.base_color,1.0);
-    emissionResult=vec4(color.emission_color,1.0);
     
 
     // 计算混合因子    

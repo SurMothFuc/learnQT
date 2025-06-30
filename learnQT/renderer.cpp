@@ -255,8 +255,6 @@ void Renderer::render(int width, int height)
             glBindTexture(GL_TEXTURE_2D, RenderColorTex);
         m_program->setUniformValue("texPass1", 5);
         glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, emissionTex);
-        m_program->setUniformValue("texPass2", 6);
         //glBindVertexArray(VAO);
 
         glViewport(m_viewportX, m_viewportY, m_width, m_height);
@@ -310,14 +308,13 @@ void Renderer::init(int width, int height)
     RenderColorTex = getTextureRGB32F(render_width, render_height);
     normal_texture = getTextureRGB32F(render_width, render_height);
     baseColorTex = getTextureRGB32F(render_width, render_height);
-    emissionTex= getTextureRGB32F(render_width, render_height);
     batchTextureSettings.insert(batchTextureSettings.end(),
-        { preRenderColorTex,RenderColorTex,normal_texture,baseColorTex,emissionTex }
+        { preRenderColorTex,RenderColorTex,normal_texture,baseColorTex }
     );
 
 	pathtrace_fbo = bindData(std::vector<GLuint>{
         RenderColorTex, normal_texture,
-        baseColorTex,  emissionTex});
+        baseColorTex});
 
     historysave_program.reset(getShaderProgram("./historysave.frag", "./triangle.vert"));
     historysave_fbo= bindData(std::vector<GLuint>{preRenderColorTex});
