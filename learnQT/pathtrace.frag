@@ -1061,7 +1061,8 @@ void main(void)
    
    // vec2 AA = vec2((rand()-0.5)/float(width), (rand()-0.5)/float(height));
     //vec2 AA = vec2(0);
-    vec4 dir = view*vec4(pix.x*float(width) /float(height),pix.y, -2.0,0.0);//- ray.startPoint;
+    vec4 dir = view*vec4(pix.x*float(width) /float(height),pix.y, -2.0,0.0);//- ray.startPoint;    
+    //vec4 dir = view*vec4(pix.x*float(width) /float(height)+AA.x,pix.y+AA.y, -2.0,0.0);//- ray.startPoint;
     ray.direction = normalize(dir.xyz);
     // primary hit  
 

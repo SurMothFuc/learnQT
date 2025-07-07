@@ -14,8 +14,16 @@ class learnQT : public QMainWindow
 
 public:
     learnQT(QWidget *parent = Q_NULLPTR);
+
+    // 隐藏布局中的所有控件
+    void hideLayout(QLayout* layout);
+
+    // 显示布局中的所有控件
+    void showLayout(QLayout* layout);
+    void toggleFullscreen();
+    void exitFullscreen();
 public slots:
-    void upoff() {
+    void upoff() {        
         updateMaterial();
     }
     void updateMaterial()

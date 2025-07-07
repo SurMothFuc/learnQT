@@ -26,8 +26,70 @@ learnQT::learnQT(QWidget *parent)
     
 }
 
+void learnQT::hideLayout(QLayout* layout)
+{
+    for (int i = 0; i < layout->count(); ++i) {
+        QLayoutItem* item = layout->itemAt(i);
+        if (item->widget()) {
+            item->widget()->hide(); // 隐藏控件
+        }
+        else if (item->layout()) {
+            hideLayout(item->layout()); // 递归处理子布局
+        }
+    }
+}
+
+void learnQT::showLayout(QLayout* layout)
+{
+    for (int i = 0; i < layout->count(); ++i) {
+        QLayoutItem* item = layout->itemAt(i);
+        if (item->widget()) {
+            item->widget()->show(); // 显示控件
+        }
+        else if (item->layout()) {
+            showLayout(item->layout()); // 递归处理子布局
+        }
+    }
+}
+
+void learnQT::toggleFullscreen()
+{
+    if (isFullScreen()) {
+        exitFullscreen();
+    }
+    else {
+        showFullScreen();
+        statusBar()->hide();
+        menuBar()->hide();
+        ui.mainToolBar->hide();
+        hideLayout(ui.verticalLayout_2);
+        ui.centralWidget->layout()->setContentsMargins(0, 0, 0, 0);
+    }
+}
+
+void learnQT::exitFullscreen()
+{
+    showNormal();
+    statusBar()->show();
+    menuBar()->show();
+    ui.mainToolBar->show();
+    showLayout(ui.verticalLayout_2);
+    ui.centralWidget->layout()->setContentsMargins(9, 9, 9, 9);
+}
+
 void learnQT::keyPressEvent(QKeyEvent* event) {
-    QApplication::sendEvent(ui.openGLWidget, event);
+    if (event->key() == Qt::Key_F11) {
+        toggleFullscreen();
+        event->accept();
+    }
+    // 按ESC退出全屏
+    else if (event->key() == Qt::Key_Escape && isFullScreen()) {
+        exitFullscreen();
+        event->accept();
+    }
+    else {
+        QApplication::sendEvent(ui.openGLWidget, event);
+    }
 }
 void  learnQT::keyReleaseEvent(QKeyEvent* event) {
     QApplication::sendEvent(ui.openGLWidget, event);
