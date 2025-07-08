@@ -1089,9 +1089,8 @@ void main(void)
 
 
     vec4 prevIllum= texture2D(preRenderColor, pix.xy*0.5+0.5);
-
-    // 混合光照
-    RenderColorResult = mix(prevIllum, RenderColorResult, alpha);
-
-
+    
+    float hasNaN = float(any(isnan(RenderColorResult.xyz)));
+    float finalAlpha = mix(alpha, 0.0, hasNaN);
+    RenderColorResult = mix(prevIllum, RenderColorResult, finalAlpha);
 }
