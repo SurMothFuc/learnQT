@@ -5,6 +5,8 @@
 #include "Scene.h"
 #include <iostream>
 #include <QString>
+#include <QFileDialog>
+#include <QMessageBox>
 
 extern QMutex param_mutex;
 
@@ -23,6 +25,30 @@ public:
     void toggleFullscreen();
     void exitFullscreen();
 public slots:
+    void saveGLImage() {
+        // 获取保存路径
+        QString filePath = QFileDialog::getSaveFileName(
+            this,
+            QObject::tr("save image"),
+            QDir::homePath(),
+            QObject::tr("PNG (*.png);;JPEG (*.jpg *.jpeg)")
+        );
+
+        if (filePath.isEmpty()) return;  // 用户取消操作
+
+        // 捕获当前帧
+        QImage image = ui.openGLWidget->grabFramebuffer();
+        QString("sadasd")+ filePath;
+        // 保存文件
+        if (!image.save(filePath)) {
+            QMessageBox::critical(
+                this,
+                QObject::tr("Failed to save the image"),
+                QObject::tr("Unable to save the image to drive: ") + filePath +
+                    QObject::tr("\nPlease check the path permissions and disk space.")
+            );
+        }
+    }
     void upoff() {        
         updateMaterial();
     }

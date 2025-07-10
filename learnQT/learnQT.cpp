@@ -9,6 +9,7 @@ learnQT::learnQT(QWidget *parent)
     Scene::getInstance();
     ui.setupUi(this);    
 
+    connect( ui.SaveImageButton,SIGNAL(clicked(bool)), this, SLOT(saveGLImage()));
     connect( ui.pushButton,SIGNAL(clicked(bool)), this, SLOT(upoff()));
     connect(ui.roughnessSlider, SIGNAL(valueChanged(int)), this, SLOT(roughnessSliderUp()));
     connect(ui.metallicSlider, SIGNAL(valueChanged(int)), this, SLOT(metallicSliderUp()));
