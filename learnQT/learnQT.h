@@ -29,7 +29,7 @@ public slots:
         // 获取保存路径
         QString filePath = QFileDialog::getSaveFileName(
             this,
-            QObject::tr("save image"),
+            QObject::tr("Save Image"),
             QDir::homePath(),
             QObject::tr("PNG (*.png);;JPEG (*.jpg *.jpeg)")
         );

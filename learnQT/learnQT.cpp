@@ -63,7 +63,7 @@ void learnQT::toggleFullscreen()
         statusBar()->hide();
         menuBar()->hide();
         ui.mainToolBar->hide();
-        hideLayout(ui.verticalLayout_2);
+        ui.scrollArea->hide();
         ui.centralWidget->layout()->setContentsMargins(0, 0, 0, 0);
     }
 }
@@ -74,7 +74,7 @@ void learnQT::exitFullscreen()
     statusBar()->show();
     menuBar()->show();
     ui.mainToolBar->show();
-    showLayout(ui.verticalLayout_2);
+    ui.scrollArea->show();
     ui.centralWidget->layout()->setContentsMargins(9, 9, 9, 9);
 }
 

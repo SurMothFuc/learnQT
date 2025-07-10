@@ -264,7 +264,7 @@ void Renderer::render(int width, int height)
     }
     m_program->release();
 
-    glFinish();
+    //glFinish();
 }
 
 void Renderer::init(int width, int height)
