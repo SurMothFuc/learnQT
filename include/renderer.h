@@ -16,7 +16,7 @@
 #include <qmutex.h>
 #include "Scene.h"
 #include <Eigen/Dense>
-
+#include <unordered_map>
 #include "OpenImageDenoise/oidn.hpp"
 
 class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
@@ -27,7 +27,7 @@ public:
     ~Renderer();
 
     void render(int width, int height);
-    QOpenGLShaderProgram* getShaderProgram(std::string fshader, std::string vshader);
+    QOpenGLShaderProgram* getShaderProgram(std::string fshader, std::string vshader,const std::unordered_map<std::string, std::string>& defines = {});
     GLuint getTextureRGB32F(int width, int height);
     GLuint bindData(std::vector<GLuint> colorAttachments);
     GLuint VBO = 0, VAO = 0, EBO = 0;
@@ -38,6 +38,7 @@ public:
     bool renderLow = false;
     bool denoise = true;
     bool updateDenoise = true;
+
 private:
     void init(int width, int height);
     void initOIDN();

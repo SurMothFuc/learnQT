@@ -1,7 +1,81 @@
 ﻿#include "renderer.h"
-//#include "debug.h"
+#include <QFile>
+#include <QTextStream>
+#include <regex>
+#include <QFileInfo> 
+#include <QDir> // 添加缺失的头文件
 
 extern QMutex param_mutex;
+
+std::string processIncludes(const std::string& source, const std::string& shaderPath) {
+    static std::unordered_map<std::string, std::string> includeCache;
+    static std::unordered_map<std::string, bool> processing; // 防止循环包含
+
+    //主文件缓存检查
+    if (includeCache.find(shaderPath) != includeCache.end()) {
+        return includeCache[shaderPath];
+    }
+    processing[shaderPath] = true;
+
+    QDir dir = QFileInfo(QString::fromStdString(shaderPath)).dir().path();
+    std::regex includeRegex(R"(^\s*#include\s*\"([^\"]+)\")", std::regex::ECMAScript);
+    std::smatch match;
+    std::string result = source;
+
+    while (std::regex_search(result, match, includeRegex)) {
+        std::string includeFile = match[1].str();
+        std::string includePath = dir.filePath(QString::fromStdString(includeFile)).toStdString();
+
+        // 检查循环包含
+        if (processing[includePath]) {
+            qWarning() << "循环包含检测: " << QString::fromStdString(includePath);
+            result = match.prefix().str() + match.suffix().str();
+            continue;
+        }
+
+        // 读取包含文件
+        std::string includeContent;
+        if (includeCache.find(includePath) != includeCache.end()) {
+            includeContent = includeCache[includePath];
+        } else {
+            QFile file(QString::fromStdString(includePath));
+            if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                qWarning() << "无法打开包含文件: " << QString::fromStdString(includePath);
+                result = match.prefix().str() + match.suffix().str();
+                continue;
+            }else {
+                includeCache[includePath] = ""; // 设置缓存空结果避免重复尝试
+            }
+            includeContent = QTextStream(&file).readAll().toStdString();
+            file.close();
+
+            // 递归处理包含文件中的#include
+            processing[includePath] = true;
+            includeContent = processIncludes(includeContent, includePath);
+            processing[includePath] = false;
+            includeCache[includePath] = includeContent;
+        }
+
+        // 替换#include指令为文件内容
+        result = match.prefix().str() + includeContent + match.suffix().str();
+    }
+
+    // 缓存主文件处理结果
+    includeCache[shaderPath] = result;
+    processing[shaderPath] = false;
+
+    return result;
+}
+
+// 注入动态#define
+std::string injectDefines(const std::string& source, const std::unordered_map<std::string, std::string>& defines) {
+    std::string definesStr;
+    for (const auto& key_value : defines) {
+        definesStr += "#define " + key_value.first + " " + key_value.second+ "\n";
+    }
+    return definesStr + source;
+}
+
 
 GLuint Renderer::getTextureRGB32F(int width, int height) {
     GLuint tex;
@@ -17,23 +91,45 @@ GLuint Renderer::getTextureRGB32F(int width, int height) {
 
 
 
-QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::string vshader) {
+QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::string vshader, const std::unordered_map<std::string, std::string>& defines) {
     QOpenGLShaderProgram* shaderProgram = new QOpenGLShaderProgram;
-    bool success = shaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, vshader.c_str());
+    // 加载并处理顶点着色器
+    QFile vFile(QString::fromStdString(vshader));
+    if (!vFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "顶点着色器打开失败: " << vshader.c_str();
+        return shaderProgram;
+    }
+    std::string vSource = QTextStream(&vFile).readAll().toStdString();
+    vFile.close();
+    vSource = processIncludes(vSource, vshader);
+    vSource = injectDefines(vSource, defines);
+
+    bool success = shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vSource.c_str());
     if (!success) {
-        qDebug() << "shaderProgram addShaderFromSourceFile failed!" << shaderProgram->log();
+        qDebug() << "顶点着色器编译失败:\n" << shaderProgram->log();
         return shaderProgram;
     }
 
-    success = shaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, fshader.c_str());
+    // 加载并处理片段着色器
+    QFile fFile(QString::fromStdString(fshader));
+    if (!fFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "片段着色器打开失败: " << fshader.c_str();
+        return shaderProgram;
+    }
+    std::string fSource = QTextStream(&fFile).readAll().toStdString();
+    fFile.close();
+    fSource = processIncludes(fSource, fshader);
+    fSource = injectDefines(fSource, defines);
+
+    success = shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fSource.c_str());
     if (!success) {
-        qDebug() << "shaderProgram addShaderFromSourceFile failed!" << shaderProgram->log();
+        qDebug() << "片段着色器编译失败:\n" << shaderProgram->log();
         return shaderProgram;
     }
 
     success = shaderProgram->link();
     if (!success) {
-        qDebug() << "shaderProgram link failed!" << shaderProgram->log();
+        qDebug() << "着色器链接失败:\n" << shaderProgram->log();
     }
     return shaderProgram;
 }
