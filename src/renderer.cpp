@@ -301,7 +301,7 @@ void Renderer::init(int width, int height)
 
 
 
-    pathtrace_program.reset(getShaderProgram("./pathtrace.frag", "./triangle.vert"));
+    pathtrace_program.reset(getShaderProgram(getShaderPath("pathtrace.frag"), getShaderPath("triangle.vert")));
     //pathtrace_texture = getTextureRGB32F(render_width, render_height);
 
     preRenderColorTex = getTextureRGB32F(render_width, render_height);
@@ -316,7 +316,7 @@ void Renderer::init(int width, int height)
         RenderColorTex, normal_texture,
         baseColorTex});
 
-    historysave_program.reset(getShaderProgram("./historysave.frag", "./triangle.vert"));
+    historysave_program.reset(getShaderProgram(getShaderPath("historysave.frag"), getShaderPath("triangle.vert")));
     historysave_fbo= bindData(std::vector<GLuint>{preRenderColorTex});
 
     RenderColorTexfiltered= getTextureRGB32F(render_width, render_height); 
@@ -338,7 +338,7 @@ void Renderer::init(int width, int height)
     indirectLight_fbo_filtered = bindData(std::vector<GLuint>{indirectLightTexfiltered});*/
 
 
-    m_program.reset(getShaderProgram("./triangle.frag", "./triangle.vert"));
+    m_program.reset(getShaderProgram(getShaderPath("triangle.frag"), getShaderPath("triangle.vert")));
     m_texture = getTextureRGB32F(m_width, m_height);
     m_fbo = bindData(std::vector<GLuint>{m_texture});
     //adjustSize();
