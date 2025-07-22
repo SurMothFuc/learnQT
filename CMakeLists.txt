@@ -13,6 +13,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 查找Qt依赖
 find_package(Qt5 COMPONENTS Widgets OpenGL Core Gui REQUIRED)
+
+message(STATUS "Found Qt5 at: ${Qt5_DIR}")
+
 set(CMAKE_AUTOUIC_SEARCH_PATHS
     ${CMAKE_CURRENT_SOURCE_DIR}/resources
 )
