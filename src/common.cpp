@@ -258,7 +258,7 @@ std::vector<float> getSobelRandomNumber(unsigned int frameCount, unsigned int ma
 }
 std::string getResourcePath(const std::string& _relativePath) {
     QString relativePath = QString::fromStdString(_relativePath);
-#ifdef QT_DEBUG
+#ifdef RESOURCE_DIR
     // 调试模式：使用项目中的资源目录
     return QDir(RESOURCE_DIR).filePath(relativePath).toStdString();
 #else
@@ -270,7 +270,7 @@ std::string getResourcePath(const std::string& _relativePath) {
 // 添加着色器路径获取函数声明
 std::string getShaderPath(const std::string& _shaderName) {
     QString shaderName= QString::fromStdString(_shaderName);
-#ifdef QT_DEBUG
+#ifdef SHADER_DIR
     return QDir(SHADER_DIR).filePath(shaderName).toStdString();
 #else
     return QDir(QCoreApplication::applicationDirPath() + "/shaders").filePath(shaderName).toStdString();
