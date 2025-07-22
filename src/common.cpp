@@ -1,6 +1,9 @@
 ﻿#include "common.h"
 #include <vector>
-
+#include <QDir>
+#include <QString>
+#include <QCoreApplication>
+#include <string>  
 float radians(float angle) {
     return angle * PI / 180.0;
 }
@@ -252,4 +255,24 @@ std::vector<float> getSobelRandomNumber(unsigned int frameCount, unsigned int ma
         res[i*2+1]= sobol(i * unsigned int(2) + unsigned int(1), grayCode(frameCount));
     }
     return res;
+}
+std::string getResourcePath(const std::string& _relativePath) {
+    QString relativePath = QString::fromStdString(_relativePath);
+#ifdef RESOURCE_DIR
+    // 调试模式：使用项目中的资源目录
+    return QDir(RESOURCE_DIR).filePath(relativePath).toStdString();
+#else
+    // 发布模式：使用可执行文件所在目录的resources子目录
+    return QDir(QCoreApplication::applicationDirPath() + "/resources").filePath(relativePath).toStdString();
+#endif
+}
+
+// 添加着色器路径获取函数声明
+std::string getShaderPath(const std::string& _shaderName) {
+    QString shaderName= QString::fromStdString(_shaderName);
+#ifdef SHADER_DIR
+    return QDir(SHADER_DIR).filePath(shaderName).toStdString();
+#else
+    return QDir(QCoreApplication::applicationDirPath() + "/shaders").filePath(shaderName).toStdString();
+#endif
 }

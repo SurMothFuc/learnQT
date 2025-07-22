@@ -17,6 +17,10 @@ float sobol(unsigned int d, unsigned int i);
 
 std::vector<float> getSobelRandomNumber(unsigned int frameCount, unsigned int maxBounce);
 
+std::string getResourcePath(const std::string& _relativePath);
+
+std::string getShaderPath(const std::string& _shaderName);
+
 class vec3 {
 public:
     double x, y, z;

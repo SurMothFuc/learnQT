@@ -45,9 +45,9 @@
          <property name="geometry">
           <rect>
            <x>0</x>
-           <y>0</y>
-           <width>251</width>
-           <height>616</height>
+           <y>-50</y>
+           <width>248</width>
+           <height>656</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -383,14 +383,14 @@
            </layout>
           </item>
           <item>
-           <widget class="QLabel" name="label_11">
+           <widget class="QLabel" name="label_12">
             <property name="text">
              <string>transmissionGloss:</string>
             </property>
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="6,1">
+           <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="6,1">
             <item>
              <widget class="QSlider" name="transmissionSlider">
               <property name="maximum">
@@ -427,7 +427,7 @@
      <x>0</x>
      <y>0</y>
      <width>935</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
