@@ -27,7 +27,7 @@ public:
     ~Renderer();
 
     void render(int width, int height);
-    QOpenGLShaderProgram* getShaderProgram(std::string fshader, std::string vshader,const std::unordered_map<std::string, std::string>& defines = {});
+    QOpenGLShaderProgram *getShaderProgram(std::string fshader, std::string vshader, const std::unordered_map<std::string, std::string> &defines_Vertex = {}, const std::unordered_map<std::string, std::string> &defines_Fragment = {});
     GLuint getTextureRGB32F(int width, int height);
     GLuint bindData(std::vector<GLuint> colorAttachments);
     GLuint VBO = 0, VAO = 0, EBO = 0;

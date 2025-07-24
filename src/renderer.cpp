@@ -104,7 +104,7 @@ GLuint Renderer::getTextureRGB32F(int width, int height) {
 
 
 
-QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::string vshader, const std::unordered_map<std::string, std::string>& defines) {
+QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::string vshader, const std::unordered_map<std::string, std::string>& defines_Vertex, const std::unordered_map<std::string, std::string>& defines_Fragment) {
     QOpenGLShaderProgram* shaderProgram = new QOpenGLShaderProgram;
     // 加载并处理顶点着色器
     QFile vFile(QString::fromStdString(vshader));
@@ -115,7 +115,7 @@ QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::strin
     std::string vSource = QTextStream(&vFile).readAll().toStdString();
     vFile.close();
     vSource = processIncludes(vSource, vshader);
-    vSource = injectDefines(vSource, defines);
+    vSource = injectDefines(vSource, defines_Vertex);
 
     bool success = shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vSource.c_str());
     if (!success) {
@@ -132,7 +132,7 @@ QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::strin
     std::string fSource = QTextStream(&fFile).readAll().toStdString();
     fFile.close();
     fSource = processIncludes(fSource, fshader);
-    fSource = injectDefines(fSource, defines);
+    fSource = injectDefines(fSource, defines_Fragment);
 
     success = shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fSource.c_str());
     if (!success) {
@@ -412,7 +412,6 @@ void Renderer::init(int width, int height)
 
     pathtrace_program.reset(getShaderProgram(getShaderPath("pathtrace.frag"), getShaderPath("triangle.vert")));
     //pathtrace_texture = getTextureRGB32F(render_width, render_height);
-
     preRenderColorTex = getTextureRGB32F(render_width, render_height);
     RenderColorTex = getTextureRGB32F(render_width, render_height);
     normal_texture = getTextureRGB32F(render_width, render_height);
