@@ -3,7 +3,7 @@
 #include <QTextStream>
 #include <regex>
 #include <QFileInfo> 
-#include <QDir> // 添加缺失的头文件
+#include <QDir> 
 
 extern QMutex param_mutex;
 
@@ -42,18 +42,17 @@ std::string processIncludes(const std::string& source, const std::string& shader
             if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 qWarning() << "无法打开包含文件: " << QString::fromStdString(includePath);
                 result = match.prefix().str() + match.suffix().str();
-                continue;
-            }else {
                 includeCache[includePath] = ""; // 设置缓存空结果避免重复尝试
+                continue;
             }
             includeContent = QTextStream(&file).readAll().toStdString();
             file.close();
 
             // 递归处理包含文件中的#include
-            processing[includePath] = true;
+            //processing[includePath] = true;
             includeContent = processIncludes(includeContent, includePath);
-            processing[includePath] = false;
-            includeCache[includePath] = includeContent;
+            //processing[includePath] = false;
+           // includeCache[includePath] = includeContent;
         }
 
         // 替换#include指令为文件内容
@@ -67,13 +66,27 @@ std::string processIncludes(const std::string& source, const std::string& shader
     return result;
 }
 
-// 注入动态#define
+// 注入动态#define，确保在#version之后添加
 std::string injectDefines(const std::string& source, const std::unordered_map<std::string, std::string>& defines) {
     std::string definesStr;
     for (const auto& key_value : defines) {
-        definesStr += "#define " + key_value.first + " " + key_value.second+ "\n";
+        definesStr += "#define " + key_value.first + " " + key_value.second + "\n";
     }
-    return definesStr + source;
+    
+    // 查找#version位置并在其后插入定义
+    size_t versionPos = source.find("#version");
+    if (versionPos != std::string::npos) {
+        // 找到#version行的结束位置
+        size_t lineEnd = source.find("\n", versionPos);
+        if (lineEnd == std::string::npos) {
+            lineEnd = source.size();
+        }
+        // 在#version行之后插入定义
+        return source.substr(0, lineEnd + 1) + definesStr + source.substr(lineEnd + 1);
+    } else {
+        // 没有找到#version，仍按原方式添加
+        return definesStr + source;
+    }
 }
 
 

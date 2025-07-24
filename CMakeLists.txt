@@ -42,7 +42,7 @@ set(RCC_FILES resources/learnQT.qrc)
 file(GLOB QT_HEADERS include/*.h)
 
 # SHADERS
-file(GLOB SHADERS shaders/*.*)
+file(GLOB_RECURSE SHADERS shaders/*.*)
 
 set(QT_RESOURCES
     resources/learnQT.ui
@@ -53,7 +53,14 @@ set(QT_RESOURCES
 add_executable(learnQT ${SOURCES} ${QT_HEADERS} ${UI_HEADERS} ${RCC_FILES} ${SHADERS})
 
 # 着色器文件夹
-source_group("Shaders" FILES ${SHADERS})
+foreach(shader ${SHADERS})
+    # 获取着色器文件相对于shaders目录的相对路径
+    get_filename_component(shader_dir ${shader} DIRECTORY)
+    file(RELATIVE_PATH shader_rel_dir ${CMAKE_CURRENT_SOURCE_DIR}/shaders ${shader_dir})
+    # 创建带层次结构的源文件组
+    source_group("Shaders/${shader_rel_dir}" FILES ${shader})
+endforeach()
+#source_group("Shaders" FILES ${SHADERS})
 # Qt资源文件夹（包含UI和QRC文件）
 source_group("Qt Resources" FILES ${QT_RESOURCES})
 # 保留现有的其他分组
