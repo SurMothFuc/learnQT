@@ -1,4 +1,4 @@
-﻿#ifndef RENDERTHREAD_H
+#ifndef RENDERTHREAD_H
 #define RENDERTHREAD_H
 
 #include <QThread>

@@ -8,7 +8,6 @@ uniform int width;
 uniform int height;
 uniform uint frameCounter;
 uniform int hdrResolution;
-uniform bool useEnvironmentMap;
 
 uniform float sobelNumber[24];
  

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <QtWidgets/QMainWindow>
 #include "ui_learnQT.h"
@@ -123,6 +123,15 @@ public slots:
     void DenoiseCheckBoxChanged() {
         bool ck = ui.DeNoisecheckBox->isChecked();
         emit ui.openGLWidget->sendSetDenoise(ck);
+    }
+    void useEnvironmentMapCheckBoxChanged() {
+        bool ck = ui.useEnvironmentMapcheckBox->isChecked();
+        param_mutex.lock();
+        {
+            Scene::getInstance().useEnvironmentMap = ck;
+        }
+        param_mutex.unlock();
+        ui.openGLWidget->sendM();
     }
 
 protected:

@@ -407,10 +407,12 @@ void Renderer::init(int width, int height)
     //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);//暂时用不到深度缓冲信息
 
    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-
-    pathtrace_program.reset(getShaderProgram(getShaderPath("pathtrace.frag"), getShaderPath("triangle.vert")));
+    std::unordered_map<std::string, std::string> defines_Fragment={};
+    std::unordered_map<std::string, std::string> defines_Vertex ={};
+    if(Scene::getInstance().useEnvironmentMap){
+        defines_Fragment.insert({"USEENVIRONMENTMAP", ""});
+    }    
+    pathtrace_program.reset(getShaderProgram(getShaderPath("pathtrace.frag"), getShaderPath("triangle.vert"), defines_Vertex, defines_Fragment));   
     //pathtrace_texture = getTextureRGB32F(render_width, render_height);
     preRenderColorTex = getTextureRGB32F(render_width, render_height);
     RenderColorTex = getTextureRGB32F(render_width, render_height);
@@ -700,7 +702,6 @@ void Renderer::updateparam()
         pathtrace_program->setUniformValue("width", render_width);
         pathtrace_program->setUniformValue("height", render_height);
         pathtrace_program->setUniformValue("hdrResolution", Scene::getInstance().hdrResolution);
-        pathtrace_program->setUniformValue("useEnvironmentMap", Scene::getInstance().useEnvironmentMap);
         pathtrace_program->release();
 
         /*mixframe_program->bind();

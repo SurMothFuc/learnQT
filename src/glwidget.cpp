@@ -1,4 +1,4 @@
-﻿#include "glwidget.h"
+#include "glwidget.h"
 #include "texturebuffer.h"
 #include "renderthread.h"
 //#include "debug.h"

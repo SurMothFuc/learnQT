@@ -1,4 +1,4 @@
-﻿#include "learnQT.h"
+#include "learnQT.h"
 
 #include <QPushButton>
 
@@ -24,6 +24,7 @@ learnQT::learnQT(QWidget *parent)
     connect(ui.transmissionSlider, SIGNAL(valueChanged(int)), this, SLOT(transmissionSliderUp()));
 
     connect(ui.DeNoisecheckBox, SIGNAL(toggled(bool)), this, SLOT(DenoiseCheckBoxChanged()));
+    connect(ui.useEnvironmentMapcheckBox, SIGNAL(toggled(bool)), this, SLOT(useEnvironmentMapCheckBoxChanged()));
     
 }
 

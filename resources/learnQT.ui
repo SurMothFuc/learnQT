@@ -71,6 +71,19 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="useEnvironmentMapcheckBox">
+            <property name="text">
+             <string>Use Environment Map</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="pushButton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">

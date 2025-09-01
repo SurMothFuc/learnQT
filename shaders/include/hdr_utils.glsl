@@ -28,10 +28,6 @@ vec3 SampleHdr(float xi_1, float xi_2) {
 }
 // 获取 HDR 环境颜色
 vec3 hdrColor(vec3 L) {
-    if(!useEnvironmentMap)
-    {
-        return vec3(0);
-    }
     vec2 uv = toSphericalCoord(normalize(L));
     vec3 color = texture2D(hdrMap, uv).rgb;
     return color;

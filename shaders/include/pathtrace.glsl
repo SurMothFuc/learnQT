@@ -49,6 +49,7 @@ OutputColor pathTracingImportanceSampling(Ray r, int maxBounce) {
          // 未命中   
          
         if(!newHit.isHit) {
+#ifdef USEENVIRONMENTMAP
             vec3 color = hdrColor(r.direction);
             //float pdf_light = hdrPdf(L, hdrResolution); 
             //float mis_weight = misMixWeight(pdf_brdf, pdf_light);   // f(a,b) = a^2 / (a^2 + b^2)
@@ -56,7 +57,7 @@ OutputColor pathTracingImportanceSampling(Ray r, int maxBounce) {
             //Lo += mis_weight * history * color;
 
             o_c.render_color+=mis_weight * history * color;
-           
+#endif   
             break;
         }
         
