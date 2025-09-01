@@ -16,6 +16,22 @@ find_package(Qt5 COMPONENTS Widgets OpenGL Core Gui REQUIRED)
 
 message(STATUS "Found Qt5 at: ${Qt5_DIR}")
 
+# 设置第三方库的CMake模块路径
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} 
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/Assimp/lib/cmake
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/oidn/lib/cmake
+)
+
+# 查找Assimp依赖
+find_package(assimp 6.0 REQUIRED)
+
+message(STATUS "Found assimp at: ${assimp_DIR}")
+
+# 查找OpenImageDenoise依赖
+find_package(OpenImageDenoise 2.3.3 REQUIRED)
+
+message(STATUS "Found OpenImageDenoise at: ${OpenImageDenoise_DIR}")
+
 set(CMAKE_AUTOUIC_SEARCH_PATHS
     ${CMAKE_CURRENT_SOURCE_DIR}/resources
 )
@@ -72,6 +88,7 @@ target_include_directories(learnQT PRIVATE
     include
     libs/Eigen
     libs/oidn/include
+    libs/Assimp/include
 )
 
 target_compile_definitions(learnQT PRIVATE
@@ -94,13 +111,23 @@ target_link_libraries(learnQT PRIVATE
 )
 
 # 链接OIDN库
-target_link_libraries(learnQT PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libs/oidn/lib/OpenImageDenoise.lib)
-target_link_libraries(learnQT PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libs/oidn/lib/OpenImageDenoise_core.lib)
+target_link_libraries(learnQT PRIVATE OpenImageDenoise_core OpenImageDenoise)
+
+# 链接Assimp库
+target_link_libraries(learnQT PRIVATE assimp::assimp)
 
 # 复制OIDN运行时DLL
 file(GLOB OIDNDLLS libs/oidn/bin/*.dll)
 add_custom_command(TARGET learnQT POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${OIDNDLLS}
+        $<TARGET_FILE_DIR:learnQT>
+)
+
+# 复制Assimp运行时DLL
+file(GLOB ASSIMPDLLS libs/Assimp/bin/*.dll)
+add_custom_command(TARGET learnQT POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${ASSIMPDLLS}
         $<TARGET_FILE_DIR:learnQT>
 )
