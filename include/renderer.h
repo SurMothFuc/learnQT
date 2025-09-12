@@ -38,6 +38,18 @@ public:
     bool renderLow = false;
     bool denoise = true;
     bool updateDenoise = true;
+    bool useTileRendering = true; // 是否使用分块渲染
+    bool renderComplete = false; // 渲染是否完成一轮
+    
+    // 切换渲染模式
+    void setTileRendering(bool enable) { 
+        useTileRendering = enable; 
+        // 重置渲染状态
+        currentTileX = 0;
+        currentTileY = 0;
+        renderComplete = false;
+        frameCounter = 0;
+    }
 
 private:
     void init(int width, int height);
@@ -46,6 +58,8 @@ private:
     void updateOIDNBuffers();
     void adjustSize();
     void calResolution();
+    void renderTile(int tileX, int tileY, int tileWidth, int tileHeight); // 渲染单个块
+    void renderFullImage(); // 渲染完整图像
 private://静止赋值操作
     Renderer(const Renderer&) = delete;
     Renderer& operator =(const Renderer&) = delete;
@@ -61,6 +75,13 @@ private:
     int m_viewportX = 0;
     int m_viewportY = 0;
     bool m_sizeChanged = true;
+    
+    // 分块渲染相关参数
+    int tileSize = 240; // 块的大小
+    int currentTileX = 0; // 当前渲染块的X坐标
+    int currentTileY = 0; // 当前渲染块的Y坐标
+    int tilesX = 0; // X方向的块数
+    int tilesY = 0; // Y方向的块数
 
 
     unsigned m_fbo = 0;

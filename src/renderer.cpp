@@ -1,4 +1,4 @@
-﻿#include "renderer.h"
+#include "renderer.h"
 #include <QFile>
 #include <QTextStream>
 #include <regex>
@@ -199,12 +199,26 @@ void Renderer::render(int width, int height)
         calResolution();
         adjustSize();      
         updateSizeParam();
+        
+        // 重新计算分块渲染的参数
+        tilesX = (render_width + tileSize - 1) / tileSize;
+        tilesY = (render_height + tileSize - 1) / tileSize;
+        currentTileX = 0;
+        currentTileY = 0;
+        renderComplete = false;
     }
     int old_w = render_width;
     calResolution();
     if (old_w != render_width) {
         adjustSize();
         updateSizeParam();
+        
+        // 重新计算分块渲染的参数
+        tilesX = (render_width + tileSize - 1) / tileSize;
+        tilesY = (render_height + tileSize - 1) / tileSize;
+        currentTileX = 0;
+        currentTileY = 0;
+        renderComplete = false;
     }
 
 
@@ -216,81 +230,66 @@ void Renderer::render(int width, int height)
         lasttime = nowtime;
     }
 
-   /* static float degree = 0.0f;
-    degree += 1.0f;
-
-    QMatrix4x4 rotate;
-    rotate.setToIdentity();
-    rotate.rotate(degree, 0, 0, 1);*/
-
-    
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    //glViewport(m_viewportX, m_viewportY, m_viewportWidth, m_viewportHeight);
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     auto sobel_number = getSobelRandomNumber(frameCounter, 12);
-    //auto sobel_number = getSobelRandomNumber(frameCounter, 12);
-
-    pathtrace_program->bind(); 
-    {
-        GLint fl_loca = pathtrace_program->uniformLocation("frameCounter");
-        glUniform1ui(fl_loca, frameCounter++);
-       // glUniform1ui(fl_loca, frameCounter++);   
-        GLint sobel_loca = pathtrace_program->uniformLocation("sobelNumber"); 
-        glUniform1fv(sobel_loca, 24, sobel_number.data());
-
-        glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
-        //glActiveTexture(GL_TEXTURE0);
-        //glBindTexture(GL_TEXTURE_2D,mixframe_texture);
-        pathtrace_program->setUniformValue("triangles", 0);
-        pathtrace_program->setUniformValue("nodes", 1);
-        pathtrace_program->setUniformValue("hdrMap", 2);
-        pathtrace_program->setUniformValue("hdrCache", 3);
-       // if (first_render) {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
-
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, hdrMap);
-
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, hdrCache);
-            //first_render = false;
-        //}
-
-        pathtrace_program->setUniformValue("preRenderColor", 4);
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, preRenderColorTex);
-
-
-        glViewport(m_viewportX, m_viewportY, render_width, render_height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        //复制纹理到prev中
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    // 根据渲染模式选择渲染方法
+    if (useTileRendering) {
+        // 分块渲染模式
+        if (currentTileX < tilesX && currentTileY < tilesY) {
+            // 计算当前块的宽度和高度
+            int tileWidth = std::min(tileSize, render_width - currentTileX * tileSize);
+            int tileHeight = std::min(tileSize, render_height - currentTileY * tileSize);
+            
+            // 渲染当前块
+            renderTile(currentTileX * tileSize, currentTileY * tileSize, tileWidth, tileHeight);
+            
+            // 更新下一个要渲染的块的位置
+            currentTileX++;
+            if (currentTileX >= tilesX) {
+                currentTileX = 0;
+                currentTileY++;
+                
+                // 如果所有块都渲染完成，标记为完成一轮渲染
+                if (currentTileY >= tilesY) {
+                    renderComplete = true;
+                    // 重置为第一个块，准备下一轮渲染
+                    currentTileX = 0;
+                    currentTileY = 0;
+                }
+            }
+        }
+    } else {
+        // 完整图像渲染模式
+        renderFullImage();
     }
-    pathtrace_program->release();
+    
+    // 更新帧计数器
+    frameCounter++;
 
-    historysave_program->bind(); 
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, historysave_fbo);
+    // 只有在完整渲染模式或者分块渲染完成一轮后才保存历史帧
+    if (!useTileRendering || renderComplete) {
+        historysave_program->bind(); 
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, historysave_fbo);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, RenderColorTex);
-        historysave_program->setUniformValue("RenderColor", 0);
-        //glBindVertexArray(VAO);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, RenderColorTex);
+            historysave_program->setUniformValue("RenderColor", 0);
 
-        glViewport(m_viewportX, m_viewportY, render_width, render_height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glViewport(m_viewportX, m_viewportY, render_width, render_height);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+        historysave_program->release();
+        
+        // 重置渲染完成标志
+        if (useTileRendering) {
+            renderComplete = false;
+        }
     }
-    historysave_program->release();
 
     if(updateDenoise || (denoise && (frameCounter%100==0 || frameCounter ==1)))
     {
@@ -635,7 +634,10 @@ void Renderer::calResolution()
         render_width = m_width;
         render_height = m_height;
     }
-
+    
+    // 更新分块渲染参数
+    tilesX = (render_width + tileSize - 1) / tileSize;
+    tilesY = (render_height + tileSize - 1) / tileSize;
 }
 
 void Renderer::updateparam()
@@ -715,8 +717,118 @@ void Renderer::updateparam()
         frameCounter = 0;
 
         first_render = true;
+        
+        // 重置分块渲染状态
+        currentTileX = 0;
+        currentTileY = 0;
+        renderComplete = false;
     }
     param_mutex.unlock();
+}
+
+// 渲染单个块
+void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight)
+{
+    auto sobel_number = getSobelRandomNumber(frameCounter, 12);
+    
+    pathtrace_program->bind(); 
+    {
+        GLint fl_loca = pathtrace_program->uniformLocation("frameCounter");
+        glUniform1ui(fl_loca, frameCounter);
+        GLint sobel_loca = pathtrace_program->uniformLocation("sobelNumber"); 
+        glUniform1fv(sobel_loca, 24, sobel_number.data());
+
+        glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
+        
+        pathtrace_program->setUniformValue("triangles", 0);
+        pathtrace_program->setUniformValue("nodes", 1);
+        pathtrace_program->setUniformValue("hdrMap", 2);
+        pathtrace_program->setUniformValue("hdrCache", 3);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
+
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, hdrMap);
+
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, hdrCache);
+
+        pathtrace_program->setUniformValue("preRenderColor", 4);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, preRenderColorTex);
+        
+        // 设置视口为当前块的区域
+        glViewport(tileX, tileY, tileWidth, tileHeight);
+        
+        // 设置渲染区域（使用剪裁测试限制渲染区域）
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(tileX, tileY, tileWidth, tileHeight);
+        
+        // 只清除当前块区域
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        // 渲染
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        
+        // 禁用剪裁测试
+        glDisable(GL_SCISSOR_TEST);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    pathtrace_program->release();
+}
+
+// 渲染完整图像
+void Renderer::renderFullImage()
+{
+    auto sobel_number = getSobelRandomNumber(frameCounter, 12);
+    
+    pathtrace_program->bind(); 
+    {
+        GLint fl_loca = pathtrace_program->uniformLocation("frameCounter");
+        glUniform1ui(fl_loca, frameCounter);
+        GLint sobel_loca = pathtrace_program->uniformLocation("sobelNumber"); 
+        glUniform1fv(sobel_loca, 24, sobel_number.data());
+
+        glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
+        
+        pathtrace_program->setUniformValue("triangles", 0);
+        pathtrace_program->setUniformValue("nodes", 1);
+        pathtrace_program->setUniformValue("hdrMap", 2);
+        pathtrace_program->setUniformValue("hdrCache", 3);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
+
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, hdrMap);
+
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, hdrCache);
+
+        pathtrace_program->setUniformValue("preRenderColor", 4);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, preRenderColorTex);
+
+        // 设置视口为整个渲染区域
+        glViewport(m_viewportX, m_viewportY, render_width, render_height);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    pathtrace_program->release();
+    
+    // 完整渲染模式下，每次渲染都视为完成一轮
+    renderComplete = true;
 }
 
 void Renderer::updateSizeParam()
