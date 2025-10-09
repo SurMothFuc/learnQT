@@ -264,11 +264,12 @@ void Renderer::render(int width, int height)
         renderFullImage();
     }
     
-    // 更新帧计数器
-    frameCounter++;
 
     // 只有在完整渲染模式或者分块渲染完成一轮后才保存历史帧
     if (!useTileRendering || renderComplete) {
+
+        // 更新帧计数器
+        frameCounter++;
         historysave_program->bind(); 
         {
             glBindFramebuffer(GL_FRAMEBUFFER, historysave_fbo);
