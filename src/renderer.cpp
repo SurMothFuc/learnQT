@@ -185,43 +185,14 @@ Renderer::~Renderer()
 
 void Renderer::render(int width, int height)
 {   
+    
     if (needupdate) {
         updateparam();
         needupdate = false;
     }
-
-   // RAIITimer t("Renderer::render");
-    if (m_width != width || m_height != height)
-    {
-        qDebug() << "Adjust offscreen frame size to:" << width << height ;
-        m_width = width;
-        m_height = height;
-        calResolution();
-        adjustSize();      
-        updateSizeParam();
-        
-        // 重新计算分块渲染的参数
-        tilesX = (render_width + tileSize - 1) / tileSize;
-        tilesY = (render_height + tileSize - 1) / tileSize;
-        currentTileX = 0;
-        currentTileY = 0;
-        renderComplete = false;
-    }
-    int old_w = render_width;
-    calResolution();
-    if (old_w != render_width) {
-        adjustSize();
-        updateSizeParam();
-        
-        // 重新计算分块渲染的参数
-        tilesX = (render_width + tileSize - 1) / tileSize;
-        tilesY = (render_height + tileSize - 1) / tileSize;
-        currentTileX = 0;
-        currentTileY = 0;
-        renderComplete = false;
-    }
-
-
+    
+    adjustScreenResolution(width,height);
+    
     int nowtime = clock();
     if (nowtime - lasttime >200) {
         printf("\r                                                     ");
@@ -366,6 +337,7 @@ void Renderer::render(int width, int height)
         glActiveTexture(GL_TEXTURE6);
         //glBindVertexArray(VAO);
 
+        // 渲染到屏幕尺寸 所以使用屏幕渲染尺寸
         glViewport(m_viewportX, m_viewportY, m_width, m_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -374,6 +346,16 @@ void Renderer::render(int width, int height)
     m_program->release();
 
     //glFinish();
+}
+
+void Renderer::setTileRendering(bool enable)
+{ 
+        useTileRendering = enable; 
+        // 重置渲染状态
+        currentTileX = 0;
+        currentTileY = 0;
+        renderComplete = false;
+        frameCounter = 0;
 }
 
 void Renderer::init(int width, int height)
@@ -451,7 +433,6 @@ void Renderer::init(int width, int height)
     m_program.reset(getShaderProgram(getShaderPath("triangle.frag"), getShaderPath("triangle.vert")));
     m_texture = getTextureRGB32F(m_width, m_height);
     m_fbo = bindData(std::vector<GLuint>{m_texture});
-    //adjustSize();
 
 
 
@@ -618,25 +599,29 @@ void Renderer::adjustSize()
 void Renderer::calResolution()
 {
     if (renderLow) {
-        if (m_width <= MAX_LOW_RESOLUTION && m_height <= MAX_LOW_RESOLUTION)
-            return;
-        double div = 1.0*m_width / MAX_LOW_RESOLUTION;
-        int newh = m_height / div;
-        if (newh <= MAX_LOW_RESOLUTION) {
-            render_height = newh;
-            render_width = MAX_LOW_RESOLUTION;
+        // 如果原始分辨率已经小于等于最大低分辨率，则直接使用原始分辨率
+        if (m_width <= MAX_LOW_RESOLUTION && m_height <= MAX_LOW_RESOLUTION) {
+            render_width = m_width;
+            render_height = m_height;
+        } else {
+            // 计算缩放比例，保持宽高比
+            double scaleWidth = static_cast<double>(MAX_LOW_RESOLUTION) / m_width;
+            double scaleHeight = static_cast<double>(MAX_LOW_RESOLUTION) / m_height;
+            
+            // 选择较小的缩放比例，确保两个维度都不超过最大低分辨率
+            double scale = std::min(scaleWidth, scaleHeight);
+            
+            // 计算新的渲染尺寸
+            render_width = static_cast<int>(std::round(m_width * scale));
+            render_height = static_cast<int>(std::round(m_height * scale));            
         }
-        else {
-            render_height = MAX_LOW_RESOLUTION;
-            render_width = m_width / (1.0*m_height / MAX_LOW_RESOLUTION);
-        }
-    }
-    else {
+    } else {
+        // 不使用低分辨率渲染时，直接使用原始分辨率
         render_width = m_width;
         render_height = m_height;
     }
     
-    // 更新分块渲染参数
+    // 重新计算分块渲染的参数
     tilesX = (render_width + tileSize - 1) / tileSize;
     tilesY = (render_height + tileSize - 1) / tileSize;
 }
@@ -712,7 +697,6 @@ void Renderer::updateparam()
         mixframe_program->setUniformValue("height", render_height);
         mixframe_program->release();*/
 
-        
         lasttime = clock();
         lastframeCounter = 0;
         frameCounter = 0;
@@ -832,23 +816,36 @@ void Renderer::renderFullImage()
     renderComplete = true;
 }
 
-void Renderer::updateSizeParam()
-{
-    param_mutex.lock();
-    {
-        pathtrace_program->bind();
-        pathtrace_program->setUniformValue("width", render_width);
-        pathtrace_program->setUniformValue("height", render_height);
-        pathtrace_program->release();
 
-       /* mixframe_program->bind();
-        mixframe_program->setUniformValue("width", render_width);
-        mixframe_program->setUniformValue("height", render_height);
-        mixframe_program->release();*/
+void Renderer::adjustScreenResolution(int width, int height)
+{
+    int oldWidth = m_width;
+    int oldHeight = m_height;
+    int oldRenderWidth = render_width;
+    int oldRenderHeight = render_height;
+    m_width = width;
+    m_height = height;
+    calResolution();
+    if(oldRenderWidth != render_width || oldRenderHeight != render_height||oldWidth != m_width || oldHeight != m_height)
+    {
+        qDebug() << "Adjust frame size to:" << width << height <<"Adjust render size to:" << render_width << render_height;
+        adjustSize(); 
+        updateSizeParam();
 
         lasttime = clock();
         lastframeCounter = 0;
         frameCounter = 0;
+
+        currentTileX = 0;
+        currentTileY = 0;
+        renderComplete = false;
     }
-    param_mutex.unlock();
+}
+
+void Renderer::updateSizeParam()
+{
+    pathtrace_program->bind();
+    pathtrace_program->setUniformValue("width", render_width);
+    pathtrace_program->setUniformValue("height", render_height);
+    pathtrace_program->release();   
 }

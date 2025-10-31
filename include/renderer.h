@@ -32,24 +32,16 @@ public:
     GLuint bindData(std::vector<GLuint> colorAttachments);
     GLuint VBO = 0, VAO = 0, EBO = 0;
     void updateparam();
-    void updateSizeParam();
 
     bool needupdate = true;
     bool renderLow = false;
-    bool denoise = true;
+    bool denoise = false;
     bool updateDenoise = true;
     bool useTileRendering = true; // 是否使用分块渲染
     bool renderComplete = false; // 渲染是否完成一轮
     
     // 切换渲染模式
-    void setTileRendering(bool enable) { 
-        useTileRendering = enable; 
-        // 重置渲染状态
-        currentTileX = 0;
-        currentTileY = 0;
-        renderComplete = false;
-        frameCounter = 0;
-    }
+    void setTileRendering(bool enable);
 
 private:
     void init(int width, int height);
@@ -57,9 +49,19 @@ private:
     void uninit();
     void updateOIDNBuffers();
     void adjustSize();
+    void updateSizeParam();
     void calResolution();
     void renderTile(int tileX, int tileY, int tileWidth, int tileHeight); // 渲染单个块
     void renderFullImage(); // 渲染完整图像
+
+    /**
+     * @brief 设置屏幕分辨率 并更新缓冲
+     * 
+     * @param width 
+     * @param height 
+     */
+    void adjustScreenResolution(int width, int height);
+
 private://静止赋值操作
     Renderer(const Renderer&) = delete;
     Renderer& operator =(const Renderer&) = delete;
@@ -68,10 +70,10 @@ private://静止赋值操作
 
 private:
 
-    int m_width = 0;
-    int m_height = 0;
-    int render_width = 0;
-    int render_height = 0;
+    int m_width = 0;  //屏幕宽度
+    int m_height = 0; //屏幕高度
+    int render_width = 0; //实际渲染宽度
+    int render_height = 0; //实际渲染高度
     int m_viewportX = 0;
     int m_viewportY = 0;
     bool m_sizeChanged = true;
@@ -107,7 +109,7 @@ private:
     unsigned baseColorTex = 0;
     unsigned RenderColorTexfiltered = 0;
 
-    unsigned int frameCounter = 0;
+    unsigned int frameCounter = 0;//累计渲染帧数
     unsigned int lastframeCounter = 0;
 
 
