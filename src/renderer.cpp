@@ -185,167 +185,26 @@ Renderer::~Renderer()
 
 void Renderer::render(int width, int height)
 {   
+    // 1. 更新渲染参数
+    updateRenderParameters();
     
-    if (needupdate) {
-        updateparam();
-        needupdate = false;
-    }
+    // 2. 调整屏幕分辨率
+    adjustScreenResolution(width, height);
     
-    adjustScreenResolution(width,height);
+    // 3. 显示渲染统计信息
+    displayRenderingStats();
     
-    int nowtime = clock();
-    if (nowtime - lasttime >200) {
-        printf("\r                                                     ");
-        std::cout << "\rframeCounter: " << frameCounter<<" FPS: "<<int((frameCounter-lastframeCounter)/(1.0*(nowtime - lasttime)/1000.0));
-        lastframeCounter = frameCounter;
-        lasttime = nowtime;
-    }
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    auto sobel_number = getSobelRandomNumber(frameCounter, 12);
+    // 4. 执行渲染通道
+    executeRenderPass();
     
-    // 根据渲染模式选择渲染方法
-    if (useTileRendering) {
-        // 分块渲染模式
-        if (currentTileX < tilesX && currentTileY < tilesY) {
-            // 计算当前块的宽度和高度
-            int tileWidth = std::min(tileSize, render_width - currentTileX * tileSize);
-            int tileHeight = std::min(tileSize, render_height - currentTileY * tileSize);
-            
-            // 渲染当前块
-            renderTile(currentTileX * tileSize, currentTileY * tileSize, tileWidth, tileHeight);
-            
-            // 更新下一个要渲染的块的位置
-            currentTileX++;
-            if (currentTileX >= tilesX) {
-                currentTileX = 0;
-                currentTileY++;
-                
-                // 如果所有块都渲染完成，标记为完成一轮渲染
-                if (currentTileY >= tilesY) {
-                    renderComplete = true;
-                    // 重置为第一个块，准备下一轮渲染
-                    currentTileX = 0;
-                    currentTileY = 0;
-                }
-            }
-        }
-    } else {
-        // 完整图像渲染模式
-        renderFullImage();
-    }
+    // 5. 处理历史帧保存
+    processHistorySaving();
     
-
-    // 只有在完整渲染模式或者分块渲染完成一轮后才保存历史帧
-    if (!useTileRendering || renderComplete) {
-
-        // 更新帧计数器
-        frameCounter++;
-        historysave_program->bind(); 
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, historysave_fbo);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, RenderColorTex);
-            historysave_program->setUniformValue("RenderColor", 0);
-
-            glViewport(m_viewportX, m_viewportY, render_width, render_height);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        }
-        historysave_program->release();
-        
-        // 重置渲染完成标志
-        if (useTileRendering) {
-            renderComplete = false;
-        }
-    }
-
-    if(updateDenoise || (denoise && (frameCounter%100==0 || frameCounter ==1)))
-    {
-        updateDenoise = false;
-        // 使用PBO异步读取数据
-        GLenum formats[] = { GL_RGB, GL_RGB, GL_RGB };
-        GLuint textures[] = { normal_texture, baseColorTex,RenderColorTex };
-
-        float* srcPtrs[3];
-        for (int i = frameCounter == 1 ?0:2; i < 3; i++) {
-            glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
-            glBindTexture(GL_TEXTURE_2D, textures[i]);
-            glGetTexImage(GL_TEXTURE_2D, 0, formats[i], GL_FLOAT, 0);
-            srcPtrs[i] = (float*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
-        }
-
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-        glFinish(); // 确保所有异步操作完成
-
-
-        // 直接拷贝到OIDN缓冲区（避免格式转换）
-        if (frameCounter == 1) {
-            std::memcpy(oidnNormalBuf.getData(), srcPtrs[0], oidnNormalBuf.getSize());
-            std::memcpy(oidnAlbedoBuf.getData(), srcPtrs[1], oidnAlbedoBuf.getSize());
-        }
-        std::memcpy(oidnColorBuf.getData(), srcPtrs[2], oidnColorBuf.getSize());
-
-        // 解绑PBO
-        for (int i = frameCounter == 1 ? 0 : 2; i < 3; i++) {
-            glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
-            glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-            glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-        }
-
-        // ======= 预过滤辅助特征 =======
-        if (frameCounter == 1) {
-            // 1. 预过滤反照率
-            oidnAlbedoFilter.execute();
-
-            // 2. 预过滤法线
-            oidnNormalFilter.execute();
-        }
-
-        // 3. 使用预过滤后的辅助特征降噪主颜色
-        oidnMainFilter.execute();
-
-        // 错误检查
-        const char* errorMessage;
-        if (oidnDevice.getError(errorMessage) != oidn::Error::None) {
-            std::cerr << "OIDN Error: " << errorMessage << std::endl;
-        }
-
-        // 直接写回纹理（避免中间拷贝）
-        glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, render_width, render_height,
-            GL_RGB, GL_FLOAT, oidnOutputBuf.getData());
-
-
-    }
-
-    m_program->bind();
-    {        
-        
-        ///////////////////////////////////////////
-        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-
-        glActiveTexture(GL_TEXTURE5);
-        if(denoise)
-            glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
-        else
-            glBindTexture(GL_TEXTURE_2D, RenderColorTex);
-        m_program->setUniformValue("texPass1", 5);
-        glActiveTexture(GL_TEXTURE6);
-        //glBindVertexArray(VAO);
-
-        // 渲染到屏幕尺寸 所以使用屏幕渲染尺寸
-        glViewport(m_viewportX, m_viewportY, m_width, m_height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
-    m_program->release();
-
-    //glFinish();
+    // 6. 执行降噪处理
+    performDenoising();
+    
+    // 7. 合成到屏幕
+    compositeToScreen();
 }
 
 void Renderer::setTileRendering(bool enable)
@@ -848,4 +707,178 @@ void Renderer::updateSizeParam()
     pathtrace_program->setUniformValue("width", render_width);
     pathtrace_program->setUniformValue("height", render_height);
     pathtrace_program->release();   
+}
+
+// ========== render函数拆分的新方法 ==========
+
+void Renderer::updateRenderParameters()
+{
+    if (needupdate) {
+        updateparam();
+        needupdate = false;
+    }
+}
+
+void Renderer::displayRenderingStats()
+{
+    int nowtime = clock();
+    if (nowtime - lasttime > 200) {
+        printf("\r                                                     ");
+        std::cout << "\rframeCounter: " << frameCounter 
+                  << " FPS: " << int((frameCounter - lastframeCounter) / (1.0 * (nowtime - lasttime) / 1000.0));
+        lastframeCounter = frameCounter;
+        lasttime = nowtime;
+    }
+}
+
+void Renderer::executeRenderPass()
+{
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    
+    if (useTileRendering) {
+        // 分块渲染模式
+        if (currentTileX < tilesX && currentTileY < tilesY) {
+            // 计算当前块的宽度和高度
+            int tileWidth = std::min(tileSize, render_width - currentTileX * tileSize);
+            int tileHeight = std::min(tileSize, render_height - currentTileY * tileSize);
+            
+            // 渲染当前块
+            renderTile(currentTileX * tileSize, currentTileY * tileSize, tileWidth, tileHeight);
+            
+            // 更新分块渲染状态
+            updateTileRenderingState();
+        }
+    } else {
+        // 完整图像渲染模式
+        renderFullImage();
+    }
+}
+
+void Renderer::updateTileRenderingState()
+{
+    // 更新下一个要渲染的块的位置
+    currentTileX++;
+    if (currentTileX >= tilesX) {
+        currentTileX = 0;
+        currentTileY++;
+        
+        // 如果所有块都渲染完成，标记为完成一轮渲染
+        if (currentTileY >= tilesY) {
+            renderComplete = true;
+            // 重置为第一个块，准备下一轮渲染
+            currentTileX = 0;
+            currentTileY = 0;
+        }
+    }
+}
+
+void Renderer::processHistorySaving()
+{
+    // 只有在完整渲染模式或者分块渲染完成一轮后才保存历史帧
+    if (!useTileRendering || renderComplete) {
+        // 更新帧计数器
+        frameCounter++;
+        
+        historysave_program->bind();
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, historysave_fbo);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, RenderColorTex);
+            historysave_program->setUniformValue("RenderColor", 0);
+
+            glViewport(m_viewportX, m_viewportY, render_width, render_height);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+        historysave_program->release();
+        
+        // 重置渲染完成标志
+        if (useTileRendering) {
+            renderComplete = false;
+        }
+    }
+}
+
+void Renderer::performDenoising()
+{
+    if (!updateDenoise && !(denoise && (frameCounter % 100 == 0 || frameCounter == 1))) {
+        return;
+    }
+    
+    updateDenoise = false;
+    
+    // 使用PBO异步读取数据
+    GLenum formats[] = { GL_RGB, GL_RGB, GL_RGB };
+    GLuint textures[] = { normal_texture, baseColorTex, RenderColorTex };
+
+    float* srcPtrs[3];
+    for (int i = frameCounter == 1 ? 0 : 2; i < 3; i++) {
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
+        glBindTexture(GL_TEXTURE_2D, textures[i]);
+        glGetTexImage(GL_TEXTURE_2D, 0, formats[i], GL_FLOAT, 0);
+        srcPtrs[i] = (float*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+    }
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glFinish(); // 确保所有异步操作完成
+
+    // 直接拷贝到OIDN缓冲区（避免格式转换）
+    if (frameCounter == 1) {
+        std::memcpy(oidnNormalBuf.getData(), srcPtrs[0], oidnNormalBuf.getSize());
+        std::memcpy(oidnAlbedoBuf.getData(), srcPtrs[1], oidnAlbedoBuf.getSize());
+    }
+    std::memcpy(oidnColorBuf.getData(), srcPtrs[2], oidnColorBuf.getSize());
+
+    // 解绑PBO
+    for (int i = frameCounter == 1 ? 0 : 2; i < 3; i++) {
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
+        glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    }
+
+    // 预过滤辅助特征
+    if (frameCounter == 1) {
+        oidnAlbedoFilter.execute();  // 预过滤反照率
+        oidnNormalFilter.execute();  // 预过滤法线
+    }
+
+    // 使用预过滤后的辅助特征降噪主颜色
+    oidnMainFilter.execute();
+
+    // 错误检查
+    const char* errorMessage;
+    if (oidnDevice.getError(errorMessage) != oidn::Error::None) {
+        std::cerr << "OIDN Error: " << errorMessage << std::endl;
+    }
+
+    // 直接写回纹理（避免中间拷贝）
+    glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, render_width, render_height,
+        GL_RGB, GL_FLOAT, oidnOutputBuf.getData());
+}
+
+void Renderer::compositeToScreen()
+{
+    m_program->bind();
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+        glActiveTexture(GL_TEXTURE5);
+        if (denoise)
+            glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
+        else
+            glBindTexture(GL_TEXTURE_2D, RenderColorTex);
+        m_program->setUniformValue("texPass1", 5);
+        glActiveTexture(GL_TEXTURE6);
+
+        // 渲染到屏幕尺寸 所以使用屏幕渲染尺寸
+        glViewport(m_viewportX, m_viewportY, m_width, m_height);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+    m_program->release();
 }
