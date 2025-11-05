@@ -62,14 +62,40 @@ private:
      */
     void adjustScreenResolution(int width, int height);
     
-    // 新增：render函数拆分的私有方法
-    void updateRenderParameters();           // 更新渲染参数
-    void displayRenderingStats();            // 显示渲染统计信息
-    void executeRenderPass();                // 执行渲染通道
-    void processHistorySaving();             // 处理历史帧保存
-    void performDenoising();                 // 执行降噪处理
-    void compositeToScreen();                // 合成到屏幕
-    void updateTileRenderingState();         // 更新分块渲染状态
+    /**
+     * @brief 更新渲染参数
+     */
+    void updateRenderParameters();
+    
+    /**
+     * @brief 显示渲染统计信息
+     */
+    void displayRenderingStats();
+    
+    /**
+     * @brief 执行渲染通道
+     */
+    void executeRenderPass();
+    
+    /**
+     * @brief 处理历史帧保存
+     */
+    void processHistorySaving();
+    
+    /**
+     * @brief 执行降噪处理
+     */
+    void performDenoising();
+    
+    /**
+     * @brief 合成到屏幕
+     */
+    void compositeToScreen();
+    
+    /**
+     * @brief 更新分块渲染状态
+     */
+    void updateTileRenderingState();
 
 private://静止赋值操作
     Renderer(const Renderer&) = delete;
