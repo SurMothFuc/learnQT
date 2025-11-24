@@ -1,4 +1,5 @@
 ﻿#include "renderthread.h"
+#include "RenderParams.h"
 
 
 RenderThread::RenderThread(QSurface *surface, QOpenGLContext *mainContext, QObject *parent)
@@ -17,6 +18,7 @@ RenderThread::~RenderThread()
 {
     m_running = false;
     wait();
+    RenderParams::instance().save();
 }
 
 // called in UI thread
@@ -31,15 +33,15 @@ void RenderThread::setRenderLow(bool _renderlow)
 {
     if (point_render == NULL)
         return;
-    point_render->renderLow = _renderlow;
+    RenderParams::instance().setRenderLow(_renderlow);
 }
 
 void RenderThread::setDenoise(bool _isdenoise)
 {
     if (point_render == NULL)
         return;
-    point_render->denoise= _isdenoise;
-    point_render->updateDenoise = true;//保证降噪一次
+    RenderParams::instance().setDenoise(_isdenoise);
+    point_render->updateDenoise = true;
 }
 
 // called in render thread

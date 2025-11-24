@@ -209,7 +209,7 @@ void Renderer::render(int width, int height)
 
 void Renderer::setTileRendering(bool enable)
 { 
-        useTileRendering = enable; 
+        RenderParams::instance().setUseTileRendering(enable);
         // 重置渲染状态
         currentTileX = 0;
         currentTileY = 0;
@@ -250,7 +250,7 @@ void Renderer::init(int width, int height)
    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
     std::unordered_map<std::string, std::string> defines_Fragment={};
     std::unordered_map<std::string, std::string> defines_Vertex ={};
-    if(Scene::getInstance().useEnvironmentMap){
+    if(RenderParams::instance().useEnvironmentMap()){
         defines_Fragment.insert({"USEENVIRONMENTMAP", ""});
     }    
     pathtrace_program.reset(getShaderProgram(getShaderPath("pathtrace.frag"), getShaderPath("triangle.vert"), defines_Vertex, defines_Fragment));   
@@ -326,6 +326,11 @@ void Renderer::init(int width, int height)
     //glBindVertexArray(0);   //取消VAO绑定
 
    
+    envMapApplied = RenderParams::instance().useEnvironmentMap();
+    lastRenderLow = RenderParams::instance().renderLow();
+    lastUseTileRendering = RenderParams::instance().useTileRendering();
+    lastTileSize = RenderParams::instance().tileSize();
+    lastDenoise = RenderParams::instance().denoise();
 
 }
 
@@ -457,7 +462,7 @@ void Renderer::adjustSize()
 
 void Renderer::calResolution()
 {
-    if (renderLow) {
+    if (RenderParams::instance().renderLow()) {
         // 如果原始分辨率已经小于等于最大低分辨率，则直接使用原始分辨率
         if (m_width <= MAX_LOW_RESOLUTION && m_height <= MAX_LOW_RESOLUTION) {
             render_width = m_width;
@@ -481,8 +486,9 @@ void Renderer::calResolution()
     }
     
     // 重新计算分块渲染的参数
-    tilesX = (render_width + tileSize - 1) / tileSize;
-    tilesY = (render_height + tileSize - 1) / tileSize;
+    int ts = RenderParams::instance().tileSize();
+    tilesX = (render_width + ts - 1) / ts;
+    tilesY = (render_height + ts - 1) / ts;
 }
 
 void Renderer::updateparam()
@@ -713,6 +719,42 @@ void Renderer::updateSizeParam()
 
 void Renderer::updateRenderParameters()
 {
+    bool curEnv = RenderParams::instance().useEnvironmentMap();
+    if (curEnv != envMapApplied) {
+        rebuildPathtraceProgram();
+        envMapApplied = curEnv;
+        needupdate = true;
+    }
+
+    bool curRL = RenderParams::instance().renderLow();
+    if (curRL != lastRenderLow) {
+        lastRenderLow = curRL;
+        calResolution();
+        adjustSize();
+        updateSizeParam();
+        currentTileX = 0; currentTileY = 0; renderComplete = false; frameCounter = 0;
+    }
+
+    int curTS = RenderParams::instance().tileSize();
+    if (curTS != lastTileSize) {
+        lastTileSize = curTS;
+        tilesX = (render_width + curTS - 1) / curTS;
+        tilesY = (render_height + curTS - 1) / curTS;
+        currentTileX = 0; currentTileY = 0; renderComplete = false;
+    }
+
+    bool curUT = RenderParams::instance().useTileRendering();
+    if (curUT != lastUseTileRendering) {
+        lastUseTileRendering = curUT;
+        currentTileX = 0; currentTileY = 0; renderComplete = false;
+    }
+
+    bool curDN = RenderParams::instance().denoise();
+    if (curDN != lastDenoise) {
+        lastDenoise = curDN;
+        updateDenoise = true;
+    }
+
     if (needupdate) {
         updateparam();
         needupdate = false;
@@ -724,8 +766,10 @@ void Renderer::displayRenderingStats()
     int nowtime = clock();
     if (nowtime - lasttime > 200) {
         printf("\r                                                     ");
+        auto st = RenderParams::instance().stats();
         std::cout << "\rframeCounter: " << frameCounter 
-                  << " FPS: " << int((frameCounter - lastframeCounter) / (1.0 * (nowtime - lasttime) / 1000.0));
+                  << " FPS: " << int((frameCounter - lastframeCounter) / (1.0 * (nowtime - lasttime) / 1000.0))
+                  << " R/W:" << st.reads << "/" << st.writes;
         lastframeCounter = frameCounter;
         lasttime = nowtime;
     }
@@ -735,15 +779,16 @@ void Renderer::executeRenderPass()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     
-    if (useTileRendering) {
+    if (RenderParams::instance().useTileRendering()) {
         // 分块渲染模式
         if (currentTileX < tilesX && currentTileY < tilesY) {
             // 计算当前块的宽度和高度
-            int tileWidth = std::min(tileSize, render_width - currentTileX * tileSize);
-            int tileHeight = std::min(tileSize, render_height - currentTileY * tileSize);
+            int ts = RenderParams::instance().tileSize();
+            int tileWidth = std::min(ts, render_width - currentTileX * ts);
+            int tileHeight = std::min(ts, render_height - currentTileY * ts);
             
             // 渲染当前块
-            renderTile(currentTileX * tileSize, currentTileY * tileSize, tileWidth, tileHeight);
+            renderTile(currentTileX * ts, currentTileY * ts, tileWidth, tileHeight);
             
             // 更新分块渲染状态
             updateTileRenderingState();
@@ -775,7 +820,7 @@ void Renderer::updateTileRenderingState()
 void Renderer::processHistorySaving()
 {
     // 只有在完整渲染模式或者分块渲染完成一轮后才保存历史帧
-    if (!useTileRendering || renderComplete) {
+    if (!RenderParams::instance().useTileRendering() || renderComplete) {
         // 更新帧计数器
         frameCounter++;
         
@@ -796,7 +841,7 @@ void Renderer::processHistorySaving()
         historysave_program->release();
         
         // 重置渲染完成标志
-        if (useTileRendering) {
+        if (RenderParams::instance().useTileRendering()) {
             renderComplete = false;
         }
     }
@@ -804,7 +849,7 @@ void Renderer::processHistorySaving()
 
 void Renderer::performDenoising()
 {
-    if (!updateDenoise && !(denoise && (frameCounter % 100 == 0 || frameCounter == 1))) {
+    if (!updateDenoise && !(RenderParams::instance().denoise() && (frameCounter % 100 == 0 || frameCounter == 1))) {
         return;
     }
     
@@ -867,7 +912,7 @@ void Renderer::compositeToScreen()
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE5);
-        if (denoise)
+        if (RenderParams::instance().denoise())
             glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
         else
             glBindTexture(GL_TEXTURE_2D, RenderColorTex);
@@ -881,4 +926,14 @@ void Renderer::compositeToScreen()
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
     m_program->release();
+}
+
+void Renderer::rebuildPathtraceProgram()
+{
+    std::unordered_map<std::string, std::string> defines_Fragment={};
+    std::unordered_map<std::string, std::string> defines_Vertex ={};
+    if(RenderParams::instance().useEnvironmentMap()){
+        defines_Fragment.insert({"USEENVIRONMENTMAP", ""});
+    }
+    pathtrace_program.reset(getShaderProgram(getShaderPath("pathtrace.frag"), getShaderPath("triangle.vert"), defines_Vertex, defines_Fragment));
 }

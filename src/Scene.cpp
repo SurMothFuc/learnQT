@@ -1,10 +1,9 @@
-﻿#include "Scene.h"
+#include "Scene.h"
 #include "iostream"
 #include <direct.h>  // POSIX 标准
 
 
 Scene::Scene(){
-    useEnvironmentMap = true;
     camera = Camera(QVector3D(0.0f, 1.17f, 4.0f), QVector3D(0.0f, 1.0f, 0.0f));
     Material mt;
     //light

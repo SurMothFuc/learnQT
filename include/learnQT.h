@@ -3,6 +3,7 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_learnQT.h"
 #include "Scene.h"
+#include "RenderParams.h"
 #include <iostream>
 #include <QString>
 #include <QFileDialog>
@@ -126,11 +127,7 @@ public slots:
     }
     void useEnvironmentMapCheckBoxChanged() {
         bool ck = ui.useEnvironmentMapcheckBox->isChecked();
-        param_mutex.lock();
-        {
-            Scene::getInstance().useEnvironmentMap = ck;
-        }
-        param_mutex.unlock();
+        RenderParams::instance().setUseEnvironmentMap(ck);
         ui.openGLWidget->sendM();
     }
 

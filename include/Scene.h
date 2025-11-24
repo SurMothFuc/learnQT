@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Camera.h"
 #include "hdrloader.h"
 #include <Mesh.h>
@@ -55,7 +55,6 @@ public:
     HDRLoaderResult hdrRes;
     float* cache;
     int hdrResolution;
-    bool useEnvironmentMap;
 
 };
 

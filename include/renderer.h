@@ -15,6 +15,7 @@
 #include <iostream>
 #include <qmutex.h>
 #include "Scene.h"
+#include "RenderParams.h"
 #include <Eigen/Dense>
 #include <unordered_map>
 #include "OpenImageDenoise/oidn.hpp"
@@ -34,11 +35,8 @@ public:
     void updateparam();
 
     bool needupdate = true;
-    bool renderLow = false;
-    bool denoise = false;
     bool updateDenoise = true;
-    bool useTileRendering = true; // 是否使用分块渲染
-    bool renderComplete = false; // 渲染是否完成一轮
+    bool renderComplete = false;
     
     // 切换渲染模式
     void setTileRendering(bool enable);
@@ -53,6 +51,7 @@ private:
     void calResolution();
     void renderTile(int tileX, int tileY, int tileWidth, int tileHeight); // 渲染单个块
     void renderFullImage(); // 渲染完整图像
+    void rebuildPathtraceProgram();
 
     /**
      * @brief 设置屏幕分辨率 并更新缓冲
@@ -114,7 +113,6 @@ private:
     bool m_sizeChanged = true;
     
     // 分块渲染相关参数
-    int tileSize = 240; // 块的大小
     int currentTileX = 0; // 当前渲染块的X坐标
     int currentTileY = 0; // 当前渲染块的Y坐标
     int tilesX = 0; // X方向的块数
@@ -179,6 +177,13 @@ private:
     GLuint pboIds[3] = { 0, 0, 0 }; // 分别用于color, normal, albedo
 
     // std::unique_ptr<Sierpinski> m_sierpinski;
+
+    // cache last-applied params for safe thread-side sync
+    bool envMapApplied = true;
+    bool lastRenderLow = false;
+    bool lastUseTileRendering = true;
+    int  lastTileSize = 240;
+    bool lastDenoise = false;
 };
 
 #endif // RENDERER_H
