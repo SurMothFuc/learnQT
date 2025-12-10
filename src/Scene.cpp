@@ -94,7 +94,7 @@ Scene::Scene(){
 
 
     int nTriangles = triangles.size();
-    std::cout << "模型读取完成: 共 " << nTriangles << " 个三角形" << std::endl;
+    std::cout << "Model loading completed: total " << nTriangles << " triangles" << std::endl;
 
     // 建立 bvh
     BVHNode testNode;
@@ -107,17 +107,17 @@ Scene::Scene(){
     int max_deep = 0;
     BuildBVH::buildBVHwithSAH(triangles, nodes, 0, triangles.size() - 1, 8,0, max_deep);
     int nNodes = nodes.size();
-    std::cout << "BVH 建立完成: 共 " << nNodes << " 个节点， 深度 " <<max_deep <<std::endl;
+    std::cout << "BVH construction completed: total " << nNodes << " nodes, depth " << max_deep << std::endl;
     //建立bvh需要在三角形编码之前，因为bvh的构建使用了排序
 
     
     DataEncode(nTriangles, nNodes);
-    std::cout << "完成三角形、BVH编码" << std::endl;
+    std::cout << "Triangle and BVH encoding completed" << std::endl;
 
 
     std::cout <<"load HDRtexture:" << HDRLoader::load(getResourcePath("hdr/peppermint_powerplant_4k.hdr").c_str(), hdrRes) << std::endl;
     // hdr 重要性采样 cache
-    std::cout << "计算 HDR 贴图重要性采样 Cache, 当前分辨率: " << hdrRes.width << " " << hdrRes.height << std::endl;
+    std::cout << "Calculating HDR texture importance sampling cache, current resolution: " << hdrRes.width << " " << hdrRes.height << std::endl;
     cache = calculateHdrCache(hdrRes.cols, hdrRes.width, hdrRes.height);
     hdrResolution = hdrRes.width;
 }

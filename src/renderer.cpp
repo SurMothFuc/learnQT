@@ -28,7 +28,7 @@ std::string processIncludes(const std::string& source, const std::string& shader
 
         // 检查循环包含
         if (processing[includePath]) {
-            qWarning() << "循环包含检测: " << QString::fromStdString(includePath);
+            qWarning() << "Circular include detected: " << QString::fromStdString(includePath);
             result = match.prefix().str() + match.suffix().str();
             continue;
         }
@@ -40,7 +40,7 @@ std::string processIncludes(const std::string& source, const std::string& shader
         } else {
             QFile file(QString::fromStdString(includePath));
             if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                qWarning() << "无法打开包含文件: " << QString::fromStdString(includePath);
+                qWarning() << "Failed to open include file: " << QString::fromStdString(includePath);
                 result = match.prefix().str() + match.suffix().str();
                 includeCache[includePath] = ""; // 设置缓存空结果避免重复尝试
                 continue;
@@ -109,7 +109,7 @@ QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::strin
     // 加载并处理顶点着色器
     QFile vFile(QString::fromStdString(vshader));
     if (!vFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "顶点着色器打开失败: " << vshader.c_str();
+        qDebug() << "Failed to open vertex shader: " << vshader.c_str();
         return shaderProgram;
     }
     std::string vSource = QTextStream(&vFile).readAll().toStdString();
@@ -119,14 +119,14 @@ QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::strin
 
     bool success = shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vSource.c_str());
     if (!success) {
-        qDebug() << "顶点着色器编译失败:\n" << shaderProgram->log();
+        qDebug() << "Vertex shader compilation failed:\n" << shaderProgram->log();
         return shaderProgram;
     }
 
     // 加载并处理片段着色器
     QFile fFile(QString::fromStdString(fshader));
     if (!fFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "片段着色器打开失败: " << fshader.c_str();
+        qDebug() << "Failed to open fragment shader: " << fshader.c_str();
         return shaderProgram;
     }
     std::string fSource = QTextStream(&fFile).readAll().toStdString();
@@ -136,13 +136,13 @@ QOpenGLShaderProgram* Renderer::getShaderProgram(std::string fshader, std::strin
 
     success = shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fSource.c_str());
     if (!success) {
-        qDebug() << "片段着色器编译失败:\n" << shaderProgram->log();
+        qDebug() << "Fragment shader compilation failed:\n" << shaderProgram->log();
         return shaderProgram;
     }
 
     success = shaderProgram->link();
     if (!success) {
-        qDebug() << "着色器链接失败:\n" << shaderProgram->log();
+        qDebug() << "Shader linking failed:\n" << shaderProgram->log();
     }
     return shaderProgram;
 }
