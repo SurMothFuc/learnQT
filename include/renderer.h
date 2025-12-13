@@ -35,6 +35,8 @@ public:
     void updateparam();
 
     bool needupdate = true;
+    bool renderLow = false;
+    bool denoise = true;
     bool updateDenoise = true;
     bool renderComplete = false;
     
@@ -113,6 +115,7 @@ private:
     bool m_sizeChanged = true;
     
     // 分块渲染相关参数
+    int tileSize = 256; // 块的大小
     int currentTileX = 0; // 当前渲染块的X坐标
     int currentTileY = 0; // 当前渲染块的Y坐标
     int tilesX = 0; // X方向的块数
@@ -144,10 +147,12 @@ private:
 
     unsigned int frameCounter = 0;//累计渲染帧数
     unsigned int lastframeCounter = 0;
+    unsigned int chunkedRenderingCount = 0;//分块渲染帧次数
+    unsigned int lastChunkedRenderingCount = 0;
+    unsigned int nowChunkedCount = 0;//当前渲染块数
 
 
     int lasttime = 0;
-    bool first_render = true;
 
     GLuint tbo0 = 0;
     GLuint tbo1 = 0;
