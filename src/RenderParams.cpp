@@ -7,10 +7,12 @@ RenderParams& RenderParams::instance() {
 }
 
 RenderParams::RenderParams() {
-    load();
 }
 
-bool RenderParams::denoise() const { m_reads.fetch_add(1, std::memory_order_relaxed); return m_denoise.load(std::memory_order_relaxed); }
+bool RenderParams::denoise() const { 
+    m_reads.fetch_add(1, std::memory_order_relaxed); 
+    return m_denoise.load(std::memory_order_relaxed); 
+}
 void RenderParams::setDenoise(bool v) {
     bool old = m_denoise.exchange(v, std::memory_order_relaxed);
     m_writes.fetch_add(1, std::memory_order_relaxed);
@@ -63,22 +65,5 @@ void RenderParams::notify(std::vector<std::function<void(T)>>& listeners, std::m
     for (auto& f : cbs) f(value);
 }
 
-void RenderParams::load() {
-    QSettings s("learnQT", "RenderParams");
-    setDenoise(s.value("denoise", m_denoise.load()).toBool());
-    setRenderLow(s.value("renderLow", m_renderLow.load()).toBool());
-    setUseTileRendering(s.value("useTileRendering", m_useTileRendering.load()).toBool());
-    setTileSize(s.value("tileSize", m_tileSize.load()).toInt());
-    setUseEnvironmentMap(s.value("useEnvironmentMap", m_useEnvironmentMap.load()).toBool());
-}
-
-void RenderParams::save() const {
-    QSettings s("learnQT", "RenderParams");
-    s.setValue("denoise", m_denoise.load());
-    s.setValue("renderLow", m_renderLow.load());
-    s.setValue("useTileRendering", m_useTileRendering.load());
-    s.setValue("tileSize", m_tileSize.load());
-    s.setValue("useEnvironmentMap", m_useEnvironmentMap.load());
-}
 
 RenderParams::Stats RenderParams::stats() const { return { m_reads.load(), m_writes.load() }; }

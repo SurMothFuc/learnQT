@@ -13,7 +13,7 @@ Scene::Scene(){
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.0, 0), QVector3D(1.0, 0.01, 1.0)), false);
+   // MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.0, 0), QVector3D(1.0, 0.01, 1.0)), false);
 
     //box    
     mt = Material();
@@ -21,31 +21,32 @@ Scene::Scene(){
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(0.725, 0.71, 0.68);
-    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.7, 0), QVector3D(4, 0.01, 4)), false);
+    //MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.7, 0), QVector3D(4, 0.01, 4)), false);
+    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.01, 0), QVector3D(4, 0.01, 4)), false);
     mt = Material();
     mt.roughness = 0.1;
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(0, 1, 0);
-    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(-2, 0.0, 0), QVector3D(0.01,4,  4)), false);
+  //  MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(-2, 0.0, 0), QVector3D(0.01,4,  4)), false);
     mt = Material();
     mt.roughness = 0.1;
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(1, 0,0);
-    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(2, 0.0, 0), QVector3D(0.01, 4, 4)), false);
+ //   MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(2, 0.0, 0), QVector3D(0.01, 4, 4)), false);
     mt = Material();
     mt.roughness = 0.1;
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(0.725, 0.71, 0.68);
-    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.001, 0), QVector3D(4, 0.01, 4)), false);
+  //  MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.001, 0), QVector3D(4, 0.01, 4)), false);
     mt = Material();
     mt.roughness = 0.1;
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(0.725, 0.71, 0.68);
-    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, -2), QVector3D(4,  4,0.01)), false);
+  //  MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, -2), QVector3D(4,  4,0.01)), false);
 
 
 
@@ -56,7 +57,7 @@ Scene::Scene(){
     mt.transmission = 1.0;
     mt.IOR = 1.5;
     mt.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
-    MeshLoader::readObj(getResourcePath("models/sphere2.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.6, 0.2, 0.6), QVector3D(1, 1, 1)), true);
+    //MeshLoader::readObj(getResourcePath("models/sphere2.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.6, 0.2, 0.6), QVector3D(1, 1, 1)), true);
 
     mt = Material();;
     //mt.roughness = 0.1;
@@ -68,7 +69,7 @@ Scene::Scene(){
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     //mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.1, 0.2), QVector3D(1.0, 1.0, 1.0)), false);
+    //MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.1, 0.2), QVector3D(1.0, 1.0, 1.0)), false);
 
     mt = Material();;
     mt.roughness = 0.001;
@@ -90,7 +91,13 @@ Scene::Scene(){
     mt.baseColor = QVector3D(1.0, 1.0, 1.0);
     //MeshLoader::readObj(getResourcePath("models/untitld.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(-90, 0, 0), QVector3D(0, 0,0), QVector3D(1.2, 1.2, 1.2)),true);
 
-    
+    mt = Material();
+    mt.roughness = 0.001;
+    mt.transmission = 1.0;
+    mt.IOR = 1.5;
+    mt.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
+    MeshLoader::readObj(getResourcePath("models/glass.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1, 1, 1)), true);
+
 
 
     int nTriangles = triangles.size();

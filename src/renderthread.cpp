@@ -18,7 +18,6 @@ RenderThread::~RenderThread()
 {
     m_running = false;
     wait();
-    RenderParams::instance().save();
 }
 
 // called in UI thread

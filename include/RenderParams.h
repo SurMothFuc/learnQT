@@ -37,8 +37,6 @@ public:
     void onTileSizeChanged(const std::function<void(int)>& cb);
     void onUseEnvironmentMapChanged(const std::function<void(bool)>& cb);
 
-    void load();
-    void save() const;
 
     struct Stats { unsigned long long reads; unsigned long long writes; };
     Stats stats() const;
@@ -52,7 +50,7 @@ private:
     void notify(std::vector<std::function<void(T)>>& listeners, std::mutex& mtx, T value);
 
 private:
-    std::atomic<bool> m_denoise{false};
+    std::atomic<bool> m_denoise{true};
     std::atomic<bool> m_renderLow{false};
     std::atomic<bool> m_useTileRendering{true};
     std::atomic<int>  m_tileSize{240};
