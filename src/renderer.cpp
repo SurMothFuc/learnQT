@@ -215,6 +215,10 @@ void Renderer::setTileRendering(bool enable)
         currentTileY = 0;
         renderComplete = false;
         frameCounter = 0;
+        lastframeCounter = 0;
+        chunkedRenderingCount = 0;
+        lastChunkedRenderingCount = 0;
+        nowChunkedCount=0;
 }
 
 void Renderer::init(int width, int height)
@@ -559,8 +563,9 @@ void Renderer::updateparam()
         lasttime = clock();
         lastframeCounter = 0;
         frameCounter = 0;
-
-        first_render = true;
+        chunkedRenderingCount=0;
+        lastChunkedRenderingCount = 0;
+        nowChunkedCount=0;
         
         // 重置分块渲染状态
         currentTileX = 0;
@@ -613,7 +618,7 @@ void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight)
         glScissor(tileX, tileY, tileWidth, tileHeight);
         
         // 只清除当前块区域
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         // 渲染
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -694,6 +699,9 @@ void Renderer::adjustScreenResolution(int width, int height)
         lasttime = clock();
         lastframeCounter = 0;
         frameCounter = 0;
+        chunkedRenderingCount=0;
+        lastChunkedRenderingCount = 0;
+        nowChunkedCount=0;
 
         currentTileX = 0;
         currentTileY = 0;
@@ -723,10 +731,15 @@ void Renderer::displayRenderingStats()
 {
     int nowtime = clock();
     if (nowtime - lasttime > 200) {
-        printf("\r                                                     ");
+        printf("\r                                                                                                  ");
         std::cout << "\rframeCounter: " << frameCounter 
-                  << " FPS: " << int((frameCounter - lastframeCounter) / (1.0 * (nowtime - lasttime) / 1000.0));
+                  << " FPS: " << int((frameCounter - lastframeCounter) / (1.0 * (nowtime - lasttime) / 1000.0))
+                  << " | Chunked Rendering: " << chunkedRenderingCount
+                  << " Chunked Rendering FPS: " << int((chunkedRenderingCount - lastChunkedRenderingCount) / (1.0 * (nowtime - lasttime) / 1000.0))
+                  ;
+                  
         lastframeCounter = frameCounter;
+        lastChunkedRenderingCount = chunkedRenderingCount;
         lasttime = nowtime;
     }
 }
@@ -774,9 +787,12 @@ void Renderer::updateTileRenderingState()
 
 void Renderer::processHistorySaving()
 {
+    chunkedRenderingCount++;
+    nowChunkedCount++;
     // 只有在完整渲染模式或者分块渲染完成一轮后才保存历史帧
     if (!useTileRendering || renderComplete) {
         // 更新帧计数器
+        nowChunkedCount = 0 ;
         frameCounter++;
         
         historysave_program->bind();
@@ -804,7 +820,7 @@ void Renderer::processHistorySaving()
 
 void Renderer::performDenoising()
 {
-    if (!updateDenoise && !(denoise && (frameCounter % 100 == 0 || frameCounter == 1))) {
+    if (!updateDenoise && !(denoise && nowChunkedCount==0 &&(frameCounter % 100 == 0 || frameCounter == 1))) {
         return;
     }
     
