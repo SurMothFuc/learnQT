@@ -1,72 +1,52 @@
 #pragma once
+
+#include <QObject>
+
 #include <atomic>
-#include <functional>
-#include <vector>
-#include <mutex>
 
-enum class RenderParamID {
-    Denoise,
-    RenderLow,
-    UseTileRendering,
-    TileSize,
-    UseEnvironmentMap
-};
+class RenderParams : public QObject {
+    Q_OBJECT
 
-class RenderParams {
 public:
     static RenderParams& instance();
 
-    bool denoise() const;
-    void setDenoise(bool v);
+#define RENDER_PARAMS_PARAM_LIST(X) \
+    X(Denoise, denoise, bool, m_denoise, true) \
+    X(RenderLow, renderLow, bool, m_renderLow, false) \
+    X(UseTileRendering, useTileRendering, bool, m_useTileRendering, true) \
+    X(UseEnvironmentMap, useEnvironmentMap, bool, m_useEnvironmentMap, true) \
+    X(TileSize, tileSize, int, m_tileSize, 240)
 
-    bool renderLow() const;
-    void setRenderLow(bool v);
+#define DECLARE_PARAM_API(Camel, getter, type, member, defaultValue) \
+    type getter() const; \
+    void set##Camel(type v);
+    RENDER_PARAMS_PARAM_LIST(DECLARE_PARAM_API)
+#undef DECLARE_PARAM_API
 
-    bool useTileRendering() const;
-    void setUseTileRendering(bool v);
-
-    int tileSize() const;
-    void setTileSize(int v);
-
-    bool useEnvironmentMap() const;
-    void setUseEnvironmentMap(bool v);
-
-    void onDenoiseChanged(const std::function<void(bool)>& cb);
-    void onRenderLowChanged(const std::function<void(bool)>& cb);
-    void onUseTileRenderingChanged(const std::function<void(bool)>& cb);
-    void onTileSizeChanged(const std::function<void(int)>& cb);
-    void onUseEnvironmentMapChanged(const std::function<void(bool)>& cb);
-
-
-    struct Stats { unsigned long long reads; unsigned long long writes; };
+    struct Stats {
+        unsigned long long reads;
+        unsigned long long writes;
+    };
     Stats stats() const;
 
+signals:
+#define DECLARE_CHANGED_SIGNAL(Camel, getter, type, member, defaultValue) \
+    void getter##Changed(type value);
+    RENDER_PARAMS_PARAM_LIST(DECLARE_CHANGED_SIGNAL)
+#undef DECLARE_CHANGED_SIGNAL
+
 private:
-    RenderParams();
+    explicit RenderParams(QObject* parent = nullptr);
     RenderParams(const RenderParams&) = delete;
     RenderParams& operator=(const RenderParams&) = delete;
+    RenderParams(RenderParams&&) = delete;
+    RenderParams& operator=(RenderParams&&) = delete;
 
-    template<typename T>
-    void notify(std::vector<std::function<void(T)>>& listeners, std::mutex& mtx, T value);
-
-private:
-    std::atomic<bool> m_denoise{true};
-    std::atomic<bool> m_renderLow{false};
-    std::atomic<bool> m_useTileRendering{true};
-    std::atomic<int>  m_tileSize{240};
-    std::atomic<bool> m_useEnvironmentMap{true};
-
-    std::vector<std::function<void(bool)>> m_onDenoise;
-    std::vector<std::function<void(bool)>> m_onRenderLow;
-    std::vector<std::function<void(bool)>> m_onUseTileRendering;
-    std::vector<std::function<void(int)>>  m_onTileSize;
-    std::vector<std::function<void(bool)>> m_onUseEnvironmentMap;
-
-    std::mutex mtx_denoise;
-    std::mutex mtx_renderLow;
-    std::mutex mtx_useTileRendering;
-    std::mutex mtx_tileSize;
-    std::mutex mtx_useEnvironmentMap;
+#define DECLARE_PARAM_STORAGE(Camel, getter, type, member, defaultValue) \
+    std::atomic<type> member{defaultValue};
+    RENDER_PARAMS_PARAM_LIST(DECLARE_PARAM_STORAGE)
+#undef DECLARE_PARAM_STORAGE
+#undef RENDER_PARAMS_PARAM_LIST
 
     mutable std::atomic<unsigned long long> m_reads{0};
     mutable std::atomic<unsigned long long> m_writes{0};
