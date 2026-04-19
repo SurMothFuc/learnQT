@@ -38,8 +38,7 @@ public:
     void DataEncode(int nTriangles, int nNodes);
 
     void updateMaterial(QVector3D emissive, QVector3D  baseColor,
-        float subsurface, float  metallic, float  specular,
-        float specularTint, float roughness, float anisotropic,
+        float subsurface, float metallic, float specularTint, float roughness, float anisotropic,
         float sheen, float sheenTint, float clearcoat,
         float clearcoatGloss, float IOR, float transmission);
 

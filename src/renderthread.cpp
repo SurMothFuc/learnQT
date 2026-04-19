@@ -1,6 +1,6 @@
 ﻿#include "renderthread.h"
-#include "RenderParams.h"
 
+#include "RenderParams.h"
 
 RenderThread::RenderThread(QSurface *surface, QOpenGLContext *mainContext, QObject *parent)
     : QThread(parent)
@@ -16,7 +16,7 @@ RenderThread::RenderThread(QSurface *surface, QOpenGLContext *mainContext, QObje
 
 RenderThread::~RenderThread()
 {
-    m_running = false;
+    m_running.store(false, std::memory_order_relaxed);
     wait();
 }
 
@@ -28,37 +28,25 @@ void RenderThread::setNewSize(int width, int height)
     m_height = height;
 }
 
-void RenderThread::setRenderLow(bool _renderlow)
+void RenderThread::markSceneDirty(SceneDirtyFlags flags)
 {
-    if (point_render == NULL)
-        return;
-    RenderParams::instance().setRenderLow(_renderlow);
-}
-
-void RenderThread::setDenoise(bool _isdenoise)
-{
-    if (point_render == NULL)
-        return;
-    RenderParams::instance().setDenoise(_isdenoise);
-    point_render->updateDenoise = true;
+    m_pendingSceneDirty.fetch_or(flags, std::memory_order_relaxed);
 }
 
 // called in render thread
 void RenderThread::run()
 {
-    //延迟400毫秒在进行渲染，让主窗口调整好大小
+    // 延迟 400 毫秒再开始渲染，让主窗口先完成尺寸调整。
     Sleep(400);
     m_renderContext->makeCurrent(m_surface);
 
     TextureBuffer::instance()->createTexture(m_renderContext);
 
-    Renderer renderer(m_width, m_height);
+    const RenderParams::Snapshot initialSnapshot = RenderParams::instance().snapshot();
+    Renderer renderer(m_width, m_height, initialSnapshot);
 
-    point_render = &renderer;
-
-    while (m_running)
+    while (m_running.load(std::memory_order_relaxed))
     {
-        //qDebug()<<1;
         int width = 0;
         int height = 0;
         {
@@ -66,17 +54,15 @@ void RenderThread::run()
             width = m_width;
             height = m_height;
         }
-        renderer.render(width, height);
+
+        // 每帧只在这里快照一次 RenderParams，并消费一次 Scene dirty。
+        const RenderParams::Snapshot snapshot = RenderParams::instance().snapshot();
+        const SceneDirtyFlags dirtyFlags = m_pendingSceneDirty.exchange(0u, std::memory_order_relaxed);
+
+        renderer.render(width, height, snapshot, dirtyFlags);
         TextureBuffer::instance()->updateTexture(m_renderContext, width, height);
         emit imageReady();
     }
 
     TextureBuffer::instance()->deleteTexture(m_renderContext);
-}
-void RenderThread::recMegFromMain()
-{
-    //qDebug() << "update parameters" ;
-    if (point_render == NULL)
-        return;
-    point_render->needupdate = true;
 }

@@ -13,7 +13,7 @@ Scene::Scene(){
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-   // MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.0, 0), QVector3D(1.0, 0.01, 1.0)), false);
+    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.0, 0), QVector3D(1.0, 0.01, 1.0)), false);
 
     //box    
     mt = Material();
@@ -165,20 +165,39 @@ void Scene::DataEncode(int nTriangles,int nNodes)
 
 
 void Scene::updateMaterial(QVector3D emissive, QVector3D  baseColor,
-    float subsurface, float  metallic, float  specular,
-    float specularTint, float roughness, float anisotropic,
+    float subsurface, float metallic, float specularTint, float roughness, float anisotropic,
     float sheen, float sheenTint, float clearcoat, 
     float clearcoatGloss, float IOR, float transmission)
 {
-    //int nTriangles = triangles.size();
-    //for (int i = 0; i < nTriangles; i++) {       
-    //    triangles_encoded[i].emissive = emissive;
-    //    //triangles_encoded[i].baseColor = baseColor;
-    //    triangles_encoded[i].param1 = QVector3D(subsurface, metallic, specular);
-    //    triangles_encoded[i].param2 = QVector3D(specularTint, roughness, anisotropic);
-    //    triangles_encoded[i].param3 = QVector3D(sheen, sheenTint, clearcoat);
-    //    triangles_encoded[i].param4 = QVector3D(clearcoatGloss, IOR, transmission);
-    //}
+    const int nTriangles = static_cast<int>(triangles.size());
+    for (int i = 0; i < nTriangles; ++i) {
+        Material& material = triangles[i].material;
+        material.emissive = emissive;
+        material.baseColor = baseColor;
+        material.subsurface = subsurface;
+        material.metallic = metallic;
+        material.specularTint = specularTint;
+        material.roughness = roughness;
+        material.anisotropic = anisotropic;
+        material.sheen = sheen;
+        material.sheenTint = sheenTint;
+        material.clearcoat = clearcoat;
+        material.clearcoatGloss = clearcoatGloss;
+        material.IOR = IOR;
+        material.transmission = transmission;
+
+        if (i >= static_cast<int>(triangles_encoded.size())) {
+            continue;
+        }
+
+        Triangle_encoded& encoded = triangles_encoded[i];
+        encoded.param1 = QVector4D(material.emissive, material.sheenTint);
+        encoded.param2 = QVector4D(material.baseColor, material.clearcoat);
+        encoded.param3 = QVector4D(material.mediumColor, material.mediumAnisotropy);
+        encoded.param4 = QVector4D(material.clearcoatGloss, material.IOR, material.transmission, material.alphaMode);
+        encoded.param5 = QVector4D(material.mediumtype, material.mediumDensity, material.subsurface, material.metallic);
+        encoded.param6 = QVector4D(material.specularTint, material.roughness, material.anisotropic, material.sheen);
+    }
 }
 
 

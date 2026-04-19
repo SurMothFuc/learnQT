@@ -25,6 +25,26 @@ class RenderParams : public QObject {
     Q_OBJECT
 
 public:
+    struct Snapshot {
+        bool denoise = true;
+        bool renderLow = false;
+        bool useTileRendering = true;
+        int tileSize = 240;
+        bool useEnvironmentMap = true;
+
+        bool operator==(const Snapshot& other) const {
+            return denoise == other.denoise &&
+                   renderLow == other.renderLow &&
+                   useTileRendering == other.useTileRendering &&
+                   tileSize == other.tileSize &&
+                   useEnvironmentMap == other.useEnvironmentMap;
+        }
+
+        bool operator!=(const Snapshot& other) const {
+            return !(*this == other);
+        }
+    };
+
     static RenderParams& instance();
 
     RENDER_PARAMS_PARAM(Denoise, denoise, bool, m_denoise, true)
@@ -32,6 +52,9 @@ public:
     RENDER_PARAMS_PARAM(UseTileRendering, useTileRendering, bool, m_useTileRendering, true)
     RENDER_PARAMS_PARAM(UseEnvironmentMap, useEnvironmentMap, bool, m_useEnvironmentMap, true)
     RENDER_PARAMS_PARAM(TileSize, tileSize, int, m_tileSize, 240)
+
+public:
+    Snapshot snapshot() const;
 
 public:
     struct Stats {
