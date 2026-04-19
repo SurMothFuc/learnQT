@@ -1,19 +1,21 @@
-#ifndef RENDERTHREAD_H
+﻿#ifndef RENDERTHREAD_H
 #define RENDERTHREAD_H
 
-#include <QThread>
 #include <QImage>
 #include <QMutex>
-#include <QOpenGLFunctions>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include <QOpenGLFunctions>
+#include <QThread>
+#include <QTimer>
+#include <memory>
+
+#include <atomic>
+#include <iostream>
+
+#include "SceneDirty.h"
 #include "renderer.h"
 #include "texturebuffer.h"
-#include <QDebug>
-#include <QOpenGLContext>
-#include <memory>
-#include <QTimer>
-#include <iostream>
 
 class RenderThread : public QThread, public QOpenGLFunctions
 {
@@ -21,40 +23,36 @@ class RenderThread : public QThread, public QOpenGLFunctions
 
 public:
     RenderThread(QSurface *surface, QOpenGLContext *mainContext, QObject *parent = nullptr);
-    ~RenderThread();
+    ~RenderThread() override;
 
     void setNewSize(int width, int height);
-    void setRenderLow(bool _renderlow);
+    // UI 线程只做按位 OR，渲染线程在帧首统一消费。
+    void markSceneDirty(SceneDirtyFlags flags);
+
 signals:
     void imageReady();
 
-public slots:
-    //接收主线程的消息
-    void recMegFromMain();
-    void setDenoise(bool _isdenoise);
-    
-
 protected:
     void run() override;
+
 private:
     RenderThread(const RenderThread &) = delete;
     RenderThread &operator =(const RenderThread &) = delete;
     RenderThread(const RenderThread &&) = delete;
     RenderThread &operator =(const RenderThread &&) = delete;
-    
 
 private:
-    bool m_running = true;
+    std::atomic_bool m_running{true};
 
     int m_width = 100;
     int m_height = 100;
     QMutex m_mutex;
 
-    QOpenGLContext *m_mainContext;
+    QOpenGLContext *m_mainContext = nullptr;
     QOpenGLContext *m_renderContext = nullptr;
-    QSurface *m_surface;
-
-    Renderer* point_render;
+    QSurface *m_surface = nullptr;
+    // 首帧默认全量同步，之后每帧 exchange(0) 消费。
+    std::atomic<SceneDirtyFlags> m_pendingSceneDirty{kInitialSceneDirty};
 };
 
 #endif // RENDERTHREAD_H

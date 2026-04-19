@@ -14,7 +14,6 @@ learnQT::learnQT(QWidget *parent)
     connect(ui.roughnessSlider, SIGNAL(valueChanged(int)), this, SLOT(roughnessSliderUp()));
     connect(ui.metallicSlider, SIGNAL(valueChanged(int)), this, SLOT(metallicSliderUp()));
     connect(ui.subsurfaceSlider, SIGNAL(valueChanged(int)), this, SLOT(subsurfaceSliderUp()));
-    connect(ui.specularSlider, SIGNAL(valueChanged(int)), this, SLOT(specularSliderUp()));
     connect(ui.specularTintSlider, SIGNAL(valueChanged(int)), this, SLOT(specularTintSliderUp()));
     connect(ui.sheenSlider, SIGNAL(valueChanged(int)), this, SLOT(sheenSliderUp()));
     connect(ui.sheenTintSlider, SIGNAL(valueChanged(int)), this, SLOT(sheenTintSliderUp()));

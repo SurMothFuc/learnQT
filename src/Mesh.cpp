@@ -15,7 +15,7 @@ void MeshLoader::readObj(std::string filepath, std::vector<Triangle>& triangles,
     std::ifstream fin(filepath);
     std::string line;
     if (!fin.is_open()) {
-        std::cout << "文件 " << filepath << " 打开失败" << std::endl;
+        std::cout << "File " << filepath << " failed to open" << std::endl;
         exit(-1);
     }
 

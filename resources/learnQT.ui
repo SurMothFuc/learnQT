@@ -45,9 +45,9 @@
          <property name="geometry">
           <rect>
            <x>0</x>
-           <y>-50</y>
-           <width>248</width>
-           <height>656</height>
+           <y>0</y>
+           <width>265</width>
+           <height>599</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -186,34 +186,6 @@
             </item>
             <item>
              <widget class="QLineEdit" name="subsurfacelineEdit">
-              <property name="text">
-               <string>0.00</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>specular:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="6,1">
-            <item>
-             <widget class="QSlider" name="specularSlider">
-              <property name="maximum">
-               <number>100</number>
-              </property>
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="specularlineEdit">
               <property name="text">
                <string>0.00</string>
               </property>

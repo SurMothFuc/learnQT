@@ -1,38 +1,43 @@
-#ifndef GLWIDGET_H
+﻿#ifndef GLWIDGET_H
 #define GLWIDGET_H
 
-#include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLWidget>
 
 #include <QMutex>
 #include <memory>
 #include <qtimer.h>
+
 #include "Scene.h"
+#include "SceneDirty.h"
 
 class RenderThread;
 
 extern QMutex param_mutex;
 
-class GLWidget : public QOpenGLWidget,protected QOpenGLFunctions_3_3_Core
+class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
 public:
     GLWidget(QWidget *parent = nullptr);
     ~GLWidget() override;
-    void sendM();
+
+    // UI 线程只通过 dirty 标记通知渲染线程同步 Scene。
+    void markSceneDirty(SceneDirtyFlags flags);
+    void markSceneDirty(SceneDirtyFlag flag);
 
 protected:
     void initializeGL() override;
     void paintGL() override;
     void resizeGL(int w, int h) override;
 
-    void keyPressEvent(QKeyEvent* event) Q_DECL_OVERRIDE;
-    void keyReleaseEvent(QKeyEvent* event) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
-    void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent* event) override;
+    void keyReleaseEvent(QKeyEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void wheelEvent(QWheelEvent* event) override;
 
 private:
     void initRenderThread();
@@ -43,12 +48,8 @@ private:
     std::unique_ptr<QOpenGLShaderProgram> m_program;
     RenderThread *m_thread = nullptr;
 
-    bool m_bLeftPressed;
+    bool m_bLeftPressed = false;
     QPoint m_lastPos;
-signals:
-    //给子线程发消息
-    void sengMsgToThread();
-    void sendSetDenoise(bool isChecked);
 };
 
 #endif // GLWIDGET_H

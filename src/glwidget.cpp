@@ -1,15 +1,15 @@
 #include "glwidget.h"
+
 #include "texturebuffer.h"
 #include "renderthread.h"
-//#include "debug.h"
-//#include "fpscounter.h"
 
-#include <QOpenGLContext>
 #include <QDebug>
-#include <QWindow>
+#include <QMouseEvent>
+#include <QOpenGLContext>
 #include <QSurface>
+#include <QWindow>
 
-#include <iostream>
+#include "RenderParams.h"
 
 QMutex param_mutex;
 
@@ -35,9 +35,17 @@ GLWidget::~GLWidget()
 {
 }
 
-void GLWidget::sendM()
+void GLWidget::markSceneDirty(SceneDirtyFlags flags)
 {
-    emit sengMsgToThread();
+    if (m_thread == nullptr) {
+        return;
+    }
+    m_thread->markSceneDirty(flags);
+}
+
+void GLWidget::markSceneDirty(SceneDirtyFlag flag)
+{
+    markSceneDirty(toSceneDirtyFlags(flag));
 }
 
 void GLWidget::initializeGL()
@@ -45,10 +53,6 @@ void GLWidget::initializeGL()
     initRenderThread();
 
     qDebug() << "initializeOpenGLFunctions:" << initializeOpenGLFunctions();
-
-//    glEnable(GL_DEBUG_OUTPUT);
-//    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-//    glDebugMessageCallback(glDebugOutput, nullptr);
 
     char vertexShaderSource[] =
             "#version 330 core\n"
@@ -93,14 +97,10 @@ void GLWidget::initializeGL()
     connect(m_pTimer, &QTimer::timeout, this, [=] {
         });
     m_pTimer->start(50);
-
-    //glCheckError();
 }
 
 void GLWidget::paintGL()
 {
-   // RAIITimer t("GLWidget::paintGL");
-
     glViewport(0, 0, width(), height());
 
     m_program->bind();
@@ -113,13 +113,13 @@ void GLWidget::paintGL()
     glBindVertexArray(0);
 
     m_program->release();
-
-  //  FpsCounter::instance()->frame(FpsCounter::Display);
 }
 
 void GLWidget::resizeGL(int w, int h)
 {
-    m_thread->setNewSize(w, h);
+    if (m_thread != nullptr) {
+        m_thread->setNewSize(w, h);
+    }
     qDebug() << "frame size:" << w << h;
 }
 
@@ -140,35 +140,26 @@ void GLWidget::initRenderThread()
         update();
     }, Qt::QueuedConnection);
     m_thread->start();
-
-    connect(this, &GLWidget::sengMsgToThread, m_thread, &RenderThread::recMegFromMain);
-    connect(this, &GLWidget::sendSetDenoise, m_thread, &RenderThread::setDenoise);
 }
-
 
 void GLWidget::keyPressEvent(QKeyEvent* event)
 {
-    int key = event->key();
+    const int key = event->key();
     if (key >= 0 && key < 1024) {
-        param_mutex.lock();
-        {
-            Scene::getInstance().camera.keys[key] = true;
-            Scene::getInstance().camera.processInput(1.0f);
-        }
-        param_mutex.unlock();
-        sendM();
+        QMutexLocker lock(&param_mutex);
+        Scene::getInstance().camera.keys[key] = true;
+        Scene::getInstance().camera.processInput(1.0f);
+        lock.unlock();
+        markSceneDirty(SceneDirtyFlag::Camera);
     }
 }
 
 void GLWidget::keyReleaseEvent(QKeyEvent* event)
 {
-    int key = event->key();
+    const int key = event->key();
     if (key >= 0 && key < 1024) {
-        param_mutex.lock();
-        {
-            Scene::getInstance().camera.keys[key] = false;
-        }
-        param_mutex.unlock();
+        QMutexLocker lock(&param_mutex);
+        Scene::getInstance().camera.keys[key] = false;
     }
 }
 
@@ -177,7 +168,7 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
     if (event->button() == Qt::LeftButton) {
         m_bLeftPressed = true;
         m_lastPos = event->pos();
-        m_thread->setRenderLow(true);
+        RenderParams::instance().setRenderLow(true);
     }
 }
 
@@ -185,35 +176,31 @@ void GLWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     Q_UNUSED(event);
     m_bLeftPressed = false;
-    m_thread->setRenderLow(false);
+    RenderParams::instance().setRenderLow(false);
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent* event)
 {
     if (m_bLeftPressed) {
-        int xpos = event->pos().x();
-        int ypos = event->pos().y();
+        const int xpos = event->pos().x();
+        const int ypos = event->pos().y();
 
-        int xoffset = xpos - m_lastPos.x();
-        int yoffset = m_lastPos.y() - ypos;
+        const int xoffset = xpos - m_lastPos.x();
+        const int yoffset = m_lastPos.y() - ypos;
         m_lastPos = event->pos();
-        param_mutex.lock();
-       {
-            Scene::getInstance().camera.processMouseMovement(xoffset, yoffset);
-            //qDebug() << param.camera.yaw << "    " << param.camera.picth << "    " ;
-       }
-       param_mutex.unlock();
-       sendM();
+
+        QMutexLocker lock(&param_mutex);
+        Scene::getInstance().camera.processMouseMovement(xoffset, yoffset);
+        lock.unlock();
+        markSceneDirty(SceneDirtyFlag::Camera);
     }
 }
 
 void GLWidget::wheelEvent(QWheelEvent* event)
 {
-    QPoint offset = event->angleDelta();
-    param_mutex.lock();
-    {
-        Scene::getInstance().camera.processMouseScroll(offset.y());
-    }
-    param_mutex.unlock();
-    sendM();
+    const QPoint offset = event->angleDelta();
+    QMutexLocker lock(&param_mutex);
+    Scene::getInstance().camera.processMouseScroll(offset.y());
+    lock.unlock();
+    markSceneDirty(SceneDirtyFlag::Camera);
 }
