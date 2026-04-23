@@ -42,6 +42,12 @@ public:
         float sheen, float sheenTint, float clearcoat,
         float clearcoatGloss, float IOR, float transmission);
 
+private:
+    void resetSceneData();
+    void buildLegacyGlassScene();
+    void buildImportanceSamplingBenchmarkScene();
+    void finalizeScene();
+
 public:
 
     Camera camera;
@@ -51,9 +57,9 @@ public:
     std::vector<BVHNode> nodes;
     std::vector<Triangle_encoded> triangles_encoded;
     std::vector<BVHNode_encoded> nodes_encoded;
-    HDRLoaderResult hdrRes;
-    float* cache;
-    int hdrResolution;
+    HDRLoaderResult hdrRes = {};
+    float* cache = nullptr;
+    int hdrResolution = 0;
 
 };
 

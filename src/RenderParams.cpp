@@ -20,6 +20,8 @@ RenderParams::Snapshot RenderParams::snapshot() const {
         m_renderLow.load(std::memory_order_relaxed),
         m_useTileRendering.load(std::memory_order_relaxed),
         m_tileSize.load(std::memory_order_relaxed),
-        m_useEnvironmentMap.load(std::memory_order_relaxed)
+        m_useEnvironmentMap.load(std::memory_order_relaxed),
+        m_maxBounces.load(std::memory_order_relaxed),
+        m_maxRenderFrames.load(std::memory_order_relaxed)
     };
 }

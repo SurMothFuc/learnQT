@@ -39,7 +39,7 @@ void main(void)
     ray.direction = normalize(dir.xyz);
     
     // primary hit  
-    OutputColor color = pathTracingImportanceSampling(ray,12);
+    OutputColor color = pathTracingImportanceSampling(ray, maxBounces);
     
     // 输出结果
     RenderColorResult=vec4(color.render_color,1.0);

@@ -153,6 +153,14 @@ public slots:
         RenderParams::instance().setUseEnvironmentMap(ui.useEnvironmentMapcheckBox->isChecked());
     }
 
+    void maxBouncesSpinBoxChanged(int value) {
+        RenderParams::instance().setMaxBounces(value);
+    }
+
+    void maxRenderFramesSpinBoxChanged(int value) {
+        RenderParams::instance().setMaxRenderFrames(value);
+    }
+
 protected:
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;

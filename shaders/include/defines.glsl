@@ -7,6 +7,10 @@
 #define INV_4_PI 0.07957747154594766
 #define EPS 1e-6
 
+#ifndef MAX_BOUNCES_LIMIT
+#define MAX_BOUNCES_LIMIT 60
+#endif
+
 #define ALPHA_MODE_OPAQUE 0
 #define ALPHA_MODE_TRANSPARENT 1
 

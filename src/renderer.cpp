@@ -15,6 +15,17 @@
 
 extern QMutex param_mutex;
 
+namespace {
+int clampMaxBounces(int maxBounces) {
+    return std::max(0, std::min(maxBounces, static_cast<int>(MAX_BOUNCES_LIMIT)));
+}
+
+bool isRenderFrameLimitReached(const RenderParams::Snapshot& snapshot, unsigned int frameCounter) {
+    return snapshot.maxRenderFrames > 0 &&
+           frameCounter >= static_cast<unsigned int>(snapshot.maxRenderFrames);
+}
+}
+
 std::string processIncludes(const std::string& source, const std::string& shaderPath) {
     static std::unordered_map<std::string, std::string> includeCache;
     static std::unordered_map<std::string, bool> processing; // 防止循环包含
@@ -193,6 +204,12 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot& snaps
 
     // 2. 常规渲染与后处理阶段全部只读本帧 snapshot
     displayRenderingStats();
+    if (isRenderFrameLimitReached(snapshot, frameCounter)) {
+        performDenoising(snapshot);
+        compositeToScreen(snapshot);
+        return;
+    }
+
     executeRenderPass(snapshot);
     processHistorySaving(snapshot);
     performDenoising(snapshot);
@@ -403,16 +420,18 @@ void Renderer::updateTileGrid(int tileSize)
     tilesY = (render_height + safeTileSize - 1) / safeTileSize;
 }
 
-void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight)
+void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, int maxBounces)
 {
-    const auto sobelNumber = getSobelRandomNumber(frameCounter, 12);
+    const unsigned int sobolBounceCount = static_cast<unsigned int>(std::max(1, maxBounces));
+    const auto sobelNumber = getSobelRandomNumber(frameCounter, sobolBounceCount);
 
     pathtrace_program->bind();
     {
         const GLint frameLocation = pathtrace_program->uniformLocation("frameCounter");
         glUniform1ui(frameLocation, frameCounter);
         const GLint sobelLocation = pathtrace_program->uniformLocation("sobelNumber");
-        glUniform1fv(sobelLocation, 24, sobelNumber.data());
+        glUniform1fv(sobelLocation, static_cast<GLsizei>(sobolBounceCount * 2u), sobelNumber.data());
+        pathtrace_program->setUniformValue("maxBounces", maxBounces);
 
         glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
 
@@ -448,16 +467,18 @@ void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight)
     pathtrace_program->release();
 }
 
-void Renderer::renderFullImage()
+void Renderer::renderFullImage(int maxBounces)
 {
-    const auto sobelNumber = getSobelRandomNumber(frameCounter, 12);
+    const unsigned int sobolBounceCount = static_cast<unsigned int>(std::max(1, maxBounces));
+    const auto sobelNumber = getSobelRandomNumber(frameCounter, sobolBounceCount);
 
     pathtrace_program->bind();
     {
         const GLint frameLocation = pathtrace_program->uniformLocation("frameCounter");
         glUniform1ui(frameLocation, frameCounter);
         const GLint sobelLocation = pathtrace_program->uniformLocation("sobelNumber");
-        glUniform1fv(sobelLocation, 24, sobelNumber.data());
+        glUniform1fv(sobelLocation, static_cast<GLsizei>(sobolBounceCount * 2u), sobelNumber.data());
+        pathtrace_program->setUniformValue("maxBounces", maxBounces);
 
         glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
 
@@ -497,6 +518,7 @@ void Renderer::rebuildPathtraceProgram(const RenderParams::Snapshot& snapshot)
 {
     std::unordered_map<std::string, std::string> defines_Fragment = {};
     std::unordered_map<std::string, std::string> defines_Vertex = {};
+    defines_Fragment.insert({"MAX_BOUNCES_LIMIT", std::to_string(MAX_BOUNCES_LIMIT)});
     if (snapshot.useEnvironmentMap) {
         defines_Fragment.insert({"USEENVIRONMENTMAP", ""});
     }
@@ -535,6 +557,7 @@ Renderer::RefreshActions Renderer::resolveRefreshActions(
     const bool tileModeChanged = snapshot.useTileRendering != m_lastAppliedSnapshot.useTileRendering;
     const bool tileSizeChanged = snapshot.tileSize != m_lastAppliedSnapshot.tileSize;
     const bool denoiseChanged = snapshot.denoise != m_lastAppliedSnapshot.denoise;
+    const bool maxBouncesChanged = snapshot.maxBounces != m_lastAppliedSnapshot.maxBounces;
     const bool sizeChanged = width != m_width || height != m_height;
 
     if (environmentMapChanged) {
@@ -550,6 +573,10 @@ Renderer::RefreshActions Renderer::resolveRefreshActions(
     }
 
     if (tileModeChanged || tileSizeChanged) {
+        actions.resetAccumulation = true;
+    }
+
+    if (maxBouncesChanged) {
         actions.resetAccumulation = true;
     }
 
@@ -657,6 +684,9 @@ void Renderer::resetAccumulation()
     currentTileX = 0;
     currentTileY = 0;
     renderComplete = false;
+    m_forceDenoiseRefresh = true;
+    m_hasDenoisedFrame = false;
+    m_lastDenoisedFrameCounter = 0;
 }
 
 void Renderer::uploadTriangleBuffer(bool recreateResources)
@@ -816,6 +846,7 @@ void Renderer::displayRenderingStats()
 void Renderer::executeRenderPass(const RenderParams::Snapshot& snapshot)
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    const int maxBounces = clampMaxBounces(snapshot.maxBounces);
 
     if (snapshot.useTileRendering) {
         // 分块渲染模式
@@ -824,12 +855,12 @@ void Renderer::executeRenderPass(const RenderParams::Snapshot& snapshot)
             const int tileWidth = std::min(tileSize, render_width - currentTileX * tileSize);
             const int tileHeight = std::min(tileSize, render_height - currentTileY * tileSize);
 
-            renderTile(currentTileX * tileSize, currentTileY * tileSize, tileWidth, tileHeight);
+            renderTile(currentTileX * tileSize, currentTileY * tileSize, tileWidth, tileHeight, maxBounces);
             updateTileRenderingState();
         }
     } else {
         // 完整图像渲染模式
-        renderFullImage();
+        renderFullImage(maxBounces);
     }
 }
 
@@ -890,20 +921,29 @@ void Renderer::performDenoising(const RenderParams::Snapshot& snapshot)
     }
 
     const bool hasCompleteFrame = (nowChunkedCount == 0 && frameCounter > 0);
-    const bool shouldDenoise = hasCompleteFrame &&
-        (m_forceDenoiseRefresh || frameCounter % 100 == 0 || frameCounter == 1);
+    if (!hasCompleteFrame) {
+        return;
+    }
+
+    if (m_hasDenoisedFrame && m_lastDenoisedFrameCounter == frameCounter) {
+        m_forceDenoiseRefresh = false;
+        return;
+    }
+
+    const bool shouldDenoise =
+        m_forceDenoiseRefresh || frameCounter % 100 == 0 || frameCounter == 1;
     if (!shouldDenoise) {
         return;
     }
 
-    m_forceDenoiseRefresh = false;
+    const bool refreshAuxiliaryBuffers = (frameCounter == 1 || !m_hasDenoisedFrame);
 
     // 使用 PBO 异步读取数据；降噪只在完整累计帧上触发。
     const GLenum formats[] = { GL_RGB, GL_RGB, GL_RGB };
     const GLuint textures[] = { normal_texture, baseColorTex, RenderColorTex };
     float* srcPtrs[3] = { nullptr, nullptr, nullptr };
 
-    for (int i = frameCounter == 1 ? 0 : 2; i < 3; i++) {
+    for (int i = refreshAuxiliaryBuffers ? 0 : 2; i < 3; i++) {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
         glBindTexture(GL_TEXTURE_2D, textures[i]);
         glGetTexImage(GL_TEXTURE_2D, 0, formats[i], GL_FLOAT, 0);
@@ -913,19 +953,19 @@ void Renderer::performDenoising(const RenderParams::Snapshot& snapshot)
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     glFinish();
 
-    if (frameCounter == 1) {
+    if (refreshAuxiliaryBuffers) {
         std::memcpy(oidnNormalBuf.getData(), srcPtrs[0], oidnNormalBuf.getSize());
         std::memcpy(oidnAlbedoBuf.getData(), srcPtrs[1], oidnAlbedoBuf.getSize());
     }
     std::memcpy(oidnColorBuf.getData(), srcPtrs[2], oidnColorBuf.getSize());
 
-    for (int i = frameCounter == 1 ? 0 : 2; i < 3; i++) {
+    for (int i = refreshAuxiliaryBuffers ? 0 : 2; i < 3; i++) {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     }
 
-    if (frameCounter == 1) {
+    if (refreshAuxiliaryBuffers) {
         oidnAlbedoFilter.execute();
         oidnNormalFilter.execute();
     }
@@ -939,6 +979,9 @@ void Renderer::performDenoising(const RenderParams::Snapshot& snapshot)
 
     glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, render_width, render_height, GL_RGB, GL_FLOAT, oidnOutputBuf.getData());
+    m_hasDenoisedFrame = true;
+    m_lastDenoisedFrameCounter = frameCounter;
+    m_forceDenoiseRefresh = false;
 }
 
 void Renderer::compositeToScreen(const RenderParams::Snapshot& snapshot)
