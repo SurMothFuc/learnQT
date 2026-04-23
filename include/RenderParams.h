@@ -31,13 +31,17 @@ public:
         bool useTileRendering = true;
         int tileSize = 240;
         bool useEnvironmentMap = true;
+        int maxBounces = 4;
+        int maxRenderFrames = 0;
 
         bool operator==(const Snapshot& other) const {
             return denoise == other.denoise &&
                    renderLow == other.renderLow &&
                    useTileRendering == other.useTileRendering &&
                    tileSize == other.tileSize &&
-                   useEnvironmentMap == other.useEnvironmentMap;
+                   useEnvironmentMap == other.useEnvironmentMap &&
+                   maxBounces == other.maxBounces &&
+                   maxRenderFrames == other.maxRenderFrames;
         }
 
         bool operator!=(const Snapshot& other) const {
@@ -52,6 +56,8 @@ public:
     RENDER_PARAMS_PARAM(UseTileRendering, useTileRendering, bool, m_useTileRendering, true)
     RENDER_PARAMS_PARAM(UseEnvironmentMap, useEnvironmentMap, bool, m_useEnvironmentMap, true)
     RENDER_PARAMS_PARAM(TileSize, tileSize, int, m_tileSize, 240)
+    RENDER_PARAMS_PARAM(MaxBounces, maxBounces, int, m_maxBounces, 4)
+    RENDER_PARAMS_PARAM(MaxRenderFrames, maxRenderFrames, int, m_maxRenderFrames, 0)
 
 public:
     Snapshot snapshot() const;

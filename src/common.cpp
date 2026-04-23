@@ -238,8 +238,8 @@ unsigned int grayCode(unsigned int i) {
 }
 
 float sobol(unsigned int d, unsigned int i) {
+    const unsigned int offset = d * unsigned int(32);
     unsigned int result = unsigned int(0);
-    unsigned int offset = d * unsigned int(32);
     for (unsigned int j = unsigned int(0); i != unsigned int(0); i >>= 1, j++)
         if ((i & unsigned int(1)) != unsigned int(0))
             result ^= V[j + offset];
@@ -250,7 +250,7 @@ float sobol(unsigned int d, unsigned int i) {
 std::vector<float> getSobelRandomNumber(unsigned int frameCount, unsigned int maxBounce)
 {
     std::vector<float> res(maxBounce*2);
-    for (int i = 0; i < maxBounce; i++) {
+    for (unsigned int i = 0; i < maxBounce; i++) {
         res[i*2]= sobol(i * unsigned int(2), grayCode(frameCount));
         res[i*2+1]= sobol(i * unsigned int(2) + unsigned int(1), grayCode(frameCount));
     }

@@ -8,9 +8,10 @@ uniform int width;
 uniform int height;
 uniform uint frameCounter;
 uniform int hdrResolution;
+uniform int maxBounces;
 
-uniform float sobelNumber[24];
- 
+uniform float sobelNumber[MAX_BOUNCES_LIMIT * 2];
+
 uniform samplerBuffer triangles;
 uniform samplerBuffer nodes;
 

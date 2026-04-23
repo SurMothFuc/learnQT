@@ -9,6 +9,10 @@ learnQT::learnQT(QWidget *parent)
     Scene::getInstance();
     ui.setupUi(this);    
 
+    const RenderParams::Snapshot initialRenderParams = RenderParams::instance().snapshot();
+    ui.maxBouncesSpinBox->setValue(initialRenderParams.maxBounces);
+    ui.maxRenderFramesSpinBox->setValue(initialRenderParams.maxRenderFrames);
+
     connect( ui.SaveImageButton,SIGNAL(clicked(bool)), this, SLOT(saveGLImage()));
     connect( ui.pushButton,SIGNAL(clicked(bool)), this, SLOT(upoff()));
     connect(ui.roughnessSlider, SIGNAL(valueChanged(int)), this, SLOT(roughnessSliderUp()));
@@ -24,7 +28,9 @@ learnQT::learnQT(QWidget *parent)
 
     connect(ui.DeNoisecheckBox, SIGNAL(toggled(bool)), this, SLOT(DenoiseCheckBoxChanged()));
     connect(ui.useEnvironmentMapcheckBox, SIGNAL(toggled(bool)), this, SLOT(useEnvironmentMapCheckBoxChanged()));
-    
+    connect(ui.maxBouncesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(maxBouncesSpinBoxChanged(int)));
+    connect(ui.maxRenderFramesSpinBox, SIGNAL(valueChanged(int)), this, SLOT(maxRenderFramesSpinBoxChanged(int)));
+
 }
 
 void learnQT::hideLayout(QLayout* layout)

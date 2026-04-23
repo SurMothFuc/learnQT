@@ -57,8 +57,8 @@ private:
     void updateSizeParam();
     void calResolution(bool renderLow);
     void updateTileGrid(int tileSize);
-    void renderTile(int tileX, int tileY, int tileWidth, int tileHeight); // 渲染单个块
-    void renderFullImage(); // 渲染完整图像
+    void renderTile(int tileX, int tileY, int tileWidth, int tileHeight, int maxBounces); // 渲染单个块
+    void renderFullImage(int maxBounces); // 渲染完整图像
     void rebuildPathtraceProgram(const RenderParams::Snapshot& snapshot);
 
     /**
@@ -188,6 +188,8 @@ private:
     // 缓存上一帧已应用的快照，用于帧首差分判断。
     RenderParams::Snapshot m_lastAppliedSnapshot{};
     bool m_forceDenoiseRefresh = true;
+    bool m_hasDenoisedFrame = false;
+    unsigned int m_lastDenoisedFrameCounter = 0;
 };
 
 #endif // RENDERER_H
