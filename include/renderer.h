@@ -106,7 +106,7 @@ private:
     /**
      * @brief 执行降噪处理
      */
-    void performDenoising(const RenderParams::Snapshot& snapshot);
+    void performDenoising(const RenderParams::Snapshot& snapshot, bool forceCurrentFrame = false);
 
     /**
      * @brief 合成到屏幕

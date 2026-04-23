@@ -205,14 +205,15 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot& snaps
     // 2. 常规渲染与后处理阶段全部只读本帧 snapshot
     displayRenderingStats();
     if (isRenderFrameLimitReached(snapshot, frameCounter)) {
-        performDenoising(snapshot);
+        performDenoising(snapshot, true);
         compositeToScreen(snapshot);
         return;
     }
 
     executeRenderPass(snapshot);
     processHistorySaving(snapshot);
-    performDenoising(snapshot);
+    const bool reachedFrameLimitAfterPass = isRenderFrameLimitReached(snapshot, frameCounter);
+    performDenoising(snapshot, reachedFrameLimitAfterPass);
     compositeToScreen(snapshot);
 }
 
@@ -913,7 +914,7 @@ void Renderer::processHistorySaving(const RenderParams::Snapshot& snapshot)
     }
 }
 
-void Renderer::performDenoising(const RenderParams::Snapshot& snapshot)
+void Renderer::performDenoising(const RenderParams::Snapshot& snapshot, bool forceCurrentFrame)
 {
     if (!snapshot.denoise) {
         m_forceDenoiseRefresh = false;
@@ -931,7 +932,7 @@ void Renderer::performDenoising(const RenderParams::Snapshot& snapshot)
     }
 
     const bool shouldDenoise =
-        m_forceDenoiseRefresh || frameCounter % 100 == 0 || frameCounter == 1;
+        forceCurrentFrame || m_forceDenoiseRefresh || frameCounter % 100 == 0 || frameCounter == 1;
     if (!shouldDenoise) {
         return;
     }
