@@ -5,7 +5,7 @@
 #include <QMatrix4x4>
 #include "common.h"
 
-void MeshLoader::readObj(std::string filepath, std::vector<Triangle>& triangles, Material material, QMatrix4x4 trans, bool smoothNormal)
+void MeshLoader::readObj(std::string filepath, std::vector<Triangle>& triangles, Material material, QMatrix4x4 trans, bool smoothNormal,bool enableNormalization )
 {
     // 顶点位置，索引
     std::vector<QVector3D> vertices;
@@ -80,13 +80,16 @@ void MeshLoader::readObj(std::string filepath, std::vector<Triangle>& triangles,
         }
     }
 
-    // 模型大小归一化
-    float lenx = maxx - minx;
-    float leny = maxy - miny;
-    float lenz = maxz - minz;
-    float maxaxis = std::max(lenx, std::max(leny, lenz));
-    for (auto& v : vertices) {
-        v /= maxaxis;
+    if(enableNormalization)
+    {
+        // 模型大小归一化
+        float lenx = maxx - minx;
+        float leny = maxy - miny;
+        float lenz = maxz - minz;
+        float maxaxis = std::max(lenx, std::max(leny, lenz));
+        for (auto& v : vertices) {
+            v /= maxaxis;
+        }
     }
 
     // 通过矩阵进行坐标变换

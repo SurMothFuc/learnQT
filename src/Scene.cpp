@@ -1,9 +1,132 @@
 #include "Scene.h"
 #include "iostream"
+#include <array>
 #include <direct.h>  // POSIX 标准
 
 
-Scene::Scene(){
+Scene::Scene()
+{
+    resetSceneData();
+    //camera = Camera(QVector3D(0.0f, 1.17f, 4.0f), QVector3D(0.0f, 1.0f, 0.0f));
+    
+
+    // Replace this one call with buildLegacyGlassScene() to restore the old glass scene.
+    buildImportanceSamplingBenchmarkScene();
+    //buildLegacyGlassScene();
+    finalizeScene();
+}
+
+void Scene::resetSceneData()
+{
+    triangles.clear();
+    nodes.clear();
+    triangles_encoded.clear();
+    nodes_encoded.clear();
+
+    if (cache != nullptr) {
+        delete[] cache;
+        cache = nullptr;
+    }
+
+    if (hdrRes.cols != nullptr) {
+        delete[] hdrRes.cols;
+        hdrRes.cols = nullptr;
+    }
+
+    hdrRes.width = 0;
+    hdrRes.height = 0;
+    hdrResolution = 0;
+}
+
+void Scene::buildImportanceSamplingBenchmarkScene()
+{
+    camera = Camera(QVector3D(18.0f/1.5f, 4.0f/1.5f, 0.0f/1.5f), QVector3D(0.0f, 1.0f, 0.0f));
+    std::cout << "Building importance sampling benchmark scene" << std::endl;
+
+    Material mtWall;
+    mtWall.baseColor=QVector3D(1.0f, 1.0f, 1.0f);
+
+    MeshLoader::readObj(getResourcePath("models/veach/wall.obj"), triangles, mtWall, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1.0, 1.0, 1.0)), false,false);
+
+    MeshLoader::readObj(getResourcePath("models/veach/floor.obj"), triangles, mtWall, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1.0, 1.0, 1.0)), false,false);
+
+
+    Material mtPlate;
+    mtPlate.baseColor=QVector3D(1.0f, 1.0f, 1.0f);
+    mtPlate.metallic=1.0f;
+
+    mtPlate.roughness=0.01f;
+    MeshLoader::readObj(getResourcePath("models/veach/plate1.obj"), triangles, mtPlate, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1.0, 1.0, 1.0)), false,false);
+
+    mtPlate.roughness=0.04f;
+    MeshLoader::readObj(getResourcePath("models/veach/plate2.obj"), triangles, mtPlate, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1.0, 1.0, 1.0)), false,false);
+
+    mtPlate.roughness=0.09f;
+    MeshLoader::readObj(getResourcePath("models/veach/plate3.obj"), triangles, mtPlate, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1.0, 1.0, 1.0)), false,false);
+
+    mtPlate.roughness=0.16f;
+    MeshLoader::readObj(getResourcePath("models/veach/plate4.obj"), triangles, mtPlate, MeshLoader::getTransformMatrix(QVector3D(0, 0, -3.5f), QVector3D(0, 0, 0), QVector3D(1.0, 1.0, 1.0)), false,false);
+
+    Material mtLight;
+    mtLight.baseColor=QVector3D(1.0f, 1.0f, 1.0f);
+
+    mtLight.emissive = QVector3D(2.0f, 0.64f, 0.174f)*10.0f;
+    MeshLoader::readObj(getResourcePath("models/sphere.obj"), triangles, mtLight, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0),QVector3D(-3.3724, 5.5, -3.74116)- QVector3D(0, 0.5f, 0), QVector3D(1.2, 1.2, 1.2)), true,true);
+
+    mtLight.emissive = QVector3D(0.87f, 2.0f, 0.28f)*10.0f;
+    MeshLoader::readObj(getResourcePath("models/sphere.obj"), triangles, mtLight, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0),QVector3D(-3.3724, 5.5, -1.24)- QVector3D(0, 0.5f, 0), QVector3D(0.6, 0.6, 0.6)), true,true);
+
+    mtLight.emissive = QVector3D(0.41f, 1.88f, 2.0f)*10.0f;
+    MeshLoader::readObj(getResourcePath("models/sphere.obj"), triangles, mtLight, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0),QVector3D(-3.3724, 5.5, 1.24)- QVector3D(0, 0.5f, 0), QVector3D(0.3, 0.3, 0.3)), true,true);
+
+    mtLight.emissive = QVector3D(1.43f, 0.46f, 2.0f)*10.0f;
+    MeshLoader::readObj(getResourcePath("models/sphere.obj"), triangles, mtLight, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0),QVector3D(-3.3724, 5.5, 3.74116)- QVector3D(0, 0.5f, 0), QVector3D(0.1, 0.1, 0.1)), true,true);
+
+
+}
+
+void Scene::finalizeScene()
+{
+    const int nTriangles = static_cast<int>(triangles.size());
+    std::cout << "Model loading completed: total " << nTriangles << " triangles" << std::endl;
+
+    if (nTriangles == 0) {
+        std::cout << "Scene finalization skipped: no triangles loaded" << std::endl;
+        return;
+    }
+
+    // 建立 bvh
+    BVHNode testNode;
+    testNode.left = 255;
+    testNode.right = 128;
+    testNode.n = 30;
+    testNode.AA = QVector3D(1, 1, 0);
+    testNode.BB = QVector3D(0, 1, 0);
+    nodes = std::vector<BVHNode>{ testNode };
+    int max_deep = 0;
+    BuildBVH::buildBVHwithSAH(triangles, nodes, 0, nTriangles - 1, 8, 0, max_deep);
+    const int nNodes = static_cast<int>(nodes.size());
+    std::cout << "BVH construction completed: total " << nNodes << " nodes, depth " << max_deep << std::endl;
+    //建立bvh需要在三角形编码之前，因为bvh的构建使用了排序
+
+    DataEncode(nTriangles, nNodes);
+    std::cout << "Triangle and BVH encoding completed" << std::endl;
+
+    const bool hdrLoaded = HDRLoader::load(getResourcePath("hdr/peppermint_powerplant_4k.hdr").c_str(), hdrRes);
+    std::cout << "load HDRtexture:" << hdrLoaded << std::endl;
+    if (!hdrLoaded) {
+        std::cout << "HDR texture loading failed, HDR cache is unavailable" << std::endl;
+        return;
+    }
+
+    // hdr 重要性采样 cache
+    std::cout << "Calculating HDR texture importance sampling cache, current resolution: " << hdrRes.width << " " << hdrRes.height << std::endl;
+    cache = calculateHdrCache(hdrRes.cols, hdrRes.width, hdrRes.height);
+    hdrResolution = hdrRes.width;
+}
+
+void Scene::buildLegacyGlassScene()
+{
     camera = Camera(QVector3D(0.0f, 1.17f, 4.0f), QVector3D(0.0f, 1.0f, 0.0f));
     Material mt;
     //light
@@ -13,7 +136,7 @@ Scene::Scene(){
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.0, 0), QVector3D(1.0, 0.01, 1.0)), false);
+    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.0, 0), QVector3D(1.0, 0.01, 1.0)), false,true);
 
     //box    
     mt = Material();
@@ -22,7 +145,7 @@ Scene::Scene(){
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(0.725, 0.71, 0.68);
     //MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.7, 0), QVector3D(4, 0.01, 4)), false);
-    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.01, 0), QVector3D(4, 0.01, 4)), false);
+    MeshLoader::readObj(getResourcePath("models/quad.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.01, 0), QVector3D(4, 0.01, 4)), false,true);
     mt = Material();
     mt.roughness = 0.1;
     //mt.subsurface = 1.0;
@@ -96,37 +219,10 @@ Scene::Scene(){
     mt.transmission = 1.0;
     mt.IOR = 1.5;
     mt.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
-    MeshLoader::readObj(getResourcePath("models/glass.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1, 1, 1)), true);
+    MeshLoader::readObj(getResourcePath("models/glass.obj"), triangles, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1, 1, 1)), true,true);
 
 
 
-    int nTriangles = triangles.size();
-    std::cout << "Model loading completed: total " << nTriangles << " triangles" << std::endl;
-
-    // 建立 bvh
-    BVHNode testNode;
-    testNode.left = 255;
-    testNode.right = 128;
-    testNode.n = 30;
-    testNode.AA = QVector3D(1, 1, 0);
-    testNode.BB = QVector3D(0, 1, 0);
-    nodes= std::vector<BVHNode>{ testNode };
-    int max_deep = 0;
-    BuildBVH::buildBVHwithSAH(triangles, nodes, 0, triangles.size() - 1, 8,0, max_deep);
-    int nNodes = nodes.size();
-    std::cout << "BVH construction completed: total " << nNodes << " nodes, depth " << max_deep << std::endl;
-    //建立bvh需要在三角形编码之前，因为bvh的构建使用了排序
-
-    
-    DataEncode(nTriangles, nNodes);
-    std::cout << "Triangle and BVH encoding completed" << std::endl;
-
-
-    std::cout <<"load HDRtexture:" << HDRLoader::load(getResourcePath("hdr/peppermint_powerplant_4k.hdr").c_str(), hdrRes) << std::endl;
-    // hdr 重要性采样 cache
-    std::cout << "Calculating HDR texture importance sampling cache, current resolution: " << hdrRes.width << " " << hdrRes.height << std::endl;
-    cache = calculateHdrCache(hdrRes.cols, hdrRes.width, hdrRes.height);
-    hdrResolution = hdrRes.width;
 }
 
 void Scene::DataEncode(int nTriangles,int nNodes)
