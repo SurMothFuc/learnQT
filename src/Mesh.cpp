@@ -163,7 +163,10 @@ int loadTextureFromTypes(const aiMaterial* material,
                       << uvIndex << "; only UV0 is stored" << std::endl;
         }
 
-        return loadTexture(modelFilepath, path, textures, slotName);
+        const int textureIndex = loadTexture(modelFilepath, path, textures, slotName);
+        if (textureIndex >= 0) {
+            return textureIndex;
+        }
     }
 
     return -1;
