@@ -60,4 +60,11 @@ public:
     QVector3D mediumColor = QVector3D(1.0, 1.0, 1.0);
     float mediumAnisotropy=0.0;
 
+    int baseColorTex = -1;
+    int normalTex = -1;
+    int metallicTex = -1;
+    int roughnessTex = -1;
+    int emissiveTex = -1;
+    int opacityTex = -1;
+
 };

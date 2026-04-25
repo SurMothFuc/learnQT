@@ -54,6 +54,7 @@ public:
 
     //data store
     std::vector<Triangle> triangles;
+    std::vector<TextureAsset> textures;
     std::vector<BVHNode> nodes;
     std::vector<Triangle_encoded> triangles_encoded;
     std::vector<BVHNode_encoded> nodes_encoded;
