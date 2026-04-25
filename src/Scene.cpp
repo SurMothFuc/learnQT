@@ -11,8 +11,8 @@ Scene::Scene()
     
 
     // Replace this one call with buildLegacyGlassScene() to restore the old glass scene.
-    buildImportanceSamplingBenchmarkScene();
-    //buildLegacyGlassScene();
+    //buildImportanceSamplingBenchmarkScene();
+    buildLegacyGlassScene();
     finalizeScene();
 }
 
