@@ -46,6 +46,7 @@ private:
     void resetSceneData();
     void buildLegacyGlassScene();
     void buildImportanceSamplingBenchmarkScene();
+    void buildBedroomScene();
     void finalizeScene();
 
 public:

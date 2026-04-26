@@ -3,6 +3,23 @@
 #include <array>
 #include <direct.h>  // POSIX 标准
 
+namespace {
+
+Material makeBedroomMaterial(const QVector3D& baseColor,
+                             float roughness = 1.0f,
+                             float metallic = 0.0f,
+                             float transmission = 0.0f)
+{
+    Material material;
+    material.baseColor = baseColor;
+    material.roughness = roughness;
+    material.metallic = metallic;
+    material.transmission = transmission;
+    return material;
+}
+
+} // namespace
+
 
 Scene::Scene()
 {
@@ -10,9 +27,10 @@ Scene::Scene()
     //camera = Camera(QVector3D(0.0f, 1.17f, 4.0f), QVector3D(0.0f, 1.0f, 0.0f));
     
 
-    // Replace this one call with buildLegacyGlassScene() to restore the old glass scene.
+    // Manual switch: comment buildLegacyGlassScene() and uncomment buildBedroomScene().
     //buildImportanceSamplingBenchmarkScene();
-    buildLegacyGlassScene();
+    //buildLegacyGlassScene();
+    buildBedroomScene();
     finalizeScene();
 }
 
@@ -84,6 +102,159 @@ void Scene::buildImportanceSamplingBenchmarkScene()
     MeshLoader::readModel(getResourcePath("models/sphere.obj"), triangles, textures, mtLight, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0),QVector3D(-3.3724, 5.5, 3.74116)- QVector3D(0, 0.5f, 0), QVector3D(0.1, 0.1, 0.1)), true,true);
 
 
+}
+
+void Scene::buildBedroomScene()
+{
+    const QVector3D referenceLookAt(0.0f, 1.0f, 0.31f);
+    const QVector3D sceneOffset = -referenceLookAt;
+    camera = Camera(QVector3D(3.0f, 0.5f, 3.49f), QVector3D(0.0f, 1.0f, 0.0f));
+    std::cout << "Building bedroom scene" << std::endl;
+
+    const QMatrix4x4 bedroomTransform = MeshLoader::getTransformMatrix(
+        QVector3D(0.0f, 0.0f, 0.0f),
+        sceneOffset,
+        QVector3D(1.0f, 1.0f, 1.0f));
+    const bool smoothNormal = true;
+    const bool enableNormalization = false;
+
+    const Material boxes = makeBedroomMaterial(QVector3D(0.483044f, 0.384664f, 0.301561f));
+    const Material plasticCable = makeBedroomMaterial(QVector3D(0.558543f, 0.558543f, 0.558543f));
+    const Material lampEmitter = makeBedroomMaterial(QVector3D(0.64f, 0.64f, 0.64f));
+    const Material blankets = makeBedroomMaterial(QVector3D(0.485435f, 0.456263f, 0.428075f));
+    const Material bedsheets = makeBedroomMaterial(QVector3D(0.908f, 0.922f, 0.946f));
+    const Material window = makeBedroomMaterial(QVector3D(0.48173f, 0.48173f, 0.48173f));
+    const Material pictureBacking = makeBedroomMaterial(QVector3D(0.111567f, 0.037068f, 0.017016f));
+    const Material picture = makeBedroomMaterial(QVector3D(0.590f, 0.578f, 0.556f));
+    const Material rocks1 = makeBedroomMaterial(QVector3D(0.350827f, 0.242986f, 0.17883f));
+    const Material rocks2 = makeBedroomMaterial(QVector3D(0.098964f, 0.098964f, 0.098964f));
+    const Material rocks3 = makeBedroomMaterial(QVector3D(0.558544f, 0.558544f, 0.558544f));
+    const Material decoPlant = makeBedroomMaterial(QVector3D(0.041772f, 0.011306f, 0.007575f));
+    const Material black = makeBedroomMaterial(QVector3D(0.015396f, 0.015396f, 0.015396f));
+    const Material carpet = makeBedroomMaterial(QVector3D(0.034499f, 0.034499f, 0.034499f));
+    const Material matress = makeBedroomMaterial(QVector3D(0.893289f, 0.893289f, 0.893289f));
+    const Material woodFloor = makeBedroomMaterial(QVector3D(0.710f, 0.523f, 0.361f), 0.15f);
+    const Material walls = makeBedroomMaterial(QVector3D(0.799999f, 0.799999f, 0.799999f));
+    const Material walls2 = makeBedroomMaterial(QVector3D(0.799999f, 0.799999f, 0.799999f));
+    const Material woodFurniture = makeBedroomMaterial(QVector3D(0.774f, 0.484f, 0.154f), 0.15f);
+    const Material mirror = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.0f, 1.0f);
+    const Material aluminium = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.2f, 1.0f);
+    const Material bookCover = makeBedroomMaterial(QVector3D(0.0f, 0.0f, 0.0f));
+    const Material bookPages = makeBedroomMaterial(QVector3D(0.567027f, 0.567027f, 0.567027f));
+    const Material lampMetal = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.1f);
+    const Material glass = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.0f, 0.0f, 1.0f);
+    const Material roughGlass = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.1f, 0.0f, 1.0f);
+    const Material pictureFrame = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.1f, 1.0f);
+    const Material curtainRod = makeBedroomMaterial(QVector3D(0.5f, 0.5f, 0.5f), 0.1f, 1.0f);
+    const Material stainlessSmooth = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.0f, 1.0f);
+
+    auto loadMesh = [&](const char* filename, const Material& material) {
+        MeshLoader::readModel(
+            getResourcePath(std::string("models/bedroom/") + filename),
+            triangles,
+            textures,
+            material,
+            bedroomTransform,
+            smoothNormal,
+            enableNormalization);
+    };
+
+    loadMesh("Mesh044.obj", aluminium);
+    loadMesh("Mesh047.obj", aluminium);
+    loadMesh("Mesh032.obj", woodFurniture);
+    loadMesh("Mesh028.obj", stainlessSmooth);
+    loadMesh("Mesh046.obj", aluminium);
+    loadMesh("Mesh027.obj", aluminium);
+    loadMesh("Mesh022.obj", aluminium);
+    loadMesh("Mesh042.obj", aluminium);
+    loadMesh("Mesh036.obj", aluminium);
+    loadMesh("Mesh043.obj", aluminium);
+    loadMesh("Mesh040.obj", aluminium);
+    loadMesh("Mesh037.obj", glass);
+    loadMesh("Mesh026.obj", glass);
+    loadMesh("Mesh023.obj", lampMetal);
+    loadMesh("Mesh059.obj", lampEmitter);
+    loadMesh("Mesh049.obj", roughGlass);
+    loadMesh("Mesh060.obj", woodFloor);
+    loadMesh("Mesh033.obj", decoPlant);
+    loadMesh("Mesh025.obj", rocks1);
+    loadMesh("Mesh055.obj", rocks2);
+    loadMesh("Mesh035.obj", rocks3);
+    loadMesh("Mesh048.obj", glass);
+    loadMesh("Mesh056.obj", lampMetal);
+    loadMesh("Mesh058.obj", plasticCable);
+    loadMesh("Mesh061.obj", lampEmitter);
+    loadMesh("Mesh051.obj", glass);
+    loadMesh("Mesh066.obj", lampMetal);
+    loadMesh("Mesh062.obj", plasticCable);
+    loadMesh("Mesh054.obj", lampEmitter);
+    loadMesh("Mesh063.obj", bookCover);
+    loadMesh("Mesh064.obj", bookPages);
+    loadMesh("Mesh041.obj", bedsheets);
+    loadMesh("Mesh052.obj", glass);
+    loadMesh("Mesh065.obj", glass);
+    loadMesh("Mesh067.obj", glass);
+    loadMesh("Mesh068.obj", bedsheets);
+    loadMesh("Mesh034.obj", bedsheets);
+    loadMesh("Mesh021.obj", matress);
+    loadMesh("Mesh020.obj", carpet);
+    loadMesh("Mesh019.obj", carpet);
+    loadMesh("Mesh018.obj", black);
+    loadMesh("Mesh017.obj", black);
+    loadMesh("Mesh069.obj", black);
+    loadMesh("Mesh015.obj", curtainRod);
+    loadMesh("Mesh014.obj", curtainRod);
+    loadMesh("Mesh012.obj", woodFurniture);
+    loadMesh("Mesh011.obj", mirror);
+    loadMesh("Mesh013.obj", walls);
+    loadMesh("Mesh039.obj", window);
+    loadMesh("Mesh010.obj", window);
+    loadMesh("Mesh031.obj", woodFurniture);
+    loadMesh("Mesh045.obj", stainlessSmooth);
+    loadMesh("Mesh038.obj", mirror);
+    loadMesh("Mesh009.obj", woodFurniture);
+    loadMesh("Mesh024.obj", stainlessSmooth);
+    loadMesh("Mesh030.obj", woodFurniture);
+    loadMesh("Mesh029.obj", stainlessSmooth);
+    loadMesh("Mesh008.obj", walls2);
+    loadMesh("Mesh007.obj", woodFurniture);
+    loadMesh("Mesh006.obj", woodFurniture);
+    loadMesh("Mesh005.obj", stainlessSmooth);
+    loadMesh("Mesh050.obj", pictureFrame);
+    loadMesh("Mesh053.obj", pictureBacking);
+    loadMesh("Mesh003.obj", picture);
+    loadMesh("Mesh002.obj", boxes);
+    loadMesh("Mesh016.obj", blankets);
+    loadMesh("Mesh001.obj", blankets);
+    loadMesh("Mesh000.obj", blankets);
+
+    Material bedroomLight;
+    bedroomLight.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
+    bedroomLight.emissive = QVector3D(1.0f, 1.0f, 1.0f);
+    const QVector3D lightScale(1.064823f, 1.815584f, 0.01f);
+
+    MeshLoader::readModel(
+        getResourcePath("models/quad.obj"),
+        triangles,
+        textures,
+        bedroomLight,
+        MeshLoader::getTransformMatrix(
+            QVector3D(0.0f, 0.0f, 0.0f),
+            sceneOffset + QVector3D(-1.4754385f, 1.189678f, -1.26735f),
+            lightScale),
+        false,
+        true);
+    MeshLoader::readModel(
+        getResourcePath("models/quad.obj"),
+        triangles,
+        textures,
+        bedroomLight,
+        MeshLoader::getTransformMatrix(
+            QVector3D(0.0f, 0.0f, 0.0f),
+            sceneOffset + QVector3D(1.443792f, 1.189678f, -1.26735f),
+            lightScale),
+        false,
+        true);
 }
 
 void Scene::finalizeScene()
