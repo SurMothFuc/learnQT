@@ -24,6 +24,53 @@ if(dot(N, hdrTestRay.direction) > 0.0) { // 如果采样方向背向点 p 则放
 */
 //}
 
+bool IsDirectLightVisible(vec3 origin, vec3 direction, float maxDistance)
+{
+    Ray shadowRay;
+    shadowRay.startPoint = origin + direction * 0.0005;
+    shadowRay.direction = direction;
+
+    HitResult blocker = hitBVH(shadowRay);
+    if (!blocker.isHit) {
+        return true;
+    }
+
+    if (maxDistance >= INF * 0.5) {
+        return false;
+    }
+
+    return blocker.hitDistance >= maxDistance - 0.001;
+}
+
+vec3 EstimateDirectLighting(HitResult hit, vec3 history, float eta)
+{
+    LightSample lightSample = SampleOneLight(hit.hitPoint, rand(), rand(), rand());
+    if (!lightSample.valid || lightSample.pdf <= 0.0) {
+        return vec3(0.0);
+    }
+
+    vec3 V = -hit.viewDir;
+    vec3 N = hit.normal;
+    vec3 L = lightSample.direction;
+    float NdotL = abs(dot(N, L));
+    if (NdotL <= 0.0) {
+        return vec3(0.0);
+    }
+
+    if (!IsDirectLightVisible(hit.hitPoint, L, lightSample.distance)) {
+        return vec3(0.0);
+    }
+
+    float bsdfPdf = 0.0;
+    vec3 f = DisneyEval(V, N, L, hit.material, eta, bsdfPdf);
+    if (bsdfPdf <= 0.0 || maxComponent(f) <= 0.0) {
+        return vec3(0.0);
+    }
+
+    float misWeight = lightSample.delta ? 1.0 : misMixWeight(lightSample.pdf, bsdfPdf);
+    return history * lightSample.radiance * f * NdotL * misWeight / lightSample.pdf;
+}
+
 OutputColor pathTracingImportanceSampling(Ray r, int maxBounce) {
     OutputColor o_c;
     //vec3 Lo = vec3(0);      // 最终的颜色
@@ -33,7 +80,7 @@ OutputColor pathTracingImportanceSampling(Ray r, int maxBounce) {
     o_c.normal_color=vec3(0);//对于环境光贴图的位置设为0
     o_c.base_color=vec3(0);
 
-    float pdf_brdf;
+    float pdf_brdf = 0.0;
     float NdotL;
     vec3 f_r;
 
@@ -51,10 +98,8 @@ OutputColor pathTracingImportanceSampling(Ray r, int maxBounce) {
         if(!newHit.isHit) {
 #ifdef USEENVIRONMENTMAP
             vec3 color = hdrColor(r.direction);
-            //float pdf_light = hdrPdf(L, hdrResolution); 
-            //float mis_weight = misMixWeight(pdf_brdf, pdf_light);   // f(a,b) = a^2 / (a^2 + b^2)
-            float mis_weight = 1.0;   // f(a,b) = a^2 / (a^2 + b^2)
-            //Lo += mis_weight * history * color;
+            float pdf_light = LightPdf(r.startPoint, r.direction, -1, INF);
+            float mis_weight = (bounce > 0 && pdf_brdf > 0.0) ? misMixWeight(pdf_brdf, pdf_light) : 1.0;
 
             o_c.render_color+=mis_weight * history * color;
 #endif   
@@ -62,9 +107,11 @@ OutputColor pathTracingImportanceSampling(Ray r, int maxBounce) {
         }
         
         // 命中光源积累颜色  
-       // Lo +=  history *newHit.material.emissive;
-
-        o_c.render_color+=history *newHit.material.emissive;
+        if (maxComponent(newHit.material.emissive) > 0.0) {
+            float pdf_light = LightPdf(r.startPoint, r.direction, newHit.triangleIndex, newHit.hitDistance);
+            float mis_weight = (bounce > 0 && pdf_brdf > 0.0) ? misMixWeight(pdf_brdf, pdf_light) : 1.0;
+            o_c.render_color+=mis_weight * history *newHit.material.emissive;
+        }
 
        
         mediumSampled = false;
@@ -153,6 +200,7 @@ OutputColor pathTracingImportanceSampling(Ray r, int maxBounce) {
                 float eta =newHit.isInside ? newHit.material.IOR:(1.0 / newHit.material.IOR) ;
                 vec3 V = -newHit.viewDir;
                 vec3 N = newHit.normal;   
+                o_c.render_color += EstimateDirectLighting(newHit, history, eta);
                 // 采样 BRDF 得到一个方向 L
                 vec3 L =  DisneySample(xi_1, xi_2, xi_3, V, N, newHit.material,eta); 
                 NdotL =abs(dot(N, L));

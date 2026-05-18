@@ -79,6 +79,7 @@ float hitAABB(Ray r, vec3 AA, vec3 BB) {
 HitResult hitBVH(Ray ray) {
     HitResult res;
     res.isHit = false;
+    res.triangleIndex = -1;
     res.hitDistance = INF;
     vec3 bary;
     int triID = -1;
@@ -217,6 +218,7 @@ HitResult hitBVH(Ray ray) {
         }
 
         res.material = getMaterial(triID);
+        res.triangleIndex = triID;
     }
     return res;
 }

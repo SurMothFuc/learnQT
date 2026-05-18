@@ -309,6 +309,7 @@ void Renderer::uninit()
     glDeleteTextures(1, &hdrCache);
     glDeleteTextures(1, &trianglesTextureBuffer);
     glDeleteTextures(1, &nodesTextureBuffer);
+    glDeleteTextures(1, &lightsTextureBuffer);
 
     if (VAO) {
         glDeleteVertexArrays(1, &VAO);
@@ -323,6 +324,9 @@ void Renderer::uninit()
     if (tbo1) {
         glDeleteBuffers(1, &tbo1);
     }
+    if (tboLights) {
+        glDeleteBuffers(1, &tboLights);
+    }
 
     if (pboIds[0] != 0 || pboIds[1] != 0 || pboIds[2] != 0) {
         glDeleteBuffers(3, pboIds);
@@ -331,8 +335,8 @@ void Renderer::uninit()
 
     historysave_fbo = m_fbo = pathtrace_fbo = 0;
     m_texture = 0;
-    hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = 0;
-    VAO = VBO = tbo0 = tbo1 = 0;
+    hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = lightsTextureBuffer = 0;
+    VAO = VBO = tbo0 = tbo1 = tboLights = 0;
 }
 
 void Renderer::updateOIDNBuffers()
@@ -440,6 +444,7 @@ void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, i
         pathtrace_program->setUniformValue("nodes", 1);
         pathtrace_program->setUniformValue("hdrMap", 2);
         pathtrace_program->setUniformValue("hdrCache", 3);
+        pathtrace_program->setUniformValue("lights", 5);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
@@ -456,6 +461,9 @@ void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, i
         pathtrace_program->setUniformValue("preRenderColor", 4);
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, preRenderColorTex);
+
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_BUFFER, lightsTextureBuffer);
 
         glViewport(tileX, tileY, tileWidth, tileHeight);
         glEnable(GL_SCISSOR_TEST);
@@ -487,6 +495,7 @@ void Renderer::renderFullImage(int maxBounces)
         pathtrace_program->setUniformValue("nodes", 1);
         pathtrace_program->setUniformValue("hdrMap", 2);
         pathtrace_program->setUniformValue("hdrCache", 3);
+        pathtrace_program->setUniformValue("lights", 5);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
@@ -503,6 +512,9 @@ void Renderer::renderFullImage(int maxBounces)
         pathtrace_program->setUniformValue("preRenderColor", 4);
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, preRenderColorTex);
+
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_BUFFER, lightsTextureBuffer);
 
         glViewport(m_viewportX, m_viewportY, render_width, render_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -746,6 +758,34 @@ void Renderer::uploadNodeBuffer(bool recreateResources)
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F, tbo1);
 }
 
+void Renderer::uploadLightBuffer(bool recreateResources)
+{
+    const auto& lightsEncoded = Scene::getInstance().lights_encoded;
+    const GLsizeiptr bufferSize = static_cast<GLsizeiptr>(lightsEncoded.size() * sizeof(Light_encoded));
+    const void* data = lightsEncoded.empty() ? nullptr : lightsEncoded.data();
+
+    if (recreateResources && tboLights != 0) {
+        glDeleteBuffers(1, &tboLights);
+        tboLights = 0;
+    }
+    if (recreateResources && lightsTextureBuffer != 0) {
+        glDeleteTextures(1, &lightsTextureBuffer);
+        lightsTextureBuffer = 0;
+    }
+
+    if (tboLights == 0) {
+        glGenBuffers(1, &tboLights);
+    }
+    glBindBuffer(GL_TEXTURE_BUFFER, tboLights);
+    glBufferData(GL_TEXTURE_BUFFER, bufferSize, data, GL_STATIC_DRAW);
+
+    if (lightsTextureBuffer == 0) {
+        glGenTextures(1, &lightsTextureBuffer);
+    }
+    glBindTexture(GL_TEXTURE_BUFFER, lightsTextureBuffer);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, tboLights);
+}
+
 void Renderer::uploadHdrTextures(bool recreateResources)
 {
     const auto uploadTexture = [&](GLuint& texture, float* data) {
@@ -803,6 +843,10 @@ void Renderer::syncMaterialBuffer()
     // 材质脏路径只重传三角形编码缓冲，不触碰 BVH / HDR 资源。
     const bool recreateTriangleResources = (tbo0 == 0 || trianglesTextureBuffer == 0);
     uploadTriangleBuffer(recreateTriangleResources);
+    uploadLightBuffer(tboLights == 0 || lightsTextureBuffer == 0);
+    pathtrace_program->bind();
+    pathtrace_program->setUniformValue("nLights", static_cast<int>(Scene::getInstance().lights_encoded.size()));
+    pathtrace_program->release();
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindBuffer(GL_TEXTURE_BUFFER, 0);
 }
@@ -814,11 +858,13 @@ void Renderer::syncSceneBuffers()
     // 全量场景同步：triangles / nodes / HDR / 相关 uniform 一次性更新。
     uploadTriangleBuffer(tbo0 == 0 || trianglesTextureBuffer == 0);
     uploadNodeBuffer(tbo1 == 0 || nodesTextureBuffer == 0);
+    uploadLightBuffer(tboLights == 0 || lightsTextureBuffer == 0);
     uploadHdrTextures(hdrMap == 0 || hdrCache == 0);
 
     pathtrace_program->bind();
     pathtrace_program->setUniformValue("nTriangles", static_cast<int>(Scene::getInstance().triangles.size()));
     pathtrace_program->setUniformValue("nNodes", static_cast<int>(Scene::getInstance().nodes_encoded.size()));
+    pathtrace_program->setUniformValue("nLights", static_cast<int>(Scene::getInstance().lights_encoded.size()));
     pathtrace_program->setUniformValue("width", render_width);
     pathtrace_program->setUniformValue("height", render_height);
     pathtrace_program->setUniformValue("hdrResolution", Scene::getInstance().hdrResolution);

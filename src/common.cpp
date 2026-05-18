@@ -4,12 +4,17 @@
 #include <QString>
 #include <QCoreApplication>
 #include <string>  
+#include <algorithm>
+#include <cmath>
 float radians(float angle) {
     return angle * PI / 180.0;
 }
 
 // 计算 HDR 贴图相关缓存信息
 float* calculateHdrCache(float* HDR, int width, int height) {
+    if (HDR == nullptr || width <= 0 || height <= 0) {
+        return nullptr;
+    }
 
     float lumSum = 0.0;
 
@@ -21,16 +26,26 @@ float* calculateHdrCache(float* HDR, int width, int height) {
             float R = HDR[3 * (i * width + j)];
             float G = HDR[3 * (i * width + j) + 1];
             float B = HDR[3 * (i * width + j) + 2];
-            float lum = 0.2 * R + 0.7 * G + 0.1 * B;
-            pdf[i][j] = lum;
-            lumSum += lum;
+            const float v = (static_cast<float>(i) + 0.5f) / static_cast<float>(height);
+            const float latitude = PI * (0.5f - v);
+            const float jacobian = std::max(std::cos(latitude), 1e-6f);
+            const float lum = std::max(0.0f, 0.212671f * R + 0.715160f * G + 0.072169f * B);
+            pdf[i][j] = lum * jacobian;
+            lumSum += pdf[i][j];
         }
     }
 
     // 概率密度归一化
-    for (int i = 0; i < height; i++)
-        for (int j = 0; j < width; j++)
-            pdf[i][j] /= lumSum;
+    if (lumSum > 0.0f) {
+        for (int i = 0; i < height; i++)
+            for (int j = 0; j < width; j++)
+                pdf[i][j] /= lumSum;
+    } else {
+        const float uniformPdf = 1.0f / static_cast<float>(width * height);
+        for (int i = 0; i < height; i++)
+            for (int j = 0; j < width; j++)
+                pdf[i][j] = uniformPdf;
+    }
 
     // 累加每一列得到 x 的边缘概率密度
     std::vector<float> pdf_x_margin;
@@ -46,9 +61,16 @@ float* calculateHdrCache(float* HDR, int width, int height) {
 
     // 计算 y 在 X=x 下的条件概率密度函数
     std::vector<std::vector<float>> pdf_y_condiciton = pdf;
-    for (int j = 0; j < width; j++)
-        for (int i = 0; i < height; i++)
-            pdf_y_condiciton[i][j] /= pdf_x_margin[j];
+    for (int j = 0; j < width; j++) {
+        if (pdf_x_margin[j] > 0.0f) {
+            for (int i = 0; i < height; i++)
+                pdf_y_condiciton[i][j] /= pdf_x_margin[j];
+        } else {
+            const float uniformColumnPdf = 1.0f / static_cast<float>(height);
+            for (int i = 0; i < height; i++)
+                pdf_y_condiciton[i][j] = uniformColumnPdf;
+        }
+    }
 
     // 计算 y 在 X=x 下的条件概率分布函数
     std::vector<std::vector<float>> cdf_y_condiciton = pdf_y_condiciton;
@@ -82,8 +104,10 @@ float* calculateHdrCache(float* HDR, int width, int height) {
 
             // 用 xi_1 在 cdf_x_margin 中 lower bound 得到样本 x
             int x = std::lower_bound(cdf_x_margin.begin(), cdf_x_margin.end(), xi_1) - cdf_x_margin.begin();
+            x = std::min(x, width - 1);
             // 用 xi_2 在 X=x 的情况下得到样本 y
             int y = std::lower_bound(cdf_y_condiciton[x].begin(), cdf_y_condiciton[x].end(), xi_2) - cdf_y_condiciton[x].begin();
+            y = std::min(y, height - 1);
 
             // 存储纹理坐标 xy 和 xy 位置对应的概率密度
             sample_x[i][j] = float(x) / width;
