@@ -164,33 +164,31 @@ LightSample SampleTriangleLight(EncodedLight light, vec3 origin, float xi1, floa
     return sample;
 }
 
-LightSample SamplePointLight(EncodedLight light, vec3 origin, float finitePdf)
+LightSample SampleSunDiskLight(EncodedLight light, float xi1, float xi2, float finitePdf)
 {
     LightSample sample = InvalidLightSample();
-    vec3 toLight = light.positionOrDirection - origin;
-    float dist2 = dot(toLight, toLight);
-    if (dist2 <= EPS) {
+    float angularRadius = max(light.radius, EPS);
+    float cosThetaMax = cos(angularRadius);
+    float solidAngle = TWO_PI * (1.0 - cosThetaMax);
+    if (solidAngle <= EPS) {
         return sample;
     }
 
-    sample.valid = true;
-    sample.delta = true;
-    sample.direction = toLight / sqrt(dist2);
-    sample.distance = sqrt(dist2);
-    sample.radiance = light.color / dist2;
-    sample.pdf = finitePdf * light.selectPdf;
-    return sample;
-}
+    vec3 axis = normalize(-light.positionOrDirection);
+    vec3 T, B;
+    Onb(axis, T, B);
 
-LightSample SampleDirectionalLight(EncodedLight light, float finitePdf)
-{
-    LightSample sample = InvalidLightSample();
+    float cosTheta = mix(cosThetaMax, 1.0, xi1);
+    float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
+    float phi = TWO_PI * xi2;
+    vec3 L = normalize(T * (cos(phi) * sinTheta) + B * (sin(phi) * sinTheta) + axis * cosTheta);
+
     sample.valid = true;
-    sample.delta = true;
-    sample.direction = normalize(-light.positionOrDirection);
+    sample.delta = false;
+    sample.direction = L;
     sample.distance = INF;
     sample.radiance = light.color;
-    sample.pdf = finitePdf * light.selectPdf;
+    sample.pdf = finitePdf * light.selectPdf / solidAngle;
     return sample;
 }
 
@@ -243,14 +241,11 @@ LightSample SampleOneLight(vec3 origin, float xiSelect, float xi1, float xi2)
     if (light.type == LIGHT_TYPE_TRIANGLE) {
         return SampleTriangleLight(light, origin, xi1, xi2, finitePdf);
     }
-    if (light.type == LIGHT_TYPE_POINT) {
-        return SamplePointLight(light, origin, finitePdf);
-    }
-    if (light.type == LIGHT_TYPE_DIRECTIONAL) {
-        return SampleDirectionalLight(light, finitePdf);
-    }
     if (light.type == LIGHT_TYPE_SPHERE) {
         return SampleSphereLight(light, origin, xi1, xi2, finitePdf);
+    }
+    if (light.type == LIGHT_TYPE_SUN_DISK) {
+        return SampleSunDiskLight(light, xi1, xi2, finitePdf);
     }
 
     return InvalidLightSample();

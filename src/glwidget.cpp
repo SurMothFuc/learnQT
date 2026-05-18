@@ -170,18 +170,29 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
         m_lastPos = event->pos();
         RenderParams::instance().setRenderLow(true);
     }
+    if (event->button() == Qt::MiddleButton) {
+        m_bMiddlePressed = true;
+        m_lastPos = event->pos();
+        RenderParams::instance().setRenderLow(true);
+    }
 }
 
 void GLWidget::mouseReleaseEvent(QMouseEvent* event)
 {
-    Q_UNUSED(event);
-    m_bLeftPressed = false;
-    RenderParams::instance().setRenderLow(false);
+    if (event->button() == Qt::LeftButton) {
+        m_bLeftPressed = false;
+    }
+    if (event->button() == Qt::MiddleButton) {
+        m_bMiddlePressed = false;
+    }
+    if (!m_bLeftPressed && !m_bMiddlePressed) {
+        RenderParams::instance().setRenderLow(false);
+    }
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent* event)
 {
-    if (m_bLeftPressed) {
+    if (m_bLeftPressed || m_bMiddlePressed) {
         const int xpos = event->pos().x();
         const int ypos = event->pos().y();
 
@@ -190,7 +201,12 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
         m_lastPos = event->pos();
 
         QMutexLocker lock(&param_mutex);
-        Scene::getInstance().camera.processMouseMovement(xoffset, yoffset);
+        if (m_bLeftPressed) {
+            Scene::getInstance().camera.processMouseMovement(xoffset, yoffset);
+        }
+        if (m_bMiddlePressed) {
+            Scene::getInstance().camera.processMousePan(xoffset, yoffset);
+        }
         lock.unlock();
         markSceneDirty(SceneDirtyFlag::Camera);
     }
