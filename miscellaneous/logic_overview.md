@@ -14,6 +14,8 @@ flowchart TD
     F --> G["Build nodes"]
     G --> H["Scene::DataEncode()"]
     H --> I["Encoded triangle / BVH buffers"]
+    H --> I2["Scene::buildLightData()"]
+    I2 --> I3["lights_encoded"]
     A --> J["HDRLoader::load()"]
     J --> K["HDR data"]
     K --> L["calculateHdrCache()"]
@@ -27,7 +29,9 @@ flowchart TD
 - `MeshLoader::readObj()` 把 OBJ 转成 `Triangle` 数组，并在 CPU 侧做模型归一化、坐标变换和法线生成。
 - `BuildBVHwithSAH()` 在 CPU 侧为三角形建立 BVH。
 - `Scene::DataEncode()` 再把三角形和 BVH 压成 shader 可读取的编码格式。
-- HDR 贴图除了读取原始数据，还会额外做一份 `cache`，供环境光重要性采样使用。
+- `Scene::buildLightData()` 会从自发光三角形生成 `lights_encoded`，按 `area * luminance(emission)` 建选择分布，供 NEE / MIS 使用。
+- 自发光三角形在项目语义上按双面发光处理；后续维护时要保证采样贡献、命中发光和 PDF 查询都使用一致的双面约定。
+- HDR 贴图除了读取原始数据，还会额外做一份 `cache`，供环境光重要性采样使用。当前待办里仍保留了 HDR cache 采样 LUT 与 direction-to-pdf 查询一致性的修正项。
 
 一个不太直观但很关键的实现细节是：`nodes` 在构建 BVH 前先塞入了一个占位节点，shader 侧遍历是从索引 `1` 开始的，而不是从 `0` 开始。
 
@@ -35,25 +39,27 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["Encoded Scene data"] --> B["Renderer::updateparam()"]
+    A["Encoded Scene data"] --> B["Renderer::syncSceneBuffers() / syncMaterialBuffer()"]
     B --> C["triangles_encoded -> TBO / texture buffer"]
     B --> D["nodes_encoded -> TBO / texture buffer"]
-    B --> E["hdrRes -> hdrMap"]
-    B --> F["cache -> hdrCache"]
-    B --> G["Update view / eye / counts / resolution uniforms"]
-    G --> H["pathtrace_program ready"]
+    B --> E["lights_encoded -> TBO / texture buffer"]
+    B --> F["hdrRes -> hdrMap"]
+    B --> G["cache -> hdrCache"]
+    B --> H["Update view / eye / counts / resolution uniforms"]
+    H --> I["pathtrace_program ready"]
 ```
 
 这一步的作用不是“生成场景”，而是把 CPU 侧已经准备好的场景同步到 GPU：
 
 - 三角形编码数据走的是 `GL_TEXTURE_BUFFER`。
 - BVH 编码数据也走 `GL_TEXTURE_BUFFER`。
+- light 编码数据走独立的 `GL_TEXTURE_BUFFER`，shader 侧通过 `lights` 和 `nLights` 读取。
 - HDR 原图和重要性采样 cache 走 `GL_TEXTURE_2D`。
 - 同步完成后，`pathtrace_program` 才能通过 `samplerBuffer` 和 `sampler2D` 读取场景。
 
 这里还有一个关键同步点：
 
-- `Renderer::updateparam()` 会在 `param_mutex` 保护下读取 `Scene` 和相机状态。
+- `Renderer::syncSceneBuffers()` / `syncMaterialBuffer()` / `syncCameraUniforms()` 会在 `param_mutex` 保护下读取 `Scene` 和相机状态。
 - `GLWidget` 在处理相机输入时也会使用同一个 `param_mutex`。
 
 这说明当前实现是“粗粒度锁住相机与场景同步”，而不是把相机和场景做成独立的无锁快照。
@@ -64,10 +70,10 @@ flowchart TD
 flowchart TD
     A["Generate primary ray"] --> B["hitBVH()"]
     B --> C{"Hit geometry?"}
-    C -- No --> D["If enabled, sample hdrColor(r.direction)"]
+    C -- No --> D["If enabled, sample hdrColor(r.direction) + BSDF-side MIS"]
     D --> Z["Accumulate render_color"]
 
-    C -- Yes --> E["Accumulate emissive"]
+    C -- Yes --> E["Accumulate emissive + BSDF-side MIS"]
     E --> F{"Inside medium?"}
     F -- Yes --> G["Absorb / emit / HG scatter"]
     F -- No --> H["Handle surface material"]
@@ -76,7 +82,8 @@ flowchart TD
     H --> I{"Transparent surface?"}
     I -- Yes --> J["Keep direction and bounce--"]
     I -- No --> K["Record first normal / baseColor"]
-    K --> L["DisneySample()"]
+    K --> K2["EstimateDirectLighting()"]
+    K2 --> L["DisneySample()"]
     L --> M["DisneyEval() -> BRDF + pdf"]
     M --> N["history *= f_r * NdotL / pdf"]
     J --> O["Update ray start and medium state"]
@@ -91,7 +98,9 @@ shader 主循环里最值得记住的点：
 
 - `pathtrace.frag` 对每个像素输出 3 份结果：颜色、法线、底色。
 - `normal` 和 `baseColor` 的主要用途不是显示，而是给后面的 OIDN 降噪提供辅助特征。
-- 对环境贴图的采样、透明材质、介质散射和 Disney BRDF 都放在同一条 bounce 循环里。
+- 对环境贴图的采样、显式光源采样、透明材质、介质散射和 Disney BRDF 都放在同一条 bounce 循环里。
+- `light_sampling.glsl` 提供 `SampleOneLight()` / `LightPdf()`，用于直接光采样和 BSDF 命中环境或自发光三角形时的 MIS 权重。
+- 直接光采样当前仍需要继续完善 delta/specular 链规则：理想镜面或理想折射路径应跳过 NEE，并按唯一 BSDF 路径继续追踪。
 - `preRenderColorTex` 会把上一轮历史结果喂回当前帧，用于做渐进式累积。
 
 ## 4. 历史帧与后处理逻辑
@@ -116,14 +125,15 @@ shader 主循环里最值得记住的点：
 
 下面这些都不是“未来可能的问题”，而是当前代码里已经成立的真实行为：
 
-### `Scene::updateMaterial()` 目前基本没有生效
+### `Scene::updateMaterial()` 会更新常量材质和 light data，但粒度仍然很粗
 
 UI 上已经有很多材质 slider 和 line edit，也会调用 `learnQT::updateMaterial()`，再进一步调用 `Scene::updateMaterial()`。但是：
 
-- `Scene::updateMaterial()` 主体逻辑目前被注释掉了。
-- 这意味着材质面板虽然会触发 `sendM()`，但编码后的三角形材质并没有真正被更新。
+- 当前实现会把 UI 中的材质常量写回所有三角形，并同步更新 `triangles_encoded`。
+- 更新结束后会调用 `buildLightData()`，使自发光三角形的 light list 与材质 emissive 保持一致。
+- 这条路径不会重建 BVH，也不处理贴图、UV、实例级材质覆盖或局部材质选择。
 
-换句话说，材质 UI 当前更像“接线已经搭好，但核心实现尚未完成”。
+换句话说，材质 UI 当前是“全场景常量材质覆盖”，不是完整的材质编辑系统。
 
 ### 渲染线程是持续循环，不是按需渲染
 
@@ -133,7 +143,7 @@ UI 上已经有很多材质 slider 和 line edit，也会调用 `learnQT::update
 - `TextureBuffer::updateTexture(...)`
 - `emit imageReady()`
 
-`recMegFromMain()` 只是把 `Renderer.needupdate` 设为 `true`，并不会“唤醒一次渲染”。因此当前模型更接近“持续 progressive rendering”，而不是“收到事件才渲染一帧”。
+`RenderThread::markSceneDirty()` 只是把 dirty flag 记录到 `m_pendingSceneDirty`，并不会“唤醒一次渲染”。渲染线程下一轮循环会消费这些 flag，所以当前模型更接近“持续 progressive rendering”，而不是“收到事件才渲染一帧”。
 
 ### `RenderParams` 和 UI 暴露程度不完全一致
 
@@ -155,11 +165,11 @@ UI 上已经有很多材质 slider 和 line edit，也会调用 `learnQT::update
 
 ### 环境贴图开关会触发 shader 重建
 
-`Renderer::updateRenderParameters()` 会比较 `useEnvironmentMap` 的新旧值。一旦变化：
+`Renderer::resolveRefreshActions()` 会比较 `useEnvironmentMap` 的新旧值。一旦变化：
 
 - 调用 `rebuildPathtraceProgram()`
 - 通过 `#define USEENVIRONMENTMAP` 决定 fragment shader 的编译分支
-- 再把 `needupdate` 设为 `true`
+- 触发场景 buffer / 相机 uniform 同步，并重置累积
 
 这不是简单切一个 uniform，而是直接重建 path tracing program。
 

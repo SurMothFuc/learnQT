@@ -62,13 +62,13 @@ Each triangle with nonzero emission and nonzero area becomes a triangle light. I
 area * luminance(emission)
 ```
 
-Sampling chooses a triangle, samples barycentric coordinates uniformly over area, computes `L`, visibility distance, normal, emission, and converts area PDF to solid-angle PDF:
+Sampling chooses a triangle, samples barycentric coordinates uniformly over area, computes `L`, visibility distance, normal, emission, and converts area PDF to solid-angle PDF. Emissive triangle lights are intentionally two-sided in this renderer, so both sides emit and the PDF/contribution code must use the same two-sided convention:
 
 ```text
 pdf_solid_angle = pdf_area * distance^2 / abs(dot(lightNormal, -L))
 ```
 
-Samples with backfacing lights or near-zero geometric terms are invalid.
+Samples with near-zero geometric terms are invalid; backfacing samples are not rejected solely for being on the opposite side of the triangle.
 
 ### Analytic Lights
 
