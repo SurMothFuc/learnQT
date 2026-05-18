@@ -49,13 +49,13 @@ struct Ray {
     vec3 direction;
 };
 
-// 光线求交结果
 struct HitResult {
-    bool isHit;             // 是否命中
-    bool isInside;          // 是否从内部命中
-    float hitDistance;         // 与交点的距离
-    vec3 hitPoint;          // 光线命中点
-    vec3 normal;            // 命中点法线
-    vec3 viewDir;           // 击中该点的光线的方向
-    Material material;      // 命中点的表面材质
+    bool isHit;
+    bool isInside;
+    int triangleIndex;
+    float hitDistance;
+    vec3 hitPoint;
+    vec3 normal;
+    vec3 viewDir;
+    Material material;
 };

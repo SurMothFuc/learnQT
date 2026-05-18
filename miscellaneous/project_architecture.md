@@ -127,7 +127,7 @@ flowchart TD
 | `GLWidget` | 在主线程中显示最终图像，接收键鼠输入，创建并启动 `RenderThread`。 | `learnQT` | `RenderThread`、`Scene`、`TextureBuffer` |
 | `RenderThread` | 建立共享 OpenGL context，驱动持续渲染循环，并把结果通知主线程刷新。 | `GLWidget` | `Renderer`、`TextureBuffer` |
 | `Renderer` | 渲染核心，管理 GPU 资源、shader、OIDN、路径追踪 pass 和合成 pass。 | `RenderThread` | GPU 资源、`TextureBuffer` |
-| `Scene` | 场景单例，保存相机、三角形、BVH、HDR 数据和编码后的 GPU 输入。 | `learnQT`、`GLWidget` | `Renderer` |
+| `Scene` | 场景单例，保存相机、三角形、BVH、HDR、light list 和编码后的 GPU 输入。 | `learnQT`、`GLWidget` | `Renderer` |
 | `RenderParams` | 跨线程参数注册表，保存是否降噪、低分辨率、分块渲染、环境贴图开关等。 | `learnQT`、`RenderThread` | `Renderer` |
 | `TextureBuffer` | 作为显示桥接层，接收渲染线程输出并供主线程 `paintGL()` 绘制。 | `RenderThread` | `GLWidget` |
 
@@ -135,14 +135,14 @@ flowchart TD
 
 | 状态 | 创建位置 | 主要写入方 | 主要读取方 | 同步方式 |
 | --- | --- | --- | --- | --- |
-| `Scene` | `learnQT` 构造阶段通过 `Scene::getInstance()` 初始化 | `Scene::Scene()`、`GLWidget` 的相机输入、理论上的材质更新 | `Renderer::updateparam()` | 依赖 `param_mutex` 保护写入和上传阶段 |
-| `RenderParams` | `RenderParams::instance()` | `learnQT` 的 UI 槽函数、`RenderThread::setRenderLow()`、`RenderThread::setDenoise()` | `Renderer::updateRenderParameters()` | 内部 `std::atomic` |
+| `Scene` | `learnQT` 构造阶段通过 `Scene::getInstance()` 初始化 | `Scene::Scene()`、`GLWidget` 的相机输入、材质更新 | `Renderer::syncSceneBuffers()` / `syncMaterialBuffer()` / `syncCameraUniforms()` | 依赖 `param_mutex` 保护写入和上传阶段 |
+| `RenderParams` | `RenderParams::instance()` | `learnQT` 的 UI 槽函数、`GLWidget` 的交互降分辨率 | `Renderer::resolveRefreshActions()` | 内部 `std::atomic` |
 | `TextureBuffer` | `TextureBuffer::instance()` | `RenderThread` | `GLWidget::paintGL()` | 内部 `QMutex` |
 | `param_mutex` | 全局对象，定义在 `src/glwidget.cpp` | `learnQT`、`GLWidget`、`Renderer` | 同上 | 粗粒度互斥 |
 
 这里最重要的理解是：
 
-- `Scene` 保存的是“重资产”数据，包括 CPU 侧三角形、BVH 和编码后的 GPU 输入。
+- `Scene` 保存的是“重资产”数据，包括 CPU 侧三角形、BVH、HDR、light list 和编码后的 GPU 输入。
 - `RenderParams` 保存的是“轻量控制参数”，例如是否降噪、是否低分辨率、tile size 等。
 - `TextureBuffer` 不负责渲染，只负责把 worker 线程的最终图像安全地带回主线程显示。
 
@@ -153,7 +153,7 @@ flowchart TD
 | Qt Widgets / Core / Gui / OpenGL | 窗口、控件、事件循环、线程、OpenGL 封装 | UI 层和线程管理层 |
 | OpenGL 3.3 Core | shader、FBO、纹理、buffer、最终显示 | `Renderer` 和 `GLWidget` |
 | OpenImageDenoise | 对 `RenderColorTex` 做降噪，辅以 normal / albedo | `Renderer` 的后处理阶段 |
-| Eigen | 对 `view` 矩阵做求逆处理 | `Renderer::updateparam()` |
+| Eigen | 对 `view` 矩阵做求逆处理 | `Renderer::syncCameraUniforms()` |
 | Assimp | 已在 `CMakeLists.txt` 中链接，但当前主流程未见实际调用 | 构建依赖层 |
 
 当前代码里 `MeshLoader` 读取 OBJ 使用的是自写解析逻辑，而不是 Assimp。理解这一点很重要，因为它意味着：
