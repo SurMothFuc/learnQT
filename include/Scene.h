@@ -30,9 +30,8 @@ struct Light_encoded {
 
 enum EncodedLightType {
     EncodedLightTriangle = 1,
-    EncodedLightPoint = 2,
-    EncodedLightDirectional = 3,
-    EncodedLightSphere = 4
+    EncodedLightSphere = 2,
+    EncodedLightSunDisk = 3
 };
 
 

@@ -134,34 +134,41 @@ void Scene::finalizeScene()
 
 void Scene::addAnalyticLights(std::vector<float>& weights)
 {
+    const float pi = static_cast<float>(PI);
     const auto luminance = [](const QVector3D& color) {
         return 0.212671f * color.x() + 0.715160f * color.y() + 0.072169f * color.z();
     };
 
-    Light_encoded pointLight;
-    pointLight.param0 = QVector4D(EncodedLightPoint, -1.0f, 0.0f, 0.0f);
-    pointLight.param1 = QVector4D(-1.0f, 4.0f, 0.0f, 12.0f);
-    pointLight.param2 = QVector4D(45.0f, 40.0f, 32.0f, 0.0f);
-    pointLight.param3 = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
-    lights_encoded.push_back(pointLight);
-    weights.push_back(std::max(luminance(QVector3D(45.0f, 40.0f, 32.0f)), 0.0f));
+    const float pointSphereRadius = 0.01f;
+    const QVector3D pointSphereRadiance = QVector3D(45.0f, 40.0f, 32.0f) / (pi * pointSphereRadius * pointSphereRadius);
+    Light_encoded pointSphereLight;
+    pointSphereLight.param0 = QVector4D(EncodedLightSphere, -1.0f, 0.0f, pointSphereRadius);
+    pointSphereLight.param1 = QVector4D(-1.0f, 4.0f, 0.0f, 0.0f);
+    pointSphereLight.param2 = QVector4D(pointSphereRadiance, 0.0f);
+    pointSphereLight.param3 = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+    lights_encoded.push_back(pointSphereLight);
+    weights.push_back(std::max(4.0f * pi * pointSphereRadius * pointSphereRadius * luminance(pointSphereRadiance), 0.0f));
 
-    Light_encoded directionalLight;
-    directionalLight.param0 = QVector4D(EncodedLightDirectional, -1.0f, 0.0f, 0.0f);
-    directionalLight.param1 = QVector4D(QVector3D(-0.45f, -1.0f, 0.2f).normalized(), 0.0f);
-    directionalLight.param2 = QVector4D(0.25f, 0.28f, 0.35f, 0.0f);
-    directionalLight.param3 = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
-    lights_encoded.push_back(directionalLight);
-    weights.push_back(std::max(luminance(QVector3D(0.25f, 0.28f, 0.35f)), 0.0f));
+    const float sunAngularRadius = 0.00465047f;
+    const float sunSolidAngle = 2.0f * pi * (1.0f - std::cos(sunAngularRadius));
+    const QVector3D sunIrradiance(0.25f, 0.28f, 0.35f);
+    const QVector3D sunRadiance = sunIrradiance / sunSolidAngle;
+    Light_encoded sunDiskLight;
+    sunDiskLight.param0 = QVector4D(EncodedLightSunDisk, -1.0f, 0.0f, sunAngularRadius);
+    sunDiskLight.param1 = QVector4D(QVector3D(-0.45f, -1.0f, 0.2f).normalized(), 0.0f);
+    sunDiskLight.param2 = QVector4D(sunRadiance, 0.0f);
+    sunDiskLight.param3 = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+   //lights_encoded.push_back(sunDiskLight);
+    //weights.push_back(std::max(luminance(sunIrradiance), 0.0f));
 
     Light_encoded sphereLight;
     sphereLight.param0 = QVector4D(EncodedLightSphere, -1.0f, 0.0f, 0.45f);
     sphereLight.param1 = QVector4D(1.8f, 3.2f, 1.0f, 0.0f);
     sphereLight.param2 = QVector4D(7.0f, 5.2f, 3.6f, 0.0f);
     sphereLight.param3 = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
-    lights_encoded.push_back(sphereLight);
-    const float sphereArea = 4.0f * PI * sphereLight.param0.w() * sphereLight.param0.w();
-    weights.push_back(std::max(sphereArea * luminance(QVector3D(7.0f, 5.2f, 3.6f)), 0.0f));
+    //lights_encoded.push_back(sphereLight);
+    const float sphereArea = 4.0f * pi * sphereLight.param0.w() * sphereLight.param0.w();
+    //weights.push_back(std::max(sphereArea * luminance(QVector3D(7.0f, 5.2f, 3.6f)), 0.0f));
 }
 
 void Scene::buildLightData()
@@ -196,7 +203,7 @@ void Scene::buildLightData()
         weights.push_back(weight);
     }
 
-    //addAnalyticLights(weights);
+    addAnalyticLights(weights);
 
     for (float weight : weights) {
         lightPowerSum += weight;
