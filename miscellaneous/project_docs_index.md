@@ -31,6 +31,7 @@ flowchart TD
 | [render_flow.md](./render_flow.md) | 启动流程、单帧渲染流程、交互触发流程 | 目录级代码地图、文件阅读建议 |
 | [logic_overview.md](./logic_overview.md) | 场景准备链路、GPU 数据上传、shader 主循环、当前真实行为 | 模块职责总览、文档导航 |
 | [module_map.md](./module_map.md) | 主要目录和关键文件的阅读入口、依赖关系、改动影响 | 完整流程图、状态同步细节 |
+| [待办.md](./待办.md) | 已知正确性问题、采样质量问题、架构和验证待办 | 当前代码流程说明 |
 
 ## 统一术语
 
@@ -64,4 +65,4 @@ flowchart TD
 
 ## 当前文档边界
 
-这批文档刻意不单独拆出 `known_issues.md` 或 `refactor_roadmap.md`。当前实现中的问题、限制和半成品设计，统一收敛在 [logic_overview.md](./logic_overview.md) 的“当前实现注意点”一节里。
+当前实现中的真实行为和限制写在 [logic_overview.md](./logic_overview.md) 的“当前实现注意点”一节；需要后续处理的正确性、采样质量和架构项统一收敛在 [待办.md](./待办.md)。

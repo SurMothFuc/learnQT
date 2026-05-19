@@ -15,6 +15,7 @@ in vec3 pix;
 #include "include/bvh_material.glsl"
 #include "include/hdr_utils.glsl"
 #include "include/bsdf.glsl"
+#include "include/light_sampling.glsl"
 #include "include/pathtrace.glsl"
 
 void main(void)

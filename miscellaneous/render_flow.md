@@ -20,8 +20,9 @@ flowchart TD
         C --> C1["MeshLoader reads OBJ"]
         C1 --> C2["BuildBVHwithSAH"]
         C2 --> C3["Scene::DataEncode()"]
-        C3 --> C4["HDRLoader::load()"]
-        C4 --> C5["Precompute HDR cache"]
+        C3 --> C4["Scene::buildLightData()"]
+        C4 --> C5["HDRLoader::load()"]
+        C5 --> C6["Precompute HDR cache"]
     end
 
     subgraph RT["Render Thread"]
@@ -45,8 +46,8 @@ flowchart TD
 ```mermaid
 flowchart TD
     A["RenderThread loop tick"] --> B["Renderer::render(width, height)"]
-    B --> C["updateRenderParameters()"]
-    C --> D["adjustScreenResolution()"]
+    B --> C["resolveRefreshActions()"]
+    C --> D["applyRefreshActions()"]
     D --> E["displayRenderingStats()"]
     E --> F["executeRenderPass()"]
 
@@ -80,8 +81,10 @@ flowchart TD
 
 把这条链路拆开理解：
 
-- `updateRenderParameters()` 负责检查参数变化，并决定是否需要重建 shader、重算分辨率、重置 tile 状态或重上传场景。
+- `resolveRefreshActions()` 负责检查参数变化和 scene dirty flags，并决定是否需要重建 shader、重算分辨率、重置 tile 状态、重上传场景或重传材质。
+- `applyRefreshActions()` 在帧首一次性执行这些动作，避免 render pass 中途改变场景资源。
 - `executeRenderPass()` 是核心路径追踪阶段，输出 3 个附件：颜色、法线、底色。
+- path tracing pass 会读取 triangles / BVH / lights 三类 texture buffer，并在 shader 中执行 BSDF 采样、显式光源采样和 MIS。
 - `processHistorySaving()` 只有在整图模式或 tile 模式完成一整轮时，才会把当前结果写回 `preRenderColorTex` 用于下一轮累积。
 - `performDenoising()` 不是每次循环都执行；当前逻辑下，通常在首帧、每 100 帧，或显式要求更新降噪状态时触发。
 - `TextureBuffer` 是从渲染线程回到主线程显示的桥。
@@ -92,29 +95,29 @@ flowchart TD
 flowchart TD
     subgraph UI["UI Thread"]
         A["Keyboard / mouse input"] --> B["GLWidget updates Scene::camera"]
-        C["Mouse drag start"] --> D["RenderThread::setRenderLow(true)"]
-        E["Mouse drag end"] --> F["RenderThread::setRenderLow(false)"]
-        G["Denoise checkbox"] --> H["emit sendSetDenoise(bool)"]
+        C["Mouse drag start"] --> D["RenderParams::setRenderLow(true)"]
+        E["Mouse drag end"] --> F["RenderParams::setRenderLow(false)"]
+        G["Denoise checkbox"] --> H["RenderParams::setDenoise()"]
         I["Environment Map checkbox"] --> J["RenderParams::setUseEnvironmentMap()"]
         K["Material sliders / button"] --> L["Scene::updateMaterial()"]
-        B --> M["GLWidget::sendM()"]
-        J --> M
-        L --> M
+        B --> M["GLWidget::markSceneDirty(Camera)"]
+        L --> N["GLWidget::markSceneDirty(Material)"]
     end
 
     subgraph RT["Render Thread"]
-        M --> N["RenderThread::recMegFromMain()"]
-        N --> O["Renderer.needupdate = true"]
-        H --> P["RenderThread::setDenoise()"]
-        P --> Q["RenderParams::setDenoise()"]
+        M --> O["RenderThread::markSceneDirty()"]
+        N --> O
+        H --> Q["denoise parameter changed"]
     end
 
     subgraph Next["Next render() loop"]
-        O --> R["updateRenderParameters()"]
+        O --> R["pending dirty flags"]
         Q --> R
         D --> R
         F --> R
-        R --> S["Rebuild shader / upload data / change resolution"]
+        J --> R
+        R --> S["resolveRefreshActions() / applyRefreshActions()"]
+        S --> T["Rebuild shader / upload data / change resolution"]
     end
 ```
 
@@ -122,8 +125,8 @@ flowchart TD
 
 - 相机输入直接改的是 `Scene::camera`，不是 `RenderParams`。
 - 鼠标拖动时会把 `renderLow` 设为 `true`，松开再恢复，这样交互期间会降到较低分辨率以换取响应速度。
-- `sendM()` 只是告诉渲染线程“有状态需要更新”，真正决定怎么更新的是下一轮 `Renderer::updateRenderParameters()`。
-- `Denoise` 走的是单独的 signal/slot 链路；环境贴图开关则先写进 `RenderParams`，再通过 `sendM()` 让下一轮渲染感知。
+- `markSceneDirty()` 只是告诉渲染线程“有场景状态需要同步”，真正决定怎么更新的是下一轮 `Renderer::resolveRefreshActions()` / `applyRefreshActions()`。
+- `Denoise` 和环境贴图开关都直接写进 `RenderParams`；环境贴图变化由下一轮参数快照触发 shader 重建和场景同步。
 
 ## 分块渲染说明
 
@@ -138,7 +141,7 @@ flowchart TD
 
 当前 `performDenoising()` 的触发条件不是“每帧必做”：
 
-- 当 `updateDenoise` 为真时，会立即重新走一次降噪。
+- 当 `denoise` 开关变化或 renderer 标记 `m_forceDenoiseRefresh` 时，会重新走一次降噪。
 - 否则只有在降噪已开启、当前 tile 轮次已经完整结束、并且帧数满足“首帧或每 100 帧一次”时，才执行 OIDN。
 
 这意味着当前实现偏向“周期性后处理”，而不是“每个 worker 循环都实时降噪”。

@@ -34,11 +34,13 @@ public:
 
     QMatrix4x4 getViewMatrix();
     void processMouseMovement(float xoffset, float yoffset, bool constraintPitch = true);
+    void processMousePan(float xoffset, float yoffset);
     void processMouseScroll(float yoffset);
     void processInput(float dt);
 
     QVector3D position;
     QVector3D worldUp;
+    QVector3D target;
     QVector3D front;
 
     QVector3D up;
@@ -60,6 +62,8 @@ public:
     //Keyboard multi-touch
     bool keys[1024];
 private:
+    QVector3D orbitOffset() const;
+    void updateOrbitPosition();
     void updateCameraVectors();
     void processKeyboard(Camera_Movement direction, float deltaTime);
 };

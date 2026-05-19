@@ -49,6 +49,7 @@ private:
     RenderThread *m_thread = nullptr;
 
     bool m_bLeftPressed = false;
+    bool m_bMiddlePressed = false;
     QPoint m_lastPos;
 };
 

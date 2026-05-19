@@ -21,6 +21,19 @@ struct BVHNode_encoded {
     QVector3D AA, BB;
 };
 
+struct Light_encoded {
+    QVector4D param0;       // (type, triangleIndex, selectPdf, radius)
+    QVector4D param1;       // position or direction
+    QVector4D param2;       // color / radiance
+    QVector4D param3;       // (cdf, range, reserved, reserved)
+};
+
+enum EncodedLightType {
+    EncodedLightTriangle = 1,
+    EncodedLightSphere = 2,
+    EncodedLightSunDisk = 3
+};
+
 
 class Scene {
 public:
@@ -48,6 +61,8 @@ private:
     void buildImportanceSamplingBenchmarkScene();
     void buildBedroomScene();
     void finalizeScene();
+    void buildLightData();
+    void addAnalyticLights(std::vector<float>& weights);
 
 public:
 
@@ -59,6 +74,8 @@ public:
     std::vector<BVHNode> nodes;
     std::vector<Triangle_encoded> triangles_encoded;
     std::vector<BVHNode_encoded> nodes_encoded;
+    std::vector<Light_encoded> lights_encoded;
+    float lightPowerSum = 0.0f;
     HDRLoaderResult hdrRes = {};
     float* cache = nullptr;
     int hdrResolution = 0;

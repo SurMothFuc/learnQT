@@ -1,6 +1,8 @@
 #include "Scene.h"
 #include "iostream"
+#include <algorithm>
 #include <array>
+#include <cmath>
 #include <direct.h>  // POSIX 标准
 
 namespace {
@@ -41,6 +43,8 @@ void Scene::resetSceneData()
     nodes.clear();
     triangles_encoded.clear();
     nodes_encoded.clear();
+    lights_encoded.clear();
+    lightPowerSum = 0.0f;
 
     if (cache != nullptr) {
         delete[] cache;
@@ -283,6 +287,8 @@ void Scene::finalizeScene()
 
     DataEncode(nTriangles, nNodes);
     std::cout << "Triangle and BVH encoding completed" << std::endl;
+    buildLightData();
+    std::cout << "Light encoding completed: total " << lights_encoded.size() << " lights" << std::endl;
 
     const bool hdrLoaded = HDRLoader::load(getResourcePath("hdr/peppermint_powerplant_4k.hdr").c_str(), hdrRes);
     std::cout << "load HDRtexture:" << hdrLoaded << std::endl;
@@ -297,6 +303,102 @@ void Scene::finalizeScene()
     hdrResolution = hdrRes.width;
 }
 
+void Scene::addAnalyticLights(std::vector<float>& weights)
+{
+    const float pi = static_cast<float>(PI);
+    const auto luminance = [](const QVector3D& color) {
+        return 0.212671f * color.x() + 0.715160f * color.y() + 0.072169f * color.z();
+    };
+
+    const float pointSphereRadius = 0.01f;
+    const QVector3D pointSphereRadiance = QVector3D(45.0f, 40.0f, 32.0f) / (pi * pointSphereRadius * pointSphereRadius);
+    Light_encoded pointSphereLight;
+    pointSphereLight.param0 = QVector4D(EncodedLightSphere, -1.0f, 0.0f, pointSphereRadius);
+    pointSphereLight.param1 = QVector4D(-1.0f, 4.0f, 0.0f, 0.0f);
+    pointSphereLight.param2 = QVector4D(pointSphereRadiance, 0.0f);
+    pointSphereLight.param3 = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+    lights_encoded.push_back(pointSphereLight);
+    weights.push_back(std::max(4.0f * pi * pointSphereRadius * pointSphereRadius * luminance(pointSphereRadiance), 0.0f));
+
+    const float sunAngularRadius = 0.00465047f;
+    const float sunSolidAngle = 2.0f * pi * (1.0f - std::cos(sunAngularRadius));
+    const QVector3D sunIrradiance(0.25f, 0.28f, 0.35f);
+    const QVector3D sunRadiance = sunIrradiance / sunSolidAngle;
+    Light_encoded sunDiskLight;
+    sunDiskLight.param0 = QVector4D(EncodedLightSunDisk, -1.0f, 0.0f, sunAngularRadius);
+    sunDiskLight.param1 = QVector4D(QVector3D(-0.45f, -1.0f, 0.2f).normalized(), 0.0f);
+    sunDiskLight.param2 = QVector4D(sunRadiance, 0.0f);
+    sunDiskLight.param3 = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+   //lights_encoded.push_back(sunDiskLight);
+    //weights.push_back(std::max(luminance(sunIrradiance), 0.0f));
+
+    Light_encoded sphereLight;
+    sphereLight.param0 = QVector4D(EncodedLightSphere, -1.0f, 0.0f, 0.45f);
+    sphereLight.param1 = QVector4D(1.8f, 3.2f, 1.0f, 0.0f);
+    sphereLight.param2 = QVector4D(7.0f, 5.2f, 3.6f, 0.0f);
+    sphereLight.param3 = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+    //lights_encoded.push_back(sphereLight);
+    const float sphereArea = 4.0f * pi * sphereLight.param0.w() * sphereLight.param0.w();
+    //weights.push_back(std::max(sphereArea * luminance(QVector3D(7.0f, 5.2f, 3.6f)), 0.0f));
+}
+
+void Scene::buildLightData()
+{
+    lights_encoded.clear();
+    lightPowerSum = 0.0f;
+
+    std::vector<float> weights;
+    weights.reserve(triangles.size() + 3);
+
+    const auto luminance = [](const QVector3D& color) {
+        return 0.212671f * color.x() + 0.715160f * color.y() + 0.072169f * color.z();
+    };
+
+    for (int i = 0; i < static_cast<int>(triangles.size()); ++i) {
+        const Triangle& triangle = triangles[i];
+        const QVector3D e0 = triangle.p2 - triangle.p1;
+        const QVector3D e1 = triangle.p3 - triangle.p1;
+        const float area = 0.5f * QVector3D::crossProduct(e0, e1).length();
+        const float emissionLum = luminance(triangle.material.emissive);
+        const float weight = area * emissionLum;
+        if (area <= 1e-8f || weight <= 0.0f) {
+            continue;
+        }
+
+        Light_encoded light;
+        light.param0 = QVector4D(EncodedLightTriangle, static_cast<float>(i), 0.0f, 0.0f);
+        light.param1 = QVector4D(0.0f, 0.0f, 0.0f, area);
+        light.param2 = QVector4D(triangle.material.emissive, 0.0f);
+        light.param3 = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+        lights_encoded.push_back(light);
+        weights.push_back(weight);
+    }
+
+    addAnalyticLights(weights);
+
+    for (float weight : weights) {
+        lightPowerSum += weight;
+    }
+
+    if (lightPowerSum <= 0.0f) {
+        lights_encoded.clear();
+        lightPowerSum = 0.0f;
+        return;
+    }
+
+    float cdf = 0.0f;
+    for (int i = 0; i < static_cast<int>(lights_encoded.size()); ++i) {
+        const float selectPdf = weights[i] / lightPowerSum;
+        cdf = std::min(1.0f, cdf + selectPdf);
+        lights_encoded[i].param0.setZ(selectPdf);
+        lights_encoded[i].param3.setX(cdf);
+    }
+
+    if (!lights_encoded.empty()) {
+        lights_encoded.back().param3.setX(1.0f);
+    }
+}
+
 void Scene::buildLegacyGlassScene()
 {
     camera = Camera(QVector3D(0.0f, 1.17f, 4.0f), QVector3D(0.0f, 1.0f, 0.0f));
@@ -308,7 +410,7 @@ void Scene::buildLegacyGlassScene()
     //mt.subsurface = 1.0;
     //mt.anisotropic = 1.0;
     mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-    MeshLoader::readModel(getResourcePath("models/quad.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.0, 0), QVector3D(1.0, 0.01, 1.0)), false,true);
+    //MeshLoader::readModel(getResourcePath("models/quad.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.0, 0), QVector3D(1.0, 0.01, 1.0)), false,true);
 
     //box    
     mt = Material();
@@ -466,6 +568,8 @@ void Scene::updateMaterial(QVector3D emissive, QVector3D  baseColor,
         encoded.param5 = QVector4D(material.mediumtype, material.mediumDensity, material.subsurface, material.metallic);
         encoded.param6 = QVector4D(material.specularTint, material.roughness, material.anisotropic, material.sheen);
     }
+
+    buildLightData();
 }
 
 

@@ -86,6 +86,7 @@ private:
     void syncSceneBuffers();
     void uploadTriangleBuffer(bool recreateResources);
     void uploadNodeBuffer(bool recreateResources);
+    void uploadLightBuffer(bool recreateResources);
     void uploadHdrTextures(bool recreateResources);
 
     /**
@@ -159,8 +160,10 @@ private:
 
     GLuint tbo0 = 0;
     GLuint tbo1 = 0;
+    GLuint tboLights = 0;
     GLuint trianglesTextureBuffer = 0;
     GLuint nodesTextureBuffer = 0;
+    GLuint lightsTextureBuffer = 0;
     GLuint hdrMap = 0;
     GLuint hdrCache = 0;
     GLuint VBO = 0;
