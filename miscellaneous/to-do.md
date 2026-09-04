@@ -35,7 +35,12 @@
 - [ ] 完善 ray epsilon 策略。表面新光线和阴影路径已有沿方向的固定 `0.0005` 偏移；仍需验证尺度适应、几何法线偏移、掠射角、薄片、透明穿透和体积散射，避免把固定阈值当成通用解。
 - [ ] 修正 OIDN normal 辅助输入范围。`shaders/pathtrace.frag` 将 normal 写成 `[0, 1]` 编码，`src/renderer.cpp` 读回后直接交给 OIDN；应在交给 OIDN 前恢复到 `[-1, 1]` 的世界空间或视空间法线。
 - [ ] 重新检查透明材质与体积路径的首个可见 hit 记录逻辑，确保折射、透明穿透、体积散射路径输出给 OIDN 的 normal/albedo 稳定且语义一致。
-- [ ] 修正 HDR MIS 的 PDF 查询一致性。当前 `hdrCache` 同时承担采样 LUT 和方向 PDF 贴图职责，`SampleHdr()` 通过 `RG` 重映射随机数到被采样 texel，但 `hdrPdf(direction)` 又按方向 UV 读取 `B` 通道，可能拿到的是 cache 单元本身的概率而不是该方向的真实概率；应拆分 direction-to-pdf 贴图，或让 `SampleHdr()` 返回采样 texel 及其 pdf，并保证 NEE 与 BSDF-side `LightPdf()` 使用同一测度。
+- [ ] 修正 HDR MIS 的 PDF 查询一致性。当前验证结论是：`SampleHdr()` 生成方向后再进 `hdrPdf(direction)`，在现有 y flip 下基本能查回同一个被采样 texel 的 `B` 通道；真正风险是预计算 sampling LUT 的实际离散分布 `q` 与 `hdrPdf()` 返回、MIS 用来除权的目标分布 `p` 不一致，导致 NEE 对环境光有偏。修复计划：
+  - [ ] 修正 `calculateHdrCache()` 的 LUT 轴语义，确保纹理 `s` 坐标对应 `xi_1`、纹理 `t` 坐标对应 `xi_2`，不要用行号驱动 x 边缘 CDF、列号驱动 y 条件 CDF。
+  - [ ] 采样 texel 坐标使用 texel center，例如 `(x + 0.5) / width`、`(y + 0.5) / height`，减少边界坐标和 `GL_NEAREST`/UV 回查带来的歧义。
+  - [ ] 让 `SampleHdr()` 返回或输出被采样方向对应的真实 solid-angle PDF，NEE 直接使用该 PDF；或者拆分为 sampling LUT 与 direction-to-pdf texture 两份数据，明确二者语义。
+  - [ ] 保证环境 NEE 与 BSDF-side `LightPdf()` 使用同一测度：方向 PDF 必须是 per-steradian，离散 texel PDF 到立体角 PDF 的转换只做一次。
+  - [ ] 增加 synthetic HDR 自动验证：枚举 LUT 的实际选择频率 `q_i`，与 shader 使用的 `pdf_i` 对比；再用 Lambert 环境积分验证按 `q_i / pdf_i` 加权后无明显能量偏差。
 
 ## P1 采样与光照质量
 
