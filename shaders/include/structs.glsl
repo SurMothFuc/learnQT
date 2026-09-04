@@ -8,6 +8,7 @@ struct OutputColor{
 struct Triangle {
     vec3 p1, p2, p3;    // 顶点坐标
     vec3 n1, n2, n3;    // 顶点法线
+    vec2 uv1, uv2, uv3; // UV0
 };
 // BVH 树节点
 struct BVHNode {
@@ -35,6 +36,8 @@ struct Material {
     float IOR;
     float transmission;
     int alphaMode;
+    float opacity;
+    float alphaCutoff;
     int mediumtype;
     float mediumDensity;
     vec3 mediumColor;
@@ -42,6 +45,10 @@ struct Material {
 
     float ax;
     float ay;
+
+    int normalTex;
+    float normalScale;
+    float normalMapFlipY;
 };
 // 光线
 struct Ray {
@@ -56,6 +63,7 @@ struct HitResult {
     float hitDistance;
     vec3 hitPoint;
     vec3 normal;
+    vec2 uv;
     vec3 viewDir;
     Material material;
 };

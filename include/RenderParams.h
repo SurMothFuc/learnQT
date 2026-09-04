@@ -61,6 +61,11 @@ public:
 
 public:
     Snapshot snapshot() const;
+    void applySnapshot(const Snapshot& s) {
+        setDenoise(s.denoise); setRenderLow(s.renderLow); setUseTileRendering(s.useTileRendering);
+        setTileSize(s.tileSize); setUseEnvironmentMap(s.useEnvironmentMap);
+        setMaxBounces(s.maxBounces); setMaxRenderFrames(s.maxRenderFrames);
+    }
 
 public:
     struct Stats {

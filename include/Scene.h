@@ -3,6 +3,9 @@
 #include "hdrloader.h"
 #include <Mesh.h>
 #include "BVH.h"
+#include "SceneDocument.h"
+#include <memory>
+#include <functional>
 
 struct Triangle_encoded {
 	QVector4D p1, p2, p3;   // 顶点坐标
@@ -13,6 +16,14 @@ struct Triangle_encoded {
 	QVector4D param4;       // (clearcoatGloss, IOR, transmission alphaMode)
 	QVector4D param5;       // (mediumtype, mediumDensity,subsurface, metallic,)
 	QVector4D param6;       // (specularTint, roughness, anisotropic,sheen)
+	QVector4D uv12;         // (uv1.x, uv1.y, uv2.x, uv2.y)
+	QVector4D uv3Tex0;      // (uv3.x, uv3.y, baseColorTex, normalTex)
+	QVector4D tex1;         // (metallicTex, roughnessTex, emissiveTex, opacityTex)
+	QVector4D textureParam0;// (opacity, alphaCutoff, normalScale, normalMapFlipY)
+	QVector4D textureParam1;// (metallicChannel, roughnessChannel, lightSelectPdf, reserved)
+	QVector4D tangent1;     // (tangent.xyz, handedness)
+	QVector4D tangent2;
+	QVector4D tangent3;
 };
 
 struct BVHNode_encoded {
@@ -45,8 +56,22 @@ public:
         static Scene instance; // 线程安全的静态局部变量
         return instance;
     }
+    static void setStartupModelPath(const std::string& filepath);
+    static void setStartupScenePath(const QString& filepath);
 
-	Scene();    
+    explicit Scene(bool initialize = true);
+    ~Scene();
+
+    bool loadModelScene(const std::string& filepath, std::string* errorMessage = nullptr);
+    bool loadScene(const QString& path, QString& error);
+    bool saveScene(const QString& path, QString& error);
+    bool exportScenePackage(const QString& path, QString& error) const;
+    static std::unique_ptr<Scene> prepareScene(const QString& path, bool model, QString& error,
+        std::function<void(const QString&)> progress = {});
+    void adoptPrepared(Scene& prepared);
+    SceneDocument snapshotDocument() const;
+    SceneDocument document;
+    const std::string& currentModelPath() const { return m_currentModelPath; }
     
     void DataEncode(int nTriangles, int nNodes);
 
@@ -57,12 +82,10 @@ public:
 
 private:
     void resetSceneData();
-    void buildLegacyGlassScene();
-    void buildImportanceSamplingBenchmarkScene();
-    void buildBedroomScene();
     void finalizeScene();
     void buildLightData();
     void addAnalyticLights(std::vector<float>& weights);
+    void buildDocument(std::function<void(const QString&)> progress);
 
 public:
 
@@ -79,6 +102,9 @@ public:
     HDRLoaderResult hdrRes = {};
     float* cache = nullptr;
     int hdrResolution = 0;
+
+private:
+    std::string m_currentModelPath;
 
 };
 

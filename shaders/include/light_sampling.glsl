@@ -80,6 +80,7 @@ Triangle GetTriangleLightGeometry(int triangleIndex)
     triangle.n1 = texelFetch(triangles, offset + 3).xyz;
     triangle.n2 = texelFetch(triangles, offset + 4).xyz;
     triangle.n3 = texelFetch(triangles, offset + 5).xyz;
+    GetTriangleUVs(triangleIndex, triangle.uv1, triangle.uv2, triangle.uv3);
     return triangle;
 }
 
@@ -93,26 +94,32 @@ vec3 TriangleFaceNormal(Triangle triangle)
     return normalize(cross(triangle.p2 - triangle.p1, triangle.p3 - triangle.p1));
 }
 
-vec3 SampleTrianglePoint(Triangle triangle, float xi1, float xi2)
+vec3 SampleTriangleBarycentric(float xi1, float xi2)
 {
     float su = sqrt(max(xi1, 0.0));
     float b0 = 1.0 - su;
     float b1 = xi2 * su;
     float b2 = 1.0 - b0 - b1;
-    return b0 * triangle.p1 + b1 * triangle.p2 + b2 * triangle.p3;
+    return vec3(b0, b1, b2);
 }
 
 EncodedLight SelectFiniteLight(float xi)
 {
-    int selected = max(nLights - 1, 0);
-    for (int i = 0; i < nLights; ++i) {
-        EncodedLight light = GetEncodedLight(i);
-        if (xi <= light.cdf) {
-            selected = i;
+    int low = 0;
+    int high = max(nLights - 1, 0);
+    for (int iteration = 0; iteration < 32; ++iteration) {
+        if (low >= high) {
             break;
         }
+        int middle = low + (high - low) / 2;
+        if (xi <= GetEncodedLight(middle).cdf) {
+            high = middle;
+        }
+        else {
+            low = middle + 1;
+        }
     }
-    return GetEncodedLight(selected);
+    return GetEncodedLight(low);
 }
 
 LightSample SampleEnvironmentLight(float xi1, float xi2, float envPdf)
@@ -138,7 +145,8 @@ LightSample SampleTriangleLight(EncodedLight light, vec3 origin, float xi1, floa
     LightSample sample = InvalidLightSample();
     Triangle triangle = GetTriangleLightGeometry(light.triangleIndex);
     float area = max(TriangleArea(triangle), EPS);
-    vec3 lightPoint = SampleTrianglePoint(triangle, xi1, xi2);
+    vec3 bary = SampleTriangleBarycentric(xi1, xi2);
+    vec3 lightPoint = bary.x * triangle.p1 + bary.y * triangle.p2 + bary.z * triangle.p3;
     vec3 toLight = lightPoint - origin;
     float dist2 = dot(toLight, toLight);
     if (dist2 <= EPS) {
@@ -158,7 +166,10 @@ LightSample SampleTriangleLight(EncodedLight light, vec3 origin, float xi1, floa
     sample.delta = false;
     sample.direction = L;
     sample.distance = distance;
-    sample.radiance = light.color;
+    vec2 lightUV = bary.x * triangle.uv1 + bary.y * triangle.uv2 + bary.z * triangle.uv3;
+    materialEvaluationUV = lightUV;
+    Material lightMaterial = getMaterial(light.triangleIndex);
+    sample.radiance = lightMaterial.emissive;
     sample.pdf = finitePdf * light.selectPdf * areaPdf * dist2 / cosLight;
     sample.triangleIndex = light.triangleIndex;
     return sample;
@@ -251,13 +262,13 @@ LightSample SampleOneLight(vec3 origin, float xiSelect, float xi1, float xi2)
     return InvalidLightSample();
 }
 
-float TriangleLightPdf(vec3 origin, vec3 direction, float hitDistance, EncodedLight light)
+float TriangleLightPdf(vec3 origin, vec3 direction, int triangleIndex, float hitDistance, float selectPdf)
 {
     if (hitDistance <= EPS) {
         return 0.0;
     }
 
-    Triangle triangle = GetTriangleLightGeometry(light.triangleIndex);
+    Triangle triangle = GetTriangleLightGeometry(triangleIndex);
     float area = max(TriangleArea(triangle), EPS);
     vec3 lightNormal = TriangleFaceNormal(triangle);
     float cosLight = abs(dot(lightNormal, -direction));
@@ -266,7 +277,7 @@ float TriangleLightPdf(vec3 origin, vec3 direction, float hitDistance, EncodedLi
     }
 
     float dist2 = hitDistance * hitDistance;
-    return FiniteLightSelectPdf() * light.selectPdf * (1.0 / area) * dist2 / cosLight;
+    return FiniteLightSelectPdf() * selectPdf * (1.0 / area) * dist2 / cosLight;
 }
 
 float LightPdf(vec3 origin, vec3 direction, int hitTriangleIndex, float hitDistance)
@@ -280,11 +291,9 @@ float LightPdf(vec3 origin, vec3 direction, int hitTriangleIndex, float hitDista
 #endif
 
     if (hitTriangleIndex >= 0 && nLights > 0) {
-        for (int i = 0; i < nLights; ++i) {
-            EncodedLight light = GetEncodedLight(i);
-            if (light.type == LIGHT_TYPE_TRIANGLE && light.triangleIndex == hitTriangleIndex) {
-                pdf += TriangleLightPdf(origin, direction, hitDistance, light);
-            }
+        float selectPdf = GetTriangleLightSelectPdf(hitTriangleIndex);
+        if (selectPdf > 0.0) {
+            pdf += TriangleLightPdf(origin, direction, hitTriangleIndex, hitDistance, selectPdf);
         }
     }
 

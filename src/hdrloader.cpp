@@ -8,6 +8,7 @@
 ************************************************************************************/
 
 #include "hdrloader.h"
+#include <QString>
 
 #include <math.h>
 #include <memory.h>
@@ -33,12 +34,11 @@ bool HDRLoader::load(const char *fileName, HDRLoaderResult &res)
 	FILE *file;
 
 	errno_t err;
-	err=fopen_s(&file,fileName, "rb");
+	err=_wfopen_s(&file, reinterpret_cast<const wchar_t*>(QString::fromUtf8(fileName).utf16()), L"rb");
 	if (err!=0)
 		return false;
 
-	fread(str, 10, 1, file);
-	if (memcmp(str, "#?RADIANCE", 10)) {
+	if (fread(str, 10, 1, file) != 1 || memcmp(str, "#?RADIANCE", 10)) {
 		fclose(file);
 		return false;
 	}
@@ -47,10 +47,11 @@ bool HDRLoader::load(const char *fileName, HDRLoaderResult &res)
 
 	char cmd[200];
 	i = 0;
-	char c = 0, oldc;
+	int c = 0, oldc;
 	while(true) {
 		oldc = c;
 		c = fgetc(file);
+		if (c == EOF || i >= 199) { fclose(file); return false; }
 		if (c == 0xa && oldc == 0xa)
 			break;
 		cmd[i++] = c;
@@ -60,13 +61,15 @@ bool HDRLoader::load(const char *fileName, HDRLoaderResult &res)
 	i = 0;
 	while(true) {
 		c = fgetc(file);
+		if (c == EOF || i >= 199) { fclose(file); return false; }
 		reso[i++] = c;
 		if (c == 0xa)
 			break;
 	}
+	reso[i] = 0;
 
 	int w, h;
-	if (!sscanf_s(reso, "-Y %ld +X %ld", &h, &w)) {
+	if (sscanf_s(reso, "-Y %d +X %d", &h, &w) != 2 || w <= 0 || h <= 0 || w > 32767 || h > 32767 || static_cast<long long>(w)*h > 134217728) {
 		fclose(file);
 		return false;
 	}
@@ -85,8 +88,10 @@ bool HDRLoader::load(const char *fileName, HDRLoaderResult &res)
 
 	// convert image 
 	for (int y = h - 1; y >= 0; y--) {
-		if (decrunch(scanline, w, file) == false)
-			break;
+		if (decrunch(scanline, w, file) == false) {
+			delete[] scanline; delete[] res.cols; res.cols=nullptr; res.width=res.height=0;
+			fclose(file); return false;
+		}
 		workOnRGBE(scanline, w, cols);
 		cols += w * 3;
 	}
@@ -124,6 +129,7 @@ bool decrunch(RGBE *scanline, int len, FILE *file)
 		return oldDecrunch(scanline, len, file);
 
 	i = fgetc(file);
+	if (i == EOF) return false;
 	if (i != 2) {
 		fseek(file, -1, SEEK_CUR);
 		return oldDecrunch(scanline, len, file);
@@ -138,20 +144,25 @@ bool decrunch(RGBE *scanline, int len, FILE *file)
 		scanline[0][E] = i;
 		return oldDecrunch(scanline + 1, len - 1, file);
 	}
+	if (i == EOF || ((int(scanline[0][B]) << 8) | i) != len) return false;
 
 	// read each component
 	for (i = 0; i < 4; i++) {
 	    for (j = 0; j < len; ) {
-			unsigned char code = fgetc(file);
+			int code = fgetc(file);
+			if (code <= 0 || (code > 128 ? code - 128 : code) > len-j) return false;
 			if (code > 128) { // run
 			    code &= 127;
-			    unsigned char val = fgetc(file);
+			    int val = fgetc(file);
+			    if (val == EOF) return false;
 			    while (code--)
 					scanline[j++][i] = val;
 			}
 			else  {	// non-run
-			    while(code--)
-					scanline[j++][i] = fgetc(file);
+			    while(code--) {
+					const int value=fgetc(file); if(value==EOF) return false;
+					scanline[j++][i] = value;
+				}
 			}
 		}
     }
@@ -163,6 +174,7 @@ bool oldDecrunch(RGBE *scanline, int len, FILE *file)
 {
 	int i;
 	int rshift = 0;
+	const RGBE* start = scanline;
 	
 	while (len > 0) {
 		scanline[0][R] = fgetc(file);
@@ -175,6 +187,7 @@ bool oldDecrunch(RGBE *scanline, int len, FILE *file)
 		if (scanline[0][R] == 1 &&
 			scanline[0][G] == 1 &&
 			scanline[0][B] == 1) {
+			if(scanline==start || rshift>24 || (static_cast<unsigned long long>(scanline[0][E]) << rshift)>static_cast<unsigned>(len)) return false;
 			for (i = scanline[0][E] << rshift; i > 0; i--) {
 				memcpy(&scanline[0][0], &scanline[-1][0], 4);
 				scanline++;

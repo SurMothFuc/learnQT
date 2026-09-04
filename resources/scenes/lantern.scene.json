@@ -1,0 +1,313 @@
+{
+  "camera": {
+    "fov": 53.13010025024414,
+    "position": [
+      0,
+      0.3499999940395355,
+      4.5
+    ],
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "hdr": "../hdr/peppermint_powerplant_4k.hdr",
+  "lights": [
+    {
+      "id": "key-light",
+      "position": [
+        -1,
+        4,
+        0
+      ],
+      "radiance": [
+        143239.4512261074,
+        127323.9566454288,
+        101859.16531634305
+      ],
+      "radius": 0.01,
+      "type": "sphere"
+    }
+  ],
+  "materials": [
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        1,
+        1,
+        1
+      ],
+      "id": "model/material/0",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 1,
+      "metallicChannel": 2,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 1,
+      "roughnessChannel": 1,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model/texture/0",
+        "emissive": "model/texture/3",
+        "metallic": "model/texture/2",
+        "normal": "model/texture/1",
+        "roughness": "model/texture/2"
+      },
+      "transmission": 0
+    },
+    {
+      "id": "stone-ground",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "textures": {
+        "baseColor": "stone-color",
+        "normal": "stone-normal",
+        "roughness": "stone-roughness"
+      }
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {},
+      "id": "model",
+      "materialBindings": {
+        "0": "model/material/0"
+      },
+      "normalize": false,
+      "smoothNormals": true,
+      "source": "../models/texture_test/Lantern/Lantern.glb",
+      "transform": [
+        0.11689426749944687,
+        0,
+        0,
+        -0.4469047784805298,
+        0,
+        0.11689426749944687,
+        0,
+        -1.5214993953704834,
+        0,
+        0,
+        0.11689426749944687,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "stone-ground",
+      "source": "../models/plane.obj",
+      "transform": [
+        12,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1.501,
+        0,
+        0,
+        12,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "stone-ground"
+    }
+  ],
+  "name": "路灯 · 石材地面",
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "maxBounces": 4,
+    "maxRenderFrames": 0,
+    "renderLow": false,
+    "tileSize": 240,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [
+    {
+      "dependencies": null,
+      "embedded": "*0",
+      "id": "model/texture/0",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "model": "model",
+      "source": null,
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": null,
+      "embedded": "*2",
+      "id": "model/texture/1",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "model": "model",
+      "source": null,
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": null,
+      "embedded": "*1",
+      "id": "model/texture/2",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "model": "model",
+      "source": null,
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": null,
+      "embedded": "*3",
+      "id": "model/texture/3",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "model": "model",
+      "source": null,
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "id": "stone-color",
+      "source": "../textures/stone_floor/stone_floor_diff_2k.jpg",
+      "uvScale": [
+        6,
+        6
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9987,
+      "magFilter": 9729
+    },
+    {
+      "id": "stone-normal",
+      "source": "../textures/stone_floor/stone_floor_nor_gl_2k.png",
+      "uvScale": [
+        6,
+        6
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9987,
+      "magFilter": 9729
+    },
+    {
+      "id": "stone-roughness",
+      "source": "../textures/stone_floor/stone_floor_rough_2k.jpg",
+      "uvScale": [
+        6,
+        6
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9987,
+      "magFilter": 9729
+    }
+  ],
+  "version": 1,
+  "credits": [
+    {
+      "asset": "Stone Floor",
+      "author": "Dimitrios Savva / Poly Haven",
+      "license": "CC0-1.0",
+      "source": "https://polyhaven.com/a/stone_floor",
+      "maps": "2K Base Color, OpenGL Normal, Roughness"
+    }
+  ]
+}

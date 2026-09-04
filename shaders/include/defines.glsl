@@ -1,4 +1,4 @@
-#define SIZE_TRIANGLE   12
+#define SIZE_TRIANGLE   20
 #define SIZE_BVHNODE    4
 #define SIZE_LIGHT      4
 #define INF 114514.0
@@ -14,6 +14,8 @@
 
 #define ALPHA_MODE_OPAQUE 0
 #define ALPHA_MODE_TRANSPARENT 1
+#define ALPHA_MODE_MASK 2
+#define ALPHA_MODE_BLEND 3
 
 #define MEDIUM_NONE 0
 #define MEDIUM_ABSORB 1

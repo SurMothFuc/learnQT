@@ -19,6 +19,10 @@ uniform samplerBuffer lights;
 
 uniform sampler2D hdrMap;
 uniform sampler2D hdrCache;
+uniform sampler2DArray materialTextures;
+uniform samplerBuffer materialTextureInfo;
+uniform int materialTextureCount;
 
 uniform sampler2D preRenderColor;
 
+uniform float cameraFov;

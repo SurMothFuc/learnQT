@@ -1,0 +1,2159 @@
+{
+  "version": 1,
+  "name": "卧室",
+  "models": [
+    {
+      "id": "Mesh044",
+      "source": "../models/bedroom/Mesh044.obj",
+      "material": "aluminium",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh047",
+      "source": "../models/bedroom/Mesh047.obj",
+      "material": "aluminium",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh032",
+      "source": "../models/bedroom/Mesh032.obj",
+      "material": "woodFurniture",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh028",
+      "source": "../models/bedroom/Mesh028.obj",
+      "material": "stainlessSmooth",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh046",
+      "source": "../models/bedroom/Mesh046.obj",
+      "material": "aluminium",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh027",
+      "source": "../models/bedroom/Mesh027.obj",
+      "material": "aluminium",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh022",
+      "source": "../models/bedroom/Mesh022.obj",
+      "material": "aluminium",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh042",
+      "source": "../models/bedroom/Mesh042.obj",
+      "material": "aluminium",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh036",
+      "source": "../models/bedroom/Mesh036.obj",
+      "material": "aluminium",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh043",
+      "source": "../models/bedroom/Mesh043.obj",
+      "material": "aluminium",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh040",
+      "source": "../models/bedroom/Mesh040.obj",
+      "material": "aluminium",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh037",
+      "source": "../models/bedroom/Mesh037.obj",
+      "material": "glass",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh026",
+      "source": "../models/bedroom/Mesh026.obj",
+      "material": "glass",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh023",
+      "source": "../models/bedroom/Mesh023.obj",
+      "material": "lampMetal",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh059",
+      "source": "../models/bedroom/Mesh059.obj",
+      "material": "lampEmitter",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh049",
+      "source": "../models/bedroom/Mesh049.obj",
+      "material": "roughGlass",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh060",
+      "source": "../models/bedroom/Mesh060.obj",
+      "material": "woodFloor",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh033",
+      "source": "../models/bedroom/Mesh033.obj",
+      "material": "decoPlant",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh025",
+      "source": "../models/bedroom/Mesh025.obj",
+      "material": "rocks1",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh055",
+      "source": "../models/bedroom/Mesh055.obj",
+      "material": "rocks2",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh035",
+      "source": "../models/bedroom/Mesh035.obj",
+      "material": "rocks3",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh048",
+      "source": "../models/bedroom/Mesh048.obj",
+      "material": "glass",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh056",
+      "source": "../models/bedroom/Mesh056.obj",
+      "material": "lampMetal",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh058",
+      "source": "../models/bedroom/Mesh058.obj",
+      "material": "plasticCable",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh061",
+      "source": "../models/bedroom/Mesh061.obj",
+      "material": "lampEmitter",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh051",
+      "source": "../models/bedroom/Mesh051.obj",
+      "material": "glass",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh066",
+      "source": "../models/bedroom/Mesh066.obj",
+      "material": "lampMetal",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh062",
+      "source": "../models/bedroom/Mesh062.obj",
+      "material": "plasticCable",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh054",
+      "source": "../models/bedroom/Mesh054.obj",
+      "material": "lampEmitter",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh063",
+      "source": "../models/bedroom/Mesh063.obj",
+      "material": "bookCover",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh064",
+      "source": "../models/bedroom/Mesh064.obj",
+      "material": "bookPages",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh041",
+      "source": "../models/bedroom/Mesh041.obj",
+      "material": "bedsheets",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh052",
+      "source": "../models/bedroom/Mesh052.obj",
+      "material": "glass",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh065",
+      "source": "../models/bedroom/Mesh065.obj",
+      "material": "glass",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh067",
+      "source": "../models/bedroom/Mesh067.obj",
+      "material": "glass",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh068",
+      "source": "../models/bedroom/Mesh068.obj",
+      "material": "bedsheets",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh034",
+      "source": "../models/bedroom/Mesh034.obj",
+      "material": "bedsheets",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh021",
+      "source": "../models/bedroom/Mesh021.obj",
+      "material": "matress",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh020",
+      "source": "../models/bedroom/Mesh020.obj",
+      "material": "carpet",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh019",
+      "source": "../models/bedroom/Mesh019.obj",
+      "material": "carpet",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh018",
+      "source": "../models/bedroom/Mesh018.obj",
+      "material": "black",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh017",
+      "source": "../models/bedroom/Mesh017.obj",
+      "material": "black",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh069",
+      "source": "../models/bedroom/Mesh069.obj",
+      "material": "black",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh015",
+      "source": "../models/bedroom/Mesh015.obj",
+      "material": "curtainRod",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh014",
+      "source": "../models/bedroom/Mesh014.obj",
+      "material": "curtainRod",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh012",
+      "source": "../models/bedroom/Mesh012.obj",
+      "material": "woodFurniture",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh011",
+      "source": "../models/bedroom/Mesh011.obj",
+      "material": "mirror",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh013",
+      "source": "../models/bedroom/Mesh013.obj",
+      "material": "walls",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh039",
+      "source": "../models/bedroom/Mesh039.obj",
+      "material": "window",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh010",
+      "source": "../models/bedroom/Mesh010.obj",
+      "material": "window",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh031",
+      "source": "../models/bedroom/Mesh031.obj",
+      "material": "woodFurniture",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh045",
+      "source": "../models/bedroom/Mesh045.obj",
+      "material": "stainlessSmooth",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh038",
+      "source": "../models/bedroom/Mesh038.obj",
+      "material": "mirror",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh009",
+      "source": "../models/bedroom/Mesh009.obj",
+      "material": "woodFurniture",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh024",
+      "source": "../models/bedroom/Mesh024.obj",
+      "material": "stainlessSmooth",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh030",
+      "source": "../models/bedroom/Mesh030.obj",
+      "material": "woodFurniture",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh029",
+      "source": "../models/bedroom/Mesh029.obj",
+      "material": "stainlessSmooth",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh008",
+      "source": "../models/bedroom/Mesh008.obj",
+      "material": "walls2",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh007",
+      "source": "../models/bedroom/Mesh007.obj",
+      "material": "woodFurniture",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh006",
+      "source": "../models/bedroom/Mesh006.obj",
+      "material": "woodFurniture",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh005",
+      "source": "../models/bedroom/Mesh005.obj",
+      "material": "stainlessSmooth",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh050",
+      "source": "../models/bedroom/Mesh050.obj",
+      "material": "pictureFrame",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh053",
+      "source": "../models/bedroom/Mesh053.obj",
+      "material": "pictureBacking",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh003",
+      "source": "../models/bedroom/Mesh003.obj",
+      "material": "picture",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh002",
+      "source": "../models/bedroom/Mesh002.obj",
+      "material": "boxes",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh016",
+      "source": "../models/bedroom/Mesh016.obj",
+      "material": "blankets",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh001",
+      "source": "../models/bedroom/Mesh001.obj",
+      "material": "blankets",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "Mesh000",
+      "source": "../models/bedroom/Mesh000.obj",
+      "material": "blankets",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        -1,
+        0,
+        0,
+        1,
+        -0.31,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false
+    },
+    {
+      "id": "emitter-left",
+      "source": "../models/quad.obj",
+      "material": "bedroom-emitter",
+      "smoothNormals": false,
+      "normalize": true,
+      "transform": [
+        1.064823,
+        0,
+        0,
+        -1.4754385,
+        0,
+        1.815584,
+        0,
+        0.189678,
+        0,
+        0,
+        0.01,
+        -1.57735,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "emitter-right",
+      "source": "../models/quad.obj",
+      "material": "bedroom-emitter",
+      "smoothNormals": false,
+      "normalize": true,
+      "transform": [
+        1.064823,
+        0,
+        0,
+        1.443792,
+        0,
+        1.815584,
+        0,
+        0.189678,
+        0,
+        0,
+        0.01,
+        -1.57735,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "id": "boxes",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.55,
+      "textures": {
+        "baseColor": "panel-wood"
+      }
+    },
+    {
+      "id": "plasticCable",
+      "baseColor": [
+        0.558543,
+        0.558543,
+        0.558543
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "lampEmitter",
+      "baseColor": [
+        0.64,
+        0.64,
+        0.64
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "blankets",
+      "baseColor": [
+        0.485435,
+        0.456263,
+        0.428075
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "bedsheets",
+      "baseColor": [
+        0.908,
+        0.922,
+        0.946
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "window",
+      "baseColor": [
+        0.48173,
+        0.48173,
+        0.48173
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "pictureBacking",
+      "baseColor": [
+        0.111567,
+        0.037068,
+        0.017016
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "picture",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.7,
+      "textures": {
+        "baseColor": "picture"
+      }
+    },
+    {
+      "id": "rocks1",
+      "baseColor": [
+        0.350827,
+        0.242986,
+        0.17883
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "rocks2",
+      "baseColor": [
+        0.098964,
+        0.098964,
+        0.098964
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "rocks3",
+      "baseColor": [
+        0.558544,
+        0.558544,
+        0.558544
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "decoPlant",
+      "baseColor": [
+        0.041772,
+        0.011306,
+        0.007575
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "black",
+      "baseColor": [
+        0.015396,
+        0.015396,
+        0.015396
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "carpet",
+      "baseColor": [
+        0.034499,
+        0.034499,
+        0.034499
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "matress",
+      "baseColor": [
+        0.893289,
+        0.893289,
+        0.893289
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "woodFloor",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.38,
+      "textures": {
+        "baseColor": "wood-floor"
+      }
+    },
+    {
+      "id": "walls",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.82,
+      "textures": {
+        "baseColor": "wallpaper"
+      }
+    },
+    {
+      "id": "walls2",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.82,
+      "textures": {
+        "baseColor": "wallpaper"
+      }
+    },
+    {
+      "id": "woodFurniture",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.4,
+      "textures": {
+        "baseColor": "panel-wood"
+      }
+    },
+    {
+      "id": "mirror",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0,
+      "metallic": 1,
+      "transmission": 0
+    },
+    {
+      "id": "aluminium",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.2,
+      "metallic": 1,
+      "transmission": 0
+    },
+    {
+      "id": "bookCover",
+      "baseColor": [
+        0,
+        0,
+        0
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "bookPages",
+      "baseColor": [
+        0.567027,
+        0.567027,
+        0.567027
+      ],
+      "roughness": 1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "lampMetal",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.1,
+      "metallic": 0,
+      "transmission": 0
+    },
+    {
+      "id": "glass",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0,
+      "metallic": 0,
+      "transmission": 1
+    },
+    {
+      "id": "roughGlass",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.1,
+      "metallic": 0,
+      "transmission": 1
+    },
+    {
+      "id": "pictureFrame",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0.1,
+      "metallic": 1,
+      "transmission": 0
+    },
+    {
+      "id": "curtainRod",
+      "baseColor": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "roughness": 0.1,
+      "metallic": 1,
+      "transmission": 0
+    },
+    {
+      "id": "stainlessSmooth",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "roughness": 0,
+      "metallic": 1,
+      "transmission": 0
+    },
+    {
+      "id": "bedroom-emitter",
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        10,
+        10,
+        10
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "id": "panel-wood",
+      "source": "../models/bedroom/textures/panel-wood-3.jpg"
+    },
+    {
+      "id": "wallpaper",
+      "source": "../models/bedroom/textures/wallpaper-1.jpg"
+    },
+    {
+      "id": "wood-floor",
+      "source": "../models/bedroom/textures/wood4.jpg"
+    },
+    {
+      "id": "picture",
+      "source": "../models/bedroom/textures/Teapot.png"
+    }
+  ],
+  "lights": [
+    {
+      "id": "key-light",
+      "type": "sphere",
+      "radius": 0.01,
+      "position": [
+        -1,
+        4,
+        0
+      ],
+      "radiance": [
+        143239.44878270582,
+        127323.95447351628,
+        101859.16357881302
+      ]
+    }
+  ],
+  "hdr": "../hdr/peppermint_powerplant_4k.hdr",
+  "camera": {
+    "position": [
+      3,
+      0.5,
+      3.49
+    ],
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 53.13010235415598
+  },
+  "render": {
+    "denoise": true,
+    "renderLow": false,
+    "useTileRendering": true,
+    "tileSize": 240,
+    "useEnvironmentMap": true,
+    "maxBounces": 4,
+    "maxRenderFrames": 0
+  }
+}
