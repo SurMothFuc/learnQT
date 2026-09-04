@@ -310,6 +310,8 @@ void Renderer::uninit()
     glDeleteTextures(1, &trianglesTextureBuffer);
     glDeleteTextures(1, &nodesTextureBuffer);
     glDeleteTextures(1, &lightsTextureBuffer);
+    glDeleteTextures(1, &materialTextureArray);
+    glDeleteTextures(1, &materialTextureInfoTexture);
 
     if (VAO) {
         glDeleteVertexArrays(1, &VAO);
@@ -327,6 +329,9 @@ void Renderer::uninit()
     if (tboLights) {
         glDeleteBuffers(1, &tboLights);
     }
+    if (materialTextureInfoBuffer) {
+        glDeleteBuffers(1, &materialTextureInfoBuffer);
+    }
 
     if (pboIds[0] != 0 || pboIds[1] != 0 || pboIds[2] != 0) {
         glDeleteBuffers(3, pboIds);
@@ -335,8 +340,9 @@ void Renderer::uninit()
 
     historysave_fbo = m_fbo = pathtrace_fbo = 0;
     m_texture = 0;
-    hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = lightsTextureBuffer = 0;
-    VAO = VBO = tbo0 = tbo1 = tboLights = 0;
+    hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = lightsTextureBuffer = materialTextureArray = materialTextureInfoTexture = 0;
+    VAO = VBO = tbo0 = tbo1 = tboLights = materialTextureInfoBuffer = 0;
+    materialTextureLayerCount = 0;
 }
 
 void Renderer::updateOIDNBuffers()
@@ -445,6 +451,8 @@ void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, i
         pathtrace_program->setUniformValue("hdrMap", 2);
         pathtrace_program->setUniformValue("hdrCache", 3);
         pathtrace_program->setUniformValue("lights", 5);
+        pathtrace_program->setUniformValue("materialTextures", 6);
+        pathtrace_program->setUniformValue("materialTextureInfo", 7);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
@@ -464,6 +472,12 @@ void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, i
 
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_BUFFER, lightsTextureBuffer);
+
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, materialTextureArray);
+
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(GL_TEXTURE_BUFFER, materialTextureInfoTexture);
 
         glViewport(tileX, tileY, tileWidth, tileHeight);
         glEnable(GL_SCISSOR_TEST);
@@ -496,6 +510,8 @@ void Renderer::renderFullImage(int maxBounces)
         pathtrace_program->setUniformValue("hdrMap", 2);
         pathtrace_program->setUniformValue("hdrCache", 3);
         pathtrace_program->setUniformValue("lights", 5);
+        pathtrace_program->setUniformValue("materialTextures", 6);
+        pathtrace_program->setUniformValue("materialTextureInfo", 7);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
@@ -515,6 +531,12 @@ void Renderer::renderFullImage(int maxBounces)
 
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_BUFFER, lightsTextureBuffer);
+
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, materialTextureArray);
+
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(GL_TEXTURE_BUFFER, materialTextureInfoTexture);
 
         glViewport(m_viewportX, m_viewportY, render_width, render_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -820,20 +842,169 @@ void Renderer::uploadHdrTextures(bool recreateResources)
     uploadTexture(hdrCache, Scene::getInstance().cache);
 }
 
+void Renderer::uploadMaterialTextures(bool recreateResources)
+{
+    constexpr int maxTextureDimension = 2048;
+    const auto& sourceTextures = Scene::getInstance().textures;
+
+    GLint hardwareMaxSize = 1;
+    GLint hardwareMaxLayers = 1;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &hardwareMaxSize);
+    glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &hardwareMaxLayers);
+
+    const int layerCount = std::min(static_cast<int>(sourceTextures.size()), hardwareMaxLayers);
+    int textureWidth = 1;
+    int textureHeight = 1;
+    for (int i = 0; i < layerCount; ++i) {
+        textureWidth = std::max(textureWidth, sourceTextures[i].width);
+        textureHeight = std::max(textureHeight, sourceTextures[i].height);
+    }
+    textureWidth = std::min(textureWidth, std::min(hardwareMaxSize, maxTextureDimension));
+    textureHeight = std::min(textureHeight, std::min(hardwareMaxSize, maxTextureDimension));
+
+    if (static_cast<int>(sourceTextures.size()) > layerCount) {
+        qWarning() << "Material texture count exceeds GL_MAX_ARRAY_TEXTURE_LAYERS; extra textures use scalar fallbacks:"
+                   << sourceTextures.size() << hardwareMaxLayers;
+    }
+
+    if (recreateResources && materialTextureArray != 0) {
+        glDeleteTextures(1, &materialTextureArray);
+        materialTextureArray = 0;
+    }
+    if (recreateResources && materialTextureInfoTexture != 0) {
+        glDeleteTextures(1, &materialTextureInfoTexture);
+        materialTextureInfoTexture = 0;
+    }
+    if (recreateResources && materialTextureInfoBuffer != 0) {
+        glDeleteBuffers(1, &materialTextureInfoBuffer);
+        materialTextureInfoBuffer = 0;
+    }
+    if (materialTextureArray == 0) {
+        glGenTextures(1, &materialTextureArray);
+    }
+
+    glBindTexture(GL_TEXTURE_2D_ARRAY, materialTextureArray);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Per-material wrap is applied in the shader; clamp here keeps an exact
+    // coordinate of 1.0 on the edge for clamp/mirror modes.
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    const int allocatedLayers = std::max(1, layerCount);
+    glTexImage3D(
+        GL_TEXTURE_2D_ARRAY,
+        0,
+        GL_RGBA8,
+        textureWidth,
+        textureHeight,
+        allocatedLayers,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        nullptr);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    if (layerCount == 0) {
+        const unsigned char white[] = { 255, 255, 255, 255 };
+        glTexSubImage3D(
+            GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, 1, 1, 1,
+            GL_RGBA, GL_UNSIGNED_BYTE, white);
+    }
+    else {
+        for (int layer = 0; layer < layerCount; ++layer) {
+            // Assimp exposes texture coordinates in OpenGL's lower-left
+            // convention. QImage stores scanline zero at the top, so flip the
+            // pixels once before uploading them to OpenGL. Without this the
+            // V coordinate is effectively flipped twice for glTF assets and
+            // atlas islands (such as Lantern's post) sample unrelated texels.
+            QImage image = sourceTextures[layer].image
+                .convertToFormat(QImage::Format_RGBA8888)
+                .mirrored(false, true);
+            if (image.width() != textureWidth || image.height() != textureHeight) {
+                image = image.scaled(
+                    textureWidth,
+                    textureHeight,
+                    Qt::IgnoreAspectRatio,
+                    Qt::SmoothTransformation);
+            }
+            glTexSubImage3D(
+                GL_TEXTURE_2D_ARRAY,
+                0,
+                0,
+                0,
+                layer,
+                textureWidth,
+                textureHeight,
+                1,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                image.constBits());
+        }
+    }
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
+    std::vector<QVector4D> textureInfo(static_cast<size_t>(std::max(1, layerCount)) * 3u);
+    textureInfo[0] = QVector4D(1.0f, 1.0f, 0.0f, 0.0f);
+    textureInfo[1] = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
+    textureInfo[2] = QVector4D(9987.0f, 9729.0f, 0.0f, 0.0f);
+    for (int layer = 0; layer < layerCount; ++layer) {
+        const TextureAsset& source = sourceTextures[layer];
+        textureInfo[static_cast<size_t>(layer) * 3u] = QVector4D(
+            source.uvScale.x(), source.uvScale.y(), source.uvOffset.x(), source.uvOffset.y());
+        textureInfo[static_cast<size_t>(layer) * 3u + 1u] = QVector4D(
+            source.uvRotation,
+            static_cast<float>(source.wrapS),
+            static_cast<float>(source.wrapT),
+            0.0f);
+        textureInfo[static_cast<size_t>(layer) * 3u + 2u] = QVector4D(
+            static_cast<float>(source.minFilter),
+            static_cast<float>(source.magFilter),
+            0.0f,
+            0.0f);
+    }
+
+    if (materialTextureInfoBuffer == 0) {
+        glGenBuffers(1, &materialTextureInfoBuffer);
+    }
+    glBindBuffer(GL_TEXTURE_BUFFER, materialTextureInfoBuffer);
+    glBufferData(
+        GL_TEXTURE_BUFFER,
+        static_cast<GLsizeiptr>(textureInfo.size() * sizeof(QVector4D)),
+        textureInfo.data(),
+        GL_STATIC_DRAW);
+    if (materialTextureInfoTexture == 0) {
+        glGenTextures(1, &materialTextureInfoTexture);
+    }
+    glBindTexture(GL_TEXTURE_BUFFER, materialTextureInfoTexture);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialTextureInfoBuffer);
+    glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+    materialTextureLayerCount = layerCount;
+    qDebug() << "Uploaded material texture array:"
+             << materialTextureLayerCount << "layers at"
+             << textureWidth << "x" << textureHeight;
+}
+
 void Renderer::syncCameraUniforms()
 {
     QMatrix4x4 inverseView;
     QVector3D eye;
+    float fov;
     {
         QMutexLocker lock(&param_mutex);
         const QMatrix4x4 view = Scene::getInstance().camera.getViewMatrix();
         inverseView = view.inverted();
         eye = Scene::getInstance().camera.position;
+        fov = Scene::getInstance().camera.zoom;
     }
 
     pathtrace_program->bind();
     pathtrace_program->setUniformValue("view", inverseView);
     pathtrace_program->setUniformValue("eye", eye);
+    pathtrace_program->setUniformValue("cameraFov", fov);
     pathtrace_program->release();
 }
 
@@ -860,6 +1031,7 @@ void Renderer::syncSceneBuffers()
     uploadNodeBuffer(tbo1 == 0 || nodesTextureBuffer == 0);
     uploadLightBuffer(tboLights == 0 || lightsTextureBuffer == 0);
     uploadHdrTextures(hdrMap == 0 || hdrCache == 0);
+    uploadMaterialTextures(materialTextureArray == 0 || materialTextureInfoTexture == 0);
 
     pathtrace_program->bind();
     pathtrace_program->setUniformValue("nTriangles", static_cast<int>(Scene::getInstance().triangles.size()));
@@ -868,6 +1040,7 @@ void Renderer::syncSceneBuffers()
     pathtrace_program->setUniformValue("width", render_width);
     pathtrace_program->setUniformValue("height", render_height);
     pathtrace_program->setUniformValue("hdrResolution", Scene::getInstance().hdrResolution);
+    pathtrace_program->setUniformValue("materialTextureCount", materialTextureLayerCount);
     pathtrace_program->release();
 
     glBindTexture(GL_TEXTURE_2D, 0);

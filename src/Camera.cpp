@@ -35,6 +35,17 @@ Camera::~Camera()
 
 }
 
+void Camera::restoreState(const QVector3D& eye, const QVector3D& lookAt, const QVector3D& worldUp, float fov)
+{
+    position=eye; target=lookAt; this->worldUp=worldUp.normalized(); zoom=fov;
+    const QVector3D offset=position-target;
+    r=offset.length();
+    upAngle=qRadiansToDegrees(std::asin(std::max(-1.0f,std::min(1.0f,offset.y()/r))));
+    rotatAngle=qRadiansToDegrees(std::atan2(-offset.x(),offset.z()));
+    std::fill(std::begin(keys),std::end(keys),false);
+    updateCameraVectors();
+}
+
 // Returns the view matrix calculated using Euler Angles and the LookAt Matrix
 QMatrix4x4 Camera::getViewMatrix()
 {

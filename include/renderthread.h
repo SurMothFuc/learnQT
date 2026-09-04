@@ -28,6 +28,7 @@ public:
     void setNewSize(int width, int height);
     // UI 线程只做按位 OR，渲染线程在帧首统一消费。
     void markSceneDirty(SceneDirtyFlags flags);
+    void replaceScene(Scene& scene);
 
 signals:
     void imageReady();
@@ -47,6 +48,7 @@ private:
     int m_width = 100;
     int m_height = 100;
     QMutex m_mutex;
+    QMutex m_frameMutex; // Scene replacement is serialized against the whole frame.
 
     QOpenGLContext *m_mainContext = nullptr;
     QOpenGLContext *m_renderContext = nullptr;

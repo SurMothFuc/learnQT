@@ -27,7 +27,9 @@
 
 enum AlphaMode {
     Opaque,
-    Transparent,
+    Transparent, // Legacy boundary-only transparency used by the volume path.
+    Mask,
+    Blend,
 };
 enum MediumType
 {
@@ -55,6 +57,8 @@ public:
     float IOR = 1.5;//折射率
     float transmission = 0.0;
     int alphaMode=0;
+    float opacity = 1.0f;
+    float alphaCutoff = 0.5f;
     int mediumtype=0;
     float mediumDensity=0.0;
     QVector3D mediumColor = QVector3D(1.0, 1.0, 1.0);
@@ -66,5 +70,12 @@ public:
     int roughnessTex = -1;
     int emissiveTex = -1;
     int opacityTex = -1;
+
+    // Channel selectors for scalar textures: 0=R, 1=G, 2=B, 3=A.
+    int metallicChannel = 0;
+    int roughnessChannel = 0;
+    float normalScale = 1.0f;
+    bool normalMapFlipY = false;
+    float lightSelectPdf = 0.0f;
 
 };

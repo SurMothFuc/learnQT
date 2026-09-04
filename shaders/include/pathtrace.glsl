@@ -29,17 +29,32 @@ bool IsDirectLightVisible(vec3 origin, vec3 direction, float maxDistance)
     Ray shadowRay;
     shadowRay.startPoint = origin + direction * 0.0005;
     shadowRay.direction = direction;
+    float remainingDistance = maxDistance;
 
-    HitResult blocker = hitBVH(shadowRay);
-    if (!blocker.isHit) {
-        return true;
+    // Alpha mask/blend is resolved by hitBVH. Legacy transparent boundaries
+    // are skipped here so the same visibility rule is used by direct lighting.
+    for (int layer = 0; layer < 16; ++layer) {
+        HitResult blocker = hitBVH(shadowRay);
+        if (!blocker.isHit) {
+            return true;
+        }
+
+        if (remainingDistance < INF * 0.5 && blocker.hitDistance >= remainingDistance - 0.001) {
+            return true;
+        }
+        if (blocker.material.alphaMode != ALPHA_MODE_TRANSPARENT) {
+            return false;
+        }
+
+        if (remainingDistance < INF * 0.5) {
+            remainingDistance -= blocker.hitDistance;
+            if (remainingDistance <= 0.001) {
+                return true;
+            }
+        }
+        shadowRay.startPoint = blocker.hitPoint + direction * 0.0005;
     }
-
-    if (maxDistance >= INF * 0.5) {
-        return false;
-    }
-
-    return blocker.hitDistance >= maxDistance - 0.001;
+    return false;
 }
 
 vec3 EstimateDirectLighting(HitResult hit, vec3 history, float eta)
@@ -209,7 +224,7 @@ OutputColor pathTracingImportanceSampling(Ray r, int maxBounce) {
                 history *= f_r * NdotL / pdf_brdf;  // 累积颜色
                 r.direction = L;
             }        
-            r.startPoint = newHit.hitPoint;        
+            r.startPoint = newHit.hitPoint + r.direction * 0.0005;
 
             //这里至少要单独存储 medium ，之后要引入体积栈
             if(!newHit.isInside &&

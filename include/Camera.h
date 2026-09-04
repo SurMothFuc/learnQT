@@ -24,7 +24,7 @@ const float YAW = -90.0f;
 const float PITCH = 0.0f;
 const float SPEED = 2.0f;
 const float SENSITIVITY = 0.5f;
-const float ZOOM = 45.0f;
+const float ZOOM = 53.130102f; // Matches the original ray plane at z = -2.
 
 class Camera {
 public:
@@ -33,6 +33,7 @@ public:
     ~Camera();
 
     QMatrix4x4 getViewMatrix();
+    void restoreState(const QVector3D& eye, const QVector3D& lookAt, const QVector3D& worldUp, float fov);
     void processMouseMovement(float xoffset, float yoffset, bool constraintPitch = true);
     void processMousePan(float xoffset, float yoffset);
     void processMouseScroll(float yoffset);

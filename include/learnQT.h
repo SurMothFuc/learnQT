@@ -6,6 +6,9 @@
 #include <QMessageBox>
 #include <QMutexLocker>
 #include <QString>
+#include <QComboBox>
+#include <QThread>
+#include <QCloseEvent>
 
 #include <iostream>
 
@@ -22,6 +25,7 @@ class learnQT : public QMainWindow
 
 public:
     learnQT(QWidget *parent = Q_NULLPTR);
+    ~learnQT() override;
 
     // 隐藏布局中的所有控件
     void hideLayout(QLayout* layout);
@@ -31,6 +35,8 @@ public:
     void exitFullscreen();
 
 public slots:
+    void loadModel();
+
     void saveGLImage() {
         // 获取保存路径
         QString filePath = QFileDialog::getSaveFileName(
@@ -162,9 +168,33 @@ public slots:
     }
 
 protected:
+    void closeEvent(QCloseEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
 
 private:
+    void setupSceneControls();
+    void refreshScenes();
+    void restoreSceneControls();
+    void setSceneDirty();
+    bool confirmDiscard();
+    bool saveSceneDocument(bool saveAs = false);
+    void beginSceneLoad(const QString& path, bool model = false);
+    void setLoading(bool loading);
+    QComboBox* m_sceneList = nullptr;
+    QThread* m_loadWorker = nullptr;
+    bool m_sceneDirty = false;
+    bool m_restoring = false;
+    bool m_loading = false;
+    QStringList m_sessionScenes;
+    void configureRegressionCapture();
+    void configureSceneRegression();
+    void captureRegressionFrame();
+
     Ui::learnQTClass ui;
+    QString m_regressionOutputPath;
+    int m_regressionTargetFrames = 12;
+    int m_regressionPresentedFrames = 0;
+    bool m_regressionCaptureQueued = false;
+    bool m_validateLanternRegression = false;
 };

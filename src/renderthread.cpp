@@ -1,6 +1,7 @@
 ﻿#include "renderthread.h"
 
 #include "RenderParams.h"
+extern QMutex param_mutex;
 
 RenderThread::RenderThread(QSurface *surface, QOpenGLContext *mainContext, QObject *parent)
     : QThread(parent)
@@ -33,6 +34,15 @@ void RenderThread::markSceneDirty(SceneDirtyFlags flags)
     m_pendingSceneDirty.fetch_or(flags, std::memory_order_relaxed);
 }
 
+void RenderThread::replaceScene(Scene& scene)
+{
+    QMutexLocker frame(&m_frameMutex);
+    QMutexLocker data(&param_mutex);
+    Scene::getInstance().adoptPrepared(scene);
+    RenderParams::instance().applySnapshot(Scene::getInstance().document.settings());
+    markSceneDirty(SceneDirtyFlag::SceneBuffers | SceneDirtyFlag::Camera);
+}
+
 // called in render thread
 void RenderThread::run()
 {
@@ -42,11 +52,14 @@ void RenderThread::run()
 
     TextureBuffer::instance()->createTexture(m_renderContext);
 
+    QMutexLocker initialization(&m_frameMutex);
     const RenderParams::Snapshot initialSnapshot = RenderParams::instance().snapshot();
     Renderer renderer(m_width, m_height, initialSnapshot);
+    initialization.unlock();
 
     while (m_running.load(std::memory_order_relaxed))
     {
+        QMutexLocker frame(&m_frameMutex);
         int width = 0;
         int height = 0;
         {
