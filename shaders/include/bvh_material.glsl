@@ -1,4 +1,142 @@
-// 获取第 i 下标的三角形的材质
+float SrgbChannelToLinear(float value)
+{
+    return value <= 0.04045
+        ? value / 12.92
+        : pow((value + 0.055) / 1.055, 2.4);
+}
+
+vec3 SrgbToLinear(vec3 value)
+{
+    return vec3(
+        SrgbChannelToLinear(value.r),
+        SrgbChannelToLinear(value.g),
+        SrgbChannelToLinear(value.b));
+}
+
+float MirrorTextureCoordinate(float coordinate)
+{
+    float wrapped = mod(coordinate, 2.0);
+    if (wrapped < 0.0) wrapped += 2.0;
+    return wrapped <= 1.0 ? wrapped : 2.0 - wrapped;
+}
+
+vec2 TransformMaterialUV(int textureIndex, vec2 uv)
+{
+    if (textureIndex < 0 || textureIndex >= materialTextureCount) {
+        return uv;
+    }
+
+    vec4 transform = texelFetch(materialTextureInfo, textureIndex * 3);
+    float rotationAngle = texelFetch(materialTextureInfo, textureIndex * 3 + 1).x;
+    float cosine = cos(rotationAngle);
+    float sine = sin(rotationAngle);
+    mat2 rotation = mat2(cosine, sine, -sine, cosine);
+    vec2 transformed = uv * transform.xy;
+    return rotation * (transformed - vec2(0.5)) + vec2(0.5) + transform.zw;
+}
+
+float WrapTextureCoordinate(float coordinate, int mode)
+{
+    if (mode == 1 || mode == 3) return clamp(coordinate, 0.0, 1.0);
+    if (mode == 2) return MirrorTextureCoordinate(coordinate);
+    return fract(coordinate);
+}
+
+vec4 SampleMaterialTexture(int textureIndex, vec2 uv)
+{
+    if (textureIndex < 0 || textureIndex >= materialTextureCount) {
+        return vec4(1.0);
+    }
+
+    vec2 transformed = TransformMaterialUV(textureIndex, uv);
+    vec4 sampling = texelFetch(materialTextureInfo, textureIndex * 3 + 1);
+    int wrapS = int(sampling.y);
+    int wrapT = int(sampling.z);
+    if ((wrapS == 3 && (transformed.x < 0.0 || transformed.x > 1.0)) ||
+        (wrapT == 3 && (transformed.y < 0.0 || transformed.y > 1.0))) {
+        return vec4(0.0);
+    }
+    transformed.x = WrapTextureCoordinate(transformed.x, wrapS);
+    transformed.y = WrapTextureCoordinate(transformed.y, wrapT);
+    int magFilter = int(texelFetch(materialTextureInfo, textureIndex * 3 + 2).y);
+    if (magFilter == 9728) {
+        ivec2 dimensions = textureSize(materialTextures, 0).xy;
+        ivec2 pixel = clamp(ivec2(floor(transformed * vec2(dimensions))), ivec2(0), dimensions - ivec2(1));
+        return texelFetch(materialTextures, ivec3(pixel, textureIndex), 0);
+    }
+    // Ray hits do not have useful screen-space derivatives; use an explicit base LOD.
+    return textureLod(materialTextures, vec3(transformed, float(textureIndex)), 0.0);
+}
+
+float TextureChannel(vec4 value, int channel)
+{
+    if (channel == 1) return value.g;
+    if (channel == 2) return value.b;
+    if (channel == 3) return value.a;
+    return value.r;
+}
+
+void GetTriangleUVs(int triangleIndex, out vec2 uv1, out vec2 uv2, out vec2 uv3)
+{
+    int offset = triangleIndex * SIZE_TRIANGLE;
+    vec4 uv12 = texelFetch(triangles, offset + 12);
+    vec4 uv3Tex0 = texelFetch(triangles, offset + 13);
+    uv1 = uv12.xy;
+    uv2 = uv12.zw;
+    uv3 = uv3Tex0.xy;
+}
+
+vec2 InterpolateTriangleUV(int triangleIndex, vec3 bary)
+{
+    vec2 uv1, uv2, uv3;
+    GetTriangleUVs(triangleIndex, uv1, uv2, uv3);
+    return bary.x * uv1 + bary.y * uv2 + bary.z * uv3;
+}
+
+float GetTriangleLightSelectPdf(int triangleIndex)
+{
+    return texelFetch(triangles, triangleIndex * SIZE_TRIANGLE + 16).z;
+}
+
+float GetMaterialOpacity(int triangleIndex, vec2 uv)
+{
+    int offset = triangleIndex * SIZE_TRIANGLE;
+    vec4 uv3Tex0 = texelFetch(triangles, offset + 13);
+    vec4 tex1 = texelFetch(triangles, offset + 14);
+    vec4 textureParam0 = texelFetch(triangles, offset + 15);
+    int baseColorTex = int(uv3Tex0.z);
+    int opacityTex = int(tex1.w);
+
+    float opacity = textureParam0.x;
+    if (baseColorTex >= 0) {
+        opacity *= SampleMaterialTexture(baseColorTex, uv).a;
+    }
+    if (opacityTex >= 0) {
+        opacity *= SampleMaterialTexture(opacityTex, uv).r;
+    }
+    return clamp(opacity, 0.0, 1.0);
+}
+
+bool RejectAlphaIntersection(int triangleIndex, vec2 uv)
+{
+    int offset = triangleIndex * SIZE_TRIANGLE;
+    vec4 param4 = texelFetch(triangles, offset + 9);
+    int alphaMode = int(param4.w);
+    if (alphaMode != ALPHA_MODE_MASK && alphaMode != ALPHA_MODE_BLEND) {
+        return false;
+    }
+
+    float opacity = GetMaterialOpacity(triangleIndex, uv);
+    if (alphaMode == ALPHA_MODE_MASK) {
+        float alphaCutoff = texelFetch(triangles, offset + 15).y;
+        return opacity < alphaCutoff;
+    }
+    return rand() >= opacity;
+}
+
+// Keep the original one-argument material loader shape for compatibility with
+// NVIDIA's GLSL 330 compiler. Callers set this immediately before evaluation.
+vec2 materialEvaluationUV;
 Material getMaterial(int i) {
     Material m;
 
@@ -9,6 +147,10 @@ Material getMaterial(int i) {
     vec4 param4 = texelFetch(triangles, offset + 9);
     vec4 param5 = texelFetch(triangles, offset + 10);
     vec4 param6 = texelFetch(triangles, offset + 11);
+    vec4 uv3Tex0 = texelFetch(triangles, offset + 13);
+    vec4 tex1 = texelFetch(triangles, offset + 14);
+    vec4 textureParam0 = texelFetch(triangles, offset + 15);
+    vec4 textureParam1 = texelFetch(triangles, offset + 16);
     
     m.emissive = param1.xyz;
     m.sheenTint= param1.w;
@@ -23,6 +165,8 @@ Material getMaterial(int i) {
     m.IOR=param4.y;
     m.transmission=param4.z;
     m.alphaMode=int(param4.w);
+    m.opacity=textureParam0.x;
+    m.alphaCutoff=textureParam0.y;
 
     m.mediumtype=int(param5.x);
     m.mediumDensity=param5.y;
@@ -34,10 +178,98 @@ Material getMaterial(int i) {
     m.anisotropic=param6.z;
     m.sheen=param6.w;
 
+    int baseColorTex=int(uv3Tex0.z);
+    m.normalTex=int(uv3Tex0.w);
+    int metallicTex=int(tex1.x);
+    int roughnessTex=int(tex1.y);
+    int emissiveTex=int(tex1.z);
+    m.normalScale=textureParam0.z;
+    m.normalMapFlipY=textureParam0.w;
+    int metallicChannel=int(textureParam1.x);
+    int roughnessChannel=int(textureParam1.y);
+
+    vec4 baseColorSample = SampleMaterialTexture(baseColorTex, materialEvaluationUV);
+    if (baseColorTex >= 0) {
+        m.baseColor *= SrgbToLinear(baseColorSample.rgb);
+    }
+    if (metallicTex >= 0) {
+        m.metallic *= TextureChannel(
+            SampleMaterialTexture(metallicTex, materialEvaluationUV),
+            metallicChannel);
+    }
+    if (roughnessTex >= 0) {
+        m.roughness *= TextureChannel(
+            SampleMaterialTexture(roughnessTex, materialEvaluationUV),
+            roughnessChannel);
+    }
+    if (emissiveTex >= 0) {
+        m.emissive *= SrgbToLinear(SampleMaterialTexture(emissiveTex, materialEvaluationUV).rgb);
+    }
+    m.opacity = GetMaterialOpacity(i, materialEvaluationUV);
+    m.metallic = clamp(m.metallic, 0.0, 1.0);
+    m.roughness = clamp(m.roughness, 0.001, 1.0);
+
     float aspect = sqrt(1.0 - m.anisotropic * 0.9);
     m.ax = max(0.001, m.roughness / aspect);
     m.ay = max(0.001, m.roughness * aspect);
     return m;
+}
+
+vec3 ApplyNormalMap(int triangleIndex, vec2 uv, vec3 bary, vec3 surfaceNormal, Material material)
+{
+    if (material.normalTex < 0 || material.normalTex >= materialTextureCount) {
+        return surfaceNormal;
+    }
+
+    int offset = triangleIndex * SIZE_TRIANGLE;
+    vec3 p1 = texelFetch(triangles, offset + 0).xyz;
+    vec3 p2 = texelFetch(triangles, offset + 1).xyz;
+    vec3 p3 = texelFetch(triangles, offset + 2).xyz;
+    vec2 uv1, uv2, uv3;
+    GetTriangleUVs(triangleIndex, uv1, uv2, uv3);
+    uv1 = TransformMaterialUV(material.normalTex, uv1);
+    uv2 = TransformMaterialUV(material.normalTex, uv2);
+    uv3 = TransformMaterialUV(material.normalTex, uv3);
+
+    vec3 dp1 = p2 - p1;
+    vec3 dp2 = p3 - p1;
+    vec2 duv1 = uv2 - uv1;
+    vec2 duv2 = uv3 - uv1;
+    float determinant = duv1.x * duv2.y - duv1.y * duv2.x;
+
+    vec4 tangent1 = texelFetch(triangles, offset + 17);
+    vec4 tangent2 = texelFetch(triangles, offset + 18);
+    vec4 tangent3 = texelFetch(triangles, offset + 19);
+    vec4 importedTangent = bary.x * tangent1 + bary.y * tangent2 + bary.z * tangent3;
+
+    vec3 tangent;
+    vec3 bitangent;
+    if (length(importedTangent.xyz) > EPS) {
+        tangent = normalize(importedTangent.xyz - surfaceNormal * dot(surfaceNormal, importedTangent.xyz));
+        float handedness = importedTangent.w < 0.0 ? -1.0 : 1.0;
+        bitangent = normalize(cross(surfaceNormal, tangent)) * handedness;
+    }
+    else if (abs(determinant) <= EPS) {
+        Onb(surfaceNormal, tangent, bitangent);
+    }
+    else {
+        tangent = normalize((dp1 * duv2.y - dp2 * duv1.y) / determinant);
+        tangent = normalize(tangent - surfaceNormal * dot(surfaceNormal, tangent));
+        float handedness = determinant < 0.0 ? -1.0 : 1.0;
+        bitangent = normalize(cross(surfaceNormal, tangent)) * handedness;
+    }
+
+    vec3 tangentNormal = SampleMaterialTexture(material.normalTex, uv).xyz * 2.0 - 1.0;
+    tangentNormal.xy *= material.normalScale;
+    if (material.normalMapFlipY > 0.5) {
+        tangentNormal.y = -tangentNormal.y;
+    }
+    tangentNormal = normalize(tangentNormal);
+    vec3 mappedNormal = normalize(
+        tangent * tangentNormal.x
+        + bitangent * tangentNormal.y
+        + surfaceNormal * tangentNormal.z);
+    return dot(mappedNormal, surfaceNormal) < 0.0 ? -mappedNormal : mappedNormal;
 }
 // 获取第 i 下标的 BVHNode 对象
 BVHNode getBVHNode(int i) {
@@ -131,11 +363,17 @@ HitResult hitBVH(Ray ray) {
 
                 if (all(greaterThanEqual(uvt, vec4(0.0))) && uvt.z < res.hitDistance)
                 {
+                    vec3 candidateBary = uvt.wxy;
+                    vec2 candidateUV = InterpolateTriangleUV(i, candidateBary);
+                    if (RejectAlphaIntersection(i, candidateUV)) {
+                        continue;
+                    }
                     res.isHit = true;
                     res.hitPoint = ray.startPoint + ray.direction * uvt.z;
                     res.hitDistance = uvt.z;
                     res.viewDir = ray.direction;
-                    bary = uvt.wxy;
+                    bary = candidateBary;
+                    res.uv = candidateUV;
                     triID=i;
                     vert1=p1,vert2=p2,vert3=p3;
 
@@ -217,7 +455,9 @@ HitResult hitBVH(Ray ray) {
             res.normal=Nsmooth;
         }
 
+        materialEvaluationUV = res.uv;
         res.material = getMaterial(triID);
+        res.normal = ApplyNormalMap(triID, res.uv, bary, res.normal, res.material);
         res.triangleIndex = triID;
     }
     return res;

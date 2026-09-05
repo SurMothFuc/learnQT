@@ -1,6 +1,8 @@
 # learnQT 项目文档入口
 
-当前工程是一个基于 Qt + OpenGL 的离线路径追踪实验项目：`UI Thread` 负责窗口与输入，`Render Thread` 负责渲染循环、路径追踪和降噪，`Shared State` 负责在两条线程之间传递场景、参数和最终显示纹理。
+当前工程是一个基于 Qt + OpenGL 的离线路径追踪实验项目：`UI Thread` 负责窗口与输入，`Render Thread` 负责渲染循环、路径追踪和降噪，`Load Worker` 准备候选场景及便携包，`Shared State` 在主线程和渲染线程之间同步当前场景、参数和最终显示纹理。
+
+2026-09-04：纹理与场景系统 v1 已收尾。功能范围、两个预设、保存/便携导出、验收记录及兼容性边界集中在 [texture_scene_v1.md](./texture_scene_v1.md)。
 
 本文档是 `miscellaneous` 下项目理解资料的总入口。所有说明都以当前代码实现为准，优先回答“代码现在怎么工作”，而不是“理想上应该怎样设计”。
 
@@ -32,13 +34,15 @@ flowchart TD
 | [logic_overview.md](./logic_overview.md) | 场景准备链路、GPU 数据上传、shader 主循环、当前真实行为 | 模块职责总览、文档导航 |
 | [module_map.md](./module_map.md) | 主要目录和关键文件的阅读入口、依赖关系、改动影响 | 完整流程图、状态同步细节 |
 | [待办.md](./待办.md) | 已知正确性问题、采样质量问题、架构和验证待办 | 当前代码流程说明 |
+| [texture_scene_v1.md](./texture_scene_v1.md) | 纹理/场景 v1 使用方式、格式、预设、回归基线和支持边界 | 未实现功能的完成承诺 |
 
 ## 统一术语
 
 | 术语 | 含义 |
 | --- | --- |
 | `UI Thread` | Qt 主线程，负责 `QApplication`、`learnQT`、`GLWidget` 的窗口与输入事件。 |
-| `Render Thread` | `RenderThread` 所在线程，持有共享 OpenGL 上下文并持续执行渲染循环。 |
+| `Render Thread` | `RenderThread::run()` 执行的 worker 线程，使用共享 OpenGL 上下文持续渲染；QThread 对象本身及部分控制入口仍在主线程。 |
+| `Load Worker` | 运行中的场景切换/模型导入/便携导出所用后台任务；CPU 候选场景不直接修改当前单例或 GPU。 |
 | `GPU` | shader、FBO、纹理、TBO、PBO 等 OpenGL 资源所在的执行区域。 |
 | `Shared State` | 在主线程和渲染线程之间共享或同步的状态，如 `Scene`、`RenderParams`、`TextureBuffer`、`param_mutex`。 |
 | `Pass` | 一次渲染阶段，例如 `pathtrace.frag`、`historysave.frag`、`triangle.frag`。 |
@@ -51,6 +55,7 @@ flowchart TD
 
 - `UI Thread`: 用户输入、Qt UI、窗口显示。
 - `Render Thread`: 渲染循环、参数同步、OpenGL worker。
+- `Load Worker`: 独立候选场景准备及资源包构建，不持有渲染上下文。
 - `GPU`: path tracing、历史帧保存、最终合成等图形 pass。
 - `Shared State`: 场景数据、参数、跨线程共享纹理和同步原语。
 
@@ -62,6 +67,7 @@ flowchart TD
 - 想回答“谁驱动谁”：先看 [project_architecture.md](./project_architecture.md)。
 - 想回答“场景和 HDR 怎么进 shader”：先看 [logic_overview.md](./logic_overview.md)。
 - 想回答“应该从哪些文件下手读”：先看 [module_map.md](./module_map.md)。
+- 想回答“贴图支持到哪、场景怎么保存和搬移”：看 [texture_scene_v1.md](./texture_scene_v1.md)。
 
 ## 当前文档边界
 

@@ -1,7 +1,11 @@
 #include "Mesh.h"
+#include "SceneAssets.h"
+#include <QFile>
+#include <stdexcept>
 
 #include <assimp/Importer.hpp>
 #include <assimp/config.h>
+#include <assimp/GltfMaterial.h>
 #include <assimp/material.h>
 #include <assimp/mesh.h>
 #include <assimp/postprocess.h>
@@ -20,6 +24,7 @@
 #include <QVector4D>
 
 namespace {
+thread_local SceneAssets* activeAssets = nullptr;
 
 constexpr float kEpsilon = 1.0e-8f;
 
@@ -60,6 +65,12 @@ QVector3D transformNormal(const aiVector3D& source, const QMatrix4x4& normalTran
     return QVector3D(hn.x(), hn.y(), hn.z()).normalized();
 }
 
+QVector3D transformDirection(const aiVector3D& source, const QMatrix4x4& transform)
+{
+    const QVector4D transformed = transform * QVector4D(toQVector3D(source), 0.0f);
+    return QVector3D(transformed.x(), transformed.y(), transformed.z());
+}
+
 QVector3D calculateFaceNormal(const QVector3D& p1, const QVector3D& p2, const QVector3D& p3)
 {
     return QVector3D::crossProduct(p2 - p1, p3 - p1).normalized();
@@ -73,12 +84,6 @@ QString normalizeTexturePath(const std::string& modelFilepath, const aiString& t
     }
 
     rawPath.replace('\\', '/');
-    if (rawPath.startsWith('*')) {
-        std::cout << "Warning: embedded texture is not supported in this CPU texture path: "
-                  << rawPath.toStdString() << std::endl;
-        return QString();
-    }
-
     const QFileInfo modelInfo(QString::fromStdString(modelFilepath));
     const QDir modelDir(modelInfo.absolutePath());
     QString resolved = QDir::isAbsolutePath(rawPath) ? rawPath : modelDir.absoluteFilePath(rawPath);
@@ -99,49 +104,173 @@ bool samePath(const std::string& left, const QString& right)
     return QString::fromStdString(left).compare(right, caseSensitivity) == 0;
 }
 
-int findTexture(const std::vector<TextureAsset>& textures, const QString& normalizedPath)
+struct TextureSamplingInfo {
+    QVector2D uvOffset = QVector2D(0.0f, 0.0f);
+    QVector2D uvScale = QVector2D(1.0f, 1.0f);
+    float uvRotation = 0.0f;
+    int wrapS = static_cast<int>(aiTextureMapMode_Wrap);
+    int wrapT = static_cast<int>(aiTextureMapMode_Wrap);
+    int minFilter = 9987; // GL_LINEAR_MIPMAP_LINEAR
+    int magFilter = 9729; // GL_LINEAR
+};
+
+bool sameSamplingInfo(const TextureAsset& texture, const TextureSamplingInfo& sampling)
+{
+    return (texture.uvOffset - sampling.uvOffset).lengthSquared() < kEpsilon &&
+           (texture.uvScale - sampling.uvScale).lengthSquared() < kEpsilon &&
+           std::abs(texture.uvRotation - sampling.uvRotation) < kEpsilon &&
+           texture.wrapS == sampling.wrapS &&
+           texture.wrapT == sampling.wrapT &&
+           texture.minFilter == sampling.minFilter &&
+           texture.magFilter == sampling.magFilter;
+}
+
+int findTexture(const std::vector<TextureAsset>& textures,
+                const QString& normalizedPath,
+                const TextureSamplingInfo& sampling)
 {
     for (int i = 0; i < static_cast<int>(textures.size()); ++i) {
-        if (samePath(textures[i].sourcePath, normalizedPath)) {
+        if (samePath(textures[i].sourcePath, normalizedPath) &&
+            sameSamplingInfo(textures[i], sampling)) {
             return i;
         }
     }
     return -1;
 }
 
-int loadTexture(const std::string& modelFilepath, const aiString& texturePath, std::vector<TextureAsset>& textures, const char* slotName)
+QImage decodeEmbeddedTexture(const aiTexture* texture)
 {
-    const QString normalizedPath = normalizeTexturePath(modelFilepath, texturePath);
-    if (normalizedPath.isEmpty()) {
-        return -1;
+    if (texture == nullptr || texture->pcData == nullptr || texture->mWidth == 0) {
+        return QImage();
     }
 
-    const int existingIndex = findTexture(textures, normalizedPath);
+    if (texture->mHeight == 0) {
+        return QImage::fromData(
+            reinterpret_cast<const uchar*>(texture->pcData),
+            static_cast<int>(texture->mWidth));
+    }
+
+    QImage image(
+        static_cast<int>(texture->mWidth),
+        static_cast<int>(texture->mHeight),
+        QImage::Format_RGBA8888);
+    for (unsigned int y = 0; y < texture->mHeight; ++y) {
+        uchar* destination = image.scanLine(static_cast<int>(y));
+        for (unsigned int x = 0; x < texture->mWidth; ++x) {
+            const aiTexel& source = texture->pcData[y * texture->mWidth + x];
+            destination[x * 4 + 0] = source.r;
+            destination[x * 4 + 1] = source.g;
+            destination[x * 4 + 2] = source.b;
+            destination[x * 4 + 3] = source.a;
+        }
+    }
+    return image;
+}
+
+float srgbChannelToLinear(float value)
+{
+    return value <= 0.04045f
+        ? value / 12.92f
+        : std::pow((value + 0.055f) / 1.055f, 2.4f);
+}
+
+QVector3D averageLinearColor(const QImage& source)
+{
+    if (source.isNull()) {
+        return QVector3D(1.0f, 1.0f, 1.0f);
+    }
+
+    const int sampleWidth = std::min(source.width(), 64);
+    const int sampleHeight = std::min(source.height(), 64);
+    const QImage image = source
+        .scaled(sampleWidth, sampleHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)
+        .convertToFormat(QImage::Format_RGBA8888);
+
+    QVector3D sum(0.0f, 0.0f, 0.0f);
+    for (int y = 0; y < image.height(); ++y) {
+        const uchar* row = image.constScanLine(y);
+        for (int x = 0; x < image.width(); ++x) {
+            const uchar* pixel = row + x * 4;
+            sum += QVector3D(
+                srgbChannelToLinear(pixel[0] / 255.0f),
+                srgbChannelToLinear(pixel[1] / 255.0f),
+                srgbChannelToLinear(pixel[2] / 255.0f));
+        }
+    }
+
+    const float sampleCount = static_cast<float>(image.width() * image.height());
+    return sampleCount > 0.0f ? sum / sampleCount : QVector3D(1.0f, 1.0f, 1.0f);
+}
+
+int appendTexture(const QString& sourceKey,
+                  const QImage& image,
+                  std::vector<TextureAsset>& textures,
+                  const char* slotName,
+                  const TextureSamplingInfo& sampling)
+{
+    const int existingIndex = findTexture(textures, sourceKey, sampling);
     if (existingIndex >= 0) {
         return existingIndex;
     }
 
-    QImage image(normalizedPath);
     if (image.isNull()) {
+        if (activeAssets) throw std::runtime_error(("Cannot decode texture: " + sourceKey).toStdString());
         std::cout << "Warning: failed to load " << slotName << " texture: "
-                  << normalizedPath.toStdString() << std::endl;
+                  << sourceKey.toStdString() << std::endl;
         return -1;
     }
 
     TextureAsset asset;
-    asset.sourcePath = normalizedPath.toStdString();
+    asset.sourcePath = sourceKey.toStdString();
     asset.image = image;
     asset.width = image.width();
     asset.height = image.height();
+    asset.averageLinearColor = averageLinearColor(image);
+    asset.uvOffset = sampling.uvOffset;
+    asset.uvScale = sampling.uvScale;
+    asset.uvRotation = sampling.uvRotation;
+    asset.wrapS = sampling.wrapS;
+    asset.wrapT = sampling.wrapT;
+    asset.minFilter = sampling.minFilter;
+    asset.magFilter = sampling.magFilter;
     textures.push_back(asset);
     return static_cast<int>(textures.size()) - 1;
 }
 
+int loadTexture(const aiScene* scene,
+                const std::string& modelFilepath,
+                const aiString& texturePath,
+                std::vector<TextureAsset>& textures,
+                const char* slotName,
+                const TextureSamplingInfo& sampling)
+{
+    const aiTexture* embedded = scene != nullptr
+        ? scene->GetEmbeddedTexture(texturePath.C_Str())
+        : nullptr;
+    if (embedded != nullptr) {
+        const QString sourceKey = QFileInfo(QString::fromStdString(modelFilepath)).absoluteFilePath()
+            + QStringLiteral("::")
+            + QString::fromUtf8(texturePath.C_Str());
+        return appendTexture(sourceKey, decodeEmbeddedTexture(embedded), textures, slotName, sampling);
+    }
+
+    const QString normalizedPath = activeAssets
+        ? activeAssets->resolve(QString::fromUtf8(texturePath.C_Str()), true)
+        : normalizeTexturePath(modelFilepath, texturePath);
+    if (normalizedPath.isEmpty()) {
+        if (activeAssets) throw std::runtime_error(std::string("Missing texture: ") + texturePath.C_Str());
+        return -1;
+    }
+    return appendTexture(normalizedPath, QImage(normalizedPath), textures, slotName, sampling);
+}
+
 int loadTextureFromTypes(const aiMaterial* material,
+                         const aiScene* scene,
                          const std::string& modelFilepath,
                          std::vector<TextureAsset>& textures,
                          std::initializer_list<aiTextureType> types,
-                         const char* slotName)
+                         const char* slotName,
+                         aiTextureType* matchedType = nullptr)
 {
     if (material == nullptr) {
         return -1;
@@ -154,17 +283,39 @@ int loadTextureFromTypes(const aiMaterial* material,
 
         aiString path;
         unsigned int uvIndex = 0;
-        if (material->GetTexture(type, 0, &path, nullptr, &uvIndex) != AI_SUCCESS) {
+        aiTextureMapMode mapModes[3] = {
+            aiTextureMapMode_Wrap,
+            aiTextureMapMode_Wrap,
+            aiTextureMapMode_Wrap
+        };
+        if (material->GetTexture(type, 0, &path, nullptr, &uvIndex, nullptr, nullptr, mapModes) != AI_SUCCESS) {
             continue;
         }
 
         if (uvIndex != 0) {
             std::cout << "Warning: " << slotName << " texture requests UV channel "
-                      << uvIndex << "; only UV0 is stored" << std::endl;
+                      << uvIndex << "; texture skipped because only UV0 is stored" << std::endl;
+            continue;
         }
 
-        const int textureIndex = loadTexture(modelFilepath, path, textures, slotName);
+        TextureSamplingInfo sampling;
+        sampling.wrapS = static_cast<int>(mapModes[0]);
+        sampling.wrapT = static_cast<int>(mapModes[1]);
+        material->Get(AI_MATKEY_GLTF_MAPPINGFILTER_MIN(type, 0), sampling.minFilter);
+        material->Get(AI_MATKEY_GLTF_MAPPINGFILTER_MAG(type, 0), sampling.magFilter);
+
+        aiUVTransform uvTransform;
+        if (material->Get(AI_MATKEY_UVTRANSFORM(type, 0), uvTransform) == AI_SUCCESS) {
+            sampling.uvOffset = QVector2D(uvTransform.mTranslation.x, uvTransform.mTranslation.y);
+            sampling.uvScale = QVector2D(uvTransform.mScaling.x, uvTransform.mScaling.y);
+            sampling.uvRotation = uvTransform.mRotation;
+        }
+
+        const int textureIndex = loadTexture(scene, modelFilepath, path, textures, slotName, sampling);
         if (textureIndex >= 0) {
+            if (matchedType != nullptr) {
+                *matchedType = type;
+            }
             return textureIndex;
         }
     }
@@ -217,8 +368,9 @@ void applyAssimpScalars(const aiMaterial* source, Material& target)
     if (getColor(source, AI_MATKEY_BASE_COLOR, color) ||
         getColor(source, AI_MATKEY_COLOR_DIFFUSE, color)) {
         target.baseColor = QVector3D(color.r, color.g, color.b);
+        target.opacity *= color.a;
         if (color.a < 0.999f) {
-            target.alphaMode = static_cast<int>(AlphaMode::Transparent);
+            target.alphaMode = static_cast<int>(AlphaMode::Blend);
         }
     }
 
@@ -250,12 +402,33 @@ void applyAssimpScalars(const aiMaterial* source, Material& target)
     if (getFloat(source, AI_MATKEY_TRANSMISSION_FACTOR, value)) {
         target.transmission = value;
     }
-    if (getFloat(source, AI_MATKEY_OPACITY, value) && value < 0.999f) {
-        target.alphaMode = static_cast<int>(AlphaMode::Transparent);
+    if (getFloat(source, AI_MATKEY_OPACITY, value)) {
+        target.opacity *= value;
+        if (value < 0.999f) {
+            target.alphaMode = static_cast<int>(AlphaMode::Blend);
+        }
+    }
+
+    aiString alphaMode;
+    if (source != nullptr && source->Get(AI_MATKEY_GLTF_ALPHAMODE, alphaMode) == AI_SUCCESS) {
+        const QString mode = QString::fromUtf8(alphaMode.C_Str()).trimmed().toUpper();
+        if (mode == QStringLiteral("MASK")) {
+            target.alphaMode = static_cast<int>(AlphaMode::Mask);
+        }
+        else if (mode == QStringLiteral("BLEND")) {
+            target.alphaMode = static_cast<int>(AlphaMode::Blend);
+        }
+        else {
+            target.alphaMode = static_cast<int>(AlphaMode::Opaque);
+        }
+    }
+    if (getFloat(source, AI_MATKEY_GLTF_ALPHACUTOFF, value)) {
+        target.alphaCutoff = value;
     }
 }
 
 Material buildMaterial(const aiMaterial* source,
+                       const aiScene* scene,
                        const Material& fallback,
                        const std::string& modelFilepath,
                        std::vector<TextureAsset>& textures)
@@ -268,39 +441,55 @@ Material buildMaterial(const aiMaterial* source,
     applyAssimpScalars(source, result);
 
     const int baseColorTex = loadTextureFromTypes(
-        source, modelFilepath, textures, { aiTextureType_BASE_COLOR, aiTextureType_DIFFUSE }, "baseColor");
+        source, scene, modelFilepath, textures, { aiTextureType_BASE_COLOR, aiTextureType_DIFFUSE }, "baseColor");
     if (baseColorTex >= 0) {
         result.baseColorTex = baseColorTex;
     }
 
+    aiTextureType normalTextureType = aiTextureType_NONE;
     const int normalTex = loadTextureFromTypes(
-        source, modelFilepath, textures, { aiTextureType_NORMAL_CAMERA, aiTextureType_NORMALS }, "normal");
+        source, scene, modelFilepath, textures, { aiTextureType_NORMAL_CAMERA, aiTextureType_NORMALS }, "normal", &normalTextureType);
     if (normalTex >= 0) {
         result.normalTex = normalTex;
+        float normalScale = 1.0f;
+        if (getFloat(source, AI_MATKEY_GLTF_TEXTURE_SCALE(normalTextureType, 0), normalScale)) {
+            result.normalScale = normalScale;
+        }
     }
 
+    aiTextureType metallicTextureType = aiTextureType_NONE;
     const int metallicTex = loadTextureFromTypes(
-        source, modelFilepath, textures, { aiTextureType_METALNESS }, "metallic");
+        source, scene, modelFilepath, textures,
+        { aiTextureType_GLTF_METALLIC_ROUGHNESS, aiTextureType_METALNESS },
+        "metallic", &metallicTextureType);
     if (metallicTex >= 0) {
         result.metallicTex = metallicTex;
+        result.metallicChannel = metallicTextureType == aiTextureType_GLTF_METALLIC_ROUGHNESS ? 2 : 0;
     }
 
+    aiTextureType roughnessTextureType = aiTextureType_NONE;
     const int roughnessTex = loadTextureFromTypes(
-        source, modelFilepath, textures, { aiTextureType_DIFFUSE_ROUGHNESS }, "roughness");
+        source, scene, modelFilepath, textures,
+        { aiTextureType_GLTF_METALLIC_ROUGHNESS, aiTextureType_DIFFUSE_ROUGHNESS },
+        "roughness", &roughnessTextureType);
     if (roughnessTex >= 0) {
         result.roughnessTex = roughnessTex;
+        result.roughnessChannel = roughnessTextureType == aiTextureType_GLTF_METALLIC_ROUGHNESS ? 1 : 0;
     }
 
     const int emissiveTex = loadTextureFromTypes(
-        source, modelFilepath, textures, { aiTextureType_EMISSION_COLOR, aiTextureType_EMISSIVE }, "emissive");
+        source, scene, modelFilepath, textures, { aiTextureType_EMISSION_COLOR, aiTextureType_EMISSIVE }, "emissive");
     if (emissiveTex >= 0) {
         result.emissiveTex = emissiveTex;
     }
 
     const int opacityTex = loadTextureFromTypes(
-        source, modelFilepath, textures, { aiTextureType_OPACITY }, "opacity");
+        source, scene, modelFilepath, textures, { aiTextureType_OPACITY }, "opacity");
     if (opacityTex >= 0) {
         result.opacityTex = opacityTex;
+        if (result.alphaMode == static_cast<int>(AlphaMode::Opaque)) {
+            result.alphaMode = static_cast<int>(AlphaMode::Blend);
+        }
     }
 
     return result;
@@ -315,10 +504,11 @@ ObjMaterialLibraryInfo inspectObjMaterialLibraries(const std::string& filepath)
     }
 
     info.isObj = true;
-    std::ifstream input(filepath);
-    if (!input.is_open()) {
+    QFile source(QString::fromStdString(filepath));
+    if (!source.open(QIODevice::ReadOnly)) {
         return info;
     }
+    std::istringstream input(source.readAll().toStdString());
 
     const QDir modelDir(modelInfo.absolutePath());
     std::string line;
@@ -330,6 +520,14 @@ ObjMaterialLibraryInfo inspectObjMaterialLibraries(const std::string& filepath)
             continue;
         }
 
+        // OBJ library names can contain spaces. Prefer the complete remainder
+        // when it names a real file, then fall back to multiple library tokens.
+        const auto remainder=line.substr(line.find(token)+token.size());
+        const QString whole=QString::fromStdString(remainder).trimmed();
+        if(activeAssets && !whole.isEmpty() && !activeAssets->resolve(whole).isEmpty()) {
+            info.hasMaterialLibrary=true; info.hasExistingMaterialLibrary=true; continue;
+        }
+
         std::string materialLibrary;
         while (stream >> materialLibrary) {
             info.hasMaterialLibrary = true;
@@ -337,7 +535,7 @@ ObjMaterialLibraryInfo inspectObjMaterialLibraries(const std::string& filepath)
             materialPath.replace('\\', '/');
             const QString resolvedPath = QDir::cleanPath(
                 QDir::isAbsolutePath(materialPath) ? materialPath : modelDir.absoluteFilePath(materialPath));
-            if (QFileInfo::exists(resolvedPath)) {
+            if (activeAssets ? !activeAssets->resolve(materialPath).isEmpty() : QFileInfo::exists(resolvedPath)) {
                 info.hasExistingMaterialLibrary = true;
             }
             else {
@@ -390,15 +588,20 @@ void MeshLoader::readModel(std::string filepath,
                            Material material,
                            QMatrix4x4 trans,
                            bool smoothNormal,
-                           bool enableNormalization)
+                           bool enableNormalization, SceneAssets* assets, bool useFileMaterials)
 {
+    struct Scope { SceneAssets* old; Scope(SceneAssets* a):old(activeAssets) { activeAssets=a; } ~Scope() { activeAssets=old; } } scope(assets);
     const ObjMaterialLibraryInfo objMaterialInfo = inspectObjMaterialLibraries(filepath);
-    const bool readFileMaterials = !objMaterialInfo.isObj || objMaterialInfo.hasExistingMaterialLibrary;
+    if (assets && useFileMaterials && objMaterialInfo.hasMaterialLibrary && !objMaterialInfo.hasExistingMaterialLibrary)
+        throw std::runtime_error("The model references a missing material library.");
+    const bool readFileMaterials = useFileMaterials && (!objMaterialInfo.isObj || objMaterialInfo.hasExistingMaterialLibrary);
 
     Assimp::Importer importer;
+    if (assets) importer.SetIOHandler(assets->createIO());
     importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
 
     unsigned int flags = aiProcess_Triangulate |
+                         aiProcess_CalcTangentSpace |
                          aiProcess_SortByPType |
                          aiProcess_PreTransformVertices;
     if (smoothNormal) {
@@ -435,7 +638,7 @@ void MeshLoader::readModel(std::string filepath,
     std::vector<Material> materials(scene->mNumMaterials);
     for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
         materials[i] = readFileMaterials
-            ? buildMaterial(scene->mMaterials[i], material, filepath, textures)
+            ? buildMaterial(scene->mMaterials[i], scene, material, filepath, textures)
             : material;
     }
 
@@ -502,6 +705,7 @@ void MeshLoader::readModel(std::string filepath,
             }
 
             Triangle t;
+            t.sourceMaterialIndex = static_cast<int>(mesh->mMaterialIndex);
             t.p1 = positions[i0];
             t.p2 = positions[i1];
             t.p3 = positions[i2];
@@ -531,6 +735,29 @@ void MeshLoader::readModel(std::string filepath,
                           << triangles.size()
                           << std::endl;
             }
+
+            // Preserve authored glTF/MikkTSpace tangent handedness. Assimp's
+            // CalcTangentSpace output is used as a fallback when the asset did
+            // not carry a tangent attribute.
+            const auto importedTangent = [&](unsigned int vertexIndex, const QVector3D& normal) {
+                if (!mesh->HasTangentsAndBitangents()) {
+                    return QVector4D(0.0f, 0.0f, 0.0f, 1.0f);
+                }
+
+                QVector3D tangent = transformDirection(mesh->mTangents[vertexIndex], trans);
+                const QVector3D bitangent = transformDirection(mesh->mBitangents[vertexIndex], trans);
+                tangent -= normal * QVector3D::dotProduct(normal, tangent);
+                if (tangent.lengthSquared() <= kEpsilon || bitangent.lengthSquared() <= kEpsilon) {
+                    return QVector4D(0.0f, 0.0f, 0.0f, 1.0f);
+                }
+                tangent.normalize();
+                const float handedness = QVector3D::dotProduct(
+                    QVector3D::crossProduct(normal, tangent), bitangent) < 0.0f ? -1.0f : 1.0f;
+                return QVector4D(tangent, handedness);
+            };
+            t.tangent1 = importedTangent(i0, t.n1);
+            t.tangent2 = importedTangent(i1, t.n2);
+            t.tangent3 = importedTangent(i2, t.n3);
 
             t.material = meshMaterial;
             triangles.push_back(t);

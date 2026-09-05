@@ -1,39 +1,50 @@
 #include "Scene.h"
 #include "iostream"
+#include <stdexcept>
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <direct.h>  // POSIX 标准
+#include <limits>
 
 namespace {
 
-Material makeBedroomMaterial(const QVector3D& baseColor,
-                             float roughness = 1.0f,
-                             float metallic = 0.0f,
-                             float transmission = 0.0f)
-{
-    Material material;
-    material.baseColor = baseColor;
-    material.roughness = roughness;
-    material.metallic = metallic;
-    material.transmission = transmission;
-    return material;
-}
+std::string g_startupModelPath;
+QString g_startupScenePath;
 
 } // namespace
 
 
-Scene::Scene()
+Scene::Scene(bool initialize)
+{
+    if (!initialize) return;
+    QString error;
+    const QString path = g_startupScenePath.isEmpty()
+        ? QString::fromStdString(getResourcePath("scenes/bedroom.scene.json")) : g_startupScenePath;
+    auto prepared = prepareScene(g_startupModelPath.empty() ? path : QString::fromStdString(g_startupModelPath), !g_startupModelPath.empty(), error);
+    if (!prepared) throw std::runtime_error(error.toStdString());
+    adoptPrepared(*prepared);
+    RenderParams::instance().applySnapshot(document.settings());
+}
+
+void Scene::setStartupScenePath(const QString& path) { g_startupScenePath=path; }
+
+void Scene::setStartupModelPath(const std::string& filepath)
+{
+    g_startupModelPath = filepath;
+}
+
+Scene::~Scene()
 {
     resetSceneData();
-    //camera = Camera(QVector3D(0.0f, 1.17f, 4.0f), QVector3D(0.0f, 1.0f, 0.0f));
-    
+}
 
-    // Manual switch: comment buildLegacyGlassScene() and uncomment buildBedroomScene().
-    //buildImportanceSamplingBenchmarkScene();
-    //buildLegacyGlassScene();
-    buildBedroomScene();
-    finalizeScene();
+bool Scene::loadModelScene(const std::string& filepath, std::string* errorMessage)
+{
+    QString error;
+    auto candidate=prepareScene(QString::fromStdString(filepath),true,error);
+    if(!candidate) { if(errorMessage) *errorMessage=error.toStdString(); return false; }
+    adoptPrepared(*candidate); return true;
 }
 
 void Scene::resetSceneData()
@@ -61,206 +72,6 @@ void Scene::resetSceneData()
     hdrResolution = 0;
 }
 
-void Scene::buildImportanceSamplingBenchmarkScene()
-{
-    camera = Camera(QVector3D(18.0f/1.5f, 4.0f/1.5f, 0.0f/1.5f), QVector3D(0.0f, 1.0f, 0.0f));
-    std::cout << "Building importance sampling benchmark scene" << std::endl;
-
-    Material mtWall;
-    mtWall.baseColor=QVector3D(1.0f, 1.0f, 1.0f);
-
-    MeshLoader::readModel(getResourcePath("models/veach/wall.obj"), triangles, textures, mtWall, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1.0, 1.0, 1.0)), false,false);
-
-    MeshLoader::readModel(getResourcePath("models/veach/floor.obj"), triangles, textures, mtWall, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1.0, 1.0, 1.0)), false,false);
-
-
-    Material mtPlate;
-    mtPlate.baseColor=QVector3D(1.0f, 1.0f, 1.0f);
-    mtPlate.metallic=1.0f;
-
-    mtPlate.roughness=0.01f;
-    MeshLoader::readModel(getResourcePath("models/veach/plate1.obj"), triangles, textures, mtPlate, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1.0, 1.0, 1.0)), false,false);
-
-    mtPlate.roughness=0.04f;
-    MeshLoader::readModel(getResourcePath("models/veach/plate2.obj"), triangles, textures, mtPlate, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1.0, 1.0, 1.0)), false,false);
-
-    mtPlate.roughness=0.09f;
-    MeshLoader::readModel(getResourcePath("models/veach/plate3.obj"), triangles, textures, mtPlate, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1.0, 1.0, 1.0)), false,false);
-
-    mtPlate.roughness=0.16f;
-    MeshLoader::readModel(getResourcePath("models/veach/plate4.obj"), triangles, textures, mtPlate, MeshLoader::getTransformMatrix(QVector3D(0, 0, -3.5f), QVector3D(0, 0, 0), QVector3D(1.0, 1.0, 1.0)), false,false);
-
-    Material mtLight;
-    mtLight.baseColor=QVector3D(1.0f, 1.0f, 1.0f);
-
-    mtLight.emissive = QVector3D(2.0f, 0.64f, 0.174f)*10.0f;
-    MeshLoader::readModel(getResourcePath("models/sphere.obj"), triangles, textures, mtLight, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0),QVector3D(-3.3724, 5.5, -3.74116)- QVector3D(0, 0.5f, 0), QVector3D(1.2, 1.2, 1.2)), true,true);
-
-    mtLight.emissive = QVector3D(0.87f, 2.0f, 0.28f)*10.0f;
-    MeshLoader::readModel(getResourcePath("models/sphere.obj"), triangles, textures, mtLight, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0),QVector3D(-3.3724, 5.5, -1.24)- QVector3D(0, 0.5f, 0), QVector3D(0.6, 0.6, 0.6)), true,true);
-
-    mtLight.emissive = QVector3D(0.41f, 1.88f, 2.0f)*10.0f;
-    MeshLoader::readModel(getResourcePath("models/sphere.obj"), triangles, textures, mtLight, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0),QVector3D(-3.3724, 5.5, 1.24)- QVector3D(0, 0.5f, 0), QVector3D(0.3, 0.3, 0.3)), true,true);
-
-    mtLight.emissive = QVector3D(1.43f, 0.46f, 2.0f)*10.0f;
-    MeshLoader::readModel(getResourcePath("models/sphere.obj"), triangles, textures, mtLight, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0),QVector3D(-3.3724, 5.5, 3.74116)- QVector3D(0, 0.5f, 0), QVector3D(0.1, 0.1, 0.1)), true,true);
-
-
-}
-
-void Scene::buildBedroomScene()
-{
-    const QVector3D referenceLookAt(0.0f, 1.0f, 0.31f);
-    const QVector3D sceneOffset = -referenceLookAt;
-    camera = Camera(QVector3D(3.0f, 0.5f, 3.49f), QVector3D(0.0f, 1.0f, 0.0f));
-    std::cout << "Building bedroom scene" << std::endl;
-
-    const QMatrix4x4 bedroomTransform = MeshLoader::getTransformMatrix(
-        QVector3D(0.0f, 0.0f, 0.0f),
-        sceneOffset,
-        QVector3D(1.0f, 1.0f, 1.0f));
-    const bool smoothNormal = true;
-    const bool enableNormalization = false;
-
-    const Material boxes = makeBedroomMaterial(QVector3D(0.483044f, 0.384664f, 0.301561f));
-    const Material plasticCable = makeBedroomMaterial(QVector3D(0.558543f, 0.558543f, 0.558543f));
-    const Material lampEmitter = makeBedroomMaterial(QVector3D(0.64f, 0.64f, 0.64f));
-    const Material blankets = makeBedroomMaterial(QVector3D(0.485435f, 0.456263f, 0.428075f));
-    const Material bedsheets = makeBedroomMaterial(QVector3D(0.908f, 0.922f, 0.946f));
-    const Material window = makeBedroomMaterial(QVector3D(0.48173f, 0.48173f, 0.48173f));
-    const Material pictureBacking = makeBedroomMaterial(QVector3D(0.111567f, 0.037068f, 0.017016f));
-    const Material picture = makeBedroomMaterial(QVector3D(0.590f, 0.578f, 0.556f));
-    const Material rocks1 = makeBedroomMaterial(QVector3D(0.350827f, 0.242986f, 0.17883f));
-    const Material rocks2 = makeBedroomMaterial(QVector3D(0.098964f, 0.098964f, 0.098964f));
-    const Material rocks3 = makeBedroomMaterial(QVector3D(0.558544f, 0.558544f, 0.558544f));
-    const Material decoPlant = makeBedroomMaterial(QVector3D(0.041772f, 0.011306f, 0.007575f));
-    const Material black = makeBedroomMaterial(QVector3D(0.015396f, 0.015396f, 0.015396f));
-    const Material carpet = makeBedroomMaterial(QVector3D(0.034499f, 0.034499f, 0.034499f));
-    const Material matress = makeBedroomMaterial(QVector3D(0.893289f, 0.893289f, 0.893289f));
-    const Material woodFloor = makeBedroomMaterial(QVector3D(0.710f, 0.523f, 0.361f), 0.15f);
-    const Material walls = makeBedroomMaterial(QVector3D(0.799999f, 0.799999f, 0.799999f));
-    const Material walls2 = makeBedroomMaterial(QVector3D(0.799999f, 0.799999f, 0.799999f));
-    const Material woodFurniture = makeBedroomMaterial(QVector3D(0.774f, 0.484f, 0.154f), 0.15f);
-    const Material mirror = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.0f, 1.0f);
-    const Material aluminium = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.2f, 1.0f);
-    const Material bookCover = makeBedroomMaterial(QVector3D(0.0f, 0.0f, 0.0f));
-    const Material bookPages = makeBedroomMaterial(QVector3D(0.567027f, 0.567027f, 0.567027f));
-    const Material lampMetal = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.1f);
-    const Material glass = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.0f, 0.0f, 1.0f);
-    const Material roughGlass = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.1f, 0.0f, 1.0f);
-    const Material pictureFrame = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.1f, 1.0f);
-    const Material curtainRod = makeBedroomMaterial(QVector3D(0.5f, 0.5f, 0.5f), 0.1f, 1.0f);
-    const Material stainlessSmooth = makeBedroomMaterial(QVector3D(1.0f, 1.0f, 1.0f), 0.0f, 1.0f);
-
-    auto loadMesh = [&](const char* filename, const Material& material) {
-        MeshLoader::readModel(
-            getResourcePath(std::string("models/bedroom/") + filename),
-            triangles,
-            textures,
-            material,
-            bedroomTransform,
-            smoothNormal,
-            enableNormalization);
-    };
-
-    loadMesh("Mesh044.obj", aluminium);
-    loadMesh("Mesh047.obj", aluminium);
-    loadMesh("Mesh032.obj", woodFurniture);
-    loadMesh("Mesh028.obj", stainlessSmooth);
-    loadMesh("Mesh046.obj", aluminium);
-    loadMesh("Mesh027.obj", aluminium);
-    loadMesh("Mesh022.obj", aluminium);
-    loadMesh("Mesh042.obj", aluminium);
-    loadMesh("Mesh036.obj", aluminium);
-    loadMesh("Mesh043.obj", aluminium);
-    loadMesh("Mesh040.obj", aluminium);
-    loadMesh("Mesh037.obj", glass);
-    loadMesh("Mesh026.obj", glass);
-    loadMesh("Mesh023.obj", lampMetal);
-    loadMesh("Mesh059.obj", lampEmitter);
-    loadMesh("Mesh049.obj", roughGlass);
-    loadMesh("Mesh060.obj", woodFloor);
-    loadMesh("Mesh033.obj", decoPlant);
-    loadMesh("Mesh025.obj", rocks1);
-    loadMesh("Mesh055.obj", rocks2);
-    loadMesh("Mesh035.obj", rocks3);
-    loadMesh("Mesh048.obj", glass);
-    loadMesh("Mesh056.obj", lampMetal);
-    loadMesh("Mesh058.obj", plasticCable);
-    loadMesh("Mesh061.obj", lampEmitter);
-    loadMesh("Mesh051.obj", glass);
-    loadMesh("Mesh066.obj", lampMetal);
-    loadMesh("Mesh062.obj", plasticCable);
-    loadMesh("Mesh054.obj", lampEmitter);
-    loadMesh("Mesh063.obj", bookCover);
-    loadMesh("Mesh064.obj", bookPages);
-    loadMesh("Mesh041.obj", bedsheets);
-    loadMesh("Mesh052.obj", glass);
-    loadMesh("Mesh065.obj", glass);
-    loadMesh("Mesh067.obj", glass);
-    loadMesh("Mesh068.obj", bedsheets);
-    loadMesh("Mesh034.obj", bedsheets);
-    loadMesh("Mesh021.obj", matress);
-    loadMesh("Mesh020.obj", carpet);
-    loadMesh("Mesh019.obj", carpet);
-    loadMesh("Mesh018.obj", black);
-    loadMesh("Mesh017.obj", black);
-    loadMesh("Mesh069.obj", black);
-    loadMesh("Mesh015.obj", curtainRod);
-    loadMesh("Mesh014.obj", curtainRod);
-    loadMesh("Mesh012.obj", woodFurniture);
-    loadMesh("Mesh011.obj", mirror);
-    loadMesh("Mesh013.obj", walls);
-    loadMesh("Mesh039.obj", window);
-    loadMesh("Mesh010.obj", window);
-    loadMesh("Mesh031.obj", woodFurniture);
-    loadMesh("Mesh045.obj", stainlessSmooth);
-    loadMesh("Mesh038.obj", mirror);
-    loadMesh("Mesh009.obj", woodFurniture);
-    loadMesh("Mesh024.obj", stainlessSmooth);
-    loadMesh("Mesh030.obj", woodFurniture);
-    loadMesh("Mesh029.obj", stainlessSmooth);
-    loadMesh("Mesh008.obj", walls2);
-    loadMesh("Mesh007.obj", woodFurniture);
-    loadMesh("Mesh006.obj", woodFurniture);
-    loadMesh("Mesh005.obj", stainlessSmooth);
-    loadMesh("Mesh050.obj", pictureFrame);
-    loadMesh("Mesh053.obj", pictureBacking);
-    loadMesh("Mesh003.obj", picture);
-    loadMesh("Mesh002.obj", boxes);
-    loadMesh("Mesh016.obj", blankets);
-    loadMesh("Mesh001.obj", blankets);
-    loadMesh("Mesh000.obj", blankets);
-
-    Material bedroomLight;
-    bedroomLight.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
-    bedroomLight.emissive = QVector3D(1.0f, 1.0f, 1.0f);
-    const QVector3D lightScale(1.064823f, 1.815584f, 0.01f);
-
-    MeshLoader::readModel(
-        getResourcePath("models/quad.obj"),
-        triangles,
-        textures,
-        bedroomLight,
-        MeshLoader::getTransformMatrix(
-            QVector3D(0.0f, 0.0f, 0.0f),
-            sceneOffset + QVector3D(-1.4754385f, 1.189678f, -1.26735f),
-            lightScale),
-        false,
-        true);
-    MeshLoader::readModel(
-        getResourcePath("models/quad.obj"),
-        triangles,
-        textures,
-        bedroomLight,
-        MeshLoader::getTransformMatrix(
-            QVector3D(0.0f, 0.0f, 0.0f),
-            sceneOffset + QVector3D(1.443792f, 1.189678f, -1.26735f),
-            lightScale),
-        false,
-        true);
-}
-
 void Scene::finalizeScene()
 {
     const int nTriangles = static_cast<int>(triangles.size());
@@ -285,12 +96,17 @@ void Scene::finalizeScene()
     std::cout << "BVH construction completed: total " << nNodes << " nodes, depth " << max_deep << std::endl;
     //建立bvh需要在三角形编码之前，因为bvh的构建使用了排序
 
-    DataEncode(nTriangles, nNodes);
-    std::cout << "Triangle and BVH encoding completed" << std::endl;
     buildLightData();
     std::cout << "Light encoding completed: total " << lights_encoded.size() << " lights" << std::endl;
+    DataEncode(nTriangles, nNodes);
+    std::cout << "Triangle and BVH encoding completed" << std::endl;
 
-    const bool hdrLoaded = HDRLoader::load(getResourcePath("hdr/peppermint_powerplant_4k.hdr").c_str(), hdrRes);
+    const QString hdrPath=document.root["hdr"].toString();
+    if(hdrPath.isEmpty()) {
+        hdrRes.width=hdrRes.height=hdrResolution=1;
+        hdrRes.cols=new float[3]{0,0,0}; cache=new float[3]{0,0,0}; return;
+    }
+    const bool hdrLoaded = HDRLoader::load(hdrPath.toUtf8().constData(), hdrRes);
     std::cout << "load HDRtexture:" << hdrLoaded << std::endl;
     if (!hdrLoaded) {
         std::cout << "HDR texture loading failed, HDR cache is unavailable" << std::endl;
@@ -310,36 +126,21 @@ void Scene::addAnalyticLights(std::vector<float>& weights)
         return 0.212671f * color.x() + 0.715160f * color.y() + 0.072169f * color.z();
     };
 
-    const float pointSphereRadius = 0.01f;
-    const QVector3D pointSphereRadiance = QVector3D(45.0f, 40.0f, 32.0f) / (pi * pointSphereRadius * pointSphereRadius);
-    Light_encoded pointSphereLight;
-    pointSphereLight.param0 = QVector4D(EncodedLightSphere, -1.0f, 0.0f, pointSphereRadius);
-    pointSphereLight.param1 = QVector4D(-1.0f, 4.0f, 0.0f, 0.0f);
-    pointSphereLight.param2 = QVector4D(pointSphereRadiance, 0.0f);
-    pointSphereLight.param3 = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
-    lights_encoded.push_back(pointSphereLight);
-    weights.push_back(std::max(4.0f * pi * pointSphereRadius * pointSphereRadius * luminance(pointSphereRadiance), 0.0f));
-
-    const float sunAngularRadius = 0.00465047f;
-    const float sunSolidAngle = 2.0f * pi * (1.0f - std::cos(sunAngularRadius));
-    const QVector3D sunIrradiance(0.25f, 0.28f, 0.35f);
-    const QVector3D sunRadiance = sunIrradiance / sunSolidAngle;
-    Light_encoded sunDiskLight;
-    sunDiskLight.param0 = QVector4D(EncodedLightSunDisk, -1.0f, 0.0f, sunAngularRadius);
-    sunDiskLight.param1 = QVector4D(QVector3D(-0.45f, -1.0f, 0.2f).normalized(), 0.0f);
-    sunDiskLight.param2 = QVector4D(sunRadiance, 0.0f);
-    sunDiskLight.param3 = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
-   //lights_encoded.push_back(sunDiskLight);
-    //weights.push_back(std::max(luminance(sunIrradiance), 0.0f));
-
-    Light_encoded sphereLight;
-    sphereLight.param0 = QVector4D(EncodedLightSphere, -1.0f, 0.0f, 0.45f);
-    sphereLight.param1 = QVector4D(1.8f, 3.2f, 1.0f, 0.0f);
-    sphereLight.param2 = QVector4D(7.0f, 5.2f, 3.6f, 0.0f);
-    sphereLight.param3 = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
-    //lights_encoded.push_back(sphereLight);
-    const float sphereArea = 4.0f * pi * sphereLight.param0.w() * sphereLight.param0.w();
-    //weights.push_back(std::max(sphereArea * luminance(QVector3D(7.0f, 5.2f, 3.6f)), 0.0f));
+    for(const auto value : document.root["lights"].toArray()) {
+        const auto definition=value.toObject();
+        const bool sun=definition["type"].toString()=="sun";
+        const float radius=definition["radius"].toDouble();
+        const QVector3D radiance=sceneVector(definition["radiance"]);
+        const QVector3D position=sceneVector(definition[sun ? "direction" : "position"]);
+        Light_encoded light;
+        light.param0=QVector4D(sun ? EncodedLightSunDisk : EncodedLightSphere,-1,0,radius);
+        light.param1=QVector4D(sun ? position.normalized() : position,0);
+        light.param2=QVector4D(radiance,0); light.param3=QVector4D();
+        const float sunSolidAngle=2*pi*(1-std::cos(radius));
+        const QVector3D sunIrradiance=radiance*sunSolidAngle;
+        lights_encoded.push_back(light);
+        weights.push_back(std::max(0.f,sun ? luminance(sunIrradiance) : 4*pi*radius*radius*luminance(radiance)));
+    }
 }
 
 void Scene::buildLightData()
@@ -354,12 +155,25 @@ void Scene::buildLightData()
         return 0.212671f * color.x() + 0.715160f * color.y() + 0.072169f * color.z();
     };
 
+    for (Triangle& triangle : triangles) {
+        triangle.material.lightSelectPdf = 0.0f;
+    }
+
     for (int i = 0; i < static_cast<int>(triangles.size()); ++i) {
         const Triangle& triangle = triangles[i];
         const QVector3D e0 = triangle.p2 - triangle.p1;
         const QVector3D e1 = triangle.p3 - triangle.p1;
         const float area = 0.5f * QVector3D::crossProduct(e0, e1).length();
-        const float emissionLum = luminance(triangle.material.emissive);
+        QVector3D averageEmission = triangle.material.emissive;
+        const int emissiveTextureIndex = triangle.material.emissiveTex;
+        if (emissiveTextureIndex >= 0 && emissiveTextureIndex < static_cast<int>(textures.size())) {
+            const QVector3D& textureAverage = textures[emissiveTextureIndex].averageLinearColor;
+            averageEmission = QVector3D(
+                averageEmission.x() * textureAverage.x(),
+                averageEmission.y() * textureAverage.y(),
+                averageEmission.z() * textureAverage.z());
+        }
+        const float emissionLum = luminance(averageEmission);
         const float weight = area * emissionLum;
         if (area <= 1e-8f || weight <= 0.0f) {
             continue;
@@ -392,111 +206,16 @@ void Scene::buildLightData()
         cdf = std::min(1.0f, cdf + selectPdf);
         lights_encoded[i].param0.setZ(selectPdf);
         lights_encoded[i].param3.setX(cdf);
+        const int triangleIndex = static_cast<int>(lights_encoded[i].param0.y());
+        if (static_cast<int>(lights_encoded[i].param0.x()) == EncodedLightTriangle &&
+            triangleIndex >= 0 && triangleIndex < static_cast<int>(triangles.size())) {
+            triangles[triangleIndex].material.lightSelectPdf = selectPdf;
+        }
     }
 
     if (!lights_encoded.empty()) {
         lights_encoded.back().param3.setX(1.0f);
     }
-}
-
-void Scene::buildLegacyGlassScene()
-{
-    camera = Camera(QVector3D(0.0f, 1.17f, 4.0f), QVector3D(0.0f, 1.0f, 0.0f));
-    Material mt;
-    //light
-    mt = Material();
-    mt.emissive = QVector3D(10.0, 10.0, 10.0);
-    //mt.roughness = 0.1;
-    //mt.subsurface = 1.0;
-    //mt.anisotropic = 1.0;
-    mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-    //MeshLoader::readModel(getResourcePath("models/quad.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.0, 0), QVector3D(1.0, 0.01, 1.0)), false,true);
-
-    //box    
-    mt = Material();
-    mt.roughness = 0.1;
-    //mt.subsurface = 1.0;
-    //mt.anisotropic = 1.0;
-    mt.baseColor = QVector3D(0.725, 0.71, 0.68);
-    //MeshLoader::readModel(getResourcePath("models/quad.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.7, 0), QVector3D(4, 0.01, 4)), false);
-    MeshLoader::readModel(getResourcePath("models/quad.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, -0.01, 0), QVector3D(4, 0.01, 4)), false,true);
-    mt = Material();
-    mt.roughness = 0.1;
-    //mt.subsurface = 1.0;
-    //mt.anisotropic = 1.0;
-    mt.baseColor = QVector3D(0, 1, 0);
-  //  MeshLoader::readModel(getResourcePath("models/quad.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(-2, 0.0, 0), QVector3D(0.01,4,  4)), false);
-    mt = Material();
-    mt.roughness = 0.1;
-    //mt.subsurface = 1.0;
-    //mt.anisotropic = 1.0;
-    mt.baseColor = QVector3D(1, 0,0);
- //   MeshLoader::readModel(getResourcePath("models/quad.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(2, 0.0, 0), QVector3D(0.01, 4, 4)), false);
-    mt = Material();
-    mt.roughness = 0.1;
-    //mt.subsurface = 1.0;
-    //mt.anisotropic = 1.0;
-    mt.baseColor = QVector3D(0.725, 0.71, 0.68);
-  //  MeshLoader::readModel(getResourcePath("models/quad.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 2.001, 0), QVector3D(4, 0.01, 4)), false);
-    mt = Material();
-    mt.roughness = 0.1;
-    //mt.subsurface = 1.0;
-    //mt.anisotropic = 1.0;
-    mt.baseColor = QVector3D(0.725, 0.71, 0.68);
-  //  MeshLoader::readModel(getResourcePath("models/quad.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, -2), QVector3D(4,  4,0.01)), false);
-
-
-
-
-    //object
-    mt = Material();
-    mt.roughness = 0.001;
-    mt.transmission = 1.0;
-    mt.IOR = 1.5;
-    mt.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
-    //MeshLoader::readModel(getResourcePath("models/sphere2.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0.6, 0.2, 0.6), QVector3D(1, 1, 1)), true);
-
-    mt = Material();;
-    //mt.roughness = 0.1;
-    mt.alphaMode = (int)AlphaMode::Transparent;
-    mt.mediumColor = QVector3D(0.458, 0.95, 1.0);
-    mt.mediumDensity =5.0;
-    mt.mediumtype = (int)MediumType::Scatter;
-    //mt.metallic = 1.0;
-    //mt.subsurface = 1.0;
-    //mt.anisotropic = 1.0;
-    //mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-    //MeshLoader::readModel(getResourcePath("models/quad.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(0, 45, 0), QVector3D(-0.6, -0.1, 0.2), QVector3D(1.0, 1.0, 1.0)), false);
-
-    mt = Material();;
-    mt.roughness = 0.001;
-    mt.transmission = 1.0;
-    mt.IOR = 1.5;
-    //mt.metallic = 1.0;
-    //mt.subsurface = 1.0;
-    //mt.anisotropic = 1.0;
-    mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-   // MeshLoader::readModel(getResourcePath("models/10778_Toilet_V2.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(-90, 0, 0), QVector3D(0.2, 0,0), QVector3D(1.0, 1.0, 1.0)), true);
-    
-    mt = Material();;
-    mt.roughness = 0.001; 
-    mt.transmission = 1.0;
-    mt.IOR = 1.5;
-    //mt.metallic = 1.0;
-    //mt.subsurface = 1.0;
-    //mt.anisotropic = 1.0;
-    mt.baseColor = QVector3D(1.0, 1.0, 1.0);
-    //MeshLoader::readModel(getResourcePath("models/untitld.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(-90, 0, 0), QVector3D(0, 0,0), QVector3D(1.2, 1.2, 1.2)),true);
-
-    mt = Material();
-    mt.roughness = 0.001;
-    mt.transmission = 1.0;
-    mt.IOR = 1.5;
-    mt.baseColor = QVector3D(1.0f, 1.0f, 1.0f);
-    MeshLoader::readModel(getResourcePath("models/glass.obj"), triangles, textures, mt, MeshLoader::getTransformMatrix(QVector3D(0, 0, 0), QVector3D(0, 0, 0), QVector3D(1, 1, 1)), true,true);
-
-
-
 }
 
 void Scene::DataEncode(int nTriangles,int nNodes)
@@ -520,6 +239,22 @@ void Scene::DataEncode(int nTriangles,int nNodes)
         triangles_encoded[i].param4 = QVector4D(m.clearcoatGloss, m.IOR, m.transmission,m.alphaMode);
         triangles_encoded[i].param5 = QVector4D(m.mediumtype, m.mediumDensity, m.subsurface, m.metallic);
         triangles_encoded[i].param6 = QVector4D(m.specularTint,m.roughness, m.anisotropic, m.sheen);
+        triangles_encoded[i].uv12 = QVector4D(t.uv1.x(), t.uv1.y(), t.uv2.x(), t.uv2.y());
+        triangles_encoded[i].uv3Tex0 = QVector4D(t.uv3.x(), t.uv3.y(), m.baseColorTex, m.normalTex);
+        triangles_encoded[i].tex1 = QVector4D(m.metallicTex, m.roughnessTex, m.emissiveTex, m.opacityTex);
+        triangles_encoded[i].textureParam0 = QVector4D(
+            m.opacity,
+            m.alphaCutoff,
+            m.normalScale,
+            m.normalMapFlipY ? 1.0f : 0.0f);
+        triangles_encoded[i].textureParam1 = QVector4D(
+            m.metallicChannel,
+            m.roughnessChannel,
+            m.lightSelectPdf,
+            0.0f);
+        triangles_encoded[i].tangent1 = t.tangent1;
+        triangles_encoded[i].tangent2 = t.tangent2;
+        triangles_encoded[i].tangent3 = t.tangent3;
     }
 
     // 编码 BVHNode, aabb

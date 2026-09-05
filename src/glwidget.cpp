@@ -33,10 +33,24 @@ GLWidget::GLWidget(QWidget *parent)
 
 GLWidget::~GLWidget()
 {
+    delete m_thread;
+    m_thread=nullptr;
+}
+
+void GLWidget::replaceScene(Scene& prepared)
+{
+    m_bLeftPressed=m_bMiddlePressed=false;
+    if(m_thread) m_thread->replaceScene(prepared);
+    else {
+        QMutexLocker lock(&param_mutex);
+        Scene::getInstance().adoptPrepared(prepared);
+        RenderParams::instance().applySnapshot(Scene::getInstance().document.settings());
+    }
 }
 
 void GLWidget::markSceneDirty(SceneDirtyFlags flags)
 {
+    emit sceneEdited();
     if (m_thread == nullptr) {
         return;
     }
@@ -109,6 +123,7 @@ void GLWidget::paintGL()
     if (TextureBuffer::instance()->ready())
     {
         TextureBuffer::instance()->drawTexture(QOpenGLContext::currentContext(), sizeof(vertices) / sizeof(float) / 4);
+        emit framePresented();
     }
     glBindVertexArray(0);
 

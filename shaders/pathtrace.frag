@@ -36,7 +36,7 @@ void main(void)
     // 使用归一化坐标计算光线方向，这样就与视口无关
     vec4 dir = view*vec4((normalizedCoords.x*2.0-1.0)*float(width)/float(height), 
                          (normalizedCoords.y*2.0-1.0), 
-                         -2.0, 0.0);
+                         -1.0 / tan(radians(cameraFov) * 0.5), 0.0);
     ray.direction = normalize(dir.xyz);
     
     // primary hit  

@@ -88,6 +88,7 @@ private:
     void uploadNodeBuffer(bool recreateResources);
     void uploadLightBuffer(bool recreateResources);
     void uploadHdrTextures(bool recreateResources);
+    void uploadMaterialTextures(bool recreateResources);
 
     /**
      * @brief 显示渲染统计信息
@@ -164,11 +165,15 @@ private:
     GLuint trianglesTextureBuffer = 0;
     GLuint nodesTextureBuffer = 0;
     GLuint lightsTextureBuffer = 0;
+    GLuint materialTextureArray = 0;
+    GLuint materialTextureInfoBuffer = 0;
+    GLuint materialTextureInfoTexture = 0;
     GLuint hdrMap = 0;
     GLuint hdrCache = 0;
     GLuint VBO = 0;
     GLuint VAO = 0;
     GLuint EBO = 0;
+    int materialTextureLayerCount = 0;
 
     std::unique_ptr<QOpenGLShaderProgram> m_program = nullptr;
     std::unique_ptr<QOpenGLShaderProgram> pathtrace_program = nullptr;

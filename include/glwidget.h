@@ -26,6 +26,11 @@ public:
     // UI 线程只通过 dirty 标记通知渲染线程同步 Scene。
     void markSceneDirty(SceneDirtyFlags flags);
     void markSceneDirty(SceneDirtyFlag flag);
+    void replaceScene(Scene& prepared);
+
+signals:
+    void framePresented();
+    void sceneEdited();
 
 protected:
     void initializeGL() override;
