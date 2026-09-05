@@ -136,7 +136,7 @@ void Scene::addAnalyticLights(std::vector<float>& weights)
         light.param0=QVector4D(sun ? EncodedLightSunDisk : EncodedLightSphere,-1,0,radius);
         light.param1=QVector4D(sun ? position.normalized() : position,0);
         light.param2=QVector4D(radiance,0); light.param3=QVector4D();
-        const float sunSolidAngle=2*pi*(1-std::cos(radius));
+        const float sunSolidAngle=4*pi*std::pow(std::sin(0.5f*radius),2);
         const QVector3D sunIrradiance=radiance*sunSolidAngle;
         lights_encoded.push_back(light);
         weights.push_back(std::max(0.f,sun ? luminance(sunIrradiance) : 4*pi*radius*radius*luminance(radiance)));
@@ -190,9 +190,9 @@ void Scene::buildLightData()
 
     addAnalyticLights(weights);
 
-    for (float weight : weights) {
-        lightPowerSum += weight;
-    }
+    double totalPower = 0.0;
+    for (float weight : weights) totalPower += weight;
+    lightPowerSum = static_cast<float>(totalPower);
 
     if (lightPowerSum <= 0.0f) {
         lights_encoded.clear();
@@ -201,9 +201,13 @@ void Scene::buildLightData()
     }
 
     float cdf = 0.0f;
+    double cumulativePower = 0.0;
     for (int i = 0; i < static_cast<int>(lights_encoded.size()); ++i) {
-        const float selectPdf = weights[i] / lightPowerSum;
-        cdf = std::min(1.0f, cdf + selectPdf);
+        cumulativePower += weights[i];
+        const float nextCdf = i+1 == static_cast<int>(lights_encoded.size()) ? 1.0f :
+            static_cast<float>(cumulativePower / totalPower);
+        const float selectPdf = nextCdf - cdf;
+        cdf = nextCdf;
         lights_encoded[i].param0.setZ(selectPdf);
         lights_encoded[i].param3.setX(cdf);
         const int triangleIndex = static_cast<int>(lights_encoded[i].param0.y());
@@ -305,6 +309,9 @@ void Scene::updateMaterial(QVector3D emissive, QVector3D  baseColor,
     }
 
     buildLightData();
+    for (int i = 0; i < static_cast<int>(triangles_encoded.size()); ++i) {
+        triangles_encoded[i].textureParam1.setZ(triangles[i].material.lightSelectPdf);
+    }
 }
 
 

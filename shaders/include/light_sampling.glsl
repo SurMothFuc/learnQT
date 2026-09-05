@@ -1,4 +1,5 @@
 struct EncodedLight {
+    int index;
     int type;
     int triangleIndex;
     float selectPdf;
@@ -10,6 +11,7 @@ struct EncodedLight {
 };
 
 struct LightSample {
+    int lightIndex;
     bool valid;
     bool delta;
     vec3 direction;
@@ -22,6 +24,7 @@ struct LightSample {
 LightSample InvalidLightSample()
 {
     LightSample sample;
+    sample.lightIndex = -1;
     sample.valid = false;
     sample.delta = false;
     sample.direction = vec3(0.0, 1.0, 0.0);
@@ -41,6 +44,7 @@ EncodedLight GetEncodedLight(int index)
     vec4 param3 = texelFetch(lights, offset + 3);
 
     EncodedLight light;
+    light.index = index;
     light.type = int(param0.x + 0.5);
     light.triangleIndex = int(param0.y + 0.5);
     light.selectPdf = param0.z;
@@ -112,7 +116,7 @@ EncodedLight SelectFiniteLight(float xi)
             break;
         }
         int middle = low + (high - low) / 2;
-        if (xi <= GetEncodedLight(middle).cdf) {
+        if (xi < GetEncodedLight(middle).cdf) {
             high = middle;
         }
         else {
@@ -125,8 +129,9 @@ EncodedLight SelectFiniteLight(float xi)
 LightSample SampleEnvironmentLight(float xi1, float xi2, float envPdf)
 {
     LightSample sample = InvalidLightSample();
-    vec3 L = SampleHdr(xi1, xi2);
-    float pdf = envPdf * hdrPdf(L, hdrResolution);
+    float directionPdf;
+    vec3 L = SampleHdr(xi1, xi2, directionPdf);
+    float pdf = envPdf * directionPdf;
     if (pdf <= 0.0) {
         return sample;
     }
@@ -144,7 +149,8 @@ LightSample SampleTriangleLight(EncodedLight light, vec3 origin, float xi1, floa
 {
     LightSample sample = InvalidLightSample();
     Triangle triangle = GetTriangleLightGeometry(light.triangleIndex);
-    float area = max(TriangleArea(triangle), EPS);
+    float area = TriangleArea(triangle);
+    if (area <= 0.0) return sample;
     vec3 bary = SampleTriangleBarycentric(xi1, xi2);
     vec3 lightPoint = bary.x * triangle.p1 + bary.y * triangle.p2 + bary.z * triangle.p3;
     vec3 toLight = lightPoint - origin;
@@ -169,7 +175,14 @@ LightSample SampleTriangleLight(EncodedLight light, vec3 origin, float xi1, floa
     vec2 lightUV = bary.x * triangle.uv1 + bary.y * triangle.uv2 + bary.z * triangle.uv3;
     materialEvaluationUV = lightUV;
     Material lightMaterial = getMaterial(light.triangleIndex);
-    sample.radiance = lightMaterial.emissive;
+    // Alpha at the emitter is part of emitted radiance, independently of blockers.
+    float coverage = 1.0;
+    if (lightMaterial.alphaMode == ALPHA_MODE_MASK)
+        coverage = lightMaterial.opacity >= lightMaterial.alphaCutoff ? 1.0 : 0.0;
+    else if (lightMaterial.alphaMode == ALPHA_MODE_BLEND)
+        coverage = lightMaterial.opacity;
+    sample.lightIndex = light.index;
+    sample.radiance = lightMaterial.emissive * coverage;
     sample.pdf = finitePdf * light.selectPdf * areaPdf * dist2 / cosLight;
     sample.triangleIndex = light.triangleIndex;
     return sample;
@@ -178,10 +191,9 @@ LightSample SampleTriangleLight(EncodedLight light, vec3 origin, float xi1, floa
 LightSample SampleSunDiskLight(EncodedLight light, float xi1, float xi2, float finitePdf)
 {
     LightSample sample = InvalidLightSample();
-    float angularRadius = max(light.radius, EPS);
-    float cosThetaMax = cos(angularRadius);
-    float solidAngle = TWO_PI * (1.0 - cosThetaMax);
-    if (solidAngle <= EPS) {
+    float oneMinusCosMax = 2.0 * pow(sin(0.5 * light.radius), 2.0);
+    float solidAngle = TWO_PI * oneMinusCosMax;
+    if (solidAngle <= 0.0) {
         return sample;
     }
 
@@ -189,8 +201,9 @@ LightSample SampleSunDiskLight(EncodedLight light, float xi1, float xi2, float f
     vec3 T, B;
     Onb(axis, T, B);
 
-    float cosTheta = mix(cosThetaMax, 1.0, xi1);
-    float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
+    float oneMinusCos = xi1 * oneMinusCosMax;
+    float cosTheta = 1.0 - oneMinusCos;
+    float sinTheta = sqrt(max(0.0, oneMinusCos * (2.0 - oneMinusCos)));
     float phi = TWO_PI * xi2;
     vec3 L = normalize(T * (cos(phi) * sinTheta) + B * (sin(phi) * sinTheta) + axis * cosTheta);
 
@@ -198,40 +211,91 @@ LightSample SampleSunDiskLight(EncodedLight light, float xi1, float xi2, float f
     sample.delta = false;
     sample.direction = L;
     sample.distance = INF;
+    sample.lightIndex = light.index;
     sample.radiance = light.color;
     sample.pdf = finitePdf * light.selectPdf / solidAngle;
     return sample;
 }
 
+float SphereIntersection(EncodedLight light, vec3 origin, vec3 direction)
+{
+    vec3 oc = origin - light.positionOrDirection;
+    float b = dot(oc, direction);
+    vec3 perpendicular = cross(oc, direction);
+    float disc = light.radius * light.radius - dot(perpendicular, perpendicular);
+    if (disc < 0.0) return INF;
+    float root = sqrt(disc);
+    float t = -b - root;
+    if (t <= 0.0) t = -b + root;
+    return t > 0.0 ? t : INF;
+}
+
+float SphereConeWidth(EncodedLight light, vec3 origin)
+{
+    float sin2 = clamp(light.radius * light.radius /
+        dot(light.positionOrDirection-origin, light.positionOrDirection-origin), 0.0, 1.0);
+    // 1-cos(theta), without cancellation for small distant lights.
+    return sin2 / (1.0 + sqrt(max(0.0, 1.0-sin2)));
+}
+
+float SphereLightPdf(EncodedLight light, vec3 origin, vec3 direction)
+{
+    if (distance(origin, light.positionOrDirection) <= light.radius ||
+        SphereIntersection(light, origin, direction) >= INF) return 0.0;
+    float solidAngle = TWO_PI * SphereConeWidth(light, origin);
+    return solidAngle > 0.0 ? FiniteLightSelectPdf() * light.selectPdf / solidAngle : 0.0;
+}
+
 LightSample SampleSphereLight(EncodedLight light, vec3 origin, float xi1, float xi2, float finitePdf)
 {
     LightSample sample = InvalidLightSample();
-    float z = 1.0 - 2.0 * xi1;
-    float r = sqrt(max(0.0, 1.0 - z * z));
+    if (distance(origin, light.positionOrDirection) <= light.radius) return sample;
+    vec3 axis = normalize(light.positionOrDirection - origin);
+    vec3 T, B;
+    Onb(axis, T, B);
+    float oneMinusCos = xi1 * SphereConeWidth(light, origin);
+    float sinTheta = sqrt(max(0.0, oneMinusCos * (2.0 - oneMinusCos)));
     float phi = TWO_PI * xi2;
-    vec3 sphereNormal = vec3(r * cos(phi), z, r * sin(phi));
-    vec3 lightPoint = light.positionOrDirection + sphereNormal * light.radius;
-    vec3 toLight = lightPoint - origin;
-    float dist2 = dot(toLight, toLight);
-    if (dist2 <= EPS) {
-        return sample;
-    }
-
-    float distance = sqrt(dist2);
-    vec3 L = toLight / distance;
-    float cosLight = abs(dot(sphereNormal, -L));
-    if (cosLight <= EPS || light.radius <= EPS) {
-        return sample;
-    }
-
-    float areaPdf = 1.0 / (4.0 * PI * light.radius * light.radius);
+    vec3 L = normalize(axis * (1.0-oneMinusCos) + sinTheta * (cos(phi)*T + sin(phi)*B));
+    sample.distance = SphereIntersection(light, origin, L);
+    if (sample.distance >= INF) return sample;
     sample.valid = true;
-    sample.delta = false;
     sample.direction = L;
-    sample.distance = distance;
+    sample.lightIndex = light.index;
     sample.radiance = light.color;
-    sample.pdf = finitePdf * light.selectPdf * areaPdf * dist2 / cosLight;
+    sample.pdf = finitePdf * light.selectPdf / (TWO_PI * SphereConeWidth(light, origin));
     return sample;
+}
+
+float SunSolidAngle(EncodedLight light)
+{
+    return 4.0 * PI * pow(sin(0.5 * light.radius), 2.0);
+}
+
+bool SunContainsDirection(EncodedLight light, vec3 direction)
+{
+    vec3 axis = normalize(-light.positionOrDirection);
+    // Chord length is stable even for very small angular radii.
+    return dot(direction-axis, direction-axis) <= 4.0 * pow(sin(0.5*light.radius), 2.0);
+}
+
+float SunLightPdf(EncodedLight light, vec3 direction)
+{
+    if (!SunContainsDirection(light, direction)) return 0.0;
+    return FiniteLightSelectPdf() * light.selectPdf / SunSolidAngle(light);
+}
+
+int IntersectAnalyticLights(vec3 origin, vec3 direction, out float distanceToLight)
+{
+    int index = -1;
+    distanceToLight = INF;
+    for (int i=nLights-nAnalyticLights; i<nLights; ++i) {
+        EncodedLight light = GetEncodedLight(i);
+        if (light.type != LIGHT_TYPE_SPHERE) continue;
+        float t = SphereIntersection(light, origin, direction);
+        if (t < distanceToLight) { distanceToLight = t; index = i; }
+    }
+    return index;
 }
 
 LightSample SampleOneLight(vec3 origin, float xiSelect, float xi1, float xi2)
@@ -269,7 +333,8 @@ float TriangleLightPdf(vec3 origin, vec3 direction, int triangleIndex, float hit
     }
 
     Triangle triangle = GetTriangleLightGeometry(triangleIndex);
-    float area = max(TriangleArea(triangle), EPS);
+    float area = TriangleArea(triangle);
+    if (area <= 0.0) return 0.0;
     vec3 lightNormal = TriangleFaceNormal(triangle);
     float cosLight = abs(dot(lightNormal, -direction));
     if (cosLight <= EPS) {

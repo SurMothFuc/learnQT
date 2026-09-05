@@ -145,6 +145,14 @@ add_custom_command(TARGET learnQT POST_BUILD
 )
 
 if(BUILD_TESTING)
+    add_executable(lighting_tests tests/LightingTests.cpp src/common.cpp)
+    target_include_directories(lighting_tests PRIVATE include)
+    target_compile_options(lighting_tests PRIVATE /utf-8)
+    target_compile_definitions(lighting_tests PRIVATE
+        RESOURCE_DIR="${CMAKE_SOURCE_DIR}/resources" SHADER_DIR="${CMAKE_SOURCE_DIR}/shaders")
+    target_link_libraries(lighting_tests PRIVATE Qt5::Core Qt5::Gui Qt5::OpenGL opengl32)
+    add_test(NAME lighting_numerical_regression COMMAND lighting_tests)
+    set_tests_properties(lighting_numerical_regression PROPERTIES LABELS "gpu;lighting" TIMEOUT 300)
     target_sources(learnQT PRIVATE tests/SceneUiRegression.cpp)
     target_compile_definitions(learnQT PRIVATE SCENE_TESTING)
     add_test(NAME scene_ui_switch_regression COMMAND $<TARGET_FILE:learnQT>
@@ -227,7 +235,7 @@ if(BUILD_TESTING)
     get_filename_component(QT_RUNTIME_DIRECTORY "${QT_CORE_RUNTIME}" DIRECTORY)
     set(SCENE_TEST_PATH "${QT_RUNTIME_DIRECTORY};$ENV{PATH}")
     string(REPLACE ";" "\\;" SCENE_TEST_PATH "${SCENE_TEST_PATH}")
-    set_tests_properties(scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression
+    set_tests_properties(lighting_numerical_regression scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression
         import_fbx_embedded_texture import_gltf_tangent_sampler_transform
         PROPERTIES ENVIRONMENT "PATH=${SCENE_TEST_PATH}")
 endif()

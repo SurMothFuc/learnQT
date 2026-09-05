@@ -46,7 +46,9 @@ vec3 SampleGGXVNDF(vec3 V, float ax, float ay, float r1, float r2)
 //计算菲涅尔反射率
 float DielectricFresnel(float cosThetaI, float eta)
 {
-    float sinThetaTSq = eta * eta * (1.0f - cosThetaI * cosThetaI);
+    if (abs(eta - 1.0) < 1e-6) return 0.0;
+    cosThetaI = clamp(abs(cosThetaI), 0.0, 1.0);
+    float sinThetaTSq = eta * eta * (1.0 - cosThetaI * cosThetaI);
 
     // Total internal reflection
     if (sinThetaTSq > 1.0)
@@ -67,7 +69,7 @@ vec3 SampleGTR1(float rgh, float r1, float r2)
 
     float phi = r1 * 2.0 * PI;
 
-    float cosTheta = sqrt((1.0 - pow(a2, 1.0 - r2)) / (1.0 - a2));
+    float cosTheta = a >= 0.999999 ? sqrt(1.0-r2) : sqrt((1.0 - pow(a2, 1.0 - r2)) / (1.0 - a2));
     float sinTheta = clamp(sqrt(1.0 - (cosTheta * cosTheta)), 0.0, 1.0);
     float sinPhi = sin(phi);
     float cosPhi = cos(phi);
@@ -76,8 +78,9 @@ vec3 SampleGTR1(float rgh, float r1, float r2)
 }
 
 
-vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Material material,float eta)
+vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Material material,float eta, out bool delta)
 {
+    delta = false;
     vec3 L;
 
     // TODO: Tangent and bitangent should be calculated from mesh (provided, the mesh has proper uvs)
@@ -109,7 +112,9 @@ vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Materia
     float clearCtPr = 0.25 * material.clearcoat;
 
     // Normalize probabilities
-    float invTotalWt = 1.0 / (diffPr + dielectricPr + metalPr + glassPr + clearCtPr);
+    float totalWt = diffPr + dielectricPr + metalPr + glassPr + clearCtPr;
+    if (totalWt <= 0.0) return vec3(0.0);
+    float invTotalWt = 1.0 / totalWt;
     diffPr *= invTotalWt;
     dielectricPr *= invTotalWt;
     metalPr *= invTotalWt;
@@ -131,7 +136,8 @@ vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Materia
     }
     else if (xi_3 < cdf[2]) // Dielectric + Metallic reflection
     {
-        vec3 H = SampleGGXVNDF(V, material.ax, material.ay, xi_1, xi_2);
+        delta = material.roughness <= 0.0;
+        vec3 H = delta ? vec3(0,0,1) : SampleGGXVNDF(V, material.ax, material.ay, xi_1, xi_2);
         if (H.z < 0.0)
             H = -H;
 
@@ -139,14 +145,15 @@ vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Materia
     }
     else if (xi_3 < cdf[3]) // Glass
     {
-        vec3 H = SampleGGXVNDF(V, material.ax, material.ay, xi_1, xi_2);
+        delta = material.roughness <= 0.0 || abs(eta - 1.0) < 1e-6;
+        vec3 H = delta ? vec3(0,0,1) : SampleGGXVNDF(V, material.ax, material.ay, xi_1, xi_2);
         float F = DielectricFresnel(abs(dot(V, H)), eta);
 
         if (H.z < 0.0)
             H = -H;
 
         // Rescale random number for reuse
-        xi_3 = (xi_3 - cdf[2]) / (cdf[3] - cdf[2]);
+        xi_3 = min((xi_3 - cdf[2]) / (cdf[3] - cdf[2]), 0.99999994);
 
         // Reflection
         if (xi_3 < F)
@@ -160,7 +167,8 @@ vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Materia
     }
     else // Clearcoat
     {
-        vec3 H = SampleGTR1(material.clearcoatGloss,xi_1, xi_2);
+        delta = material.clearcoatGloss <= 0.0;
+        vec3 H = delta ? vec3(0,0,1) : SampleGTR1(material.clearcoatGloss,xi_1, xi_2);
 
         if (H.z < 0.0)
             H = -H;
@@ -344,7 +352,9 @@ vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float
     float clearCtPr = 0.25 * material.clearcoat;
 
     // Normalize probabilities
-    float invTotalWt = 1.0 / (diffPr + dielectricPr + metalPr + glassPr + clearCtPr);
+    float totalWt = diffPr + dielectricPr + metalPr + glassPr + clearCtPr;
+    if (totalWt <= 0.0) return vec3(0.0);
+    float invTotalWt = 1.0 / totalWt;
     diffPr *= invTotalWt;
     dielectricPr *= invTotalWt;
     metalPr *= invTotalWt;
@@ -364,17 +374,17 @@ vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float
     }
 
     // Dielectric Reflection
-    if (dielectricPr > 0.0 && reflect)
+    if (dielectricPr > 0.0 && reflect && material.roughness > 0.0)
     {
         // Normalize for interpolating based on Cspec0
-        float F = (DielectricFresnel(VDotH, 1.0 / material.IOR) - F0) / (1.0 - F0);
+        float F = (DielectricFresnel(VDotH, eta) - F0) / max(1.0 - F0, 1e-6);
 
         f += EvalMicrofacetReflection(material.ax,material.ay, V, L, H, mix(Cspec0, vec3(1.0), F), tmpPdf) * dielectricWt;
         pdf += tmpPdf * dielectricPr;
     }
 
     // Metallic Reflection
-    if (metalPr > 0.0 && reflect)
+    if (metalPr > 0.0 && reflect && material.roughness > 0.0)
     {
         // Tinted to base color
         vec3 F = mix(material.baseColor, vec3(1.0), SchlickFresnel(VDotH));
@@ -384,7 +394,7 @@ vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float
     }
 
     // Glass/Specular BSDF
-    if (glassPr > 0.0)
+    if (glassPr > 0.0 && material.roughness > 0.0 && abs(eta - 1.0) >= 1e-6)
     {
         // Dielectric fresnel (achromatic)
         float F = DielectricFresnel(VDotH, eta);
@@ -402,11 +412,75 @@ vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float
     }
 
     // Clearcoat
-    if (clearCtPr > 0.0 && reflect)
+    if (clearCtPr > 0.0 && reflect && material.clearcoatGloss > 0.0)
     {
         f += EvalClearcoat(material.clearcoatGloss, V, L, H, tmpPdf) * 0.25 * material.clearcoat;
         pdf += tmpPdf * clearCtPr;
     }
 
     return f;
+}
+struct BsdfSample {
+    vec3 direction;
+    vec3 weight;
+    float pdf; // Solid-angle density for continuous events only.
+    bool delta;
+};
+
+bool HasNonDeltaLobes(Material m, float eta) {
+    float dielectric = (1.0-m.metallic)*(1.0-m.transmission);
+    return (dielectric > 0.0 && Luminance(m.baseColor) > 0.0) ||
+        (m.roughness > 0.0 && (dielectric > 0.0 || m.metallic > 0.0 ||
+            (m.transmission > 0.0 && abs(eta-1.0) >= 1e-6))) ||
+        (m.clearcoat > 0.0 && m.clearcoatGloss > 0.0);
+}
+
+BsdfSample SampleDisneyBSDF(vec3 V, vec3 N, Material m, float eta, vec3 xi) {
+    BsdfSample s;
+    s.direction = DisneySample(xi.x, xi.y, xi.z, V, N, m, eta, s.delta);
+    s.pdf = 0.0; s.weight = vec3(0.0);
+    if (!s.delta) {
+        vec3 f = DisneyEval(V, N, s.direction, m, eta, s.pdf);
+        if (s.pdf > 0.0) s.weight = f * abs(dot(N, s.direction)) / s.pdf;
+        return s;
+    }
+    // Delta events use probability masses, never a fake solid-angle PDF.
+    // All lobes sharing the reflected direction must contribute to that mass.
+    float cosV = abs(dot(N,V));
+    float lum = Luminance(m.baseColor);
+    vec3 tint = lum > 0.0 ? m.baseColor/lum : vec3(1.0);
+    float F0 = sqr((1.0-eta)/(1.0+eta));
+    vec3 Cspec0 = F0 * mix(vec3(1.0), tint, m.specularTint);
+    float schlick = SchlickFresnel(cosV);
+    float dielectric = (1.0-m.metallic)*(1.0-m.transmission);
+    float glass = (1.0-m.metallic)*m.transmission;
+    float pd = dielectric * lum;
+    float pr = dielectric * Luminance(mix(Cspec0,vec3(1.0),schlick));
+    float pm = m.metallic * Luminance(mix(m.baseColor,vec3(1.0),schlick));
+    float pc = 0.25*m.clearcoat;
+    float total = pd+pr+pm+glass+pc;
+    float F = DielectricFresnel(cosV, eta);
+    float mass = 0.0;
+    vec3 value = vec3(0.0);
+    if (dot(N,s.direction) > 0.0) {
+        if (m.roughness <= 0.0) {
+            mass += pr+pm;
+            float tintF = clamp((F-F0)/max(1.0-F0,1e-6),0.0,1.0);
+            value += dielectric*mix(Cspec0,vec3(1.0),tintF) +
+                m.metallic*mix(m.baseColor,vec3(1.0),schlick);
+        }
+        if (m.roughness <= 0.0 || abs(eta-1.0)<1e-6) {
+            mass += glass*F;
+            value += vec3(glass*F);
+        }
+        if (m.clearcoatGloss <= 0.0) {
+            mass += pc;
+            value += vec3(pc*mix(0.04,1.0,schlick));
+        }
+    } else {
+        mass = glass*(1.0-F);
+        value = mass * sqrt(max(m.baseColor,vec3(0.0))) * eta*eta;
+    }
+    if (mass > 0.0 && total > 0.0) s.weight = value * total / mass;
+    return s;
 }

@@ -27,8 +27,9 @@ flowchart TD
 - `BuildBVHwithSAH()` 在 CPU 侧为三角形建立 BVH。
 - `Scene::buildLightData()` 在 BVH 三角形排序后建立 light list，再由 `DataEncode()` 编码三角形、BVH 和光源。
 - 自发光选择权重使用面积、emissive 常量及贴图平均值，GPU 在实际采样点读取发光贴图；另有场景文件中的 sphere / sun 光源。
-- 自发光三角形在项目语义上按双面发光处理；后续维护时要保证采样贡献、命中发光和 PDF 查询都使用一致的双面约定。
-- HDR 贴图除了读取原始数据，还会额外做一份 `cache`，供环境光重要性采样使用。当前待办里仍保留了 HDR cache 采样 LUT 与 direction-to-pdf 查询一致性的修正项。
+- 自发光三角形按双面发光处理，面积到立体角转换使用几何法线的绝对余弦；Mask/Blend 在采样点的覆盖率也参与发光贡献。
+- light CDF 使用 double 累加权重，再保存 float CDF；实际相邻区间宽度同时写入 light 编码和对应三角形的 `lightSelectPdf`，避免两侧概率因量化或材质更新而不同步。
+- HDR 以亮度乘 texel 精确立体角构建权重；`cache` 的 R/G/B 分别保存 x 边缘 CDF、给定 x 的 y 条件 CDF、两者实际 float 区间宽度的乘积。全黑 HDR 回退为均匀立体角分布。shader 二分选择 texel，在 texel 内连续采样，并让采样返回值与方向回查使用同一个 per-steradian PDF。
 
 一个不太直观但很关键的实现细节是：`nodes` 在构建 BVH 前先塞入了一个占位节点，shader 侧遍历是从索引 `1` 开始的，而不是从 `0` 开始。
 
@@ -55,7 +56,7 @@ flowchart TD
 
 - 三角形编码数据走的是 `GL_TEXTURE_BUFFER`；每个三角形为 20 个 `QVector4D`，包含 UV、切线和材质纹理索引。
 - BVH 编码数据也走 `GL_TEXTURE_BUFFER`。
-- light 编码数据走独立的 `GL_TEXTURE_BUFFER`，shader 侧通过 `lights` 和 `nLights` 读取。
+- light 编码数据走独立的 `GL_TEXTURE_BUFFER`，shader 侧通过 `lights / nLights` 读取；解析光源位于列表末尾，`nAnalyticLights` 限定解析球求交和太阳盘累积的遍历范围。
 - HDR 原图和重要性采样 cache 走 `GL_TEXTURE_2D`。
 - 模型图片走 `GL_TEXTURE_2D_ARRAY`，UV 变换及 sampler 参数走元数据 TBO；`baseColorTex` 是 OIDN 辅助输出，不是模型图片。
 - 上传时统一 RGBA、尺寸并生成 mipmap，但 shader 当前显式读取 LOD 0，尚未实现完整 minification/自动 LOD。
@@ -74,43 +75,43 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["Generate primary ray"] --> B["hitBVH(): UV interpolation + alpha rejection"]
-    B --> C{"Hit geometry?"}
-    C -- No --> D["If enabled, sample hdrColor(r.direction) + BSDF-side MIS"]
-    D --> Z["Accumulate render_color"]
-
-    C -- Yes --> T["Resolve texture channels + normal map TBN"]
-    T --> E["Accumulate emissive + BSDF-side MIS"]
-    E --> F{"Inside medium?"}
-    F -- Yes --> G["Absorb / emit / HG scatter"]
-    F -- No --> H["Handle surface material"]
-    G --> H
-
-    H --> I{"Transparent surface?"}
-    I -- Yes --> J["Keep direction and bounce--"]
-    I -- No --> K["Record first normal / baseColor"]
-    K --> K2["EstimateDirectLighting()"]
-    K2 --> L["DisneySample()"]
-    L --> M["DisneyEval() -> BRDF + pdf"]
-    M --> N["history *= f_r * NdotL / pdf"]
-    J --> O["Update ray start and medium state"]
-    N --> O
-    O --> P{"bounce >= 3?"}
-    P -- Yes --> Q["Russian Roulette"]
-    Q --> B
-    P -- No --> B
+    A["Pixel-center primary ray / empty medium stack"] --> B["Closest BVH geometry and analytic sphere"]
+    B --> C["Resolve current medium along segment"]
+    C --> D{"Free-flight scatter before endpoint?"}
+    D -- Yes --> E["If depth permits: albedo, volume NEE, HG sample"]
+    E --> R["Save previous point / PDF / delta flag"]
+    D -- No --> F["Finish segment attenuation or medium emission"]
+    F --> G{"Endpoint"}
+    G -- Sphere --> H["Visible sphere emission with MIS, then stop"]
+    G -- Escape --> I["HDR and each sun disk emission with MIS, then stop"]
+    G -- Geometry --> J["Accumulate mesh emission with MIS"]
+    J --> K{"Old Transparent boundary?"}
+    K -- Yes --> L["Update medium stack; keep scattering state and depth"]
+    L --> B
+    K -- No --> M["Record first surface features; stop if depth limit"]
+    M --> N["NEE for continuous BSDF lobes"]
+    N --> O["SampleDisneyBSDF: continuous PDF or delta mass"]
+    O --> P["Update throughput, boundary stack and ray origin"]
+    P --> R
+    R --> S["Increment scattering depth; RR from depth 3"]
+    S --> B
 ```
 
 shader 主循环里最值得记住的点：
 
-- `pathtrace.frag` 对每个像素输出 3 份结果：颜色、法线、底色。
+- `pathtrace.frag` 对每个像素输出颜色、法线、底色；主射线仍固定经过像素中心，像素内 AA 和景深未实现。
 - `normal` 和 `baseColor` 的主要用途不是显示，而是给后面的 OIDN 降噪提供辅助特征。
 - baseColor/emissive 做颜色空间转换，metallic/roughness/opacity 按数据通道读取；法线贴图支持切线 handedness、强度和 Y 翻转。
-- `Mask` 执行 cutoff，`Blend` 使用随机透过；主射线和阴影/NEE 复用 BVH alpha 筛选，但这不等于体积 transmittance 已完整实现。
-- 对环境贴图的采样、显式光源采样、透明材质、介质散射和 Disney BRDF 都放在同一条 bounce 循环里。
-- `light_sampling.glsl` 提供 `SampleOneLight()` / `LightPdf()`，用于直接光采样和 BSDF 命中环境或自发光三角形时的 MIS 权重。
-- 直接光采样当前仍需要继续完善 delta/specular 链规则：理想镜面或理想折射路径应跳过 NEE，并按唯一 BSDF 路径继续追踪。
+- `Mask` 执行 cutoff，`Blend` 使用随机透过；主射线和阴影复用 BVH alpha 筛选。发光面 NEE 在实际 UV 处将 Mask/Blend 覆盖率乘入辐射度，避免被裁掉的发光区域仍向场景贡献能量。
+- `SampleOneLight()` 每个表面或体积散射点总共选择一个显式样本。环境和非环境 light list 同时存在时各选 0.5，只有一类时选 1；后者按功率 CDF 选择三角形、球或太阳盘。
+- `pathtrace.glsl` 保存上一真实散射点、连续 PDF 和 delta 标记；透明边界不覆盖这些状态，也不消耗散射深度。三角形、球、太阳盘和 HDR 的发光命中分别查询对应 light PDF；多个重叠太阳盘和 HDR 各自累计，避免重复使用混合辐射度。
+- `SampleDisneyBSDF()` 区分连续密度和离散概率质量。纯 delta 跳过 NEE，下一次发光命中的 MIS 权重为 1；混合材质仍对连续波瓣执行 NEE。粗糙度为零的反射/折射、TIR 和 IOR 匹配直通已有回归。
+- `medium.glsl` 用最多 8 层 LIFO 栈追踪均匀介质。先处理自由程/吸收/发光，再处理线段末端；体积散射使用 HG 相函数和 NEE/phase MIS，no-event 概率已包含散射消光，不能再重复乘 Beer 衰减。
+- `ShadowTransmittance()` 按段乘介质透射率，最多跨越 128 层边界；解析球参与遮挡，采样目标光源通过 ID 排除自遮挡。旧 Transparent 可直穿并更新栈，玻璃 BSDF 边界不会被忽略折射而直穿。
+- 表面偏移基于按绕序计算的几何法线与位置尺度，不使用 normal map 判断介质进出。前 3 次散射后启用 RR；透过 alpha/旧 Transparent 的边界不算一次散射。
 - `preRenderColorTex` 会把上一轮历史结果喂回当前帧，用于做渐进式累积。
+
+具体 PDF 测度、介质边界和定量结果见 [direct_lighting.md](./direct_lighting.md)。
 
 ## 4. 历史帧与后处理逻辑
 
@@ -139,7 +140,7 @@ shader 主循环里最值得记住的点：
 UI 上已经有很多材质 slider 和 line edit，也会调用 `learnQT::updateMaterial()`，再进一步调用 `Scene::updateMaterial()`。但是：
 
 - 当前实现会把 UI 中的材质常量写回所有三角形，并同步更新 `triangles_encoded`。
-- 更新结束后会调用 `buildLightData()`，使自发光三角形的 light list 与材质 emissive 保持一致。
+- 更新结束后调用 `buildLightData()`，再把新的 `lightSelectPdf` 回写 `triangles_encoded.textureParam1.z`；渲染线程同步上传三角形和 light buffer，NEE 和 BSDF 命中不会各自保留不同版本的概率。
 - 这条路径不会重建 BVH；原有贴图/UV 绑定保留，更新后的常量可随场景保存。它不提供贴图编辑或局部材质选择。
 
 换句话说，材质 UI 当前是“全场景常量材质覆盖”，不是完整的材质编辑系统。
@@ -192,11 +193,17 @@ UI 上已经有很多材质 slider 和 line edit，也会调用 `learnQT::update
 当前 OIDN 调用的节奏偏保守：
 
 - 首帧会做一次完整辅助特征预处理和主过滤。
-- 后续一般按“每 100 帧或显式要求刷新”执行。
+- 后续一般按“每 100 个完整累计轮次或显式要求刷新”执行。
 - 开启降噪时，到达 `maxRenderFrames` 的最终帧也会执行。
 - 在 tile 渲染模式下，还要等一整轮 tile 结束后才更有意义。
 
 这有助于减少后处理成本，但也意味着“显示结果更新频率”和“降噪结果更新频率”不是同一件事。
+
+路径中会跳过旧 Transparent 边界，记录首个表面或体积散射点作为辅助特征。但 `pathtrace.frag` 仍将 normal 编码为 `[0, 1]`，读回后尚未恢复到 `[-1, 1]` 就交给 OIDN；这个已知问题及复杂透明/体积路径的特征语义仍在 [to-do.md](./to-do.md)，本轮直接光数值验收不涵盖它们。
+
+### 体积栈的范围有限
+
+当前支持均匀、闭合且正确嵌套的介质边界。相机初始位于介质内时仅通过第一段的背面命中推断一个介质，尚未完整初始化多层栈；任意相交、裁剪及非均匀体积不受支持。栈记录介质消光/散射参数，不记录 IOR；表面仍使用真空与当前材质之间的 IOR 比，不能直接表示不同非真空介质相邻的折射界面。
 
 ### `TextureBuffer` 是显示桥，不是渲染目标本体
 

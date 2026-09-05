@@ -16,7 +16,7 @@ uint wang_hash(inout uint seed) {
     return seed;
 } 
 float rand() {
-   return float(wang_hash(seed)) * (1.0 / 4294967296.0);
+   return min(float(wang_hash(seed)) * (1.0 / 4294967296.0), 0.99999994);
 }
 
 vec2 CranleyPattersonRotation(vec2 p) {
@@ -41,15 +41,14 @@ vec2 CranleyPattersonRotation(vec2 p) {
 
 // 将三维向量 v 转为 HDR map 的纹理坐标 uv
 vec2 toSphericalCoord(vec3 v) {
-    vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
-    uv /= vec2(2.0 * PI, PI);
-    uv += 0.5;
-    uv.y = 1.0 - uv.y;
-    return uv;
+    // atan preserves polar latitude when the y component rounds to +/-1.
+    return vec2(atan(v.z, v.x) / TWO_PI + 0.5, atan(length(v.xz), v.y) / PI);
 }
 float misMixWeight(float a, float b) {
-    float t = a * a;
-    return t / (b*b + t);
+    float scale = max(a, b);
+    if (scale <= 0.0) return 1.0;
+    a /= scale; b /= scale;
+    return a*a / (a*a + b*b);
 }
 
 float sqr(float x) { 
@@ -73,4 +72,8 @@ vec3 ToLocal(vec3 X, vec3 Y, vec3 Z, vec3 V)
 vec3 ToWorld(vec3 X, vec3 Y, vec3 Z, vec3 V)
 {
     return V.x * X + V.y * Y + V.z * Z;
+}
+float RayEpsilon(vec3 p) { return max(1e-5, 2e-6 * maxComponent(abs(p))); }
+vec3 OffsetRayOrigin(vec3 p, vec3 normal, vec3 direction) {
+    return p + normal * (dot(normal, direction) >= 0.0 ? RayEpsilon(p) : -RayEpsilon(p));
 }

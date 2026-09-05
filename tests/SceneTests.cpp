@@ -48,6 +48,15 @@ int main(int argc,char** argv) {
         scene->camera.restoreState(QVector3D(3,2,5),QVector3D(1,.5f,-.2f),QVector3D(0,1,0),61);
         scene->camera.processMouseMovement(0,0); near(scene->camera.position.x(),3,"orbit restore X"); near(scene->camera.position.y(),2,"orbit restore Y");
         scene->updateMaterial(QVector3D(.1f,.2f,.3f),QVector3D(.7f,.6f,.5f),.2f,.3f,.4f,.5f,.2f,.3f,.4f,.5f,.6f,1.7f,.1f);
+        for (int i=0; i<int(scene->triangles.size()); ++i) {
+            check(scene->triangles_encoded[i].textureParam1.z() == scene->triangles[i].material.lightSelectPdf,
+                  "Material edit left a stale BSDF-side light selection PDF");
+        }
+        for (const auto& light : scene->lights_encoded) {
+            if (int(light.param0.x()) == EncodedLightTriangle)
+                check(scene->triangles_encoded[int(light.param0.y())].textureParam1.z() == light.param0.z(),
+                      "NEE and BSDF-side light probabilities differ after material edit");
+        }
         const QString saved=base+"/保存.scene.json";
         check(scene->saveScene(saved,error),error);
         const auto expected=scene->snapshotDocument();

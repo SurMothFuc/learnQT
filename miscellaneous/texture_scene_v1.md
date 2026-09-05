@@ -1,6 +1,6 @@
 # 纹理与场景系统 v1
 
-更新日期：2026-09-04。实现基线：`6ee2661`。
+更新日期：2026-09-05。纹理与场景 v1 的验收基线仍为 `6ee2661`；本次同步后续直接光采样改动涉及的 alpha/发光行为及文档入口。
 
 本阶段已收尾：常用 PBR 贴图从导入、CPU 编码、GPU 上传到命中点采样的链路已贯通，
 并接入场景保存、切换和便携导出。后续以具体模型的兼容性问题为驱动，不把 v1
@@ -17,8 +17,8 @@
 | 材质采样 | base color、metallic、roughness、normal、emissive、opacity；颜色贴图转线性，标量贴图按通道读取 | `shaders/include/bvh_material.glsl` |
 | 法线贴图 | TBN 和切线 handedness，`normalScale`、`normalMapFlipY`；支持场景文件中的 Y 方向约定 | `ApplyNormalMap()` |
 | UV / sampler | 读取 Assimp 提供的 glTF sampler、`KHR_texture_transform`，保存缩放、偏移、旋转、wrap 和 filter 元数据 | `TextureAsset`, `TransformMaterialUV()` |
-| Alpha | `Opaque / Mask / Blend`，保留旧 `Transparent`；base color alpha、opacity、cutoff 进入 BVH 命中筛选，阴影/NEE 复用该路径 | `RejectAlphaIntersection()`, `IsDirectLightVisible()` |
-| 发光 | CPU 以面积、emissive 常量和贴图平均值建选择分布；GPU 在实际采样点读取发光贴图并用于 MIS | `Scene::buildLightData()`, `light_sampling.glsl` |
+| Alpha | `Opaque / Mask / Blend`，保留旧 `Transparent`；base color alpha、opacity、cutoff 进入 BVH 命中筛选，阴影复用该筛选并沿介质段计算透射率 | `RejectAlphaIntersection()`, `ShadowTransmittance()` |
+| 发光 | CPU 以面积、emissive 常量和贴图平均值建选择分布；GPU 在实际采样点读取发光贴图，乘 Mask/Blend 覆盖率并用于双面发光/MIS；材质修改同步更新两侧选择概率 | `Scene::buildLightData()`, `Scene::updateMaterial()`, `light_sampling.glsl` |
 
 `Renderer::baseColorTex` 仍是 OIDN 的 albedo 辅助输出，不是导入贴图；
 导入贴图使用 `materialTextureArray` / `materialTextureInfoTexture`。
@@ -86,7 +86,7 @@ MTL、bin、图片等文件，不递归复制无关目录。HDR 和场景直接�
 
 ## 两个预设
 
-| 场景 | 内容 | 最近一次 Release 结果 |
+| 场景 | 内容 | 纹理 v1 基线 Release 结果 |
 | --- | --- | --- |
 | 卧室 | 原卧室网格、木板/墙纸/地板/装饰画 4 张贴图、原材质、两块发光面、附加球形灯、HDR 和相机 | 1,491,774 个三角形；截图 `build/bedroom_scene_release.png` |
 | 路灯 | Lantern GLB 的 PBR/内嵌贴图、原缩放/相机/HDR/灯光，加独立石材平面 | 5,396 个三角形；截图 `build/lantern_scene_release.png` |
@@ -101,6 +101,7 @@ MTL、bin、图片等文件，不递归复制无关目录。HDR 和场景直接�
 
 2026-09-04，代码基线 `6ee2661` 已通过 Release 构建与 8/8 CTest。
 这是固定基线的验收记录，不表示后来代码修改自动获得同样保证。
+2026-09-05 的直接光采样阶段保留这 8 项并新增 `lighting_numerical_regression`，9/9 通过；实际 GPU 数值结果及本轮截图位置见 [direct_lighting.md](./direct_lighting.md)。
 
 | 测试 | 验证内容 |
 | --- | --- |
@@ -141,7 +142,7 @@ build\Release\learnQT.exe --scene my.scene.json --validate-scene
 - AO、height/displacement、clearcoat/transmission/sheen 等扩展贴图和多层纹理尚未贯通。
   读取部分扩展的标量不代表完整支持该 glTF 扩展。
 - FBX 已有内嵌图片小型夹具通过，不代表任意 DCC 导出的复杂 FBX 都已验收。
-- Blend 使用随机透过；旧 Transparent 与体积路径仍需单独的透射率/辅助特征验证。
+- Blend 使用随机透过；基础 alpha 发光面、旧 Transparent 包围的均匀吸收/散射介质及嵌套透射率已在直接光阶段验证，复杂 alpha/玻璃/介质组合与 OIDN 辅助特征仍需专项验收。
 - 发光贴图的选择权重使用整张图片平均值，尚未做按三角形 UV 覆盖区域的功率估计或重要性分布。
 - 场景保存了实例矩阵，但运行时仍预变换并展开三角形，未实现 TLAS/BLAS、动态对象编辑。
-- OIDN 法线输入范围、HDR PDF 一致性、delta/volume MIS 等渲染正确性项仍见 [待办.md](./待办.md)，不因纹理 v1 验收而自动完成。
+- HDR PDF 一致性、delta 和基础 volume MIS 的实现及验证见 [direct_lighting.md](./direct_lighting.md)；OIDN 法线输入范围、复杂介质与其他剩余项见 [to-do.md](./to-do.md)。

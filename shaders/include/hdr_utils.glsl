@@ -1,35 +1,62 @@
-// 输入光线方向 L 获取 HDR 在该位置的概率密度
-// hdr 分辨率为 4096 x 2048 --> hdrResolution = 4096
-float hdrPdf(vec3 L, int hdrResolution) {
-    if (hdrResolution <= 0) {
-        return 0.0;
-    }
-    vec2 uv = toSphericalCoord(normalize(L));   // 方向向量转 uv 纹理坐标
-  
-    float texelPdf = texture2D(hdrCache, uv).b;      // 采样概率密度
-    float sinTheta = max(sqrt(max(0.0, 1.0 - L.y * L.y)), 1e-6);
-    // 球坐标和图片积分域的转换系数
-    float p_convert = float(hdrResolution * hdrResolution / 2) / (TWO_PI * PI * sinTheta);  
-    
-    return texelPdf * p_convert;
+float HdrTexelSolidAngle(int y, ivec2 size)
+{
+    return (TWO_PI / float(size.x)) * 2.0 *
+        sin(PI * (float(y) + 0.5) / float(size.y)) * sin(0.5 * PI / float(size.y));
 }
-// 采样预计算的 HDR cache
-vec3 SampleHdr(float xi_1, float xi_2) {
-    vec2 xy = texture2D(hdrCache, vec2(xi_1, xi_2)).rg; // x, y
-    xy.y = 1.0 - xy.y; // flip y
 
-    // 获取角度
-    float phi = 2.0 * PI * (xy.x - 0.5);    // [-pi ~ pi]
-    float theta = PI * (xy.y - 0.5);        // [-pi/2 ~ pi/2]   
-
-    // 球坐标计算方向
-    vec3 L = vec3(cos(theta)*cos(phi), sin(theta), cos(theta)*sin(phi));
-
-    return L;
-}
-// 获取 HDR 环境颜色
-vec3 hdrColor(vec3 L) {
+float hdrPdf(vec3 L, int unusedResolution)
+{
+    ivec2 size = textureSize(hdrCache, 0);
     vec2 uv = toSphericalCoord(normalize(L));
-    vec3 color = texture2D(hdrMap, uv).rgb;
-    return color;
+    ivec2 cell = clamp(ivec2(uv * vec2(size)), ivec2(0), size - 1);
+    return texelFetch(hdrCache, cell, 0).b / HdrTexelSolidAngle(cell.y, size);
+}
+
+vec3 SampleHdr(float xi1, float xi2, out float pdf)
+{
+    ivec2 size = textureSize(hdrCache, 0);
+    xi1 = clamp(xi1, 0.0, 0.99999994);
+    xi2 = clamp(xi2, 0.0, 0.99999994);
+    int low = 0, high = size.x - 1;
+    while (low < high) {
+        int middle = (low + high) / 2;
+        if (xi1 < texelFetch(hdrCache, ivec2(middle, 0), 0).r) high = middle;
+        else low = middle + 1;
+    }
+    int x = low;
+    low = 0; high = size.y - 1;
+    while (low < high) {
+        int middle = (low + high) / 2;
+        if (xi2 < texelFetch(hdrCache, ivec2(x, middle), 0).g) high = middle;
+        else low = middle + 1;
+    }
+    int y = low;
+    vec3 cdf = texelFetch(hdrCache, ivec2(x, y), 0).rgb;
+    float x0 = x > 0 ? texelFetch(hdrCache, ivec2(x-1, 0), 0).r : 0.0;
+    float y0 = y > 0 ? texelFetch(hdrCache, ivec2(x, y-1), 0).g : 0.0;
+    float u = (xi1 - x0) / max(cdf.r - x0, 1e-30);
+    float v = (xi2 - y0) / max(cdf.g - y0, 1e-30);
+    // Residual variates sample the whole chosen texel in solid angle.
+    float phi = TWO_PI * ((float(x) + u) / float(size.x) - 0.5);
+    float cosTheta, sinTheta;
+    if (y < size.y / 2) {
+        float top = 2.0 * pow(sin(0.5 * PI * float(y) / float(size.y)), 2.0);
+        float bottom = 2.0 * pow(sin(0.5 * PI * float(y+1) / float(size.y)), 2.0);
+        float oneMinusCos = mix(top, bottom, v);
+        cosTheta = 1.0 - oneMinusCos;
+        sinTheta = sqrt(max(0.0, oneMinusCos * (2.0-oneMinusCos)));
+    } else {
+        float top = 2.0 * pow(sin(0.5 * PI * float(size.y-y) / float(size.y)), 2.0);
+        float bottom = 2.0 * pow(sin(0.5 * PI * float(size.y-y-1) / float(size.y)), 2.0);
+        float onePlusCos = mix(top, bottom, v);
+        cosTheta = onePlusCos - 1.0;
+        sinTheta = sqrt(max(0.0, onePlusCos * (2.0-onePlusCos)));
+    }
+    pdf = cdf.b / HdrTexelSolidAngle(y, size);
+    return vec3(sinTheta * cos(phi), cosTheta, sinTheta * sin(phi));
+}
+
+vec3 hdrColor(vec3 L)
+{
+    return texture(hdrMap, toSphericalCoord(normalize(L))).rgb;
 }
