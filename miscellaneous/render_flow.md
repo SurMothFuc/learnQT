@@ -86,9 +86,10 @@ flowchart TD
 - `resolveRefreshActions()` 负责检查参数变化和 scene dirty flags，并决定是否需要重建 shader、重算分辨率、重置 tile 状态、重上传场景或重传材质。
 - `applyRefreshActions()` 在帧首一次性执行这些动作，避免 render pass 中途改变场景资源。
 - `executeRenderPass()` 是核心路径追踪阶段，输出 3 个附件：颜色、法线、底色。
-- path tracing pass 读取 triangles / BVH / lights TBO、材质纹理数组和采样元数据 TBO，执行纹理插值、BSDF 采样、显式光源采样和 MIS。
+- path tracing pass 读取 triangles / BVH / lights TBO、材质纹理数组、采样元数据及 HDR cache。每条射线先取最近几何/解析球交点，再处理到交点前的介质自由程或衰减，最后才累计交点或无限远发光。
+- 表面在存在连续 BSDF 波瓣时执行 NEE，体积散射点执行 NEE/phase MIS；旧 Transparent 边界只更新体积栈并继续，纯 delta 表面跳过 NEE。完整路径顺序见 [logic_overview.md](./logic_overview.md) 和 [direct_lighting.md](./direct_lighting.md)。
 - `processHistorySaving()` 只有在整图模式或 tile 模式完成一整轮时，才会把当前结果写回 `preRenderColorTex` 用于下一轮累积。
-- `performDenoising()` 不是每次循环都执行；降噪开启时通常在首帧、每 100 帧、显式刷新或到达累计上限的最终帧触发。
+- `performDenoising()` 不是每次循环都执行；降噪开启时通常在首个完整累计轮次、每 100 个完整轮次、显式刷新或到达累计上限的最终帧触发。
 - 达到 `maxRenderFrames` 后停止增加路径追踪累计，但线程仍显示最后的结果；新的场景或参数刷新会重置累计。
 - `TextureBuffer` 是从渲染线程回到主线程显示的桥。
 
@@ -129,6 +130,7 @@ flowchart TD
 - 相机输入直接改的是 `Scene::camera`，不是 `RenderParams`。
 - 鼠标拖动时会把 `renderLow` 设为 `true`，松开再恢复，这样交互期间会降到较低分辨率以换取响应速度。
 - `markSceneDirty()` 只是告诉渲染线程“有场景状态需要同步”，真正决定怎么更新的是下一轮 `Renderer::resolveRefreshActions()` / `applyRefreshActions()`。
+- `Scene::updateMaterial()` 更新常量后重建 light CDF，并将三角形的新 `lightSelectPdf` 回写编码；下一帧的 `syncMaterialBuffer()` 同步上传三角形和 light buffer、更新 `nLights / nAnalyticLights` 并重置累计，保证 NEE 与 BSDF 命中使用同一概率。
 - `Denoise` 和环境贴图开关都直接写进 `RenderParams`；环境贴图变化由下一轮参数快照触发 shader 重建和场景同步。
 - 相机、材质和持久渲染设置变化还会将场景文档标记为未保存；临时交互降分辨率不单独置 dirty。
 
@@ -168,6 +170,6 @@ flowchart TD
 当前 `performDenoising()` 的触发条件不是“每帧必做”：
 
 - 当 `denoise` 开关变化或 renderer 标记 `m_forceDenoiseRefresh` 时，会重新走一次降噪。
-- 一般需降噪已开启、当前 tile 轮次已经完整结束，且满足“首帧或每 100 帧一次”；到达 `maxRenderFrames` 的最终帧也会触发降噪。
+- 一般需降噪已开启、当前 tile 轮次已经完整结束，且满足“首个完整轮次或每 100 个完整轮次一次”；到达 `maxRenderFrames` 的最终帧也会触发降噪。
 
 这意味着当前实现偏向“周期性后处理”，而不是“每个 worker 循环都实时降噪”。

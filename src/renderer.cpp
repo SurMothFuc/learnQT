@@ -1017,6 +1017,9 @@ void Renderer::syncMaterialBuffer()
     uploadLightBuffer(tboLights == 0 || lightsTextureBuffer == 0);
     pathtrace_program->bind();
     pathtrace_program->setUniformValue("nLights", static_cast<int>(Scene::getInstance().lights_encoded.size()));
+    pathtrace_program->setUniformValue("nAnalyticLights", std::min(
+        Scene::getInstance().document.root["lights"].toArray().size(),
+        static_cast<int>(Scene::getInstance().lights_encoded.size())));
     pathtrace_program->release();
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindBuffer(GL_TEXTURE_BUFFER, 0);
@@ -1037,6 +1040,9 @@ void Renderer::syncSceneBuffers()
     pathtrace_program->setUniformValue("nTriangles", static_cast<int>(Scene::getInstance().triangles.size()));
     pathtrace_program->setUniformValue("nNodes", static_cast<int>(Scene::getInstance().nodes_encoded.size()));
     pathtrace_program->setUniformValue("nLights", static_cast<int>(Scene::getInstance().lights_encoded.size()));
+    pathtrace_program->setUniformValue("nAnalyticLights", std::min(
+        Scene::getInstance().document.root["lights"].toArray().size(),
+        static_cast<int>(Scene::getInstance().lights_encoded.size())));
     pathtrace_program->setUniformValue("width", render_width);
     pathtrace_program->setUniformValue("height", render_height);
     pathtrace_program->setUniformValue("hdrResolution", Scene::getInstance().hdrResolution);

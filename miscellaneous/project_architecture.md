@@ -161,6 +161,19 @@ flowchart TD
 - `RenderParams` 保存的是“轻量控制参数”，例如是否降噪、是否低分辨率、tile size 等。
 - `TextureBuffer` 不负责渲染，只负责把 worker 线程的最终图像安全地带回主线程显示。
 
+## 光照采样数据与路径状态
+
+| 层级 | 当前职责 | 数据边界 |
+| --- | --- | --- |
+| CPU 场景准备 | `Scene::buildLightData()` 构建发光三角形和解析 sphere / sun 的功率选择 CDF；`calculateHdrCache()` 构建环境贴图的边缘/条件 CDF | 灯光编码及三角形内的选择概率必须同步；HDR cache 保存 CDF 与实际区间概率，不再保存预选 UV |
+| Render Thread 上传 | `syncSceneBuffers()` / `syncMaterialBuffer()` 上传三角形、light TBO 与数量 uniform；HDR 原图与 cache 在场景同步时上传 | `nAnalyticLights` 标记 light list 尾部的解析光源数量，供主射线/间接射线求交与环境逃逸累积使用 |
+| GPU 光照采样 | `hdr_utils.glsl`、`light_sampling.glsl` 提供环境/三角形/球/太阳盘采样与 PDF；`bsdf.glsl` 区分连续波瓣和 delta 事件 | 表面 NEE 与 BSDF 命中、体积 NEE 与 phase 命中使用一致的选择概率和方向 PDF |
+| GPU 单条路径 | `pathtrace.glsl` 保存 throughput、上一散射点、PDF、delta 标记和 `MediumStack`；`medium.glsl` 管理边界与阴影透射率 | 最多 8 层均匀介质，栈属于单条路径；阴影查询按值复制它，不修改主路径状态，也不写回 CPU 场景 |
+
+材质编辑后 CPU 会重建 light CDF，并把新概率回写到三角形编码；下一帧同时上传三角形和光源缓冲、重置累计。该操作不重建 BVH，但材质和几何数据尚未拆成独立 GPU 表，仍上传整份三角形缓冲。
+
+介质栈支持正确嵌套的闭合边界；它不记录介质两侧 IOR，也不解决任意相交体积和相机初始多层介质。算法、测度和验证范围见 [direct_lighting.md](./direct_lighting.md)。
+
 ## 第三方依赖在当前实现中的位置
 
 | 依赖 | 当前作用 | 所在位置 |

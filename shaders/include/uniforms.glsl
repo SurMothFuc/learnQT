@@ -5,6 +5,7 @@ uniform int nTriangles;
 uniform vec3 eye;
 uniform int nNodes;
 uniform int nLights;
+uniform int nAnalyticLights;
 uniform int width;
 uniform int height;
 uniform uint frameCounter;

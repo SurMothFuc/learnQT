@@ -174,7 +174,7 @@ Material getMaterial(int i) {
     m.metallic=param5.w;
 
     m.specularTint=param6.x;
-    m.roughness=max(param6.y,0.001);
+    m.roughness=max(param6.y,0.0);
     m.anisotropic=param6.z;
     m.sheen=param6.w;
 
@@ -207,7 +207,7 @@ Material getMaterial(int i) {
     }
     m.opacity = GetMaterialOpacity(i, materialEvaluationUV);
     m.metallic = clamp(m.metallic, 0.0, 1.0);
-    m.roughness = clamp(m.roughness, 0.001, 1.0);
+    m.roughness = clamp(m.roughness, 0.0, 1.0);
 
     float aspect = sqrt(1.0 - m.anisotropic * 0.9);
     m.ax = max(0.001, m.roughness / aspect);
@@ -313,6 +313,7 @@ HitResult hitBVH(Ray ray) {
     res.isHit = false;
     res.triangleIndex = -1;
     res.hitDistance = INF;
+    if (nTriangles <= 0 || nNodes <= 1) return res;
     vec3 bary;
     int triID = -1;
     vec3 vert1;
@@ -345,8 +346,7 @@ HitResult hitBVH(Ray ray) {
                 vec3 pv = cross(ray.direction, e1);
                 float det = dot(e0, pv);
 
-                //if (abs(det) < 0.00001) 
-                   // continue;
+                if (abs(det) < 1e-12) continue;
 
                 vec3 tv = ray.startPoint - p1.xyz;
                 vec3 qv = cross(tv, e0);
@@ -358,7 +358,7 @@ HitResult hitBVH(Ray ray) {
                 uvt.xyz = uvt.xyz / det;
                 uvt.w = 1.0 - uvt.x - uvt.y;
                 
-                if(uvt.z<0.00005)
+                if(uvt.z<=0.0)
                     continue;
 
                 if (all(greaterThanEqual(uvt, vec4(0.0))) && uvt.z < res.hitDistance)
@@ -447,7 +447,9 @@ HitResult hitBVH(Ray ray) {
             Nsmooth = normalize(Nsmooth);
         }
         // 从三角形背后（模型内部）击中
-        if (dot(Nsmooth, ray.direction) > 0.0f) {
+        res.geometricNormal = normalize(cross(vert2-vert1, vert3-vert1));
+        if (dot(Nsmooth, res.geometricNormal) < 0.0) Nsmooth = -Nsmooth;
+        if (dot(res.geometricNormal, ray.direction) > 0.0) {
             res.isInside = true;
             res.normal =-Nsmooth;
         }else{

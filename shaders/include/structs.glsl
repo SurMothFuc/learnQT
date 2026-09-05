@@ -63,6 +63,7 @@ struct HitResult {
     float hitDistance;
     vec3 hitPoint;
     vec3 normal;
+    vec3 geometricNormal; // Outward, determined by triangle winding.
     vec2 uv;
     vec3 viewDir;
     Material material;
