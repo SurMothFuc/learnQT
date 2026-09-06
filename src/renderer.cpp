@@ -1,4 +1,4 @@
-﻿#include "renderer.h"
+#include "renderer.h"
 
 #include "MaterialTextureImage.h"
 #include <QDebug>
@@ -10,29 +10,34 @@
 #include <QTextStream>
 
 #include <algorithm>
-#include <ctime>
 #include <cstring>
+#include <ctime>
 #include <regex>
 
 extern QMutex param_mutex;
 
-namespace {
-int clampMaxBounces(int maxBounces) {
+namespace
+{
+int clampMaxBounces(int maxBounces)
+{
     return std::max(0, std::min(maxBounces, static_cast<int>(MAX_BOUNCES_LIMIT)));
 }
 
-bool isRenderFrameLimitReached(const RenderParams::Snapshot& snapshot, unsigned int frameCounter) {
+bool isRenderFrameLimitReached(const RenderParams::Snapshot &snapshot, unsigned int frameCounter)
+{
     return snapshot.maxRenderFrames > 0 &&
            frameCounter >= static_cast<unsigned int>(snapshot.maxRenderFrames);
 }
-}
+} // namespace
 
-std::string processIncludes(const std::string& source, const std::string& shaderPath) {
+std::string processIncludes(const std::string &source, const std::string &shaderPath)
+{
     static std::unordered_map<std::string, std::string> includeCache;
     static std::unordered_map<std::string, bool> processing; // 防止循环包含
 
     // 主文件缓存检查
-    if (includeCache.find(shaderPath) != includeCache.end()) {
+    if (includeCache.find(shaderPath) != includeCache.end())
+    {
         return includeCache[shaderPath];
     }
     processing[shaderPath] = true;
@@ -42,12 +47,14 @@ std::string processIncludes(const std::string& source, const std::string& shader
     std::smatch match;
     std::string result = source;
 
-    while (std::regex_search(result, match, includeRegex)) {
+    while (std::regex_search(result, match, includeRegex))
+    {
         std::string includeFile = match[1].str();
         std::string includePath = dir.filePath(QString::fromStdString(includeFile)).toStdString();
 
         // 检查循环包含
-        if (processing[includePath]) {
+        if (processing[includePath])
+        {
             qWarning() << "Circular include detected: " << QString::fromStdString(includePath);
             result = match.prefix().str() + match.suffix().str();
             continue;
@@ -55,11 +62,15 @@ std::string processIncludes(const std::string& source, const std::string& shader
 
         // 读取包含文件
         std::string includeContent;
-        if (includeCache.find(includePath) != includeCache.end()) {
+        if (includeCache.find(includePath) != includeCache.end())
+        {
             includeContent = includeCache[includePath];
-        } else {
+        }
+        else
+        {
             QFile file(QString::fromStdString(includePath));
-            if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            {
                 qWarning() << "Failed to open include file: " << QString::fromStdString(includePath);
                 result = match.prefix().str() + match.suffix().str();
                 includeCache[includePath] = "";
@@ -82,17 +93,22 @@ std::string processIncludes(const std::string& source, const std::string& shader
     return result;
 }
 
-std::string injectDefines(const std::string& source, const std::unordered_map<std::string, std::string>& defines) {
+std::string injectDefines(const std::string &source,
+                          const std::unordered_map<std::string, std::string> &defines)
+{
     // 注入动态 #define，确保在 #version 之后添加
     std::string definesStr;
-    for (const auto& keyValue : defines) {
+    for (const auto &keyValue : defines)
+    {
         definesStr += "#define " + keyValue.first + " " + keyValue.second + "\n";
     }
 
     const size_t versionPos = source.find("#version");
-    if (versionPos != std::string::npos) {
+    if (versionPos != std::string::npos)
+    {
         size_t lineEnd = source.find("\n", versionPos);
-        if (lineEnd == std::string::npos) {
+        if (lineEnd == std::string::npos)
+        {
             lineEnd = source.size();
         }
         return source.substr(0, lineEnd + 1) + definesStr + source.substr(lineEnd + 1);
@@ -101,7 +117,8 @@ std::string injectDefines(const std::string& source, const std::unordered_map<st
     return definesStr + source;
 }
 
-GLuint Renderer::getTextureRGB32F(int width, int height) {
+GLuint Renderer::getTextureRGB32F(int width, int height)
+{
     GLuint tex = 0;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
@@ -113,18 +130,20 @@ GLuint Renderer::getTextureRGB32F(int width, int height) {
     return tex;
 }
 
-QOpenGLShaderProgram* Renderer::getShaderProgram(
-    std::string fshader,
-    std::string vshader,
-    const std::unordered_map<std::string, std::string>& defines_Vertex,
-    const std::unordered_map<std::string, std::string>& defines_Fragment) {
-    QOpenGLShaderProgram* shaderProgram = new QOpenGLShaderProgram;
+QOpenGLShaderProgram *Renderer::getShaderProgram(
+    std::string fshader, std::string vshader,
+    const std::unordered_map<std::string, std::string> &defines_Vertex,
+    const std::unordered_map<std::string, std::string> &defines_Fragment)
+{
+    auto shaderProgram = std::make_unique<QOpenGLShaderProgram>();
 
     // 加载并处理顶点着色器
     QFile vFile(QString::fromStdString(vshader));
-    if (!vFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if (!vFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
         qDebug() << "Failed to open vertex shader: " << vshader.c_str();
-        return shaderProgram;
+        throw std::runtime_error("Cannot load or compile shader: " + fshader + " / " + vshader + " " +
+                                 shaderProgram->log().toStdString());
     }
     std::string vSource = QTextStream(&vFile).readAll().toStdString();
     vFile.close();
@@ -132,16 +151,20 @@ QOpenGLShaderProgram* Renderer::getShaderProgram(
     vSource = injectDefines(vSource, defines_Vertex);
 
     bool success = shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vSource.c_str());
-    if (!success) {
+    if (!success)
+    {
         qDebug() << "Vertex shader compilation failed:\n" << shaderProgram->log();
-        return shaderProgram;
+        throw std::runtime_error("Cannot load or compile shader: " + fshader + " / " + vshader + " " +
+                                 shaderProgram->log().toStdString());
     }
 
     // 加载并处理片段着色器
     QFile fFile(QString::fromStdString(fshader));
-    if (!fFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if (!fFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
         qDebug() << "Failed to open fragment shader: " << fshader.c_str();
-        return shaderProgram;
+        throw std::runtime_error("Cannot load or compile shader: " + fshader + " / " + vshader + " " +
+                                 shaderProgram->log().toStdString());
     }
     std::string fSource = QTextStream(&fFile).readAll().toStdString();
     fFile.close();
@@ -149,76 +172,213 @@ QOpenGLShaderProgram* Renderer::getShaderProgram(
     fSource = injectDefines(fSource, defines_Fragment);
 
     success = shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fSource.c_str());
-    if (!success) {
+    if (!success)
+    {
         qDebug() << "Fragment shader compilation failed:\n" << shaderProgram->log();
-        return shaderProgram;
+        throw std::runtime_error("Cannot load or compile shader: " + fshader + " / " + vshader + " " +
+                                 shaderProgram->log().toStdString());
     }
 
     success = shaderProgram->link();
-    if (!success) {
-        qDebug() << "Shader linking failed:\n" << shaderProgram->log();
+    if (!success)
+    {
+        throw std::runtime_error("Shader linking failed: " + shaderProgram->log().toStdString());
     }
-    return shaderProgram;
+    return shaderProgram.release();
 }
 
-GLuint Renderer::bindData(std::vector<GLuint> colorAttachments) {
+GLuint Renderer::bindData(std::vector<GLuint> colorAttachments)
+{
     // colorAttachments 为颜色缓冲，返回值为 FBO。
     GLuint fbo = 0;
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-    if (!colorAttachments.empty()) {
+    if (!colorAttachments.empty())
+    {
         std::vector<GLenum> attachments;
         attachments.reserve(colorAttachments.size());
-        for (int i = 0; i < static_cast<int>(colorAttachments.size()); ++i) {
+        for (int i = 0; i < static_cast<int>(colorAttachments.size()); ++i)
+        {
             glBindTexture(GL_TEXTURE_2D, colorAttachments[i]);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorAttachments[i], 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D,
+                                   colorAttachments[i], 0);
             attachments.push_back(GL_COLOR_ATTACHMENT0 + i);
         }
         glDrawBuffers(static_cast<GLsizei>(attachments.size()), attachments.data());
     }
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        qDebug() << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        glDeleteFramebuffers(1, &fbo);
+        throw std::runtime_error("Render framebuffer allocation failed");
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return fbo;
 }
 
-Renderer::Renderer(int width, int height, const RenderParams::Snapshot& initialSnapshot, QObject *parent)
+Renderer::Renderer(int width, int height, const RenderParams::Snapshot &initialSnapshot, QObject *parent)
     : QObject(parent)
 {
     init(width, height, initialSnapshot);
-    initOIDN();
+    glGenBuffers(3, pboIds);
+    previewDenoiseClock.start();
+    compositeClock.start();
 }
 
 Renderer::~Renderer()
 {
+    invalidatePreviewDenoise();
+    if (workFence)
+        glDeleteSync(workFence);
+    if (pickFence)
+        glDeleteSync(pickFence);
+    glDeleteBuffers(1, &pickPbo);
+    glDeleteFramebuffers(1, &pickFbo);
+    glDeleteTextures(2, pickTextures);
+    glDeleteQueries(12, timerQueries);
+    glDeleteBuffers(5, instanceBuffers);
+    glDeleteTextures(5, instanceTextures);
     uninit();
 }
 
-void Renderer::render(int width, int height, const RenderParams::Snapshot& snapshot, SceneDirtyFlags dirtyFlags)
+bool Renderer::waitForGpuBoundary()
 {
-    // 1. 帧首统一决策并执行刷新
+    if (!workFence)
+        return true;
+    // Wait on the GPU event itself. Sleep(1) polling can oversleep by a Windows timer tick.
+    constexpr GLuint64 timeoutNanoseconds = 1000000;
+    const auto status = glClientWaitSync(workFence, 0, timeoutNanoseconds);
+    if (status == GL_WAIT_FAILED)
+        throw std::runtime_error("GPU completion wait failed");
+    if (status == GL_TIMEOUT_EXPIRED)
+        return false;
+    glDeleteSync(workFence);
+    workFence = nullptr;
+    return true;
+}
+void Renderer::submitGpuBoundary()
+{
+    if (workFence)
+        glDeleteSync(workFence);
+    workFence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    if (!workFence)
+        throw std::runtime_error("GPU completion fence creation failed");
+    glFlush();
+}
+void Renderer::pollGpuTimers()
+{
+    for (int i = 0; i < 12; ++i)
+        if (timerPending[i])
+        {
+            GLint ready = 0;
+            glGetQueryObjectiv(timerQueries[i], GL_QUERY_RESULT_AVAILABLE, &ready);
+            if (ready)
+            {
+                GLuint64 ns = 0;
+                glGetQueryObjectui64v(timerQueries[i], GL_QUERY_RESULT, &ns);
+                if (timerEpoch[i] == stats.accumulationVersion)
+                {
+                    const double milliseconds = ns / 1e6;
+                    (i % 3 == 0   ? stats.gpuMs
+                     : i % 3 == 1 ? stats.gpuHistoryMs
+                                  : stats.gpuCompositeMs) = milliseconds;
+                    if (i % 3 == 0)
+                        estimatedTileMs = std::max(milliseconds, estimatedTileMs * .95);
+                }
+                timerPending[i] = false;
+            }
+        }
+}
+void Renderer::render(int width, int height, const RenderParams::Snapshot &snapshot,
+                      SceneDirtyFlags dirtyFlags, int maxTiles, const std::function<bool()> &interrupted)
+{
     const RefreshActions actions = resolveRefreshActions(width, height, snapshot, dirtyFlags);
     applyRefreshActions(width, height, snapshot, actions);
-
-    // 2. 常规渲染与后处理阶段全部只读本帧 snapshot
-    displayRenderingStats();
-    if (isRenderFrameLimitReached(snapshot, frameCounter)) {
+    const bool previewChanged = pollPreviewDenoise(snapshot);
+    stats.batchTiles = 0;
+    if (!samplingActive(snapshot))
+    {
         performDenoising(snapshot, true);
-        compositeToScreen(snapshot);
+        compositePreview(snapshot, previewChanged || actions.refreshDenoisePolicy || actions.refreshDisplay,
+                         actions.refreshDisplay);
         return;
     }
-
-    executeRenderPass(snapshot);
-    processHistorySaving(snapshot);
-    const bool reachedFrameLimitAfterPass = isRenderFrameLimitReached(snapshot, frameCounter);
-    performDenoising(snapshot, reachedFrameLimitAfterPass);
-    compositeToScreen(snapshot);
+    if (!timerQueries[0])
+        glGenQueries(12, timerQueries);
+    pollGpuTimers();
+    const int limit =
+        snapshot.useTileRendering && estimatedTileMs > 0
+            ? std::max(1, std::min(std::min(16, maxTiles), int(8. / (estimatedTileMs * 1.3 + .03))))
+            : 1;
+    stats.batchLimit = limit;
+    const auto initialRound = frameCounter;
+    bindPathtraceInputs(clampMaxBounces(snapshot.maxBounces));
+    QElapsedTimer submission;
+    submission.start();
+    for (int step = 0; step < limit; ++step)
+    {
+        if (step && ((interrupted && interrupted()) || submission.elapsed() >= 4))
+            break;
+        int query = (timerCursor++ % 4) * 3;
+        bool timed = !timerPending[query] && !timerPending[query + 1];
+        if (timed)
+            glBeginQuery(GL_TIME_ELAPSED, timerQueries[query]);
+        executeRenderPass(snapshot);
+        if (timed)
+        {
+            glEndQuery(GL_TIME_ELAPSED);
+            timerPending[query] = true;
+            timerEpoch[query] = stats.accumulationVersion;
+            glBeginQuery(GL_TIME_ELAPSED, timerQueries[query + 1]);
+        }
+        processHistorySaving(snapshot);
+        if (timed)
+        {
+            glEndQuery(GL_TIME_ELAPSED);
+            timerPending[query + 1] = true;
+            timerEpoch[query + 1] = stats.accumulationVersion;
+        }
+        ++stats.batchTiles;
+        // Never cross a sampling round: snapshots, pause and final OIDN retain complete-round semantics.
+        if (frameCounter != initialRound)
+            break;
+    }
+    const bool finished = !samplingActive(snapshot);
+    if (!formal)
+        performDenoising(snapshot, finished);
+    compositePreview(snapshot, true, finished || actions.refreshDisplay);
 }
 
-void Renderer::init(int width, int height, const RenderParams::Snapshot& snapshot)
+void Renderer::compositePreview(const RenderParams::Snapshot &snapshot, bool changed, bool force)
+{
+    displayDirty |= changed;
+    if (formal || !displayDirty ||
+        (!firstComposite && !force && compositeClock.isValid() && compositeClock.elapsed() < 16))
+        return;
+    int query = ((std::max(1, timerCursor) - 1) % 4) * 3 + 2;
+    bool timed = timerQueries[query] && !timerPending[query];
+    if (timed)
+        glBeginQuery(GL_TIME_ELAPSED, timerQueries[query]);
+    compositeToScreen(snapshot);
+    if (timed)
+    {
+        glEndQuery(GL_TIME_ELAPSED);
+        timerPending[query] = true;
+        timerEpoch[query] = stats.accumulationVersion;
+    }
+    compositeClock.restart();
+    firstComposite = displayDirty = false;
+}
+
+bool Renderer::samplingActive(const RenderParams::Snapshot &snapshot) const
+{
+    if (isRenderFrameLimitReached(snapshot, frameCounter))
+        return false;
+    return formal || frameCounter == 0 || previewHasGeometry;
+}
+
+void Renderer::init(int width, int height, const RenderParams::Snapshot &snapshot)
 {
     batchTextureSettings.clear();
     m_width = width;
@@ -238,12 +398,12 @@ void Renderer::init(int width, int height, const RenderParams::Snapshot& snapsho
     normal_texture = getTextureRGB32F(render_width, render_height);
     baseColorTex = getTextureRGB32F(render_width, render_height);
     batchTextureSettings.insert(batchTextureSettings.end(),
-        { preRenderColorTex, RenderColorTex, normal_texture, baseColorTex });
+                                {preRenderColorTex, RenderColorTex, normal_texture, baseColorTex});
 
-    pathtrace_fbo = bindData(std::vector<GLuint>{
-        RenderColorTex, normal_texture, baseColorTex });
+    pathtrace_fbo = bindData(std::vector<GLuint>{RenderColorTex, normal_texture, baseColorTex});
 
-    historysave_program.reset(getShaderProgram(getShaderPath("historysave.frag"), getShaderPath("triangle.vert")));
+    historysave_program.reset(
+        getShaderProgram(getShaderPath("historysave.frag"), getShaderPath("triangle.vert")));
     historysave_fbo = bindData(std::vector<GLuint>{preRenderColorTex});
 
     RenderColorTexfiltered = getTextureRGB32F(render_width, render_height);
@@ -255,10 +415,8 @@ void Renderer::init(int width, int height, const RenderParams::Snapshot& snapsho
 
     glEnable(GL_DEPTH_TEST);
 
-    const std::vector<QVector3D> square = {
-        QVector3D(-1, -1, 0), QVector3D(1, -1, 0), QVector3D(-1, 1, 0),
-        QVector3D(1, 1, 0), QVector3D(-1, 1, 0), QVector3D(1, -1, 0)
-    };
+    const std::vector<QVector3D> square = {QVector3D(-1, -1, 0), QVector3D(1, -1, 0), QVector3D(-1, 1, 0),
+                                           QVector3D(1, 1, 0),   QVector3D(-1, 1, 0), QVector3D(1, -1, 0)};
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -268,7 +426,7 @@ void Renderer::init(int width, int height, const RenderParams::Snapshot& snapsho
     glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D) * square.size(), nullptr, GL_STATIC_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(QVector3D) * square.size(), square.data());
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid*>(0));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid *>(0));
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -289,8 +447,6 @@ void Renderer::initOIDN()
     oidnMainFilter.set("hdr", true);
     oidnMainFilter.set("cleanAux", true);
 
-    glGenBuffers(3, pboIds);
-
     updateOIDNBuffers();
 }
 
@@ -301,7 +457,8 @@ void Renderer::uninit()
     glDeleteFramebuffers(1, &historysave_fbo);
 
     glDeleteTextures(1, &m_texture);
-    for (auto& perTex : batchTextureSettings) {
+    for (auto &perTex : batchTextureSettings)
+    {
         glDeleteTextures(1, &perTex);
         perTex = 0;
     }
@@ -314,41 +471,50 @@ void Renderer::uninit()
     glDeleteTextures(1, &materialTextureArray);
     glDeleteTextures(1, &materialTextureInfoTexture);
 
-    if (VAO) {
+    if (VAO)
+    {
         glDeleteVertexArrays(1, &VAO);
     }
-    if (VBO) {
+    if (VBO)
+    {
         glDeleteBuffers(1, &VBO);
     }
 
-    if (tbo0) {
+    if (tbo0)
+    {
         glDeleteBuffers(1, &tbo0);
     }
-    if (tbo1) {
+    if (tbo1)
+    {
         glDeleteBuffers(1, &tbo1);
     }
-    if (tboLights) {
+    if (tboLights)
+    {
         glDeleteBuffers(1, &tboLights);
     }
-    if (materialTextureInfoBuffer) {
+    if (materialTextureInfoBuffer)
+    {
         glDeleteBuffers(1, &materialTextureInfoBuffer);
     }
 
-    if (pboIds[0] != 0 || pboIds[1] != 0 || pboIds[2] != 0) {
+    if (pboIds[0] != 0 || pboIds[1] != 0 || pboIds[2] != 0)
+    {
         glDeleteBuffers(3, pboIds);
         std::fill(std::begin(pboIds), std::end(pboIds), 0);
     }
 
     historysave_fbo = m_fbo = pathtrace_fbo = 0;
     m_texture = 0;
-    hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = lightsTextureBuffer = materialTextureArray = materialTextureInfoTexture = 0;
+    hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = lightsTextureBuffer =
+        materialTextureArray = materialTextureInfoTexture = 0;
     VAO = VBO = tbo0 = tbo1 = tboLights = materialTextureInfoBuffer = 0;
     materialTextureLayerCount = 0;
 }
 
 void Renderer::updateOIDNBuffers()
 {
-    const size_t bufferSize = static_cast<size_t>(render_width) * static_cast<size_t>(render_height) * 3 * sizeof(float);
+    const size_t bufferSize =
+        static_cast<size_t>(render_width) * static_cast<size_t>(render_height) * 3 * sizeof(float);
 
     oidnColorBuf = oidnDevice.newBuffer(bufferSize);
     oidnAlbedoBuf = oidnDevice.newBuffer(bufferSize);
@@ -368,27 +534,43 @@ void Renderer::updateOIDNBuffers()
     oidnMainFilter.setImage("normal", oidnNormalBuf, oidn::Format::Float3, render_width, render_height);
     oidnMainFilter.setImage("output", oidnOutputBuf, oidn::Format::Float3, render_width, render_height);
     oidnMainFilter.commit();
+    oidnSize = QSize(render_width, render_height);
+    ensureDenoisePbos();
+}
 
-    for (int i = 0; i < 3; i++) {
+void Renderer::ensureDenoisePbos()
+{
+    const QSize size(render_width, render_height);
+    if (denoisePboSize == size)
+        return;
+    const size_t bufferSize = size_t(render_width) * render_height * 3 * sizeof(float);
+    for (int i = 0; i < 3; ++i)
+    {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
         glBufferData(GL_PIXEL_PACK_BUFFER, static_cast<GLsizeiptr>(bufferSize), nullptr, GL_STREAM_READ);
     }
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    denoisePboSize = size;
 }
 
 void Renderer::adjustSize()
 {
+    while (glGetError() != GL_NO_ERROR)
+    {
+    }
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, nullptr);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    for (auto& perTex : batchTextureSettings) {
+    for (auto &perTex : batchTextureSettings)
+    {
         glBindTexture(GL_TEXTURE_2D, perTex);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, render_width, render_height, 0, GL_RGBA, GL_FLOAT,
+                     nullptr);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    updateOIDNBuffers();
+    invalidatePreviewDenoise();
 
     m_viewportX = 0;
     m_viewportY = 0;
@@ -396,7 +578,8 @@ void Renderer::adjustSize()
 
 void Renderer::updateSizeParam()
 {
-    if (!pathtrace_program) {
+    if (!pathtrace_program)
+    {
         return;
     }
     pathtrace_program->bind();
@@ -407,11 +590,15 @@ void Renderer::updateSizeParam()
 
 void Renderer::calResolution(bool renderLow)
 {
-    if (renderLow) {
-        if (m_width <= MAX_LOW_RESOLUTION && m_height <= MAX_LOW_RESOLUTION) {
+    if (renderLow)
+    {
+        if (m_width <= MAX_LOW_RESOLUTION && m_height <= MAX_LOW_RESOLUTION)
+        {
             render_width = m_width;
             render_height = m_height;
-        } else {
+        }
+        else
+        {
             const double scaleWidth = static_cast<double>(MAX_LOW_RESOLUTION) / m_width;
             const double scaleHeight = static_cast<double>(MAX_LOW_RESOLUTION) / m_height;
             const double scale = std::min(scaleWidth, scaleHeight);
@@ -419,7 +606,9 @@ void Renderer::calResolution(bool renderLow)
             render_width = static_cast<int>(std::round(m_width * scale));
             render_height = static_cast<int>(std::round(m_height * scale));
         }
-    } else {
+    }
+    else
+    {
         render_width = m_width;
         render_height = m_height;
     }
@@ -432,7 +621,7 @@ void Renderer::updateTileGrid(int tileSize)
     tilesY = (render_height + safeTileSize - 1) / safeTileSize;
 }
 
-void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, int maxBounces)
+void Renderer::bindPathtraceInputs(int maxBounces)
 {
     const unsigned int sobolBounceCount = static_cast<unsigned int>(std::max(1, maxBounces));
     const auto sobelNumber = getSobelRandomNumber(frameCounter, sobolBounceCount);
@@ -444,8 +633,6 @@ void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, i
         const GLint sobelLocation = pathtrace_program->uniformLocation("sobelNumber");
         glUniform1fv(sobelLocation, static_cast<GLsizei>(sobolBounceCount * 2u), sobelNumber.data());
         pathtrace_program->setUniformValue("maxBounces", maxBounces);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
 
         pathtrace_program->setUniformValue("triangles", 0);
         pathtrace_program->setUniformValue("nodes", 1);
@@ -480,85 +667,42 @@ void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, i
         glActiveTexture(GL_TEXTURE7);
         glBindTexture(GL_TEXTURE_BUFFER, materialTextureInfoTexture);
 
-        glViewport(tileX, tileY, tileWidth, tileHeight);
-        glEnable(GL_SCISSOR_TEST);
-        glScissor(tileX, tileY, tileWidth, tileHeight);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glDisable(GL_SCISSOR_TEST);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        bindInstanceBuffers(pathtrace_program.get());
     }
+    pathtrace_program->release();
+}
+
+void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, int)
+{
+    pathtrace_program->bind();
+    glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
+    glViewport(tileX, tileY, tileWidth, tileHeight);
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(tileX, tileY, tileWidth, tileHeight);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDisable(GL_SCISSOR_TEST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     pathtrace_program->release();
 }
 
 void Renderer::renderFullImage(int maxBounces)
 {
-    const unsigned int sobolBounceCount = static_cast<unsigned int>(std::max(1, maxBounces));
-    const auto sobelNumber = getSobelRandomNumber(frameCounter, sobolBounceCount);
-
-    pathtrace_program->bind();
-    {
-        const GLint frameLocation = pathtrace_program->uniformLocation("frameCounter");
-        glUniform1ui(frameLocation, frameCounter);
-        const GLint sobelLocation = pathtrace_program->uniformLocation("sobelNumber");
-        glUniform1fv(sobelLocation, static_cast<GLsizei>(sobolBounceCount * 2u), sobelNumber.data());
-        pathtrace_program->setUniformValue("maxBounces", maxBounces);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
-
-        pathtrace_program->setUniformValue("triangles", 0);
-        pathtrace_program->setUniformValue("nodes", 1);
-        pathtrace_program->setUniformValue("hdrMap", 2);
-        pathtrace_program->setUniformValue("hdrCache", 3);
-        pathtrace_program->setUniformValue("lights", 5);
-        pathtrace_program->setUniformValue("materialTextures", 6);
-        pathtrace_program->setUniformValue("materialTextureInfo", 7);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
-
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, hdrMap);
-
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, hdrCache);
-
-        pathtrace_program->setUniformValue("preRenderColor", 4);
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, preRenderColorTex);
-
-        glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_BUFFER, lightsTextureBuffer);
-
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, materialTextureArray);
-
-        glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_BUFFER, materialTextureInfoTexture);
-
-        glViewport(m_viewportX, m_viewportY, render_width, render_height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-    pathtrace_program->release();
-
+    renderTile(0, 0, render_width, render_height, maxBounces);
     renderComplete = true;
 }
 
-void Renderer::rebuildPathtraceProgram(const RenderParams::Snapshot& snapshot)
+void Renderer::rebuildPathtraceProgram(const RenderParams::Snapshot &snapshot)
 {
     std::unordered_map<std::string, std::string> defines_Fragment = {};
+    defines_Fragment.insert({"INSTANCED_SCENE", "1"});
     std::unordered_map<std::string, std::string> defines_Vertex = {};
     defines_Fragment.insert({"MAX_BOUNCES_LIMIT", std::to_string(MAX_BOUNCES_LIMIT)});
-    if (snapshot.useEnvironmentMap) {
+    if (snapshot.useEnvironmentMap)
+    {
         defines_Fragment.insert({"USEENVIRONMENTMAP", ""});
     }
-    pathtrace_program.reset(getShaderProgram(getShaderPath("pathtrace.frag"), getShaderPath("triangle.vert"), defines_Vertex, defines_Fragment));
+    pathtrace_program.reset(getShaderProgram(getShaderPath("pathtrace.frag"), getShaderPath("triangle.vert"),
+                                             defines_Vertex, defines_Fragment));
 }
 
 void Renderer::adjustScreenResolution(int width, int height, bool renderLow)
@@ -572,21 +716,27 @@ void Renderer::adjustScreenResolution(int width, int height, bool renderLow)
     m_height = height;
     calResolution(renderLow);
 
-    if (oldRenderWidth != render_width || oldRenderHeight != render_height || oldWidth != m_width || oldHeight != m_height) {
-        qDebug() << "Adjust frame size to:" << width << height << "Adjust render size to:" << render_width << render_height;
+    if (!targetsValid || oldRenderWidth != render_width || oldRenderHeight != render_height ||
+        oldWidth != m_width || oldHeight != m_height)
+    {
+        qDebug() << "Adjust frame size to:" << width << height << "Adjust render size to:" << render_width
+                 << render_height;
+        targetsValid = false;
         adjustSize();
         updateSizeParam();
     }
+    if (glGetError() != GL_NO_ERROR)
+        throw std::runtime_error("GPU cannot allocate the requested render resolution");
+    targetsValid = true;
 }
 
-Renderer::RefreshActions Renderer::resolveRefreshActions(
-    int width,
-    int height,
-    const RenderParams::Snapshot& snapshot,
-    SceneDirtyFlags dirtyFlags) const
+Renderer::RefreshActions Renderer::resolveRefreshActions(int width, int height,
+                                                         const RenderParams::Snapshot &snapshot,
+                                                         SceneDirtyFlags dirtyFlags) const
 {
     // 所有刷新动作都在帧首一次性决策，后续阶段只执行这个结果。
     RefreshActions actions;
+    actions.refreshDisplay = hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::Display);
 
     const bool environmentMapChanged = snapshot.useEnvironmentMap != m_lastAppliedSnapshot.useEnvironmentMap;
     const bool renderLowChanged = snapshot.renderLow != m_lastAppliedSnapshot.renderLow;
@@ -596,85 +746,104 @@ Renderer::RefreshActions Renderer::resolveRefreshActions(
     const bool maxBouncesChanged = snapshot.maxBounces != m_lastAppliedSnapshot.maxBounces;
     const bool sizeChanged = width != m_width || height != m_height;
 
-    if (environmentMapChanged) {
+    if (environmentMapChanged)
+    {
         actions.rebuildShader = true;
         actions.syncSceneBuffers = true;
         actions.syncCameraUniforms = true;
         actions.resetAccumulation = true;
     }
 
-    if (renderLowChanged || sizeChanged) {
+    if (!targetsValid || renderLowChanged || sizeChanged)
+    {
         actions.resizeTargets = true;
         actions.resetAccumulation = true;
     }
 
-    if (tileModeChanged || tileSizeChanged) {
+    if (tileModeChanged || tileSizeChanged)
+    {
         actions.resetAccumulation = true;
     }
 
-    if (maxBouncesChanged) {
+    if (maxBouncesChanged)
+    {
         actions.resetAccumulation = true;
     }
 
-    if (denoiseChanged) {
+    if (denoiseChanged)
+    {
         actions.refreshDenoisePolicy = true;
     }
 
-    if (hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::Camera)) {
+    if (hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::Camera))
+    {
         actions.syncCameraUniforms = true;
         actions.resetAccumulation = true;
     }
 
-    if (hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::Material)) {
+    if (hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::Material))
+    {
         actions.syncMaterialBuffer = true;
         actions.resetAccumulation = true;
     }
 
-    if (hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::SceneBuffers)) {
+    if (hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::SceneBuffers))
+    {
         actions.syncSceneBuffers = true;
         actions.resetAccumulation = true;
     }
 
     // 全量场景同步已经覆盖材质缓冲，不再重复走材质脏路径。
-    if (actions.syncSceneBuffers) {
+    if (actions.syncSceneBuffers)
+    {
         actions.syncMaterialBuffer = false;
     }
 
     return actions;
 }
 
-void Renderer::applyRefreshActions(int width, int height, const RenderParams::Snapshot& snapshot, const RefreshActions& actions)
+void Renderer::applyRefreshActions(int width, int height, const RenderParams::Snapshot &snapshot,
+                                   const RefreshActions &actions)
 {
     // 这里只执行帧首已经决策好的刷新动作。
-    if (actions.rebuildShader) {
+    if (actions.rebuildShader)
+    {
         rebuildPathtraceProgram(snapshot);
     }
 
-    if (actions.resizeTargets) {
+    if (actions.resizeTargets)
+    {
         adjustScreenResolution(width, height, snapshot.renderLow);
     }
 
-    if (actions.resizeTargets ||
-        snapshot.tileSize != m_lastAppliedSnapshot.tileSize ||
-        snapshot.useTileRendering != m_lastAppliedSnapshot.useTileRendering) {
+    if (actions.resizeTargets || snapshot.tileSize != m_lastAppliedSnapshot.tileSize ||
+        snapshot.useTileRendering != m_lastAppliedSnapshot.useTileRendering)
+    {
         updateTileGrid(snapshot.tileSize);
     }
 
-    if (actions.refreshDenoisePolicy) {
+    if (actions.refreshDenoisePolicy)
+    {
+        invalidatePreviewDenoise();
         m_forceDenoiseRefresh = true;
     }
 
-    if (actions.syncSceneBuffers) {
+    if (actions.syncSceneBuffers)
+    {
         syncSceneBuffers();
-    } else if (actions.syncMaterialBuffer) {
+    }
+    else if (actions.syncMaterialBuffer)
+    {
         syncMaterialBuffer();
     }
 
-    if (actions.syncCameraUniforms) {
+    if (actions.syncCameraUniforms)
+    {
         syncCameraUniforms();
     }
 
-    if (actions.resetAccumulation) {
+    if (actions.resetAccumulation)
+    {
         resetAccumulation();
     }
 
@@ -683,7 +852,8 @@ void Renderer::applyRefreshActions(int width, int height, const RenderParams::Sn
 
 void Renderer::clearTexture(GLuint texture)
 {
-    if (texture == 0) {
+    if (texture == 0)
+    {
         return;
     }
 
@@ -692,8 +862,9 @@ void Renderer::clearTexture(GLuint texture)
     glBindFramebuffer(GL_FRAMEBUFFER, clearFbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
-        const GLfloat clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+    {
+        const GLfloat clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
         glClearBufferfv(GL_COLOR, 0, clearColor);
     }
 
@@ -703,6 +874,19 @@ void Renderer::clearTexture(GLuint texture)
 
 void Renderer::resetAccumulation()
 {
+    estimatedTileMs = 0;
+    firstComposite = displayDirty = true;
+    const auto &instances = Scene::getInstance().instances;
+    previewHasGeometry =
+        std::any_of(instances.begin(), instances.end(), [](const SceneInstance &i) { return i.visible; });
+    invalidatePreviewDenoise();
+    previewDenoiseFailed = false;
+    previewDenoiseClock.restart();
+    ++stats.accumulationVersion;
+    stats.oidnMs = 0;
+    stats.denoisedSamples = 0;
+    stats.denoisedVersion = 0;
+    stats.auxiliarySize = {};
     // 重置累计状态，并清空历史纹理避免旧帧残留参与新累计。
     clearTexture(preRenderColorTex);
     clearTexture(RenderColorTex);
@@ -727,26 +911,31 @@ void Renderer::resetAccumulation()
 
 void Renderer::uploadTriangleBuffer(bool recreateResources)
 {
-    const auto& trianglesEncoded = Scene::getInstance().triangles_encoded;
-    const GLsizeiptr bufferSize = static_cast<GLsizeiptr>(trianglesEncoded.size() * sizeof(Triangle_encoded));
-    const void* data = trianglesEncoded.empty() ? nullptr : trianglesEncoded.data();
+    stats.geometryUploadBytes += Scene::getInstance().geometryData.size() * sizeof(QVector4D);
+    const auto &trianglesEncoded = Scene::getInstance().geometryData;
+    const GLsizeiptr bufferSize = static_cast<GLsizeiptr>(trianglesEncoded.size() * sizeof(QVector4D));
+    const void *data = trianglesEncoded.empty() ? nullptr : trianglesEncoded.data();
 
-    if (recreateResources && tbo0 != 0) {
+    if (recreateResources && tbo0 != 0)
+    {
         glDeleteBuffers(1, &tbo0);
         tbo0 = 0;
     }
-    if (recreateResources && trianglesTextureBuffer != 0) {
+    if (recreateResources && trianglesTextureBuffer != 0)
+    {
         glDeleteTextures(1, &trianglesTextureBuffer);
         trianglesTextureBuffer = 0;
     }
 
-    if (tbo0 == 0) {
+    if (tbo0 == 0)
+    {
         glGenBuffers(1, &tbo0);
     }
     glBindBuffer(GL_TEXTURE_BUFFER, tbo0);
-    glBufferData(GL_TEXTURE_BUFFER, bufferSize, data, GL_STATIC_DRAW);
+    glBufferData(GL_TEXTURE_BUFFER, std::max<GLsizeiptr>(16, bufferSize), data, GL_STATIC_DRAW);
 
-    if (trianglesTextureBuffer == 0) {
+    if (trianglesTextureBuffer == 0)
+    {
         glGenTextures(1, &trianglesTextureBuffer);
     }
     glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
@@ -755,26 +944,30 @@ void Renderer::uploadTriangleBuffer(bool recreateResources)
 
 void Renderer::uploadNodeBuffer(bool recreateResources)
 {
-    const auto& nodesEncoded = Scene::getInstance().nodes_encoded;
+    const auto &nodesEncoded = Scene::getInstance().nodes_encoded;
     const GLsizeiptr bufferSize = static_cast<GLsizeiptr>(nodesEncoded.size() * sizeof(BVHNode_encoded));
-    const void* data = nodesEncoded.empty() ? nullptr : nodesEncoded.data();
+    const void *data = nodesEncoded.empty() ? nullptr : nodesEncoded.data();
 
-    if (recreateResources && tbo1 != 0) {
+    if (recreateResources && tbo1 != 0)
+    {
         glDeleteBuffers(1, &tbo1);
         tbo1 = 0;
     }
-    if (recreateResources && nodesTextureBuffer != 0) {
+    if (recreateResources && nodesTextureBuffer != 0)
+    {
         glDeleteTextures(1, &nodesTextureBuffer);
         nodesTextureBuffer = 0;
     }
 
-    if (tbo1 == 0) {
+    if (tbo1 == 0)
+    {
         glGenBuffers(1, &tbo1);
     }
     glBindBuffer(GL_TEXTURE_BUFFER, tbo1);
-    glBufferData(GL_TEXTURE_BUFFER, bufferSize, data, GL_STATIC_DRAW);
+    glBufferData(GL_TEXTURE_BUFFER, std::max<GLsizeiptr>(16, bufferSize), data, GL_STATIC_DRAW);
 
-    if (nodesTextureBuffer == 0) {
+    if (nodesTextureBuffer == 0)
+    {
         glGenTextures(1, &nodesTextureBuffer);
     }
     glBindTexture(GL_TEXTURE_BUFFER, nodesTextureBuffer);
@@ -783,26 +976,30 @@ void Renderer::uploadNodeBuffer(bool recreateResources)
 
 void Renderer::uploadLightBuffer(bool recreateResources)
 {
-    const auto& lightsEncoded = Scene::getInstance().lights_encoded;
+    const auto &lightsEncoded = Scene::getInstance().lights_encoded;
     const GLsizeiptr bufferSize = static_cast<GLsizeiptr>(lightsEncoded.size() * sizeof(Light_encoded));
-    const void* data = lightsEncoded.empty() ? nullptr : lightsEncoded.data();
+    const void *data = lightsEncoded.empty() ? nullptr : lightsEncoded.data();
 
-    if (recreateResources && tboLights != 0) {
+    if (recreateResources && tboLights != 0)
+    {
         glDeleteBuffers(1, &tboLights);
         tboLights = 0;
     }
-    if (recreateResources && lightsTextureBuffer != 0) {
+    if (recreateResources && lightsTextureBuffer != 0)
+    {
         glDeleteTextures(1, &lightsTextureBuffer);
         lightsTextureBuffer = 0;
     }
 
-    if (tboLights == 0) {
+    if (tboLights == 0)
+    {
         glGenBuffers(1, &tboLights);
     }
     glBindBuffer(GL_TEXTURE_BUFFER, tboLights);
-    glBufferData(GL_TEXTURE_BUFFER, bufferSize, data, GL_STATIC_DRAW);
+    glBufferData(GL_TEXTURE_BUFFER, std::max<GLsizeiptr>(16, bufferSize), data, GL_STATIC_DRAW);
 
-    if (lightsTextureBuffer == 0) {
+    if (lightsTextureBuffer == 0)
+    {
         glGenTextures(1, &lightsTextureBuffer);
     }
     glBindTexture(GL_TEXTURE_BUFFER, lightsTextureBuffer);
@@ -811,32 +1008,28 @@ void Renderer::uploadLightBuffer(bool recreateResources)
 
 void Renderer::uploadHdrTextures(bool recreateResources)
 {
-    const auto uploadTexture = [&](GLuint& texture, float* data) {
-        if (recreateResources && texture != 0) {
+    const auto uploadTexture = [&](GLuint &texture, float *data) {
+        if (recreateResources && texture != 0)
+        {
             glDeleteTextures(1, &texture);
             texture = 0;
         }
-        if (texture == 0) {
+        if (texture == 0)
+        {
             glGenTextures(1, &texture);
             glBindTexture(GL_TEXTURE_2D, texture);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        } else {
+        }
+        else
+        {
             glBindTexture(GL_TEXTURE_2D, texture);
         }
 
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RGB32F,
-            Scene::getInstance().hdrRes.width,
-            Scene::getInstance().hdrRes.height,
-            0,
-            GL_RGB,
-            GL_FLOAT,
-            data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, Scene::getInstance().hdrRes.width,
+                     Scene::getInstance().hdrRes.height, 0, GL_RGB, GL_FLOAT, data);
     };
 
     uploadTexture(hdrMap, Scene::getInstance().hdrRes.cols);
@@ -846,7 +1039,7 @@ void Renderer::uploadHdrTextures(bool recreateResources)
 void Renderer::uploadMaterialTextures(bool recreateResources)
 {
     constexpr int maxTextureDimension = 2048;
-    const auto& sourceTextures = Scene::getInstance().textures;
+    const auto &sourceTextures = Scene::getInstance().textures;
 
     GLint hardwareMaxSize = 1;
     GLint hardwareMaxLayers = 1;
@@ -856,31 +1049,38 @@ void Renderer::uploadMaterialTextures(bool recreateResources)
     const int layerCount = std::min(static_cast<int>(sourceTextures.size()), hardwareMaxLayers);
     int textureWidth = 1;
     int textureHeight = 1;
-    for (int i = 0; i < layerCount; ++i) {
+    for (int i = 0; i < layerCount; ++i)
+    {
         textureWidth = std::max(textureWidth, sourceTextures[i].width);
         textureHeight = std::max(textureHeight, sourceTextures[i].height);
     }
     textureWidth = std::min(textureWidth, std::min(hardwareMaxSize, maxTextureDimension));
     textureHeight = std::min(textureHeight, std::min(hardwareMaxSize, maxTextureDimension));
 
-    if (static_cast<int>(sourceTextures.size()) > layerCount) {
-        qWarning() << "Material texture count exceeds GL_MAX_ARRAY_TEXTURE_LAYERS; extra textures use scalar fallbacks:"
+    if (static_cast<int>(sourceTextures.size()) > layerCount)
+    {
+        qWarning() << "Material texture count exceeds GL_MAX_ARRAY_TEXTURE_LAYERS; extra textures use scalar "
+                      "fallbacks:"
                    << sourceTextures.size() << hardwareMaxLayers;
     }
 
-    if (recreateResources && materialTextureArray != 0) {
+    if (recreateResources && materialTextureArray != 0)
+    {
         glDeleteTextures(1, &materialTextureArray);
         materialTextureArray = 0;
     }
-    if (recreateResources && materialTextureInfoTexture != 0) {
+    if (recreateResources && materialTextureInfoTexture != 0)
+    {
         glDeleteTextures(1, &materialTextureInfoTexture);
         materialTextureInfoTexture = 0;
     }
-    if (recreateResources && materialTextureInfoBuffer != 0) {
+    if (recreateResources && materialTextureInfoBuffer != 0)
+    {
         glDeleteBuffers(1, &materialTextureInfoBuffer);
         materialTextureInfoBuffer = 0;
     }
-    if (materialTextureArray == 0) {
+    if (materialTextureArray == 0)
+    {
         glGenTextures(1, &materialTextureArray);
     }
 
@@ -893,41 +1093,30 @@ void Renderer::uploadMaterialTextures(bool recreateResources)
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     const int allocatedLayers = std::max(1, layerCount);
-    glTexImage3D(
-        GL_TEXTURE_2D_ARRAY,
-        0,
-        GL_RGBA8,
-        textureWidth,
-        textureHeight,
-        allocatedLayers,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        nullptr);
+    textureArrayBytes = 0;
+    for (int w = textureWidth, h = textureHeight;; w = std::max(1, w / 2), h = std::max(1, h / 2))
+    {
+        textureArrayBytes += quint64(w) * h * allocatedLayers * 4;
+        if (w == 1 && h == 1)
+            break;
+    }
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, textureWidth, textureHeight, allocatedLayers, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, nullptr);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    if (layerCount == 0) {
-        const unsigned char white[] = { 255, 255, 255, 255 };
-        glTexSubImage3D(
-            GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, 1, 1, 1,
-            GL_RGBA, GL_UNSIGNED_BYTE, white);
+    if (layerCount == 0)
+    {
+        const unsigned char white[] = {255, 255, 255, 255};
+        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, white);
     }
-    else {
-        for (int layer = 0; layer < layerCount; ++layer) {
-            const QImage image = prepareMaterialTextureImage(
-                sourceTextures[layer].image, QSize(textureWidth, textureHeight));
-            glTexSubImage3D(
-                GL_TEXTURE_2D_ARRAY,
-                0,
-                0,
-                0,
-                layer,
-                textureWidth,
-                textureHeight,
-                1,
-                GL_RGBA,
-                GL_UNSIGNED_BYTE,
-                image.constBits());
+    else
+    {
+        for (int layer = 0; layer < layerCount; ++layer)
+        {
+            const QImage image =
+                prepareMaterialTextureImage(sourceTextures[layer].image, QSize(textureWidth, textureHeight));
+            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, textureWidth, textureHeight, 1, GL_RGBA,
+                            GL_UNSIGNED_BYTE, image.constBits());
         }
     }
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
@@ -938,32 +1127,26 @@ void Renderer::uploadMaterialTextures(bool recreateResources)
     textureInfo[0] = QVector4D(1.0f, 1.0f, 0.0f, 0.0f);
     textureInfo[1] = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
     textureInfo[2] = QVector4D(9987.0f, 9729.0f, 0.0f, 0.0f);
-    for (int layer = 0; layer < layerCount; ++layer) {
-        const TextureAsset& source = sourceTextures[layer];
-        textureInfo[static_cast<size_t>(layer) * 3u] = QVector4D(
-            source.uvScale.x(), source.uvScale.y(), source.uvOffset.x(), source.uvOffset.y());
+    for (int layer = 0; layer < layerCount; ++layer)
+    {
+        const TextureAsset &source = sourceTextures[layer];
+        textureInfo[static_cast<size_t>(layer) * 3u] =
+            QVector4D(source.uvScale.x(), source.uvScale.y(), source.uvOffset.x(), source.uvOffset.y());
         textureInfo[static_cast<size_t>(layer) * 3u + 1u] = QVector4D(
-            source.uvRotation,
-            static_cast<float>(source.wrapS),
-            static_cast<float>(source.wrapT),
-            0.0f);
-        textureInfo[static_cast<size_t>(layer) * 3u + 2u] = QVector4D(
-            static_cast<float>(source.minFilter),
-            static_cast<float>(source.magFilter),
-            0.0f,
-            0.0f);
+            source.uvRotation, static_cast<float>(source.wrapS), static_cast<float>(source.wrapT), 0.0f);
+        textureInfo[static_cast<size_t>(layer) * 3u + 2u] =
+            QVector4D(static_cast<float>(source.minFilter), static_cast<float>(source.magFilter), 0.0f, 0.0f);
     }
 
-    if (materialTextureInfoBuffer == 0) {
+    if (materialTextureInfoBuffer == 0)
+    {
         glGenBuffers(1, &materialTextureInfoBuffer);
     }
     glBindBuffer(GL_TEXTURE_BUFFER, materialTextureInfoBuffer);
-    glBufferData(
-        GL_TEXTURE_BUFFER,
-        static_cast<GLsizeiptr>(textureInfo.size() * sizeof(QVector4D)),
-        textureInfo.data(),
-        GL_STATIC_DRAW);
-    if (materialTextureInfoTexture == 0) {
+    glBufferData(GL_TEXTURE_BUFFER, static_cast<GLsizeiptr>(textureInfo.size() * sizeof(QVector4D)),
+                 textureInfo.data(), GL_STATIC_DRAW);
+    if (materialTextureInfoTexture == 0)
+    {
         glGenTextures(1, &materialTextureInfoTexture);
     }
     glBindTexture(GL_TEXTURE_BUFFER, materialTextureInfoTexture);
@@ -971,9 +1154,8 @@ void Renderer::uploadMaterialTextures(bool recreateResources)
     glBindTexture(GL_TEXTURE_BUFFER, 0);
 
     materialTextureLayerCount = layerCount;
-    qDebug() << "Uploaded material texture array:"
-             << materialTextureLayerCount << "layers at"
-             << textureWidth << "x" << textureHeight;
+    qDebug() << "Uploaded material texture array:" << materialTextureLayerCount << "layers at" << textureWidth
+             << "x" << textureHeight;
 }
 
 void Renderer::syncCameraUniforms()
@@ -996,18 +1178,60 @@ void Renderer::syncCameraUniforms()
     pathtrace_program->release();
 }
 
+void Renderer::uploadInstanceBuffers(bool topology)
+{
+    const auto &scene = Scene::getInstance();
+    auto upload = [&](int i, GLenum format, const void *data, size_t bytes) {
+        if (!instanceBuffers[i])
+            glGenBuffers(1, &instanceBuffers[i]);
+        if (!instanceTextures[i])
+            glGenTextures(1, &instanceTextures[i]);
+        glBindBuffer(GL_TEXTURE_BUFFER, instanceBuffers[i]);
+        if (bytes)
+            glBufferData(GL_TEXTURE_BUFFER, GLsizeiptr(bytes), data, GL_DYNAMIC_DRAW);
+        else
+        {
+            const float zero[4] = {};
+            glBufferData(GL_TEXTURE_BUFFER, sizeof(zero), zero, GL_DYNAMIC_DRAW);
+        }
+        glBindTexture(GL_TEXTURE_BUFFER, instanceTextures[i]);
+        glTexBuffer(GL_TEXTURE_BUFFER, format, instanceBuffers[i]);
+    };
+    upload(0, GL_RGBA32F, scene.instanceData.data(), scene.instanceData.size() * sizeof(QVector4D));
+    upload(1, GL_RGBA32F, scene.materialData.data(), scene.materialData.size() * sizeof(QVector4D));
+    upload(2, GL_RGB32F, scene.tlasData.data(), scene.tlasData.size() * sizeof(BVHNode_encoded));
+    if (topology)
+        upload(3, GL_RG32UI, scene.surfaces.data(), scene.surfaces.size() * sizeof(SurfaceReference));
+    upload(4, GL_R32F, scene.surfacePdfs.data(), scene.surfacePdfs.size() * sizeof(float));
+}
+void Renderer::bindInstanceBuffers(QOpenGLShaderProgram *program)
+{
+    const char *names[] = {"instanceTable", "materialTable", "topNodes", "surfaceTable", "surfacePdfTable"};
+    for (int i = 0; i < 5; ++i)
+    {
+        glActiveTexture(GL_TEXTURE8 + i);
+        glBindTexture(GL_TEXTURE_BUFFER, instanceTextures[i]);
+        program->setUniformValue(names[i], 8 + i);
+    }
+    program->setUniformValue("nTopNodes", int(Scene::getInstance().tlas.size()));
+    program->setUniformValue("picking", false);
+    auto env = Scene::getInstance().document.root["environment"].toObject();
+    program->setUniformValue("environmentIntensity", float(env["intensity"].toDouble(1)));
+    program->setUniformValue("environmentRotation", float(env["rotation"].toDouble() * PI / 180));
+}
+
 void Renderer::syncMaterialBuffer()
 {
     QMutexLocker lock(&param_mutex);
     // 材质脏路径只重传三角形编码缓冲，不触碰 BVH / HDR 资源。
-    const bool recreateTriangleResources = (tbo0 == 0 || trianglesTextureBuffer == 0);
-    uploadTriangleBuffer(recreateTriangleResources);
+    uploadInstanceBuffers(false);
     uploadLightBuffer(tboLights == 0 || lightsTextureBuffer == 0);
     pathtrace_program->bind();
-    pathtrace_program->setUniformValue("nLights", static_cast<int>(Scene::getInstance().lights_encoded.size()));
-    pathtrace_program->setUniformValue("nAnalyticLights", std::min(
-        Scene::getInstance().document.root["lights"].toArray().size(),
-        static_cast<int>(Scene::getInstance().lights_encoded.size())));
+    pathtrace_program->setUniformValue("nLights",
+                                       static_cast<int>(Scene::getInstance().lights_encoded.size()));
+    pathtrace_program->setUniformValue(
+        "nAnalyticLights", std::min(Scene::getInstance().document.root["lights"].toArray().size(),
+                                    static_cast<int>(Scene::getInstance().lights_encoded.size())));
     pathtrace_program->release();
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindBuffer(GL_TEXTURE_BUFFER, 0);
@@ -1015,11 +1239,21 @@ void Renderer::syncMaterialBuffer()
 
 void Renderer::syncSceneBuffers()
 {
+    QElapsedTimer uploadTimer;
+    uploadTimer.start();
     QMutexLocker lock(&param_mutex);
 
     // 全量场景同步：triangles / nodes / HDR / 相关 uniform 一次性更新。
-    uploadTriangleBuffer(tbo0 == 0 || trianglesTextureBuffer == 0);
-    uploadNodeBuffer(tbo1 == 0 || nodesTextureBuffer == 0);
+    QStringList meshKeys;
+    for (auto &mesh : Scene::getInstance().meshes)
+        meshKeys.append(mesh->key);
+    if (meshKeys != uploadedMeshes || !tbo0)
+    {
+        uploadTriangleBuffer(tbo0 == 0 || trianglesTextureBuffer == 0);
+        uploadNodeBuffer(tbo1 == 0 || nodesTextureBuffer == 0);
+        uploadedMeshes = meshKeys;
+    }
+    uploadInstanceBuffers(true);
     uploadLightBuffer(tboLights == 0 || lightsTextureBuffer == 0);
     uploadHdrTextures(hdrMap == 0 || hdrCache == 0);
     uploadMaterialTextures(materialTextureArray == 0 || materialTextureInfoTexture == 0);
@@ -1027,15 +1261,18 @@ void Renderer::syncSceneBuffers()
     pathtrace_program->bind();
     pathtrace_program->setUniformValue("nTriangles", static_cast<int>(Scene::getInstance().triangles.size()));
     pathtrace_program->setUniformValue("nNodes", static_cast<int>(Scene::getInstance().nodes_encoded.size()));
-    pathtrace_program->setUniformValue("nLights", static_cast<int>(Scene::getInstance().lights_encoded.size()));
-    pathtrace_program->setUniformValue("nAnalyticLights", std::min(
-        Scene::getInstance().document.root["lights"].toArray().size(),
-        static_cast<int>(Scene::getInstance().lights_encoded.size())));
+    pathtrace_program->setUniformValue("nLights",
+                                       static_cast<int>(Scene::getInstance().lights_encoded.size()));
+    pathtrace_program->setUniformValue(
+        "nAnalyticLights", std::min(Scene::getInstance().document.root["lights"].toArray().size(),
+                                    static_cast<int>(Scene::getInstance().lights_encoded.size())));
     pathtrace_program->setUniformValue("width", render_width);
     pathtrace_program->setUniformValue("height", render_height);
     pathtrace_program->setUniformValue("hdrResolution", Scene::getInstance().hdrResolution);
     pathtrace_program->setUniformValue("materialTextureCount", materialTextureLayerCount);
     pathtrace_program->release();
+
+    stats.uploadMs = uploadTimer.nsecsElapsed() / 1e6;
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindBuffer(GL_TEXTURE_BUFFER, 0);
@@ -1044,12 +1281,15 @@ void Renderer::syncSceneBuffers()
 void Renderer::displayRenderingStats()
 {
     const int nowtime = clock();
-    if (nowtime - lasttime > 200) {
-        printf("\r                                                                                                  ");
-        std::cout << "\rframeCounter: " << frameCounter
-                  << " FPS: " << int((frameCounter - lastframeCounter) / (1.0 * (nowtime - lasttime) / 1000.0))
-                  << " | Chunked Rendering: " << chunkedRenderingCount
-                  << " Chunked Rendering FPS: " << int((chunkedRenderingCount - lastChunkedRenderingCount) / (1.0 * (nowtime - lasttime) / 1000.0));
+    if (nowtime - lasttime > 200)
+    {
+        printf("\r                                                                                           "
+               "       ");
+        std::cout << "\rframeCounter: " << frameCounter << " FPS: "
+                  << int((frameCounter - lastframeCounter) / (1.0 * (nowtime - lasttime) / 1000.0))
+                  << " | Chunked Rendering: " << chunkedRenderingCount << " Chunked Rendering FPS: "
+                  << int((chunkedRenderingCount - lastChunkedRenderingCount) /
+                         (1.0 * (nowtime - lasttime) / 1000.0));
 
         lastframeCounter = frameCounter;
         lastChunkedRenderingCount = chunkedRenderingCount;
@@ -1057,14 +1297,16 @@ void Renderer::displayRenderingStats()
     }
 }
 
-void Renderer::executeRenderPass(const RenderParams::Snapshot& snapshot)
+void Renderer::executeRenderPass(const RenderParams::Snapshot &snapshot)
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     const int maxBounces = clampMaxBounces(snapshot.maxBounces);
 
-    if (snapshot.useTileRendering) {
+    if (snapshot.useTileRendering)
+    {
         // 分块渲染模式
-        if (currentTileX < tilesX && currentTileY < tilesY) {
+        if (currentTileX < tilesX && currentTileY < tilesY)
+        {
             const int tileSize = std::max(1, snapshot.tileSize);
             const int tileWidth = std::min(tileSize, render_width - currentTileX * tileSize);
             const int tileHeight = std::min(tileSize, render_height - currentTileY * tileSize);
@@ -1072,7 +1314,9 @@ void Renderer::executeRenderPass(const RenderParams::Snapshot& snapshot)
             renderTile(currentTileX * tileSize, currentTileY * tileSize, tileWidth, tileHeight, maxBounces);
             updateTileRenderingState();
         }
-    } else {
+    }
+    else
+    {
         // 完整图像渲染模式
         renderFullImage(maxBounces);
     }
@@ -1082,12 +1326,14 @@ void Renderer::updateTileRenderingState()
 {
     // 更新下一个要渲染的块的位置。
     currentTileX++;
-    if (currentTileX >= tilesX) {
+    if (currentTileX >= tilesX)
+    {
         currentTileX = 0;
         currentTileY++;
 
         // 如果所有块都渲染完成，标记一轮分块累计结束。
-        if (currentTileY >= tilesY) {
+        if (currentTileY >= tilesY)
+        {
             renderComplete = true;
             currentTileX = 0;
             currentTileY = 0;
@@ -1095,13 +1341,14 @@ void Renderer::updateTileRenderingState()
     }
 }
 
-void Renderer::processHistorySaving(const RenderParams::Snapshot& snapshot)
+void Renderer::processHistorySaving(const RenderParams::Snapshot &snapshot)
 {
     chunkedRenderingCount++;
     nowChunkedCount++;
 
     // 只有完整图像或完成一整轮分块后才保存历史帧。
-    if (!snapshot.useTileRendering || renderComplete) {
+    if (!snapshot.useTileRendering || renderComplete)
+    {
         nowChunkedCount = 0;
         frameCounter++;
 
@@ -1121,96 +1368,161 @@ void Renderer::processHistorySaving(const RenderParams::Snapshot& snapshot)
         }
         historysave_program->release();
 
-        if (snapshot.useTileRendering) {
+        if (snapshot.useTileRendering)
+        {
             renderComplete = false;
         }
     }
 }
 
-void Renderer::performDenoising(const RenderParams::Snapshot& snapshot, bool forceCurrentFrame)
+void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool forceCurrentFrame)
 {
-    if (!snapshot.denoise) {
+    if (!formal)
+    {
+        requestPreviewDenoise(snapshot, forceCurrentFrame);
+        return;
+    }
+    QElapsedTimer denoiseTimer;
+    denoiseTimer.start();
+    if (!snapshot.denoise)
+    {
         m_forceDenoiseRefresh = false;
         return;
     }
 
     const bool hasCompleteFrame = (nowChunkedCount == 0 && frameCounter > 0);
-    if (!hasCompleteFrame) {
+    if (!hasCompleteFrame)
+    {
         return;
     }
 
-    if (m_hasDenoisedFrame && m_lastDenoisedFrameCounter == frameCounter) {
+    if (m_hasDenoisedFrame && m_lastDenoisedFrameCounter == frameCounter)
+    {
         m_forceDenoiseRefresh = false;
         return;
     }
 
     const bool shouldDenoise =
         forceCurrentFrame || m_forceDenoiseRefresh || frameCounter % 100 == 0 || frameCounter == 1;
-    if (!shouldDenoise) {
+    if (!shouldDenoise)
+    {
         return;
     }
 
-    const bool refreshAuxiliaryBuffers = (frameCounter == 1 || !m_hasDenoisedFrame);
+    if (!oidnDevice)
+        initOIDN();
+    else if (oidnSize != QSize(render_width, render_height))
+        updateOIDNBuffers();
+    ensureDenoisePbos();
+
+    const bool refreshAuxiliaryBuffers = true; // A fresh, matching complete-frame snapshot for each denoise.
 
     // 使用 PBO 异步读取数据；降噪只在完整累计帧上触发。
-    const GLenum formats[] = { GL_RGB, GL_RGB, GL_RGB };
-    const GLuint textures[] = { normal_texture, baseColorTex, RenderColorTex };
-    float* srcPtrs[3] = { nullptr, nullptr, nullptr };
+    const GLenum formats[] = {GL_RGB, GL_RGB, GL_RGB};
+    const GLuint textures[] = {normal_texture, baseColorTex, RenderColorTex};
+    float *srcPtrs[3] = {nullptr, nullptr, nullptr};
 
-    for (int i = refreshAuxiliaryBuffers ? 0 : 2; i < 3; i++) {
+    for (int i = refreshAuxiliaryBuffers ? 0 : 2; i < 3; i++)
+    {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
         glBindTexture(GL_TEXTURE_2D, textures[i]);
         glGetTexImage(GL_TEXTURE_2D, 0, formats[i], GL_FLOAT, 0);
-        srcPtrs[i] = reinterpret_cast<float*>(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+        srcPtrs[i] = reinterpret_cast<float *>(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
     }
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-    glFinish();
 
-    if (refreshAuxiliaryBuffers) {
-        std::memcpy(oidnNormalBuf.getData(), srcPtrs[0], oidnNormalBuf.getSize());
+    for (auto ptr : srcPtrs)
+        if (!ptr)
+        {
+            for (int i = 0; i < 3; ++i)
+                if (srcPtrs[i])
+                {
+                    glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
+                    glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+                }
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+            throw std::runtime_error("OIDN auxiliary readback failed");
+        }
+
+    if (refreshAuxiliaryBuffers)
+    {
+        auto *normals = static_cast<float *>(oidnNormalBuf.getData());
+        stats.normalMinimum = 1;
+        stats.normalMaximum = -1;
+        for (size_t i = 0; i < oidnNormalBuf.getSize() / sizeof(float); ++i)
+        {
+            normals[i] = srcPtrs[0][i] * 2.0f - 1.0f;
+            stats.normalMinimum = std::min(stats.normalMinimum, double(normals[i]));
+            stats.normalMaximum = std::max(stats.normalMaximum, double(normals[i]));
+        }
+        stats.auxiliarySize = QSize(render_width, render_height);
         std::memcpy(oidnAlbedoBuf.getData(), srcPtrs[1], oidnAlbedoBuf.getSize());
     }
     std::memcpy(oidnColorBuf.getData(), srcPtrs[2], oidnColorBuf.getSize());
 
-    for (int i = refreshAuxiliaryBuffers ? 0 : 2; i < 3; i++) {
+    for (int i = refreshAuxiliaryBuffers ? 0 : 2; i < 3; i++)
+    {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     }
 
-    if (refreshAuxiliaryBuffers) {
+    auto progress = [](void *user, double) -> bool {
+        auto stop = static_cast<std::atomic_bool *>(user);
+        return !stop || !stop->load();
+    };
+    oidnAlbedoFilter.setProgressMonitorFunction(progress, cancel);
+    oidnNormalFilter.setProgressMonitorFunction(progress, cancel);
+    oidnMainFilter.setProgressMonitorFunction(progress, cancel);
+    if (denoising)
+        denoising();
+    if (refreshAuxiliaryBuffers)
+    {
         oidnAlbedoFilter.execute();
         oidnNormalFilter.execute();
     }
 
     oidnMainFilter.execute();
 
-    const char* errorMessage = nullptr;
-    if (oidnDevice.getError(errorMessage) != oidn::Error::None) {
-        std::cerr << "OIDN Error: " << errorMessage << std::endl;
-    }
+    const char *errorMessage = nullptr;
+    const auto error = oidnDevice.getError(errorMessage);
+    if (error == oidn::Error::Cancelled)
+        return;
+    if (error != oidn::Error::None)
+        throw std::runtime_error(errorMessage ? errorMessage : "OIDN failed");
 
     glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, render_width, render_height, GL_RGB, GL_FLOAT, oidnOutputBuf.getData());
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, render_width, render_height, GL_RGB, GL_FLOAT,
+                    oidnOutputBuf.getData());
     m_hasDenoisedFrame = true;
+    stats.denoisedVersion = stats.accumulationVersion;
     m_lastDenoisedFrameCounter = frameCounter;
     m_forceDenoiseRefresh = false;
+    stats.oidnMs = denoiseTimer.nsecsElapsed() / 1e6;
 }
 
-void Renderer::compositeToScreen(const RenderParams::Snapshot& snapshot)
+void Renderer::compositeToScreen(const RenderParams::Snapshot &snapshot)
 {
+    ++m_imageRevision;
+    ++stats.compositeCount;
     m_program->bind();
     {
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE5);
-        if (snapshot.denoise) {
+        if (snapshot.denoise && m_hasDenoisedFrame)
+        {
             glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
-        } else {
-            glBindTexture(GL_TEXTURE_2D, RenderColorTex);
+        }
+        else
+        {
+            glBindTexture(GL_TEXTURE_2D, formal ? preRenderColorTex : RenderColorTex);
         }
         m_program->setUniformValue("texPass1", 5);
+        auto display = Scene::getInstance().document.root["display"].toObject();
+        m_program->setUniformValue("exposure", float(display["exposure"].toDouble()));
+        m_program->setUniformValue("tonemap", display["tonemap"].toInt());
         glActiveTexture(GL_TEXTURE6);
 
         // 渲染到屏幕尺寸，所以这里使用窗口尺寸。
@@ -1220,4 +1532,55 @@ void Renderer::compositeToScreen(const RenderParams::Snapshot& snapshot)
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
     m_program->release();
+}
+
+QImage Renderer::result(const RenderParams::Snapshot &snapshot)
+{
+    if (!frameCounter)
+        return {};
+    bool previous = formal;
+    formal = true;
+    compositeToScreen(snapshot);
+    formal = previous;
+    QImage image(m_width, m_height, QImage::Format_RGBA8888);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, image.bits());
+    return image.mirrored().convertToFormat(QImage::Format_RGB32);
+}
+void Renderer::finishDenoise(const RenderParams::Snapshot &snapshot)
+{
+    performDenoising(snapshot, true);
+    compositeToScreen(snapshot);
+}
+void Renderer::prepareJob(QSize size, const RenderParams::Snapshot &snapshot, SceneDirtyFlags dirty)
+{
+    formal = true;
+    GLint maximum = 0;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maximum);
+    if (size.width() > maximum || size.height() > maximum)
+        throw std::runtime_error("Output resolution exceeds the GPU texture limit");
+    auto actions = resolveRefreshActions(size.width(), size.height(), snapshot,
+                                         dirty | toSceneDirtyFlags(SceneDirtyFlag::Camera));
+    applyRefreshActions(size.width(), size.height(), snapshot, actions);
+    resetAccumulation();
+}
+quint64 Renderer::allocatedBytes() const
+{
+    const auto &s = Scene::getInstance();
+    quint64 bytes = textureArrayBytes + quint64(m_width) * m_height * 16 +
+                    quint64(render_width) * render_height * 5 * 16 +
+                    quint64(denoisePboSize.width()) * denoisePboSize.height() * 3 * 12 +
+                    quint64(pickSize.width()) * pickSize.height() * 8;
+    bytes += s.geometryData.size() * sizeof(QVector4D) + s.nodes_encoded.size() * sizeof(BVHNode_encoded) +
+             s.instanceData.size() * sizeof(QVector4D) + s.materialData.size() * sizeof(QVector4D) +
+             s.tlasData.size() * sizeof(BVHNode_encoded) + s.surfaces.size() * sizeof(SurfaceReference) +
+             s.surfacePdfs.size() * sizeof(float) + s.lights_encoded.size() * sizeof(Light_encoded) +
+             std::max(1, materialTextureLayerCount) * 3 * sizeof(QVector4D) +
+             quint64(s.hdrRes.width) * s.hdrRes.height * 24;
+    if (oidnColorBuf)
+        bytes += oidnColorBuf.getSize() + oidnAlbedoBuf.getSize() + oidnNormalBuf.getSize() +
+                 oidnOutputBuf.getSize();
+    bytes += previewDenoiser.allocatedBytes();
+    return bytes;
 }

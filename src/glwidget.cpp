@@ -1,237 +1,582 @@
 #include "glwidget.h"
-
-#include "texturebuffer.h"
-#include "renderthread.h"
-
-#include <QDebug>
+#include <QCoreApplication>
 #include <QMouseEvent>
-#include <QOpenGLContext>
-#include <QSurface>
-#include <QWindow>
-
-#include "RenderParams.h"
-
+#include <QOffscreenSurface>
+#include <QPainter>
+#include <QPainterPath>
+#include <QQuaternion>
+#include <cmath>
 QMutex param_mutex;
-
 namespace
 {
-    float vertices[] =
-    {
-        -1.0f, -1.0f, 0.0f, 0.0f,
-        -1.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, -1.0f, 1.0f, 0.0f,
-        -1.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f, 0.0f,
-    };
-}
-
-GLWidget::GLWidget(QWidget *parent)
-    : QOpenGLWidget(parent)
+class ViewportOverlay : public QWidget
 {
-}
+  public:
+    std::function<void(QPainter &)> draw;
+    explicit ViewportOverlay(QWidget *parent) : QWidget(parent)
+    {
+        setAttribute(Qt::WA_TransparentForMouseEvents);
+        setAttribute(Qt::WA_NoSystemBackground);
+    }
 
+  protected:
+    void paintEvent(QPaintEvent *) override
+    {
+        QPainter painter(this);
+        if (draw)
+            draw(painter);
+    }
+};
+const float quad[] = {-1, -1, 0, 0, -1, 1, 0, 1, 1, -1, 1, 0, -1, 1, 0, 1, 1, 1, 1, 1, 1, -1, 1, 0};
+float distanceSegment(QPointF p, QPointF a, QPointF b)
+{
+    auto d = b - a;
+    double length = d.x() * d.x() + d.y() * d.y();
+    double t = length > 1e-10 ? QPointF::dotProduct(p - a, d) / length : 0;
+    return QLineF(p, a + d * qBound(0., t, 1.)).length();
+}
+} // namespace
+GLWidget::GLWidget(QWidget *p) : QOpenGLWidget(p)
+{
+    setFocusPolicy(Qt::StrongFocus);
+    setMouseTracking(true);
+    setMinimumSize(160, 120);
+    Scene::getInstance().document.restoreCamera(camera);
+    auto layer = new ViewportOverlay(this);
+    layer->draw = [this](QPainter &painter) { drawOverlay(painter); };
+    overlay = layer;
+    overlay->show();
+}
 GLWidget::~GLWidget()
 {
-    delete m_thread;
-    m_thread=nullptr;
-}
-
-void GLWidget::replaceScene(Scene& prepared)
-{
-    m_bLeftPressed=m_bMiddlePressed=false;
-    if(m_thread) m_thread->replaceScene(prepared);
-    else {
-        QMutexLocker lock(&param_mutex);
-        Scene::getInstance().adoptPrepared(prepared);
-        RenderParams::instance().applySnapshot(Scene::getInstance().document.settings());
+    delete thread;
+    thread = nullptr;
+    if (context())
+    {
+        makeCurrent();
+        glDeleteVertexArrays(1, &vao);
+        glDeleteBuffers(1, &vbo);
+        glDeleteBuffers(1, &selectionBuffer);
+        glDeleteTextures(1, &selectionTexture);
+        program.reset();
+        doneCurrent();
     }
 }
-
+void GLWidget::attachEditor(EditorController *e)
+{
+    editor = e;
+    e->document.restoreCamera(camera);
+    connect(e, &EditorController::prepared, this, &GLWidget::submitPrepared);
+    connect(e, &EditorController::changed, this, [this](int change) {
+        selectionDirty = true;
+        if (change == EditorController::CameraChange)
+            editor->document.restoreCamera(camera);
+        if (change != EditorController::Topology && change != EditorController::Environment)
+        {
+            if (thread)
+                thread->submitDocument(editor->document, change, ++version);
+            else
+            {
+                Scene::getInstance().document = editor->document;
+            }
+        }
+        updateEditorOverlay();
+    });
+    connect(e, &EditorController::selectionChanged, this, [this] {
+        selectionDirty = true;
+        updateEditorOverlay();
+    });
+    connect(e, &EditorController::preview, this, [this](const SceneDocument &d, bool final) {
+        if (thread)
+            thread->submitDocument(d, EditorController::Transform, ++version, final);
+        updateEditorOverlay();
+    });
+}
+void GLWidget::submitPrepared(std::shared_ptr<Scene> s)
+{
+    cancelDrag();
+    s->document.restoreCamera(camera);
+    if (thread)
+        thread->submitScene(s, ++version);
+    else
+        Scene::getInstance().adoptPrepared(*s);
+    selectionDirty = true;
+    updateEditorOverlay();
+}
+void GLWidget::replaceScene(Scene &s)
+{
+    auto ready = std::make_shared<Scene>(false);
+    ready->adoptPrepared(s);
+    submitPrepared(ready);
+}
 void GLWidget::markSceneDirty(SceneDirtyFlags flags)
 {
     emit sceneEdited();
-    if (m_thread == nullptr) {
-        return;
-    }
-    m_thread->markSceneDirty(flags);
+    if (thread)
+        thread->markSceneDirty(flags);
 }
-
-void GLWidget::markSceneDirty(SceneDirtyFlag flag)
+void GLWidget::markSceneDirty(SceneDirtyFlag f)
 {
-    markSceneDirty(toSceneDirtyFlags(flag));
+    markSceneDirty(toSceneDirtyFlags(f));
 }
-
 void GLWidget::initializeGL()
 {
-    initRenderThread();
-
-    qDebug() << "initializeOpenGLFunctions:" << initializeOpenGLFunctions();
-
-    char vertexShaderSource[] =
-            "#version 330 core\n"
-            "layout (location = 0) in vec2 vPos;\n"
-            "layout (location = 1) in vec2 texCoord;\n"
-            "out vec2 TexCoord;\n"
-            "void main()\n"
-            "{\n"
-            "   gl_Position = vec4(vPos, 0.0, 1.0);\n"
-            "   TexCoord = texCoord;\n"
-            "}\n";
-    char fragmentShaderSource[] =
-            "#version 330 core\n"
-            "out vec4 FragColor;\n"
-            "in vec2 TexCoord;\n"
-            "uniform sampler2D ourTexture;\n"
-            "void main()\n"
-            "{\n"
-            "   FragColor = texture(ourTexture, TexCoord);\n"
-            "}\n";
-
-    m_program.reset(new QOpenGLShaderProgram);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
-    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
-    m_program->link();
-
-    glGenVertexArrays(1, &m_vao);
-    glBindVertexArray(m_vao);
-
-    glGenBuffers(1, &m_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void *>(0));
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void *>(2 * sizeof(float)));
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-
+    initializeOpenGLFunctions();
+    program.reset(new QOpenGLShaderProgram);
+    program->addShaderFromSourceCode(
+        QOpenGLShader::Vertex,
+        "#version 330 core\nlayout(location=0)in vec2 position;layout(location=1)in vec2 uv;out vec2 "
+        "coord;void main(){gl_Position=vec4(position,0,1);coord=uv;}");
+    program->addShaderFromSourceCode(QOpenGLShader::Fragment, R"(#version 330 core
+        in vec2 coord;out vec4 color;uniform sampler2D beauty;uniform usampler2D ids;uniform samplerBuffer selection;
+        uniform bool overlays;uniform int count;
+        float state(ivec2 p){ivec2 size=textureSize(ids,0);uint id=texelFetch(ids,clamp(p,ivec2(0),size-1),0).r;return id<uint(count)?texelFetch(selection,int(id)).r:0;}
+        void main(){color=vec4(texture(beauty,coord).rgb,1);if(!overlays)return;ivec2 p=ivec2(coord*vec2(textureSize(ids,0)));float s=state(p);bool edge=false;for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++)if(state(p+ivec2(x,y))!=s)edge=true;float n=max(max(state(p+ivec2(1,0)),state(p-ivec2(1,0))),max(state(p+ivec2(0,1)),state(p-ivec2(0,1))));if(s>0)color.rgb=mix(color.rgb,s>1.5?vec3(1,.64,.25):vec3(1,.38,.06),.13);if(edge&&(s>0||n>0))color.rgb=s>1.5?vec3(1,.76,.42):vec3(1,.46,.12);}
+    )");
+    program->link();
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
+    for (int i = 0; i < 2; ++i)
+    {
+        glVertexAttribPointer(i, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
+                              reinterpret_cast<void *>(size_t(i * 2 * sizeof(float))));
+        glEnableVertexAttribArray(i);
+    }
     glBindVertexArray(0);
-
-    QTimer* m_pTimer = new QTimer(this);
-    connect(m_pTimer, &QTimer::timeout, this, [=] {
-        });
-    m_pTimer->start(50);
+    glGenBuffers(1, &selectionBuffer);
+    glGenTextures(1, &selectionTexture);
+    auto shared = context();
+    auto mainSurface = shared->surface();
+    auto surface = new QOffscreenSurface(nullptr, this);
+    surface->setFormat(shared->format());
+    surface->create();
+    shared->doneCurrent();
+    thread = new RenderThread(surface, shared, this);
+    shared->makeCurrent(mainSurface);
+    connect(thread, &RenderThread::imageReady, this, QOverload<>::of(&GLWidget::update),
+            Qt::QueuedConnection);
+    connect(
+        thread, &RenderThread::picked, this,
+        [this](QString id, quint64 serial, quint64 revision) {
+            if (!editor || serial != pickSerial || revision != version || editor->renderLocked ||
+                editor->busy)
+                return;
+            auto selected = pickCtrl ? editor->selection : QSet<QString>();
+            if (!id.isEmpty())
+            {
+                if (pickCtrl && selected.contains(id))
+                    selected.remove(id);
+                else
+                    selected.insert(id);
+            }
+            editor->select(selected, id);
+        },
+        Qt::QueuedConnection);
+    thread->setNewSize(qRound(width() * devicePixelRatioF()), qRound(height() * devicePixelRatioF()));
+    if (editor)
+        thread->submitDocument(editor->document, EditorController::CameraChange, version);
+    emit renderThreadReady();
+    thread->start();
 }
-
 void GLWidget::paintGL()
 {
-    glViewport(0, 0, width(), height());
-
-    m_program->bind();
-
-    glBindVertexArray(m_vao);
+    glViewport(0, 0, qRound(width() * devicePixelRatioF()), qRound(height() * devicePixelRatioF()));
+    glDisable(GL_DEPTH_TEST);
+    glClearColor(.075, .085, .10, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    if (!program)
+        return;
+    if (selectionDirty)
+    {
+        QVector<float> states;
+        states.append(0);
+        auto selected = editor ? editor->selectedModels() : QStringList();
+        hasSelection = !selected.isEmpty();
+        if (editor)
+            for (auto v : editor->document.root["objects"].toArray())
+            {
+                auto id = v.toObject()["id"].toString();
+                states.append(selected.contains(id) ? id == editor->active ? 2 : 1 : 0);
+            }
+        glBindBuffer(GL_TEXTURE_BUFFER, selectionBuffer);
+        glBufferData(GL_TEXTURE_BUFFER, states.size() * sizeof(float), states.constData(), GL_DYNAMIC_DRAW);
+        glBindTexture(GL_TEXTURE_BUFFER, selectionTexture);
+        glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, selectionBuffer);
+        selectionDirty = false;
+    }
+    program->bind();
+    program->setUniformValue("beauty", 0);
+    program->setUniformValue("ids", 1);
+    program->setUniformValue("selection", 2);
+    program->setUniformValue("count", editor ? editor->document.root["objects"].toArray().size() + 1 : 1);
+    program->setUniformValue("overlays", hasSelection && editor && !editor->renderLocked);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_BUFFER, selectionTexture);
+    glBindVertexArray(vao);
     if (TextureBuffer::instance()->ready())
     {
-        TextureBuffer::instance()->drawTexture(QOpenGLContext::currentContext(), sizeof(vertices) / sizeof(float) / 4);
-        emit framePresented();
+        if (TextureBuffer::instance()->drawTexture(context(), 6, version))
+            emit framePresented();
     }
     glBindVertexArray(0);
-
-    m_program->release();
+    program->release();
 }
-
 void GLWidget::resizeGL(int w, int h)
 {
-    if (m_thread != nullptr) {
-        m_thread->setNewSize(w, h);
-    }
-    qDebug() << "frame size:" << w << h;
-}
-
-void GLWidget::initRenderThread()
-{
-    auto context = QOpenGLContext::currentContext();
-    auto mainSurface = context->surface();
-
-    auto renderSurface = new QOffscreenSurface(nullptr, this);
-    renderSurface->setFormat(context->format());
-    renderSurface->create();
-
-    context->doneCurrent();
-    m_thread = new RenderThread(renderSurface, context, this);
-    context->makeCurrent(mainSurface);
-
-    connect(m_thread, &RenderThread::imageReady, this, [this](){
-        update();
-    }, Qt::QueuedConnection);
-    m_thread->start();
-}
-
-void GLWidget::keyPressEvent(QKeyEvent* event)
-{
-    const int key = event->key();
-    if (key >= 0 && key < 1024) {
-        QMutexLocker lock(&param_mutex);
-        Scene::getInstance().camera.keys[key] = true;
-        Scene::getInstance().camera.processInput(1.0f);
-        lock.unlock();
-        markSceneDirty(SceneDirtyFlag::Camera);
+    overlay->setGeometry(rect());
+    if (thread)
+    {
+        thread->setNewSize(qRound(w * devicePixelRatioF()), qRound(h * devicePixelRatioF()));
+        if (editor && !editor->renderLocked && !thread->jobActive())
+            thread->submitDocument(editor->document, EditorController::Organization, ++version);
     }
 }
-
-void GLWidget::keyReleaseEvent(QKeyEvent* event)
+QPointF GLWidget::project(const QVector3D &p, bool *visible) const
 {
-    const int key = event->key();
-    if (key >= 0 && key < 1024) {
-        QMutexLocker lock(&param_mutex);
-        Scene::getInstance().camera.keys[key] = false;
-    }
+    QMatrix4x4 projection, view;
+    projection.perspective(camera.zoom, float(width()) / std::max(1, height()), .0001f, 1e9f);
+    view.lookAt(camera.position, camera.target, camera.up);
+    auto q = projection * view * QVector4D(p, 1);
+    if (visible)
+        *visible = q.w() > 0;
+    if (std::abs(q.w()) < 1e-8)
+        return {};
+    q /= q.w();
+    return {(q.x() + 1) * width() * .5, (1 - q.y()) * height() * .5};
 }
-
-void GLWidget::mousePressEvent(QMouseEvent* event)
+SceneBounds GLWidget::selectedBounds() const
 {
-    if (event->button() == Qt::LeftButton) {
-        m_bLeftPressed = true;
-        m_lastPos = event->pos();
-        RenderParams::instance().setRenderLow(true);
+    SceneBounds b;
+    if (!editor)
+        return b;
+    for (auto id : editor->selectedModels())
+    {
+        auto m =
+            dragCurrent.contains(id) ? dragCurrent.value(id) : sceneMatrix(editor->node(id)["transform"]);
+        b.include(editor->localBounds.value(id).transformed(m));
     }
-    if (event->button() == Qt::MiddleButton) {
-        m_bMiddlePressed = true;
-        m_lastPos = event->pos();
-        RenderParams::instance().setRenderLow(true);
-    }
+    return b;
 }
-
-void GLWidget::mouseReleaseEvent(QMouseEvent* event)
+float GLWidget::gizmoSize() const
 {
-    if (event->button() == Qt::LeftButton) {
-        m_bLeftPressed = false;
-    }
-    if (event->button() == Qt::MiddleButton) {
-        m_bMiddlePressed = false;
-    }
-    if (!m_bLeftPressed && !m_bMiddlePressed) {
-        RenderParams::instance().setRenderLow(false);
-    }
+    auto b = selectedBounds();
+    return std::max(.00001f, (camera.position - b.center()).length() * 2 *
+                                 std::tan(qDegreesToRadians(camera.zoom) * .5f) * 80.f /
+                                 std::max(1, height()));
 }
-
-void GLWidget::mouseMoveEvent(QMouseEvent* event)
+QVector3D GLWidget::axis(int i) const
 {
-    if (m_bLeftPressed || m_bMiddlePressed) {
-        const int xpos = event->pos().x();
-        const int ypos = event->pos().y();
-
-        const int xoffset = xpos - m_lastPos.x();
-        const int yoffset = m_lastPos.y() - ypos;
-        m_lastPos = event->pos();
-
-        QMutexLocker lock(&param_mutex);
-        if (m_bLeftPressed) {
-            Scene::getInstance().camera.processMouseMovement(xoffset, yoffset);
+    QVector3D a;
+    a[i] = 1;
+    if (localAxes && editor && editor->selectedModels().size() == 1)
+        a = sceneMatrix(editor->node(editor->selectedModels().front())["transform"])
+                .mapVector(a)
+                .normalized();
+    return a;
+}
+void GLWidget::drawOverlay(QPainter &p)
+{
+    if (!editor || editor->renderLocked)
+        return;
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setPen(QColor("#87919f"));
+    p.drawText(QRect(18, 14, width() - 36, 24), Qt::AlignLeft,
+               tr("透视  ·  %1")
+                   .arg(QStringList{tr("选择 Q"), tr("移动 W"), tr("旋转 E"), tr("缩放 R")}.value(tool)));
+    auto ids = editor->selectedModels();
+    if (ids.isEmpty())
+    {
+        if (editor->document.root["objects"].toArray().isEmpty())
+        {
+            p.setPen(QColor("#b8c1cc"));
+            p.drawText(
+                rect(), Qt::AlignCenter,
+                tr("空场景\n\n导入模型，或将文件拖入窗口\n\nAlt + 左键环绕  ·  中键平移  ·  滚轮缩放"));
         }
-        if (m_bMiddlePressed) {
-            Scene::getInstance().camera.processMousePan(xoffset, yoffset);
+        return;
+    }
+    p.setPen(QPen(QColor(241, 151, 61, 160), 1, Qt::DashLine));
+    for (auto id : ids)
+    {
+        auto b = editor->localBounds.value(id).transformed(
+            dragCurrent.contains(id) ? dragCurrent[id] : sceneMatrix(editor->node(id)["transform"]));
+        QPointF corners[8];
+        bool visible[8];
+        for (int i = 0; i < 8; ++i)
+            corners[i] = project(QVector3D(i & 1 ? b.maximum.x() : b.minimum.x(),
+                                           i & 2 ? b.maximum.y() : b.minimum.y(),
+                                           i & 4 ? b.maximum.z() : b.minimum.z()),
+                                 &visible[i]);
+        for (int i = 0; i < 8; ++i)
+            for (int j = 0; j < 3; ++j)
+                if (!(i & (1 << j)) && visible[i] && visible[i | (1 << j)])
+                    p.drawLine(corners[i], corners[i | (1 << j)]);
+    }
+    if (tool == Select || editor->selectedModels(true).isEmpty())
+        return;
+    auto b = selectedBounds();
+    bool visible;
+    auto center = project(b.center(), &visible);
+    if (!visible)
+        return;
+    float size = gizmoSize();
+    QColor colors[] = {QColor("#ef6666"), QColor("#71d790"), QColor("#6caaff")};
+    for (int i = 0; i < 3; ++i)
+    {
+        p.setPen(QPen(i == dragAxis ? QColor("#fff0af") : colors[i], i == dragAxis ? 4 : 3));
+        if (tool == Rotate)
+        {
+            QVector3D u = axis((i + 1) % 3), v = axis((i + 2) % 3);
+            QPainterPath path;
+            for (int j = 0; j <= 64; ++j)
+            {
+                float a = 2 * PI * j / 64;
+                auto point = project(b.center() + size * (u * std::cos(a) + v * std::sin(a)));
+                if (j == 0)
+                    path.moveTo(point);
+                else
+                    path.lineTo(point);
+            }
+            p.drawPath(path);
         }
-        lock.unlock();
+        else
+        {
+            auto end = project(b.center() + axis(i) * size);
+            p.drawLine(center, end);
+            p.setBrush(colors[i]);
+            if (tool == Scale)
+                p.drawRect(QRectF(end - QPointF(4, 4), QSizeF(8, 8)));
+            else
+                p.drawEllipse(end, 4, 4);
+            p.drawText(end + QPointF(6, -6), QString(QString("XYZ")[i]));
+        }
+    }
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor("#e8ebf0"));
+    p.drawEllipse(center, 4, 4);
+}
+void GLWidget::cancelDrag()
+{
+    if (dragAxis >= 0 && editor)
+        editor->restorePreview();
+    dragAxis = -1;
+    dragBefore.clear();
+    dragCurrent.clear();
+    updateEditorOverlay();
+}
+void GLWidget::publishCamera()
+{
+    ++pickSerial;
+    if (editor)
+        editor->setCamera(camera);
+    else
         markSceneDirty(SceneDirtyFlag::Camera);
+}
+void GLWidget::frameSelection()
+{
+    if (!editor || editor->renderLocked)
+        return;
+    auto b = selectedBounds();
+    if (!b.valid)
+        return;
+    ++editor->cameraCommand;
+    float radius = std::max(.01f, (b.maximum - b.minimum).length() * .5f);
+    auto forward = (camera.position - camera.target).normalized();
+    camera.restoreState(b.center() +
+                            forward * (radius / std::sin(qDegreesToRadians(camera.zoom) * .5f) * 1.15f),
+                        b.center(), QVector3D(0, 1, 0), camera.zoom);
+    publishCamera();
+}
+void GLWidget::keyPressEvent(QKeyEvent *e)
+{
+    if (editor && (editor->busy || editor->renderLocked))
+        return;
+    switch (e->key())
+    {
+    case Qt::Key_Q:
+        setTool(Select);
+        break;
+    case Qt::Key_W:
+        setTool(Translate);
+        break;
+    case Qt::Key_E:
+        setTool(Rotate);
+        break;
+    case Qt::Key_R:
+        setTool(Scale);
+        break;
+    case Qt::Key_F:
+        frameSelection();
+        break;
+    case Qt::Key_Escape:
+        cancelDrag();
+        break;
+    case Qt::Key_Delete:
+        if (editor)
+            editor->remove(editor->selection);
+        break;
+    default:
+        QOpenGLWidget::keyPressEvent(e);
+        return;
+    }
+    e->accept();
+}
+void GLWidget::keyReleaseEvent(QKeyEvent *e)
+{
+    e->ignore();
+}
+void GLWidget::mousePressEvent(QMouseEvent *e)
+{
+    setFocus();
+    if (!editor || editor->busy || editor->renderLocked)
+        return;
+    lastPos = e->pos();
+    orbit = e->button() == Qt::LeftButton && e->modifiers().testFlag(Qt::AltModifier);
+    pan = e->button() == Qt::MiddleButton;
+    if (orbit || pan)
+    {
+        ++editor->cameraCommand;
+        return;
+    }
+    if (e->button() != Qt::LeftButton)
+        return;
+    auto b = selectedBounds();
+    float nearest = 10;
+    int pickedAxis = -1;
+    if (tool != Select && b.valid && !editor->selectedModels(true).isEmpty())
+        for (int i = 0; i < 3; ++i)
+        {
+            float d = 1e9;
+            if (tool == Rotate)
+            {
+                for (int j = 0; j < 64; ++j)
+                {
+                    float a = 2 * PI * j / 64, beta = 2 * PI * (j + 1) / 64;
+                    auto u = axis((i + 1) % 3), v = axis((i + 2) % 3);
+                    d = std::min(
+                        d,
+                        distanceSegment(
+                            e->pos(), project(b.center() + gizmoSize() * (u * std::cos(a) + v * std::sin(a))),
+                            project(b.center() + gizmoSize() * (u * std::cos(beta) + v * std::sin(beta)))));
+                }
+            }
+            else
+                d = distanceSegment(e->pos(), project(b.center()),
+                                    project(b.center() + axis(i) * gizmoSize()));
+            if (d < nearest)
+            {
+                nearest = d;
+                pickedAxis = i;
+            }
+        }
+    if (pickedAxis >= 0)
+    {
+        dragAxis = pickedAxis;
+        dragStart = e->pos();
+        dragCenter = b.center();
+        dragDirection = axis(dragAxis);
+        dragWorldSize = gizmoSize();
+        for (auto id : editor->selectedModels(true))
+            dragBefore[id] = sceneMatrix(editor->node(id)["transform"]);
+        dragCurrent = dragBefore;
+        return;
+    }
+    pickCtrl = e->modifiers().testFlag(Qt::ControlModifier);
+    if (thread)
+        thread->pick(
+            QPoint(qRound(e->pos().x() * devicePixelRatioF()), qRound(e->pos().y() * devicePixelRatioF())),
+            ++pickSerial, version);
+}
+void GLWidget::mouseMoveEvent(QMouseEvent *e)
+{
+    if (!editor || editor->renderLocked || editor->busy)
+        return;
+    auto delta = e->pos() - lastPos;
+    lastPos = e->pos();
+    if (orbit)
+    {
+        camera.processMouseMovement(delta.x(), -delta.y());
+        publishCamera();
+        return;
+    }
+    if (pan)
+    {
+        camera.processMousePan(delta.x(), -delta.y());
+        publishCamera();
+        return;
+    }
+    if (dragAxis < 0)
+        return;
+    auto center = project(dragCenter), end = project(dragCenter + dragDirection * dragWorldSize);
+    auto axisScreen = end - center;
+    double length = std::max(10., QLineF(center, end).length());
+    double amount = QPointF::dotProduct(e->pos() - dragStart, axisScreen) / (length * length);
+    QMatrix4x4 change;
+    if (tool == Translate)
+    {
+        double distance = amount * dragWorldSize;
+        if (snap)
+            distance = std::round(distance / moveStep) * moveStep;
+        change.translate(dragDirection * float(distance));
+    }
+    else if (tool == Rotate)
+    {
+        auto a = QPointF(dragStart) - center, b = QPointF(e->pos()) - center;
+        // Screen Y points down; convert to Y-up before computing a right-handed rotation.
+        double angle = qRadiansToDegrees(std::atan2(-b.y(), b.x()) - std::atan2(-a.y(), a.x()));
+        if (QVector3D::dotProduct(dragDirection, camera.position - dragCenter) < 0)
+            angle = -angle;
+        if (snap)
+            angle = std::round(angle / rotateStep) * rotateStep;
+        change.translate(dragCenter);
+        change.rotate(float(angle), dragDirection);
+        change.translate(-dragCenter);
+    }
+    else
+    {
+        double scale = std::max(.001, 1 + amount);
+        if (snap)
+            scale = std::max(scaleStep, std::round(scale / scaleStep) * scaleStep);
+        change.translate(dragCenter);
+        QMatrix4x4 stretch;
+        for (int r = 0; r < 3; ++r)
+            for (int c = 0; c < 3; ++c)
+                stretch(r, c) = (r == c ? 1.f : 0.f) + float(scale - 1) * dragDirection[r] * dragDirection[c];
+        change *= stretch;
+        change.translate(-dragCenter);
+    }
+    for (auto it = dragBefore.begin(); it != dragBefore.end(); ++it)
+        dragCurrent[it.key()] = change * it.value();
+    editor->previewTransforms(dragCurrent);
+    updateEditorOverlay();
+}
+void GLWidget::mouseReleaseEvent(QMouseEvent *e)
+{
+    orbit = pan = false;
+    if (e->button() == Qt::LeftButton && dragAxis >= 0)
+    {
+        auto transformed = dragCurrent;
+        dragAxis = -1;
+        dragBefore.clear();
+        dragCurrent.clear();
+        editor->restorePreview();
+        editor->setTransforms(transformed);
+        updateEditorOverlay();
     }
 }
-
-void GLWidget::wheelEvent(QWheelEvent* event)
+void GLWidget::wheelEvent(QWheelEvent *e)
 {
-    const QPoint offset = event->angleDelta();
-    QMutexLocker lock(&param_mutex);
-    Scene::getInstance().camera.processMouseScroll(offset.y());
-    lock.unlock();
-    markSceneDirty(SceneDirtyFlag::Camera);
+    if (editor && (editor->busy || editor->renderLocked))
+        return;
+    camera.processMouseScroll(e->angleDelta().y());
+    publishCamera();
+}
+
+void GLWidget::updateEditorOverlay()
+{
+    overlay->update();
+    QOpenGLWidget::update();
 }

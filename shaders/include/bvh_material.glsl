@@ -1,3 +1,4 @@
+#include "scene_access.glsl"
 float SrgbChannelToLinear(float value)
 {
     return value <= 0.04045
@@ -79,8 +80,14 @@ float TextureChannel(vec4 value, int channel)
 void GetTriangleUVs(int triangleIndex, out vec2 uv1, out vec2 uv2, out vec2 uv3)
 {
     int offset = triangleIndex * SIZE_TRIANGLE;
-    vec4 uv12 = texelFetch(triangles, offset + 12);
-    vec4 uv3Tex0 = texelFetch(triangles, offset + 13);
+#ifdef INSTANCED_SCENE
+    int geometry = int(texelFetch(surfaceTable, triangleIndex).x) * 11;
+    vec4 uv12 = texelFetch(triangles, geometry + 6);
+    vec4 uv3Tex0 = texelFetch(triangles, geometry + 7);
+#else
+    vec4 uv12 = FetchTriangleVector(offset + 12);
+    vec4 uv3Tex0 = FetchTriangleVector(offset + 13);
+#endif
     uv1 = uv12.xy;
     uv2 = uv12.zw;
     uv3 = uv3Tex0.xy;
@@ -95,15 +102,15 @@ vec2 InterpolateTriangleUV(int triangleIndex, vec3 bary)
 
 float GetTriangleLightSelectPdf(int triangleIndex)
 {
-    return texelFetch(triangles, triangleIndex * SIZE_TRIANGLE + 16).z;
+    return FetchTriangleVector(triangleIndex * SIZE_TRIANGLE + 16).z;
 }
 
 float GetMaterialOpacity(int triangleIndex, vec2 uv)
 {
     int offset = triangleIndex * SIZE_TRIANGLE;
-    vec4 uv3Tex0 = texelFetch(triangles, offset + 13);
-    vec4 tex1 = texelFetch(triangles, offset + 14);
-    vec4 textureParam0 = texelFetch(triangles, offset + 15);
+    vec4 uv3Tex0 = FetchTriangleVector(offset + 13);
+    vec4 tex1 = FetchTriangleVector(offset + 14);
+    vec4 textureParam0 = FetchTriangleVector(offset + 15);
     int baseColorTex = int(uv3Tex0.z);
     int opacityTex = int(tex1.w);
 
@@ -120,7 +127,7 @@ float GetMaterialOpacity(int triangleIndex, vec2 uv)
 bool RejectAlphaIntersection(int triangleIndex, vec2 uv)
 {
     int offset = triangleIndex * SIZE_TRIANGLE;
-    vec4 param4 = texelFetch(triangles, offset + 9);
+    vec4 param4 = FetchTriangleVector(offset + 9);
     int alphaMode = int(param4.w);
     if (alphaMode != ALPHA_MODE_MASK && alphaMode != ALPHA_MODE_BLEND) {
         return false;
@@ -128,9 +135,12 @@ bool RejectAlphaIntersection(int triangleIndex, vec2 uv)
 
     float opacity = GetMaterialOpacity(triangleIndex, uv);
     if (alphaMode == ALPHA_MODE_MASK) {
-        float alphaCutoff = texelFetch(triangles, offset + 15).y;
+        float alphaCutoff = FetchTriangleVector(offset + 15).y;
         return opacity < alphaCutoff;
     }
+    #ifdef INSTANCED_SCENE
+    if(picking) return opacity < 0.5;
+    #endif
     return rand() >= opacity;
 }
 
@@ -139,19 +149,32 @@ bool RejectAlphaIntersection(int triangleIndex, vec2 uv)
 vec2 materialEvaluationUV;
 Material getMaterial(int i) {
     Material m;
-
+#ifdef INSTANCED_SCENE
+    int materialOffset = int(texelFetch(instanceTable, int(texelFetch(surfaceTable, i).y) * 9 + 8).x) * 10;
+    vec4 param1 = texelFetch(materialTable, materialOffset + 0);
+    vec4 param2 = texelFetch(materialTable, materialOffset + 1);
+    vec4 param3 = texelFetch(materialTable, materialOffset + 2);
+    vec4 param4 = texelFetch(materialTable, materialOffset + 3);
+    vec4 param5 = texelFetch(materialTable, materialOffset + 4);
+    vec4 param6 = texelFetch(materialTable, materialOffset + 5);
+    vec4 uv3Tex0 = texelFetch(materialTable, materialOffset + 6);
+    vec4 tex1 = texelFetch(materialTable, materialOffset + 7);
+    vec4 textureParam0 = texelFetch(materialTable, materialOffset + 8);
+    vec4 textureParam1 = texelFetch(materialTable, materialOffset + 9);
+#else
     int offset = i * SIZE_TRIANGLE;
-    vec4 param1 = texelFetch(triangles, offset + 6);
-    vec4 param2 = texelFetch(triangles, offset + 7);
-    vec4 param3 = texelFetch(triangles, offset + 8);
-    vec4 param4 = texelFetch(triangles, offset + 9);
-    vec4 param5 = texelFetch(triangles, offset + 10);
-    vec4 param6 = texelFetch(triangles, offset + 11);
-    vec4 uv3Tex0 = texelFetch(triangles, offset + 13);
-    vec4 tex1 = texelFetch(triangles, offset + 14);
-    vec4 textureParam0 = texelFetch(triangles, offset + 15);
-    vec4 textureParam1 = texelFetch(triangles, offset + 16);
-    
+    vec4 param1 = FetchTriangleVector(offset + 6);
+    vec4 param2 = FetchTriangleVector(offset + 7);
+    vec4 param3 = FetchTriangleVector(offset + 8);
+    vec4 param4 = FetchTriangleVector(offset + 9);
+    vec4 param5 = FetchTriangleVector(offset + 10);
+    vec4 param6 = FetchTriangleVector(offset + 11);
+    vec4 uv3Tex0 = FetchTriangleVector(offset + 13);
+    vec4 tex1 = FetchTriangleVector(offset + 14);
+    vec4 textureParam0 = FetchTriangleVector(offset + 15);
+    vec4 textureParam1 = FetchTriangleVector(offset + 16);
+
+#endif
     m.emissive = param1.xyz;
     m.sheenTint= param1.w;
 
@@ -222,9 +245,9 @@ vec3 ApplyNormalMap(int triangleIndex, vec2 uv, vec3 bary, vec3 surfaceNormal, M
     }
 
     int offset = triangleIndex * SIZE_TRIANGLE;
-    vec3 p1 = texelFetch(triangles, offset + 0).xyz;
-    vec3 p2 = texelFetch(triangles, offset + 1).xyz;
-    vec3 p3 = texelFetch(triangles, offset + 2).xyz;
+    vec3 p1 = FetchTriangleVector(offset + 0).xyz;
+    vec3 p2 = FetchTriangleVector(offset + 1).xyz;
+    vec3 p3 = FetchTriangleVector(offset + 2).xyz;
     vec2 uv1, uv2, uv3;
     GetTriangleUVs(triangleIndex, uv1, uv2, uv3);
     uv1 = TransformMaterialUV(material.normalTex, uv1);
@@ -237,9 +260,9 @@ vec3 ApplyNormalMap(int triangleIndex, vec2 uv, vec3 bary, vec3 surfaceNormal, M
     vec2 duv2 = uv3 - uv1;
     float determinant = duv1.x * duv2.y - duv1.y * duv2.x;
 
-    vec4 tangent1 = texelFetch(triangles, offset + 17);
-    vec4 tangent2 = texelFetch(triangles, offset + 18);
-    vec4 tangent3 = texelFetch(triangles, offset + 19);
+    vec4 tangent1 = FetchTriangleVector(offset + 17);
+    vec4 tangent2 = FetchTriangleVector(offset + 18);
+    vec4 tangent3 = FetchTriangleVector(offset + 19);
     vec4 importedTangent = bary.x * tangent1 + bary.y * tangent2 + bary.z * tangent3;
 
     vec3 tangent;
@@ -308,6 +331,9 @@ float hitAABB(Ray r, vec3 AA, vec3 BB) {
 }
  
  // 遍历 BVH 求交
+#ifdef INSTANCED_SCENE
+#include "bvh_instances.glsl"
+#else
 HitResult hitBVH(Ray ray) {
     HitResult res;
     res.isHit = false;
@@ -337,9 +363,9 @@ HitResult hitBVH(Ray ray) {
                 int offset = i * SIZE_TRIANGLE;
                 
                 // 顶点坐标
-                vec3 p1 = texelFetch(triangles, offset + 0).xyz;
-                vec3 p2 = texelFetch(triangles, offset + 1).xyz;
-                vec3 p3 = texelFetch(triangles, offset + 2).xyz;
+                vec3 p1 = FetchTriangleVector(offset + 0).xyz;
+                vec3 p2 = FetchTriangleVector(offset + 1).xyz;
+                vec3 p3 = FetchTriangleVector(offset + 2).xyz;
 
                 vec3 e0 = p2.xyz - p1.xyz;
                 vec3 e1 = p3.xyz - p1.xyz;
@@ -436,9 +462,9 @@ HitResult hitBVH(Ray ray) {
         
         int offset = triID * SIZE_TRIANGLE;
         // 法线
-        vec3 n1 = texelFetch(triangles, offset + 3).xyz;
-        vec3 n2 = texelFetch(triangles, offset + 4).xyz;
-        vec3 n3 = texelFetch(triangles, offset + 5).xyz;
+        vec3 n1 = FetchTriangleVector(offset + 3).xyz;
+        vec3 n2 = FetchTriangleVector(offset + 4).xyz;
+        vec3 n3 = FetchTriangleVector(offset + 5).xyz;
 
         vec3 Nsmooth =bary.x * n1 +bary.y * n2 + bary.z * n3;
         if (length(Nsmooth) < EPS) {
@@ -464,3 +490,5 @@ HitResult hitBVH(Ray ray) {
     }
     return res;
 }
+
+#endif

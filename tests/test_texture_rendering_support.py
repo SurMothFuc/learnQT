@@ -70,7 +70,8 @@ def test_cpu_import_and_gpu_sampling_contract_stays_connected():
     assert "Lantern.glb" in read("resources/scenes/lantern.scene.json")
     assert "prepareScene" in scene
     assert "loadModelScene" in scene
-    assert "LoadModelButton" in main_window
+    assert "getOpenFileNames" in main_window
+    assert "editor->importFiles(paths)" in main_window
 
     assert "#define SIZE_TRIANGLE   20" in defines
     assert "uniform sampler2DArray materialTextures;" in uniforms

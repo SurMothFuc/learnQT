@@ -1,175 +1,59 @@
-# learnQT 渲染流程
+# learnQT 渲染与编辑流程
 
-本文档只讲动态流程，不重复解释模块职责。静态结构请看 [project_architecture.md](./project_architecture.md)。
+## 启动与导入
 
-## 1. 启动初始化流程
+1. `main.cpp` 解析互斥的 `--scene` / `--model` 及 CLI 导出/验证参数。无参数使用空场景；CLI 模型入口保留独立场景的适配行为。
+2. 首次 Scene CPU 准备完成后创建工作台。运行中的打开场景或追加模型由 Load Worker 构建候选数据。
+3. `GLWidget::initializeGL()` 创建共享渲染上下文和显示 shader；Render Thread 等待 100 ms 后建立 Renderer 与显示槽。
+4. OIDN 按需初始化。空背景完成一轮后停止重复采样，不启动降噪；编辑或尺寸改变会重新刷新。
+5. 导入成功后整批加入选中组或根组，产生一次 undo 命令；失败保持文档、相机和 dirty 状态。打开场景替换文档，模型导入追加内容。
 
-```mermaid
-flowchart TD
-    subgraph UI["UI Thread"]
-        A["main.cpp -> QApplication / parse --scene or --model"] --> B["Construct learnQT"]
-        B --> C["Scene::getInstance()"]
-        B --> D["setupUi() + connect()"]
-        D --> E["Show main window"]
-        E --> F["GLWidget::initializeGL()"]
-        F --> G["Create OffscreenSurface + shared GL context"]
-        G --> H["Start RenderThread"]
-    end
-
-    subgraph CPU["CPU Scene Preparation"]
-        C --> C0["Scene::prepareScene(): default bedroom JSON or explicit input"]
-        C0 --> C1["buildDocument() / MeshLoader::readModel() via Assimp"]
-        C1 --> C2["BuildBVHwithSAH"]
-        C2 --> C4["Scene::buildLightData()"]
-        C4 --> C3["Scene::DataEncode()"]
-        C3 --> C5["HDRLoader::load()"]
-        C5 --> C6["Precompute HDR cache"]
-    end
-
-    subgraph RT["Render Thread"]
-        H --> I["Sleep(400)"]
-        I --> J["TextureBuffer::createTexture()"]
-        J --> K["Create Renderer"]
-        K --> L["Renderer::init()"]
-        L --> M["Renderer::initOIDN()"]
-        M --> N["Enter while(m_running) loop"]
-    end
-```
-
-这个启动流程的关键点是：
-
-- `Scene` 在 `learnQT` 构造阶段就初始化完成，所以渲染线程启动时，CPU 侧场景已经准备好。
-- 默认输入为 `resources/scenes/bedroom.scene.json`；`--model` 产生可保存的新文档，`--scene` 与它同时出现时报错。首次启动仍同步准备 CPU 数据，不要与后面的后台切换混淆。
-- `GLWidget::initializeGL()` 并不直接渲染复杂内容，它主要做两件事：建立展示用 OpenGL 状态，以及启动渲染线程。
-- `RenderThread` 不是按需工作，而是一旦启动就进入持续渲染循环。
-
-## 2. 单帧渲染流程
+## 渲染循环
 
 ```mermaid
 flowchart TD
-    A["RenderThread: frame lock / parameter snapshot / consume dirty"] --> B["Renderer::render(width, height, snapshot, dirtyFlags)"]
-    B --> C["resolveRefreshActions()"]
-    C --> D["applyRefreshActions()"]
-    D --> E["displayRenderingStats()"]
-    E --> F["executeRenderPass()"]
-
-    F --> G{"useTileRendering?"}
-    G -- Yes --> H["Render current tile"]
-    H --> I["updateTileRenderingState()"]
-    G -- No --> J["Render full image"]
-
-    I --> K["pathtrace.frag -> color / normal / baseColor"]
-    J --> K
-
-    K --> L["processHistorySaving()"]
-    L --> M{"full accumulation done?"}
-    M -- Yes --> N["historysave.frag -> preRenderColorTex"]
-    M -- No --> O["Wait for more tiles"]
-    N --> P["performDenoising()"]
-    O --> P
-
-    P --> Q{"run OIDN now?"}
-    Q -- Yes --> R["Read normal / albedo / color"]
-    R --> S["OIDN writes RenderColorTexfiltered"]
-    Q -- No --> T["Keep current color result"]
-
-    S --> U["triangle.frag -> m_fbo"]
-    T --> U
-    U --> V["TextureBuffer::updateTexture()"]
-    V --> W["emit imageReady()"]
-    W --> X["GLWidget::update()"]
-    X --> Y["GLWidget::paintGL()"]
+    A[等待上一批 GPU fence] --> B[发布完成显示槽 / 记录完成速率]
+    B --> C[消费文档、尺寸和控制命令]
+    C --> D{暂停、停止或隐藏?}
+    D -- 否 --> E[应用 dirty / 取消过期 OIDN / 更新预算]
+    E --> F[绑定本批相机、采样和场景输入]
+    F --> G[路径追踪一个 tile]
+    G --> H[完整轮次才保存历史]
+    H --> I{达到批次上限、轮次边界或有新控制?}
+    I -- 否 --> G
+    I -- 是 --> J[准备 OIDN 快照 / 按频率合成]
+    J --> K[从明确的显示 FBO 复制可用显示槽]
+    K --> L[提交本批完成 fence]
+    L --> A
+    D -- 是 --> M[保留完整结果 / 恢复编辑或等待]
+    M --> A
 ```
 
-把这条链路拆开理解：
+- tile 尺寸按用户保存的 `tileSize` 执行，不在后台改为大块。每批最多 16 个 tile，根据当前累积版本 GPU tile 耗时，以约 8 ms 估算预算和 1.3 安全系数缩小批次；CPU 提交超过 4 ms 也结束本批。新场景/相机/尺寸从 1 个 tile 开始。
+- 预算不是硬实时保证，单个极重 tile 或整图 pass 可能超时。每批不跨完整轮次，保留暂停、导出和最终降噪的快照边界。
+- 场景表、sampler 和 Sobol uniform 每批绑定一次。主射线保持像素中心，随机种子用 `gl_FragCoord` 全图像素坐标，与 tile/批次布局无关。
+- 预览合成约每 16 ms 执行一次；首次显示、最终图像和显示参数修改强制刷新。曝光/tone mapping 的 Display dirty 不重启采样，也能刷新已停止的预览。正式任务不为隐藏编辑视口反复合成/复制，结果视图在完整轮次取得快照。
+- 显示复制明确指定 Renderer 的显示 FBO，不依赖前一 pass 遗留的绑定。没有空闲槽就跳过本次展示，继续采样。
+- fence 使用有界 1 ms 等待，不在每个 tile 后用 `Sleep(1)` 轮询；未完成时不会替换 GPU 资源。
 
-- `resolveRefreshActions()` 负责检查参数变化和 scene dirty flags，并决定是否需要重建 shader、重算分辨率、重置 tile 状态、重上传场景或重传材质。
-- `applyRefreshActions()` 在帧首一次性执行这些动作，避免 render pass 中途改变场景资源。
-- `executeRenderPass()` 是核心路径追踪阶段，输出 3 个附件：颜色、法线、底色。
-- path tracing pass 读取 triangles / BVH / lights TBO、材质纹理数组、采样元数据及 HDR cache。每条射线先取最近几何/解析球交点，再处理到交点前的介质自由程或衰减，最后才累计交点或无限远发光。
-- 表面在存在连续 BSDF 波瓣时执行 NEE，体积散射点执行 NEE/phase MIS；旧 Transparent 边界只更新体积栈并继续，纯 delta 表面跳过 NEE。完整路径顺序见 [logic_overview.md](./logic_overview.md) 和 [direct_lighting.md](./direct_lighting.md)。
-- `processHistorySaving()` 只有在整图模式或 tile 模式完成一整轮时，才会把当前结果写回 `preRenderColorTex` 用于下一轮累积。
-- `performDenoising()` 不是每次循环都执行；降噪开启时通常在首个完整累计轮次、每 100 个完整轮次、显式刷新或到达累计上限的最终帧触发。
-- 达到 `maxRenderFrames` 后停止增加路径追踪累计，但线程仍显示最后的结果；新的场景或参数刷新会重置累计。
-- `TextureBuffer` 是从渲染线程回到主线程显示的桥。
+## 编辑与拾取
 
-## 3. 用户交互触发更新流程
+UI 命令修改文档副本、合并连续交互并提交版本化更新。变换预览期间 TLAS refit，结束时重建顶层树；BLAS 和几何缓冲复用。分组、排序及命名只更新组织结构。
 
-```mermaid
-flowchart TD
-    subgraph UI["UI Thread"]
-        A["Keyboard / mouse input"] --> B["GLWidget updates Scene::camera"]
-        C["Mouse drag start"] --> D["RenderParams::setRenderLow(true)"]
-        E["Mouse drag end"] --> F["RenderParams::setRenderLow(false)"]
-        G["Denoise checkbox"] --> H["RenderParams::setDenoise()"]
-        I["Environment Map checkbox"] --> J["RenderParams::setUseEnvironmentMap()"]
-        K["Material sliders / button"] --> L["Scene::updateMaterial()"]
-        B --> M["GLWidget::markSceneDirty(Camera)"]
-        L --> N["GLWidget::markSceneDirty(Material)"]
-    end
+拾取使用视口实际像素尺寸的整数 ID/深度 pass。点击经 PBO/fence 异步读回，匹配请求号和场景/相机版本后才改变选择。树与视口共享选择；Ctrl 追加/切换，树中 Shift 范围选择。轮廓、包围框和操纵器是显示层叠加，不进入 beauty、OIDN 和输出。
 
-    subgraph Control["Control entry / UI Thread"]
-        M --> O["RenderThread::markSceneDirty()"]
-        N --> O
-        H --> Q["denoise parameter changed"]
-    end
+## OIDN
 
-    subgraph Next["Next render() loop"]
-        O --> R["pending dirty flags"]
-        Q --> R
-        D --> R
-        F --> R
-        J --> R
-        R --> S["resolveRefreshActions() / applyRefreshActions()"]
-        S --> T["Rebuild shader / upload data / change resolution"]
-    end
-```
+完整轮次的 beauty、normal、albedo 先复制到 PBO，等待 fence 后映射；预览任务在独立 CPU 线程运行，光追继续。初次稳定至少 250 ms 且已有 4 spp 时启动（到达采样上限可提前），任务完成后至少间隔 1 秒再启动下一次。最多一项后台降噪任务。
 
-交互流程里最容易忽略的几个点：
+法线由 `[0,1]` 解码为 `[-1,1]`，albedo 保持线性；预过滤辅助图后再过滤线性 HDR beauty，预过滤不写回历史。结果检查累积版本和尺寸后才上传。正式任务在最终完整轮次同步执行 OIDN，接入取消回调。
 
-- 相机输入直接改的是 `Scene::camera`，不是 `RenderParams`。
-- 鼠标拖动时会把 `renderLow` 设为 `true`，松开再恢复，这样交互期间会降到较低分辨率以换取响应速度。
-- `markSceneDirty()` 只是告诉渲染线程“有场景状态需要同步”，真正决定怎么更新的是下一轮 `Renderer::resolveRefreshActions()` / `applyRefreshActions()`。
-- `Scene::updateMaterial()` 更新常量后重建 light CDF，并将三角形的新 `lightSelectPdf` 回写编码；下一帧的 `syncMaterialBuffer()` 同步上传三角形和 light buffer、更新 `nLights / nAnalyticLights` 并重置累计，保证 NEE 与 BSDF 命中使用同一概率。
-- `Denoise` 和环境贴图开关都直接写进 `RenderParams`；环境贴图变化由下一轮参数快照触发 shader 重建和场景同步。
-- 相机、材质和持久渲染设置变化还会将场景文档标记为未保存；临时交互降分辨率不单独置 dirty。
+## 正式任务与结果
 
-## 4. 场景切换、保存与导出
+状态为 `Preparing → Rendering → Denoising → Completed`，另有 `Paused / Stopped / Failed`。工作期间锁定场景、相机和参数编辑。暂停保留进度，继续恢复；停止在安全边界结束并恢复编辑，保留最后完整轮次及上次完成结果。
 
-```mermaid
-flowchart TD
-    A["切换 / 重载 / 导入模型"] --> B{"未保存修改？"}
-    B -->|保存成功或放弃 / 无修改| C["禁用冲突操作；Load Worker 构建候选 Scene"]
-    B -->|取消或保存失败| D["保持当前场景"]
-    C -->|失败| D
-    C -->|成功| E["主线程完成回调"]
-    E --> F["replaceScene：取得帧锁和 param_mutex"]
-    F --> G["adoptPrepared / applySnapshot / mark dirty"]
-    G --> H["阻断控件信号并恢复 UI"]
-    G --> I["下一渲染帧上传 GPU 数据并重置累计与降噪历史"]
-```
+输出尺寸独立于窗口；缩放/平移结果或改变窗口不重启任务。PNG/JPEG 从完整结果导出，JPEG 质量 95、alpha 固定不透明；使用与查看结果一致的曝光、tone mapping 和 gamma，不含编辑叠加。
 
-- 后台 CPU 阶段包括资源解析、模型/图片解码、BVH、灯光和 HDR cache；原场景仍可显示。
-- 打开失败不替换当前文档，不清除已有未保存状态。成功加载已保存场景清除 dirty；模型导入则保留 dirty。
-- 关闭前同样使用保存/放弃/取消。后台任务尚未完成时不关闭窗口。
-- 保存从当前材质、相机、`RenderParams::Snapshot` 取得文档快照，重定位路径后通过 `QSaveFile` 原子提交。
-- 便携导出在后台向目标旁的临时目录复制实际资源、按 SHA-256 处理同名冲突，严格限制包外访问并完整重导入后发布。
-- 导出不更新当前保存路径，也不清除 dirty。格式、CLI 和资源边界见 [texture_scene_v1.md](./texture_scene_v1.md)。
+## 性能显示
 
-## 分块渲染说明
-
-当前的分块渲染逻辑以 `RenderParams::useTileRendering()` 和 `RenderParams::tileSize()` 为核心：
-
-- 如果开启分块渲染，每次 `render()` 只渲染当前 tile。
-- `currentTileX / currentTileY` 会在 `updateTileRenderingState()` 中推进。
-- 只有当所有 tile 都完成时，才把这一轮视为“完整累积完成”，随后才会推进历史帧保存。
-- 如果关闭分块渲染，则每次 `render()` 都直接渲染整张图，并立即参与历史帧累积。
-
-## OIDN 触发条件说明
-
-当前 `performDenoising()` 的触发条件不是“每帧必做”：
-
-- 当 `denoise` 开关变化或 renderer 标记 `m_forceDenoiseRefresh` 时，会重新走一次降噪。
-- 一般需降噪已开启、当前 tile 轮次已经完整结束，且满足“首个完整轮次或每 100 个完整轮次一次”；到达 `maxRenderFrames` 的最终帧也会触发降噪。
-
-这意味着当前实现偏向“周期性后处理”，而不是“每个 worker 循环都实时降噪”。
+每 200 ms 发布 RenderStats，曲线保留 60 秒。整图 FPS 是完成完整轮次的速率，块 FPS 是完成逻辑 tile 的速率，批次不被误计为一个 tile 或多份 spp。完成时间窗口消除 200 ms 计数造成的 0/5 跳变，实际停顿时衰减，暂停/完成显示零。曲线具有左右刻度并缓存绘制结果；状态栏显示实际光追分辨率，包括低分辨率预览。

@@ -7,6 +7,7 @@ enum class SceneDirtyFlag : uint32_t {
     Camera = 1u << 0,
     Material = 1u << 1,
     SceneBuffers = 1u << 2,
+    Display = 1u << 3,
 };
 
 using SceneDirtyFlags = uint32_t;

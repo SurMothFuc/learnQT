@@ -7,6 +7,9 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFramebufferObject>
 #include <QFile>
+#include <QDir>
+#include <QFileInfo>
+#include <QRegularExpression>
 #include <QVector4D>
 #include <array>
 #include <cmath>
@@ -22,9 +25,16 @@ static void checkNear(double actual, double expected, double tolerance, const st
     std::cout << name << ": " << actual << " (expected " << expected << ")\n";
     check(std::isfinite(actual) && std::abs(actual-expected) <= tolerance, name);
 }
-static QString read(const QString& path) {
-    QFile file(path); check(file.open(QIODevice::ReadOnly), path.toStdString());
-    return QString::fromUtf8(file.readAll());
+static QString read(const QString &path)
+{
+    QFile file(path);
+    check(file.open(QIODevice::ReadOnly), path.toStdString());
+    QString source = QString::fromUtf8(file.readAll());
+    QRegularExpression expression("#include\\s+\"([^\"]+)\"");
+    for (auto match = expression.match(source); match.hasMatch(); match = expression.match(source))
+        source.replace(match.capturedStart(), match.capturedLength(),
+                       read(QFileInfo(path).dir().filePath(match.captured(1))));
+    return source;
 }
 
 class Audit : public QOpenGLFunctions_3_3_Core {

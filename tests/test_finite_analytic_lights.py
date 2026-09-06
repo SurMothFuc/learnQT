@@ -27,11 +27,9 @@ def main():
     assert "EncodedLightSphere" in scene_cpp
     assert "EncodedLightPoint" not in scene_cpp
     assert "EncodedLightDirectional" not in scene_cpp
-    assert "sunSolidAngle" in scene_cpp
-    assert "sunIrradiance" in scene_cpp
-    assert "sunIrradiance=radiance*sunSolidAngle" in scene_cpp
     assert 'document.root["lights"]' in scene_cpp
-    assert "luminance(sunIrradiance)" in scene_cpp
+    assert "4*pi*std::pow(std::sin(.5f*r),2)" in "".join(scene_cpp.split())
+    assert "luminance(color)" in scene_cpp
 
     assert "SampleSunDiskLight" in light_sampling
     assert "SampleSphereLight" in light_sampling

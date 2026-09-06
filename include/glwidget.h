@@ -1,61 +1,91 @@
-﻿#ifndef GLWIDGET_H
-#define GLWIDGET_H
-
+#pragma once
+#include "EditorController.h"
+#include "renderthread.h"
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLWidget>
-
-#include <QMutex>
-#include <memory>
-#include <qtimer.h>
-
-#include "Scene.h"
-#include "SceneDirty.h"
-
-class RenderThread;
-
 extern QMutex param_mutex;
-
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
-public:
-    GLWidget(QWidget *parent = nullptr);
+  public:
+    explicit GLWidget(QWidget *parent = nullptr);
     ~GLWidget() override;
-
-    // UI 线程只通过 dirty 标记通知渲染线程同步 Scene。
+    void attachEditor(EditorController *editor);
     void markSceneDirty(SceneDirtyFlags flags);
     void markSceneDirty(SceneDirtyFlag flag);
-    void replaceScene(Scene& prepared);
-
-signals:
+    void replaceScene(Scene &prepared);
+    void submitPrepared(std::shared_ptr<Scene> scene);
+    RenderThread *renderThread() const
+    {
+        return thread;
+    }
+    enum Tool
+    {
+        Select,
+        Translate,
+        Rotate,
+        Scale
+    };
+    Tool tool = Select;
+    bool localAxes = false, snap = false;
+    void setLocalAxes(bool local)
+    {
+        localAxes = local;
+        updateEditorOverlay();
+    }
+    double moveStep = .1, rotateStep = 15, scaleStep = .1;
+    void setTool(Tool value)
+    {
+        cancelDrag();
+        tool = value;
+        updateEditorOverlay();
+        emit toolChanged(int(tool));
+    }
+    void frameSelection();
+    Camera camera;
+    quint64 sceneVersion() const
+    {
+        return version;
+    }
+  signals:
     void framePresented();
     void sceneEdited();
+    void toolChanged(int tool);
+    void renderThreadReady();
 
-protected:
+  protected:
     void initializeGL() override;
     void paintGL() override;
-    void resizeGL(int w, int h) override;
+    void resizeGL(int, int) override;
+    void keyPressEvent(QKeyEvent *) override;
+    void keyReleaseEvent(QKeyEvent *) override;
+    void mousePressEvent(QMouseEvent *) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
+    void mouseMoveEvent(QMouseEvent *) override;
+    void wheelEvent(QWheelEvent *) override;
 
-    void keyPressEvent(QKeyEvent* event) override;
-    void keyReleaseEvent(QKeyEvent* event) override;
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseReleaseEvent(QMouseEvent* event) override;
-    void mouseMoveEvent(QMouseEvent* event) override;
-    void wheelEvent(QWheelEvent* event) override;
-
-private:
-    void initRenderThread();
-
-private:
-    unsigned m_vao = 0;
-    unsigned m_vbo = 0;
-    std::unique_ptr<QOpenGLShaderProgram> m_program;
-    RenderThread *m_thread = nullptr;
-
-    bool m_bLeftPressed = false;
-    bool m_bMiddlePressed = false;
-    QPoint m_lastPos;
+  private:
+    EditorController *editor = nullptr;
+    RenderThread *thread = nullptr;
+    GLuint vao = 0, vbo = 0, selectionBuffer = 0, selectionTexture = 0;
+    std::unique_ptr<QOpenGLShaderProgram> program;
+    QWidget *overlay = nullptr;
+    bool selectionDirty = true, orbit = false, pan = false;
+    QPoint lastPos, dragStart;
+    quint64 version = 1, pickSerial = 0;
+    bool pickCtrl = false;
+    int dragAxis = -1;
+    QVector3D dragCenter, dragDirection;
+    float dragWorldSize = 1;
+    QMap<QString, QMatrix4x4> dragBefore, dragCurrent;
+    QPointF project(const QVector3D &p, bool *visible = nullptr) const;
+    QVector3D axis(int i) const;
+    SceneBounds selectedBounds() const;
+    float gizmoSize() const;
+    void drawOverlay(QPainter &painter);
+    void cancelDrag();
+    void publishCamera();
+    bool hasSelection = false;
+    void updateEditorOverlay();
 };
-
-#endif // GLWIDGET_H

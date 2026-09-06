@@ -1,219 +1,60 @@
-# learnQT 实现逻辑总览
+# learnQT 实现逻辑
 
-本文档聚焦实现逻辑和当前真实行为，不再重复模块职责或大流程。模块关系请看 [project_architecture.md](./project_architecture.md)，动态流程请看 [render_flow.md](./render_flow.md)。
+## 场景文档与运行时
 
-## 1. 场景准备链路
+`SceneDocument v2` 将模型资源、网格实例、组织组、材质/纹理、解析灯光、相机及渲染/输出设置分开。文档的 `models` 是外部资源定义，`objects` 是引用资源内 mesh 的可编辑叶子；局部几何和 GPU 下标不写入 JSON。
 
-```mermaid
-flowchart TD
-    A["Scene::prepareScene(path, model)"] --> B["SceneDocument + SceneAssets"]
-    B --> C["Scene::buildDocument() on candidate Scene"]
-    C --> D["Assimp geometry / transforms / textures"]
-    D --> E["Apply stable material bindings"]
-    E --> F["BuildBVHwithSAH()"]
-    F --> G["buildLightData()"]
-    G --> H["DataEncode()"]
-    H --> I["Load HDR + calculateHdrCache()"]
-    I --> J["Prepared CPU scene"]
-    J --> K["adoptPrepared() at frame boundary"]
-```
+v1 经 `SceneDocument::migrate()` 和 `Scene::buildDocument()` 在内存中展开成 v2，保留旧资源、材质、世界变换及相机；保存才写 v2，不自动改写源文件。`models[].expanded` 标识资源节点已经实例化，避免重载时重复追加。默认进入空场景；`--model` 保留旧独立场景适配/取景能力，工作台的导入则直接追加并保留源尺寸与节点变换。
 
-当前场景准备阶段的真实逻辑是：
+Load Worker 用 Assimp / SceneAssets 解析依赖，准备候选 Scene。单网格文件直接成为叶子；多部件文件保留文件组、源节点组和网格实例。导入整批成功后作为一次撤销命令提交，失败保留原文档。UI 有独立的“导入并指定缩放”入口。
 
-- 默认读取 `resources/scenes/bedroom.scene.json`，路灯也是独立 JSON；两者通过同一加载器构建，不再按名称拼装预设。
-- `SceneDocument` 保存模型引用、实例矩阵、材质/纹理绑定、灯光、HDR、相机和渲染设置；稳定 ID 不等于运行时纹理编号。
-- `MeshLoader` 实际使用 Assimp 读取 OBJ、glTF/GLB、FBX，在 CPU 侧处理节点变换、UV0、法线、切线和图片资源。
-- 新模型导入先居中并归一化，再保存实际矩阵；从场景文件加载时不按全场景包围盒重新缩放。
-- `BuildBVHwithSAH()` 在 CPU 侧为三角形建立 BVH。
-- `Scene::buildLightData()` 在 BVH 三角形排序后建立 light list，再由 `DataEncode()` 编码三角形、BVH 和光源。
-- 自发光选择权重使用面积、emissive 常量及贴图平均值，GPU 在实际采样点读取发光贴图；另有场景文件中的 sphere / sun 光源。
-- 自发光三角形按双面发光处理，面积到立体角转换使用几何法线的绝对余弦；Mask/Blend 在采样点的覆盖率也参与发光贡献。
-- light CDF 使用 double 累加权重，再保存 float CDF；实际相邻区间宽度同时写入 light 编码和对应三角形的 `lightSelectPdf`，避免两侧概率因量化或材质更新而不同步。
-- HDR 以亮度乘 texel 精确立体角构建权重；`cache` 的 R/G/B 分别保存 x 边缘 CDF、给定 x 的 y 条件 CDF、两者实际 float 区间宽度的乘积。全黑 HDR 回退为均匀立体角分布。shader 二分选择 texel，在 texel 内连续采样，并让采样返回值与方向回查使用同一个 per-steradian PDF。
+组只存 `parent/order/name`，不继承空间矩阵。唯一根组固定 ID `root`，允许改名和建子组；禁止移走、删除或创建同级。解散普通组按原顺序提升子节点；“删除组及内容”单独递归删除，涉及锁定模型时拒绝删除。
 
-一个不太直观但很关键的实现细节是：`nodes` 在构建 BVH 前先塞入了一个占位节点，shader 侧遍历是从索引 `1` 开始的，而不是从 `0` 开始。
+## 双层 BVH 与 GPU 布局
 
-首次启动同步准备场景；运行时切换使用后台线程构建独立候选场景，失败不改变当前场景。
-保存时从当前状态生成文档快照，不保存 BVH、GPU 编号、累计帧和降噪历史。
-加载、原子保存及严格资源边界的便携导出详见 [texture_scene_v1.md](./texture_scene_v1.md)。
+| 数据 | 当前布局/用途 |
+| --- | --- |
+| 共享网格几何 | 每三角形 11 个 vec4：位置、法线、UV、切线/handedness；不携带完整材质。 |
+| 材质表 | 每材质 10 个 vec4，含已有 PBR、alpha、介质和六类纹理索引。 |
+| 实例表 | 每实例 9 个 vec4：世界矩阵、逆矩阵、材质/BLAS/逻辑 surface 偏移与可见性。 |
+| BLAS / TLAS | 独立节点表；索引 0 占位。BLAS 描述局部三角形，TLAS 叶子指向实例。 |
+| surface 引用/PDF | 逻辑 surface 映射到几何三角形和实例，PDF 独立保存，区分共享网格的多个发光实例。 |
+| 纹理 | GL_TEXTURE_2D_ARRAY 与 sampler/UV 元数据；OIDN `baseColorTex` 是辅助图而非导入贴图。 |
 
-## 2. GPU 数据上传链路
+BLAS 在唯一源网格准备时构建并缓存。TLAS 用 BLAS 遍历代价加权 SAH；变换中 refit，结束时重建 TLAS。递归构建先保存子节点 ID 再写父节点，避免 vector 扩容导致引用失效，并有深度保护。GPU 近节点优先遍历，缓存射线逆方向和子节点进入距离，平行射线单独处理。
 
-```mermaid
-flowchart TD
-    A["Encoded Scene data"] --> B["Renderer::syncSceneBuffers() / syncMaterialBuffer()"]
-    B --> C["triangles_encoded -> TBO / texture buffer"]
-    B --> D["nodes_encoded -> TBO / texture buffer"]
-    B --> E["lights_encoded -> TBO / texture buffer"]
-    B --> F["hdrRes -> hdrMap"]
-    B --> G["cache -> hdrCache"]
-    B --> T["Scene.textures -> materialTextureArray + metadata TBO"]
-    B --> H["Update view / eye / cameraFov / counts / resolution uniforms"]
-    H --> I["pathtrace_program ready"]
-```
+射线变到实例局部空间后不再次归一化方向，因此局部求交参数仍对应世界射线距离。法线用逆转置，切线与镜像 handedness 配套处理。精确等距命中以逻辑 surface 顺序固定选择，防止改变树序后共面材质跳变。
 
-这一步的作用不是“生成场景”，而是把 CPU 侧已经准备好的场景同步到 GPU：
+变换更新实例、TLAS 和世界发光面积/PDF，已有 BLAS 不重建、几何不上传。材质改动更新材质/绑定/灯光，不重建 BVH。分组、排序和改名不上传几何。阴影仍执行最近命中和分段透射率，但仅加载必要的 alpha/介质数据；它不是已完成的二值 AnyHit 快速路径。
 
-- 三角形编码数据走的是 `GL_TEXTURE_BUFFER`；每个三角形为 20 个 `QVector4D`，包含 UV、切线和材质纹理索引。
-- BVH 编码数据也走 `GL_TEXTURE_BUFFER`。
-- light 编码数据走独立的 `GL_TEXTURE_BUFFER`，shader 侧通过 `lights / nLights` 读取；解析光源位于列表末尾，`nAnalyticLights` 限定解析球求交和太阳盘累积的遍历范围。
-- HDR 原图和重要性采样 cache 走 `GL_TEXTURE_2D`。
-- 模型图片走 `GL_TEXTURE_2D_ARRAY`，UV 变换及 sampler 参数走元数据 TBO；`baseColorTex` 是 OIDN 辅助输出，不是模型图片。
-- 上传时统一 RGBA、尺寸并生成 mipmap，但 shader 当前显式读取 LOD 0，尚未实现完整 minification/自动 LOD。
-- 同步完成后，`pathtrace_program` 通过 `samplerBuffer`、`sampler2D` 和 `sampler2DArray` 读取场景。
+旧 20 vec4 三角形布局只保留在兼容/数值测试路径。活动渲染和拾取使用 `INSTANCED_SCENE` 分表路径。
 
-这里还有一个关键同步点：
+## 编辑、相机与显示
 
-- `Renderer::syncSceneBuffers()` / `syncMaterialBuffer()` / `syncCameraUniforms()` 会在 `param_mutex` 保护下读取 `Scene` 和相机状态。
-- `GLWidget` 在处理相机输入时也会使用同一个 `param_mutex`。
-- 场景替换先取得 `RenderThread::m_frameMutex`，再取得 `param_mutex`；整帧渲染使用同一帧锁，保证候选场景不会在一帧中途覆盖旧数据。
-- CPU 候选场景不访问 OpenGL；替换成功后下一帧重新上传 GPU 资源，并清空累计和降噪历史。
+EditorController 统一树、属性面板及视口命令。选择组时展开后代并去重；单选修改绝对变换，多选围绕合并世界包围盒中心应用增量。材质混合值只修改用户实际编辑的字段，必要时复制共享材质，限制影响范围到选中模型/材质槽。隐藏影响预览与正式任务，锁定禁止变换、材质编辑及删除。选择、展开和布局不标记场景 dirty，不清空采样历史。
 
-这说明当前实现是“粗粒度锁住相机与场景同步”，而不是把相机和场景做成独立的无锁快照。
+GPU ID/depth pass 遵循 Mask cutoff、Blend 拾取阈值 0.5，玻璃选前表面。PBO 结果必须同时匹配请求号和场景/相机版本。轮廓、包围框、坐标轴只在显示层；选中轮廓 shader 只在存在选择时启用，操纵器叠加仅在编辑变化时更新。
 
-## 3. shader 内部路径追踪主循环
+旋转将屏幕向下的 Y 换成向上的坐标后求角度，再考虑轴朝向；滚轮每格按比例改变正轨道距离，近限值包含远离世界原点时的浮点精度余量，避免穿过环绕中心翻转。
 
-```mermaid
-flowchart TD
-    A["Pixel-center primary ray / empty medium stack"] --> B["Closest BVH geometry and analytic sphere"]
-    B --> C["Resolve current medium along segment"]
-    C --> D{"Free-flight scatter before endpoint?"}
-    D -- Yes --> E["If depth permits: albedo, volume NEE, HG sample"]
-    E --> R["Save previous point / PDF / delta flag"]
-    D -- No --> F["Finish segment attenuation or medium emission"]
-    F --> G{"Endpoint"}
-    G -- Sphere --> H["Visible sphere emission with MIS, then stop"]
-    G -- Escape --> I["HDR and each sun disk emission with MIS, then stop"]
-    G -- Geometry --> J["Accumulate mesh emission with MIS"]
-    J --> K{"Old Transparent boundary?"}
-    K -- Yes --> L["Update medium stack; keep scattering state and depth"]
-    L --> B
-    K -- No --> M["Record first surface features; stop if depth limit"]
-    M --> N["NEE for continuous BSDF lobes"]
-    N --> O["SampleDisneyBSDF: continuous PDF or delta mass"]
-    O --> P["Update throughput, boundary stack and ray origin"]
-    P --> R
-    R --> S["Increment scattering depth; RR from depth 3"]
-    S --> B
-```
+## 采样、光照与累积
 
-shader 主循环里最值得记住的点：
+主射线固定经过像素中心。随机种子和 Cranley-Patterson rotation 使用全图 `gl_FragCoord`，切换 tile 布局或提交批次不改变同像素同 spp 的随机序列。这不是像素抗锯齿。
 
-- `pathtrace.frag` 对每个像素输出颜色、法线、底色；主射线仍固定经过像素中心，像素内 AA 和景深未实现。
-- `normal` 和 `baseColor` 的主要用途不是显示，而是给后面的 OIDN 降噪提供辅助特征。
-- baseColor/emissive 做颜色空间转换，metallic/roughness/opacity 按数据通道读取；法线贴图支持切线 handedness、强度和 Y 翻转。
-- `Mask` 执行 cutoff，`Blend` 使用随机透过；主射线和阴影复用 BVH alpha 筛选。发光面 NEE 在实际 UV 处将 Mask/Blend 覆盖率乘入辐射度，避免被裁掉的发光区域仍向场景贡献能量。
-- `SampleOneLight()` 每个表面或体积散射点总共选择一个显式样本。环境和非环境 light list 同时存在时各选 0.5，只有一类时选 1；后者按功率 CDF 选择三角形、球或太阳盘。
-- `pathtrace.glsl` 保存上一真实散射点、连续 PDF 和 delta 标记；透明边界不覆盖这些状态，也不消耗散射深度。三角形、球、太阳盘和 HDR 的发光命中分别查询对应 light PDF；多个重叠太阳盘和 HDR 各自累计，避免重复使用混合辐射度。
-- `SampleDisneyBSDF()` 区分连续密度和离散概率质量。纯 delta 跳过 NEE，下一次发光命中的 MIS 权重为 1；混合材质仍对连续波瓣执行 NEE。粗糙度为零的反射/折射、TIR 和 IOR 匹配直通已有回归。
-- `medium.glsl` 用最多 8 层 LIFO 栈追踪均匀介质。先处理自由程/吸收/发光，再处理线段末端；体积散射使用 HG 相函数和 NEE/phase MIS，no-event 概率已包含散射消光，不能再重复乘 Beer 衰减。
-- `ShadowTransmittance()` 按段乘介质透射率，最多跨越 128 层边界；解析球参与遮挡，采样目标光源通过 ID 排除自遮挡。旧 Transparent 可直穿并更新栈，玻璃 BSDF 边界不会被忽略折射而直穿。
-- 表面偏移基于按绕序计算的几何法线与位置尺度，不使用 normal map 判断介质进出。前 3 次散射后启用 RR；透过 alpha/旧 Transparent 的边界不算一次散射。
-- `preRenderColorTex` 会把上一轮历史结果喂回当前帧，用于做渐进式累积。
+积分器处理表面/均匀介质 NEE、BSDF/phase 命中 MIS、delta、球/太阳盘以及 HDR；连续 PDF 使用每单位立体角，delta 使用概率质量。Mask 按 cutoff，Blend 随机透过；透明边界不计散射深度。最多 8 层均匀介质，阴影边界最多 128 层；RR 从第 3 次真实散射后开始。具体测度与限制见 [direct_lighting.md](./direct_lighting.md)。
 
-具体 PDF 测度、介质边界和定量结果见 [direct_lighting.md](./direct_lighting.md)。
+发光网格的世界面积随实例矩阵变化，CPU light CDF 和 surface PDF 同时更新。HDR 强度与旋转用于采样方向、辐射度及 PDF 回查；黑 HDR 的分布回退仍有效。发光贴图选择权重仍按整图平均值估计。
 
-## 4. 历史帧与后处理逻辑
+每个 tile 写本轮 beauty、normal、albedo；只有一整轮完成才更新 `preRenderColorTex` 并增加 spp。正式输出、暂停、停止始终取最后完整轮次。预览可以显示当前部分轮次，合成频率与采样推进分离，批次不能跨完整轮次。
 
-当前实现把“渲染一轮颜色”和“显示到屏幕”分成了几层：
+## OIDN 与颜色处理
 
-1. `pathtrace.frag` 负责生成本轮颜色、法线和底色。
-2. `historysave.frag` 负责把完整轮次后的颜色结果写回 `preRenderColorTex`。
-3. `performDenoising()` 按条件把颜色、法线、底色送进 OIDN。
-4. `triangle.frag` 负责最终 tone mapping 和 gamma 校正，并输出到显示用 FBO。
-5. `TextureBuffer` 再把结果桥接给主线程的 `paintGL()`。
+预览 OIDN 是单项 CPU 后台任务，PBO fence 完成后才读三路同版本/同尺寸的图像。法线解码到 `[-1,1]`，albedo 线性；辅助预过滤只影响任务副本，不能写回渲染历史。旧结果在编辑、尺寸切换后失效。空场景不降噪。
 
-所以当前显示出来的图像并不是 shader 直接画到窗口上的，而是经历了：
+正式任务在最终完整轮次同步降噪，可取消。OIDN 始终处理曝光和 tone mapping 前的线性 HDR 数据。随后 `triangle.frag` 应用曝光、旧曲线/ACES 近似/线性裁切和 gamma；PNG/JPEG 与 ResultView 使用一致结果，不包含编辑叠加。
 
-- path tracing
-- 可选的历史帧累积
-- 可选的 OIDN
-- tone mapping / gamma
-- 跨线程共享纹理显示
+## 当前边界
 
-## 5. 当前实现注意点
+导入只读取 UV0 和每槽第一张纹理；有 authored tangent 与 Assimp fallback，未接独立参考 MikkTSpace。纹理数组单边上限 2048、受硬件层数限制；保存 sampler/minFilter 并生成 mipmap，但 shader 仍以 LOD 0 为主，缺射线 footprint 与完整缩小过滤。AO、位移及扩展贴图未全部贯通。
 
-下面这些都不是“未来可能的问题”，而是当前代码里已经成立的真实行为：
-
-### `Scene::updateMaterial()` 会更新常量材质和 light data，但粒度仍然很粗
-
-UI 上已经有很多材质 slider 和 line edit，也会调用 `learnQT::updateMaterial()`，再进一步调用 `Scene::updateMaterial()`。但是：
-
-- 当前实现会把 UI 中的材质常量写回所有三角形，并同步更新 `triangles_encoded`。
-- 更新结束后调用 `buildLightData()`，再把新的 `lightSelectPdf` 回写 `triangles_encoded.textureParam1.z`；渲染线程同步上传三角形和 light buffer，NEE 和 BSDF 命中不会各自保留不同版本的概率。
-- 这条路径不会重建 BVH；原有贴图/UV 绑定保留，更新后的常量可随场景保存。它不提供贴图编辑或局部材质选择。
-
-换句话说，材质 UI 当前是“全场景常量材质覆盖”，不是完整的材质编辑系统。
-
-### 渲染线程是持续循环，不是按需渲染
-
-`RenderThread::run()` 里一旦进入主循环，就会持续执行：
-
-- `renderer.render(width, height, snapshot, dirtyFlags)`
-- `TextureBuffer::updateTexture(...)`
-- `emit imageReady()`
-
-`RenderThread::markSceneDirty()` 只是把 dirty flag 记录到 `m_pendingSceneDirty`，并不会“唤醒一次渲染”。渲染线程下一轮循环会消费这些 flag，所以当前模型更接近“持续 progressive rendering”，而不是“收到事件才渲染一帧”。
-
-达到 `maxRenderFrames` 后，渲染器停止增加累计、继续展示最终图像，线程并不退出；刷新场景或有关参数后重新累计。
-
-### `RenderParams` 和 UI 暴露程度不完全一致
-
-`RenderParams` 里已经有：
-
-- `denoise`
-- `renderLow`
-- `useTileRendering`
-- `useEnvironmentMap`
-- `tileSize`
-- `maxBounces`
-- `maxRenderFrames`（0 表示不限制累计轮次）
-
-但当前 UI 明确暴露出来的主要只有：
-
-- `Denoise`
-- `Use Environment Map`
-- 最大反弹次数、最大累计帧数
-- 一组材质滑块
-
-也就是说，代码内部已经支持分块渲染和 tile size，但界面层没有把这些能力完整暴露出来。
-
-### 环境贴图开关会触发 shader 重建
-
-`Renderer::resolveRefreshActions()` 会比较 `useEnvironmentMap` 的新旧值。一旦变化：
-
-- 调用 `rebuildPathtraceProgram()`
-- 通过 `#define USEENVIRONMENTMAP` 决定 fragment shader 的编译分支
-- 触发场景 buffer / 相机 uniform 同步，并重置累积
-
-这不是简单切一个 uniform，而是直接重建 path tracing program。
-
-### OIDN 不是每帧都跑
-
-当前 OIDN 调用的节奏偏保守：
-
-- 首帧会做一次完整辅助特征预处理和主过滤。
-- 后续一般按“每 100 个完整累计轮次或显式要求刷新”执行。
-- 开启降噪时，到达 `maxRenderFrames` 的最终帧也会执行。
-- 在 tile 渲染模式下，还要等一整轮 tile 结束后才更有意义。
-
-这有助于减少后处理成本，但也意味着“显示结果更新频率”和“降噪结果更新频率”不是同一件事。
-
-路径中会跳过旧 Transparent 边界，记录首个表面或体积散射点作为辅助特征。但 `pathtrace.frag` 仍将 normal 编码为 `[0, 1]`，读回后尚未恢复到 `[-1, 1]` 就交给 OIDN；这个已知问题及复杂透明/体积路径的特征语义仍在 [to-do.md](./to-do.md)，本轮直接光数值验收不涵盖它们。
-
-### 体积栈的范围有限
-
-当前支持均匀、闭合且正确嵌套的介质边界。相机初始位于介质内时仅通过第一段的背面命中推断一个介质，尚未完整初始化多层栈；任意相交、裁剪及非均匀体积不受支持。栈记录介质消光/散射参数，不记录 IOR；表面仍使用真空与当前材质之间的 IOR 比，不能直接表示不同非真空介质相邻的折射界面。
-
-### `TextureBuffer` 是显示桥，不是渲染目标本体
-
-最终显示图像的生产者仍然是 `Renderer` 的 FBO 和纹理。`TextureBuffer` 的职责只是：
-
-- 由渲染线程更新共享纹理
-- 由主线程 `paintGL()` 绘制这张共享纹理
-
-如果后续要查显示错误，需要先区分问题发生在：
-
-- `Renderer` 的 render pass
-- `TextureBuffer` 的跨线程桥接
-- `GLWidget::paintGL()` 的最终展示
+介质只覆盖均匀、闭合且正确嵌套边界；初始多层介质、非真空相邻 IOR、复杂相交体积和折射焦散仍有限制。抗锯齿与 AA×OIDN 联合验收、EXR、透明背景、动画、景深及渲染队列延后。性能预算是调度估计，极重单块/整图仍可能影响输入响应。

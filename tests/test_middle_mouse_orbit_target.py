@@ -32,9 +32,11 @@ def main():
     assert "if (keys[Qt::Key_K])\n        processMousePan(0.0f, keyboardPanStep);" in camera_cpp
     assert "if (keys[Qt::Key_L])\n        processMousePan(-keyboardPanStep, 0.0f);" in camera_cpp
 
-    assert "bool m_bMiddlePressed = false;" in glwidget_h
-    assert "event->button() == Qt::MiddleButton" in glwidget_cpp
-    assert "Scene::getInstance().camera.processMousePan(xoffset, yoffset);" in glwidget_cpp
+    compact_h = "".join(glwidget_h.split())
+    compact_cpp = "".join(glwidget_cpp.split())
+    assert "orbit=false,pan=false" in compact_h
+    assert "e->button()==Qt::MiddleButton" in compact_cpp
+    assert "camera.processMousePan(delta.x(),-delta.y());" in compact_cpp
 
 
 if __name__ == "__main__":

@@ -64,6 +64,7 @@ set(MOC_HEADERS
     include/renderer.h
     include/renderthread.h
     include/RenderParams.h
+    include/EditorController.h
 )
 qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 qt5_add_resources(RCC_SOURCES ${RCC_FILES})
@@ -145,6 +146,32 @@ add_custom_command(TARGET learnQT POST_BUILD
 )
 
 if(BUILD_TESTING)
+    add_executable(renderer_batch_tests tests/RendererBatchTests.cpp
+        src/renderer.cpp src/RendererPick.cpp src/RendererPreview.cpp src/PreviewDenoiser.cpp
+        src/Scene.cpp src/SceneRuntime.cpp src/SceneDocument.cpp src/SceneGraph.cpp src/SceneEncoding.cpp
+        src/SceneAssets.cpp src/Mesh.cpp src/Camera.cpp src/BVH.cpp src/common.cpp src/hdrloader.cpp src/RenderParams.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/include/moc_renderer.cpp ${CMAKE_CURRENT_BINARY_DIR}/include/moc_RenderParams.cpp)
+    target_include_directories(renderer_batch_tests PRIVATE include libs/Eigen libs/Assimp/include libs/oidn/include)
+    target_compile_options(renderer_batch_tests PRIVATE /utf-8)
+    target_compile_definitions(renderer_batch_tests PRIVATE RESOURCE_DIR="${CMAKE_SOURCE_DIR}/resources" SHADER_DIR="${CMAKE_SOURCE_DIR}/shaders")
+    target_link_libraries(renderer_batch_tests PRIVATE Qt5::Widgets Qt5::OpenGL opengl32 OpenImageDenoise_core OpenImageDenoise assimp::assimp)
+    add_dependencies(renderer_batch_tests learnQT)
+    add_test(NAME renderer_batch_regression COMMAND renderer_batch_tests)
+    set_tests_properties(renderer_batch_regression PROPERTIES LABELS "gpu;render" TIMEOUT 60)
+    add_executable(presentation_tests tests/PresentationTests.cpp src/texturebuffer.cpp)
+    target_include_directories(presentation_tests PRIVATE include)
+    target_compile_options(presentation_tests PRIVATE /utf-8)
+    target_link_libraries(presentation_tests PRIVATE Qt5::Core Qt5::Gui Qt5::OpenGL opengl32)
+    add_test(NAME display_buffer_handoff_regression COMMAND presentation_tests)
+    set_tests_properties(display_buffer_handoff_regression PROPERTIES LABELS "gpu;ui" TIMEOUT 20)
+    add_executable(traversal_tests tests/TraversalTests.cpp src/SceneGraph.cpp src/BVH.cpp src/common.cpp)
+    target_include_directories(traversal_tests PRIVATE include)
+    target_compile_options(traversal_tests PRIVATE /utf-8)
+    target_compile_definitions(traversal_tests PRIVATE
+        RESOURCE_DIR="${CMAKE_SOURCE_DIR}/resources" SHADER_DIR="${CMAKE_SOURCE_DIR}/shaders")
+    target_link_libraries(traversal_tests PRIVATE Qt5::Core Qt5::Gui Qt5::OpenGL opengl32)
+    add_test(NAME instanced_traversal_regression COMMAND traversal_tests)
+    set_tests_properties(instanced_traversal_regression PROPERTIES LABELS "gpu;scene" TIMEOUT 120)
     add_executable(lighting_tests tests/LightingTests.cpp src/common.cpp)
     target_include_directories(lighting_tests PRIVATE include)
     target_compile_options(lighting_tests PRIVATE /utf-8)
@@ -153,22 +180,31 @@ if(BUILD_TESTING)
     target_link_libraries(lighting_tests PRIVATE Qt5::Core Qt5::Gui Qt5::OpenGL opengl32)
     add_test(NAME lighting_numerical_regression COMMAND lighting_tests)
     set_tests_properties(lighting_numerical_regression PROPERTIES LABELS "gpu;lighting" TIMEOUT 300)
-    target_sources(learnQT PRIVATE tests/SceneUiRegression.cpp)
+    target_sources(learnQT PRIVATE tests/SceneUiRegression.cpp tests/WorkbenchUiRegression.cpp tests/InteractionRegression.cpp tests/PreviewModeRegression.cpp)
     target_compile_definitions(learnQT PRIVATE SCENE_TESTING)
     add_test(NAME scene_ui_switch_regression COMMAND $<TARGET_FILE:learnQT>
         --scene ${CMAKE_CURRENT_SOURCE_DIR}/resources/scenes/bedroom.scene.json
         --scene-switch-regression ${CMAKE_CURRENT_BINARY_DIR}/scene-ui-regression)
     set_tests_properties(scene_ui_switch_regression PROPERTIES LABELS "scene;gpu;ui" TIMEOUT 300)
-    add_executable(scene_tests tests/SceneTests.cpp src/Scene.cpp src/SceneRuntime.cpp src/SceneDocument.cpp
+    add_executable(scene_tests tests/SceneTests.cpp src/Scene.cpp src/SceneRuntime.cpp src/SceneDocument.cpp src/SceneGraph.cpp src/SceneEncoding.cpp
+        tests/EditorTests.cpp src/EditorController.cpp src/SceneTreeModel.cpp ${CMAKE_CURRENT_BINARY_DIR}/include/moc_EditorController.cpp
         src/SceneAssets.cpp src/Mesh.cpp src/Camera.cpp src/BVH.cpp src/common.cpp src/hdrloader.cpp src/RenderParams.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/include/moc_RenderParams.cpp)
     target_include_directories(scene_tests PRIVATE include libs/Assimp/include)
     target_compile_options(scene_tests PRIVATE /utf-8)
     target_compile_definitions(scene_tests PRIVATE RESOURCE_DIR="${CMAKE_SOURCE_DIR}/resources" SHADER_DIR="${CMAKE_SOURCE_DIR}/shaders")
-    target_link_libraries(scene_tests PRIVATE Qt5::Core Qt5::Gui assimp::assimp)
+    target_link_libraries(scene_tests PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets assimp::assimp)
     add_dependencies(scene_tests learnQT)
     add_test(NAME scene_roundtrip_and_package COMMAND scene_tests)
     set_tests_properties(scene_roundtrip_and_package PROPERTIES LABELS "scene;package" TIMEOUT 180)
+    add_test(NAME workbench_ui_and_render_job COMMAND $<TARGET_FILE:learnQT> --workbench-regression ${CMAKE_CURRENT_BINARY_DIR}/workbench-regression)
+    set_tests_properties(workbench_ui_and_render_job PROPERTIES LABELS "scene;gpu;ui;job" TIMEOUT 150)
+    add_test(NAME preview_interaction_regression COMMAND $<TARGET_FILE:learnQT> --preview-regression ${CMAKE_CURRENT_BINARY_DIR}/preview-regression)
+    set_tests_properties(preview_interaction_regression PROPERTIES LABELS "gpu;ui;preview" TIMEOUT 90)
+    add_test(NAME preview_mode_switch_regression COMMAND $<TARGET_FILE:learnQT> --preview-mode-regression ${CMAKE_CURRENT_BINARY_DIR}/preview-mode-regression)
+    set_tests_properties(preview_mode_switch_regression PROPERTIES LABELS "gpu;ui;preview" TIMEOUT 120)
+    add_test(NAME preview_mis_mode_switch_regression COMMAND $<TARGET_FILE:learnQT> --preview-mode-regression ${CMAKE_CURRENT_BINARY_DIR}/preview-mis-mode-regression --mode-mis)
+    set_tests_properties(preview_mis_mode_switch_regression PROPERTIES LABELS "gpu;ui;preview" TIMEOUT 120)
     if(CMAKE_VERSION VERSION_LESS 3.12)
         find_package(PythonInterp REQUIRED)
         set(TEST_PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE})
@@ -189,6 +225,11 @@ if(BUILD_TESTING)
         NAME unit_texture_rendering_support
         COMMAND ${TEST_PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_texture_rendering_support.py
     )
+    add_test(NAME glslpt_conversion
+        COMMAND ${TEST_PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_glslpt_conversion.py)
+    set_tests_properties(glslpt_conversion PROPERTIES
+        LABELS "scene;conversion"
+        ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/test-python")
     add_test(
         NAME gpu_render_regression
         COMMAND $<TARGET_FILE:learnQT>
@@ -235,7 +276,7 @@ if(BUILD_TESTING)
     get_filename_component(QT_RUNTIME_DIRECTORY "${QT_CORE_RUNTIME}" DIRECTORY)
     set(SCENE_TEST_PATH "${QT_RUNTIME_DIRECTORY};$ENV{PATH}")
     string(REPLACE ";" "\\;" SCENE_TEST_PATH "${SCENE_TEST_PATH}")
-    set_tests_properties(lighting_numerical_regression scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression
+    set_tests_properties(instanced_traversal_regression lighting_numerical_regression scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression workbench_ui_and_render_job preview_interaction_regression preview_mode_switch_regression preview_mis_mode_switch_regression display_buffer_handoff_regression renderer_batch_regression
         import_fbx_embedded_texture import_gltf_tangent_sampler_transform
         PROPERTIES ENVIRONMENT "PATH=${SCENE_TEST_PATH}")
 endif()
