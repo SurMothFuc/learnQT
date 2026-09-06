@@ -1,0 +1,1678 @@
+{
+  "validated_at": "2026-09-06T10:01:27.353101+08:00",
+  "base_commit": "4aaf194cc203e636bb3ed79a5ccdd827a246b95d",
+  "scope": {
+    "source_scenes": 43,
+    "standalone_gltf": 12,
+    "total": 55,
+    "renderer_format_version": 1
+  },
+  "checks": {
+    "release_build": {
+      "status": "passed",
+      "command": "cmake --build build --config Release --parallel 1",
+      "log": "build/glslpt-color-fix-build.log"
+    },
+    "ctest": {
+      "status": "passed",
+      "passed": 9,
+      "total": 9,
+      "command": "ctest --test-dir build -C Release --output-on-failure",
+      "log": "build/glslpt-color-fix-ctest.log"
+    },
+    "converter_tests": {
+      "status": "passed",
+      "passed": 12,
+      "total": 12,
+      "command": "python tests/test_glslpt_conversion.py -v",
+      "log": "build/glslpt-unit-tests.log"
+    },
+    "check_mode": {
+      "status": "passed",
+      "entries": 55,
+      "log": "build/glslpt-check.log"
+    },
+    "deterministic_single_entry": {
+      "status": "passed",
+      "entry": "test_sphere_light_small.scene",
+      "result": "Byte-identical regenerated scene JSON",
+      "log": "build/glslpt-repeat.log"
+    },
+    "collection_audit": {
+      "status": "passed",
+      "entries": 55,
+      "log": "build/glslpt-color-fix-audit.log"
+    },
+    "gpu_and_scene_ui": {
+      "status": "passed",
+      "entries": 55,
+      "scene_list_entries": 55,
+      "revisit": "passed",
+      "results": "build/glslpt-render/final-results.json",
+      "color_fix_rerun": "build/glslpt-color-fix/results.json"
+    },
+    "screenshot_review": {
+      "status": "completed",
+      "entries": 55,
+      "gallery": "build/glslpt-render/gallery.html",
+      "method": "Inspected all full-run contact sheets and final corrected captures; inspected representative individual images.",
+      "color_fix_rerun": "Reviewed all 13 rerendered entries, including all 10 scenes that resize textures."
+    },
+    "portable": {
+      "status": "passed",
+      "cases": [
+        "cornell_box_orig.scene",
+        "jinx.gltf",
+        "volume_cube.scene"
+      ],
+      "checks": [
+        "save/reload geometry and texture counts",
+        "move exported package and load with portable confinement",
+        "reject injected external model reference"
+      ]
+    },
+    "gpu_color_upload": {
+      "status": "passed",
+      "log": "build/glslpt-color-fix-numerical.log",
+      "cases": "RGB888 / RGBA8888 / ARGB32 premultiplied; original size, downscale, upscale; RGBA GPU readback and vertical orientation"
+    },
+    "camera_color": {
+      "status": "passed",
+      "results": "build/glslpt-camera-color-fix-hq/results.json",
+      "screenshot": "build/glslpt-camera-color-fix-hq/glslpt_Camera_01_4k_gltf.scene.json.revisit.png"
+    }
+  },
+  "remaining_limitations": [
+    "Source authored camera framing is preserved, including the close ceiling view in test.scene and different authored/standalone Jinx orientations.",
+    "Quad emitters are two double-sided emissive triangles; ideal distant light is a 0.1-degree disk with matched axial irradiance.",
+    "Current native pinhole camera, tone mapping, RR, medium/BSDF behavior and background visibility apply; per-scene notes identify source settings that differ.",
+    "RGBA8 derived texture precision and filtering differ slightly; packed roughness floor is 1/255 rather than source 0.001.",
+    "Existing degenerate source triangle normals are reported for Mustang variants, rank3police and staircase; no geometry was omitted.",
+    "GPU captures use a 64-full-frame accumulation limit and 96 presentation events; noise remains and results are not pixel-identical to the source renderer."
+  ],
+  "scenes": [
+    {
+      "source": "ajax.scene",
+      "output": "resources/scenes/glslpt_ajax.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_ajax.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 62.806480407714844,
+          "stddev": 53.97570822194432
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 544566,
+        "textures": 0,
+        "encoded_lights": 0,
+        "materials": 7,
+        "models": 1
+      }
+    },
+    {
+      "source": "BarberShopChair_01_4k.gltf",
+      "output": "resources/scenes/glslpt_BarberShopChair_01_4k_gltf.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_BarberShopChair_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 4.055230034722222,
+          "stddev": 15.358782495750486
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 4280,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      }
+    },
+    {
+      "source": "bedroom.scene",
+      "output": "resources/scenes/glslpt_bedroom.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_bedroom.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 290,
+          "mean": 156.68797817887932,
+          "stddev": 60.18536198517177
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 1491754,
+        "textures": 4,
+        "encoded_lights": 4,
+        "materials": 33,
+        "models": 70
+      }
+    },
+    {
+      "source": "brass_vase_01_4k.gltf",
+      "output": "resources/scenes/glslpt_brass_vase_01_4k_gltf.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_brass_vase_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 1.8993123372395833,
+          "stddev": 14.701171535428703
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 21440,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      }
+    },
+    {
+      "source": "Camera_01_4k.gltf",
+      "output": "resources/scenes/glslpt_Camera_01_4k_gltf.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_Camera_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 1.2409261067708333,
+          "stddev": 7.797403321387752,
+          "gold_pixels": 198,
+          "brown_pixels": 700
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed",
+        "camera_color": "passed"
+      },
+      "runtime": {
+        "triangles": 26987,
+        "textures": 9,
+        "encoded_lights": 0,
+        "materials": 5,
+        "models": 1
+      }
+    },
+    {
+      "source": "CashRegister_01_4k.gltf",
+      "output": "resources/scenes/glslpt_CashRegister_01_4k_gltf.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_CashRegister_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 18.49264187282986,
+          "stddev": 44.09577721197663
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 9927,
+        "textures": 6,
+        "encoded_lights": 0,
+        "materials": 3,
+        "models": 1
+      }
+    },
+    {
+      "source": "Chandelier_01_4k.gltf",
+      "output": "resources/scenes/glslpt_Chandelier_01_4k_gltf.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_Chandelier_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 9.673441569010416,
+          "stddev": 37.37907552288781
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 26860,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 3,
+        "models": 1
+      }
+    },
+    {
+      "source": "ClassicConsole_01_4k.gltf",
+      "output": "resources/scenes/glslpt_ClassicConsole_01_4k_gltf.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_ClassicConsole_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 1.7328016493055556,
+          "stddev": 9.470630022045864
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 7566,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      }
+    },
+    {
+      "source": "coffee_pot.scene",
+      "output": "resources/scenes/glslpt_coffee_pot.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_coffee_pot.scene.json.png",
+        "render_metrics": {
+          "width": 398,
+          "height": 512,
+          "mean": 134.74428293812815,
+          "stddev": 50.133657913392284
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 235271,
+        "textures": 0,
+        "encoded_lights": 6,
+        "materials": 9,
+        "models": 23
+      }
+    },
+    {
+      "source": "CoffeeCart_01_4k.gltf",
+      "output": "resources/scenes/glslpt_CoffeeCart_01_4k_gltf.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_CoffeeCart_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 6.23626708984375,
+          "stddev": 22.620848732588616
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 27659,
+        "textures": 6,
+        "encoded_lights": 0,
+        "materials": 4,
+        "models": 1
+      }
+    },
+    {
+      "source": "cornell_box_orig.scene",
+      "output": "resources/scenes/glslpt_cornell_box_orig.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_cornell_box_orig.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 61.384525299072266,
+          "stddev": 27.495552845407527
+        },
+        "roundtrip": "passed",
+        "portable_moved": "passed",
+        "external_reference_rejected": "passed",
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 36,
+        "textures": 0,
+        "encoded_lights": 2,
+        "materials": 9,
+        "models": 8
+      }
+    },
+    {
+      "source": "cornell_box_sphere.scene",
+      "output": "resources/scenes/glslpt_cornell_box_sphere.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_cornell_box_sphere.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 84.50818634033203,
+          "stddev": 27.920560437244596
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 15896,
+        "textures": 0,
+        "encoded_lights": 2,
+        "materials": 10,
+        "models": 8
+      }
+    },
+    {
+      "source": "diningroom.scene",
+      "output": "resources/scenes/glslpt_diningroom.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_diningroom.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 122.53835042317708,
+          "stddev": 60.92915514044753
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 725264,
+        "textures": 20,
+        "encoded_lights": 12,
+        "materials": 35,
+        "models": 50
+      }
+    },
+    {
+      "source": "dragon.scene",
+      "output": "resources/scenes/glslpt_dragon.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_dragon.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 132.7614949544271,
+          "stddev": 42.22376423429859
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 831812,
+        "textures": 0,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      }
+    },
+    {
+      "source": "furnace.scene",
+      "output": "resources/scenes/glslpt_furnace.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_furnace.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 0.7480807834201388,
+          "stddev": 9.544176314356086
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 3968,
+        "textures": 0,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      }
+    },
+    {
+      "source": "hyperion_distant_light.scene",
+      "output": "resources/scenes/glslpt_hyperion_distant_light.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render-fixed/glslpt_hyperion_distant_light.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 111.39727105034723,
+          "stddev": 22.370306713043615
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 107534,
+        "textures": 0,
+        "encoded_lights": 1,
+        "materials": 9,
+        "models": 11
+      }
+    },
+    {
+      "source": "hyperion_rect_lights.scene",
+      "output": "resources/scenes/glslpt_hyperion_rect_lights.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_hyperion_rect_lights.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 72.27817789713542,
+          "stddev": 63.71245758609857
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 107568,
+        "textures": 0,
+        "encoded_lights": 34,
+        "materials": 28,
+        "models": 28
+      }
+    },
+    {
+      "source": "hyperion_sphere_light.scene",
+      "output": "resources/scenes/glslpt_hyperion_sphere_light.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_hyperion_sphere_light.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 158.0874769422743,
+          "stddev": 34.64973962100202
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 107534,
+        "textures": 0,
+        "encoded_lights": 1,
+        "materials": 9,
+        "models": 11
+      }
+    },
+    {
+      "source": "jinx.gltf",
+      "output": "resources/scenes/glslpt_jinx_gltf.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_jinx_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 2.916659884982639,
+          "stddev": 18.082964087180706
+        },
+        "roundtrip": "passed",
+        "portable_moved": "passed",
+        "external_reference_rejected": "passed",
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 82217,
+        "textures": 28,
+        "encoded_lights": 88,
+        "materials": 15,
+        "models": 1
+      }
+    },
+    {
+      "source": "jinx.scene",
+      "output": "resources/scenes/glslpt_jinx.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render-fixed/glslpt_jinx.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 77.86536322699652,
+          "stddev": 37.27099036688595
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 82217,
+        "textures": 28,
+        "encoded_lights": 88,
+        "materials": 15,
+        "models": 1
+      }
+    },
+    {
+      "source": "mustang_red.scene",
+      "output": "resources/scenes/glslpt_mustang_red.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_mustang_red.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 51.870388454861114,
+          "stddev": 25.35580797466109
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 1839003,
+        "textures": 0,
+        "encoded_lights": 0,
+        "zero_normal_warnings": 36,
+        "materials": 11,
+        "models": 10
+      }
+    },
+    {
+      "source": "mustang_white.scene",
+      "output": "resources/scenes/glslpt_mustang_white.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_mustang_white.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 66.46786159939236,
+          "stddev": 50.69699699315605
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 1839003,
+        "textures": 0,
+        "encoded_lights": 0,
+        "zero_normal_warnings": 36,
+        "materials": 11,
+        "models": 10
+      }
+    },
+    {
+      "source": "mustang_white_orig.scene",
+      "output": "resources/scenes/glslpt_mustang_white_orig.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_mustang_white_orig.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 51.27253553602431,
+          "stddev": 53.06953731513124
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 1839003,
+        "textures": 0,
+        "encoded_lights": 0,
+        "zero_normal_warnings": 36,
+        "materials": 11,
+        "models": 10
+      }
+    },
+    {
+      "source": "panther.scene",
+      "output": "resources/scenes/glslpt_panther.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_panther.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 112.69638400607639,
+          "stddev": 66.06649580454885
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 2004848,
+        "textures": 0,
+        "encoded_lights": 6,
+        "materials": 5,
+        "models": 5
+      }
+    },
+    {
+      "source": "potted_plant_04_4k.gltf",
+      "output": "resources/scenes/glslpt_potted_plant_04_4k_gltf.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_potted_plant_04_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 12.318535698784721,
+          "stddev": 38.06369644203669
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 6097,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      }
+    },
+    {
+      "source": "rank3police.scene",
+      "output": "resources/scenes/glslpt_rank3police.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_rank3police.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 93.16712782118056,
+          "stddev": 36.4227278985375
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 1292108,
+        "textures": 69,
+        "encoded_lights": 104894,
+        "zero_normal_warnings": 4,
+        "materials": 41,
+        "models": 58
+      }
+    },
+    {
+      "source": "renderman_teapot_all.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_all.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_all.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 143.57415093315973,
+          "stddev": 64.90010452947554
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 1796966,
+        "textures": 15,
+        "encoded_lights": 6,
+        "materials": 16,
+        "models": 17
+      }
+    },
+    {
+      "source": "renderman_teapot_chrome.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_chrome.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_chrome.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 173.24419487847223,
+          "stddev": 51.131699999490436
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 268756,
+        "textures": 4,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 5
+      }
+    },
+    {
+      "source": "renderman_teapot_cloth.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_cloth.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_cloth.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 164.8932359483507,
+          "stddev": 73.62624709224438
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 483926,
+        "textures": 3,
+        "encoded_lights": 6,
+        "materials": 8,
+        "models": 7
+      }
+    },
+    {
+      "source": "renderman_teapot_gold.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_gold.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_gold.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 168.74443901909723,
+          "stddev": 57.51011923619701
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 268756,
+        "textures": 4,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 5
+      }
+    },
+    {
+      "source": "renderman_teapot_red_plastic.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_red_plastic.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_red_plastic.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 174.23678927951389,
+          "stddev": 43.46230777232308
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 268756,
+        "textures": 1,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 5
+      }
+    },
+    {
+      "source": "renderman_teapot_scratched.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_scratched.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_scratched.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 163.13035753038196,
+          "stddev": 58.64099069400908
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 268756,
+        "textures": 4,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 5
+      }
+    },
+    {
+      "source": "renderman_teapot_teal_glass.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_teal_glass.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_teal_glass.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 176.78157552083334,
+          "stddev": 46.852919639274624
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 268756,
+        "textures": 1,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 5
+      }
+    },
+    {
+      "source": "renderman_teapot_tiles.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_tiles.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_tiles.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 162.47313096788196,
+          "stddev": 60.062142160018304
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 268756,
+        "textures": 4,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 5
+      }
+    },
+    {
+      "source": "roughness_mollification.scene",
+      "output": "resources/scenes/glslpt_roughness_mollification.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_roughness_mollification.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 94.96635606553819,
+          "stddev": 30.78017263303789
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 37906,
+        "textures": 0,
+        "encoded_lights": 6,
+        "materials": 6,
+        "models": 5
+      }
+    },
+    {
+      "source": "slum_house.gltf",
+      "output": "resources/scenes/glslpt_slum_house_gltf.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_slum_house_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 6.767788357204861,
+          "stddev": 25.785088603271426
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 127846,
+        "textures": 10,
+        "encoded_lights": 56447,
+        "materials": 4,
+        "models": 1
+      }
+    },
+    {
+      "source": "sofa_03_4k.gltf",
+      "output": "resources/scenes/glslpt_sofa_03_4k_gltf.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_sofa_03_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 5.093743218315972,
+          "stddev": 17.525307064899103
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 8004,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 3,
+        "models": 1
+      }
+    },
+    {
+      "source": "spaceship.scene",
+      "output": "resources/scenes/glslpt_spaceship.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_spaceship.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 33.58232286241319,
+          "stddev": 44.34671856214593
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 455160,
+        "textures": 0,
+        "encoded_lights": 1634,
+        "materials": 15,
+        "models": 88
+      }
+    },
+    {
+      "source": "staircase.scene",
+      "output": "resources/scenes/glslpt_staircase.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_staircase.scene.json.png",
+        "render_metrics": {
+          "width": 410,
+          "height": 512,
+          "mean": 94.14878048780488,
+          "stddev": 59.34099103386875
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 254501,
+        "textures": 9,
+        "encoded_lights": 2,
+        "zero_normal_warnings": 3,
+        "materials": 22,
+        "models": 21
+      }
+    },
+    {
+      "source": "stormtrooper.scene",
+      "output": "resources/scenes/glslpt_stormtrooper.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_stormtrooper.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 132.03910319010416,
+          "stddev": 69.44501316379022
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 349884,
+        "textures": 0,
+        "encoded_lights": 6,
+        "materials": 7,
+        "models": 6
+      }
+    },
+    {
+      "source": "substance_boy.scene",
+      "output": "resources/scenes/glslpt_substance_boy.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_substance_boy.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 172.72047254774304,
+          "stddev": 58.152257812464136
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 164312,
+        "textures": 10,
+        "encoded_lights": 4,
+        "materials": 7,
+        "models": 9
+      }
+    },
+    {
+      "source": "substance_boy_volume.scene",
+      "output": "resources/scenes/glslpt_substance_boy_volume.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_substance_boy_volume.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 15.56485324435764,
+          "stddev": 39.00921589861271
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 79086,
+        "textures": 0,
+        "encoded_lights": 4,
+        "materials": 4,
+        "models": 5
+      }
+    },
+    {
+      "source": "tea_set_01_4k.gltf",
+      "output": "resources/scenes/glslpt_tea_set_01_4k_gltf.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_tea_set_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 1.8686116536458333,
+          "stddev": 16.05703455957027
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 40296,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      }
+    },
+    {
+      "source": "teapot.scene",
+      "output": "resources/scenes/glslpt_teapot.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_teapot.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 112.48666720920139,
+          "stddev": 30.483981434566754
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 126050,
+        "textures": 1,
+        "encoded_lights": 0,
+        "materials": 3,
+        "models": 3
+      }
+    },
+    {
+      "source": "test.scene",
+      "output": "resources/scenes/glslpt_test.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 114.67038302951389,
+          "stddev": 84.1004542319685
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 3840,
+        "textures": 0,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      }
+    },
+    {
+      "source": "test_material.scene",
+      "output": "resources/scenes/glslpt_test_material.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test_material.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 49.854288736979164,
+          "stddev": 24.961031267185366
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 976,
+        "textures": 0,
+        "encoded_lights": 3,
+        "materials": 4,
+        "models": 4
+      }
+    },
+    {
+      "source": "test_mis.scene",
+      "output": "resources/scenes/glslpt_test_mis.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test_mis.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 40.766971588134766,
+          "stddev": 77.05853498874131
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 16,
+        "textures": 0,
+        "encoded_lights": 2,
+        "materials": 3,
+        "models": 3
+      }
+    },
+    {
+      "source": "test_sphere_light_large.scene",
+      "output": "resources/scenes/glslpt_test_sphere_light_large.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test_sphere_light_large.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 156.69401168823242,
+          "stddev": 66.25929951474401
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 2,
+        "textures": 0,
+        "encoded_lights": 1,
+        "materials": 2,
+        "models": 1
+      }
+    },
+    {
+      "source": "test_sphere_light_medium.scene",
+      "output": "resources/scenes/glslpt_test_sphere_light_medium.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test_sphere_light_medium.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 83.58538055419922,
+          "stddev": 95.74961145810083
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 2,
+        "textures": 0,
+        "encoded_lights": 1,
+        "materials": 2,
+        "models": 1
+      }
+    },
+    {
+      "source": "test_sphere_light_small.scene",
+      "output": "resources/scenes/glslpt_test_sphere_light_small.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "object_counts": "passed",
+        "material_texture_bindings": "passed",
+        "project_local_resources": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test_sphere_light_small.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 43.804561614990234,
+          "stddev": 63.950278879269526
+        },
+        "audit": "passed"
+      },
+      "runtime": {
+        "triangles": 2,
+        "textures": 0,
+        "encoded_lights": 1,
+        "materials": 2,
+        "models": 1
+      }
+    },
+    {
+      "source": "test_veach.scene",
+      "output": "resources/scenes/glslpt_test_veach.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test_veach.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 43.29119873046875,
+          "stddev": 40.90443553280344
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 12,
+        "textures": 0,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 6
+      }
+    },
+    {
+      "source": "tropical_island.scene",
+      "output": "resources/scenes/glslpt_tropical_island.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_tropical_island.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 166.9302864074707,
+          "stddev": 69.5695334110758
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 278586,
+        "textures": 1,
+        "encoded_lights": 0,
+        "materials": 8,
+        "models": 62
+      }
+    },
+    {
+      "source": "tungsten-material-testball.scene",
+      "output": "resources/scenes/glslpt_tungsten-material-testball.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_tungsten-material-testball.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 132.1941392686632,
+          "stddev": 38.886749192984674
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 80770,
+        "textures": 1,
+        "encoded_lights": 0,
+        "materials": 4,
+        "models": 4
+      }
+    },
+    {
+      "source": "volume_cube - 1.scene",
+      "output": "resources/scenes/glslpt_volume_cube - 1.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_volume_cube - 1.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 13.648674858940971,
+          "stddev": 33.108035672675584
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 14,
+        "textures": 0,
+        "encoded_lights": 2,
+        "materials": 3,
+        "models": 2
+      }
+    },
+    {
+      "source": "volume_cube.scene",
+      "output": "resources/scenes/glslpt_volume_cube.scene.json",
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_volume_cube.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 89.51890055338542,
+          "stddev": 65.59647845216621
+        },
+        "roundtrip": "passed",
+        "portable_moved": "passed",
+        "external_reference_rejected": "passed",
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "runtime": {
+        "triangles": 16,
+        "textures": 0,
+        "encoded_lights": 2,
+        "materials": 4,
+        "models": 3
+      }
+    }
+  ],
+  "corrections": [
+    {
+      "issue": "Qt resized material image channel order and premultiplied alpha",
+      "status": "fixed and validated",
+      "cause": "QImage smooth scaling can return ARGB32_Premultiplied; uploading its bytes as GL_RGBA swaps red/blue and treats premultiplied colors as straight.",
+      "fix": "Convert to Format_RGBA8888 after mirroring and scaling, immediately before GPU upload.",
+      "affected_sources": [
+        "BarberShopChair_01_4k.gltf",
+        "brass_vase_01_4k.gltf",
+        "Camera_01_4k.gltf",
+        "CashRegister_01_4k.gltf",
+        "Chandelier_01_4k.gltf",
+        "ClassicConsole_01_4k.gltf",
+        "CoffeeCart_01_4k.gltf",
+        "potted_plant_04_4k.gltf",
+        "sofa_03_4k.gltf",
+        "tea_set_01_4k.gltf"
+      ],
+      "camera_evidence": "build/glslpt-camera-color-fix-hq/results.json",
+      "previous_conclusion": "The earlier attribution of color loss to the default HDR was incorrect; all resized-texture captures have been superseded.",
+      "renderer_source_sha256": {
+        "src/renderer.cpp": "f1edb8232b3e4695d49dd44ad5643d205b9fde1b0bd4754ac7b6c4a01938b789",
+        "include/MaterialTextureImage.h": "c9f2262fa39a9a5768ae3fe76ebd8c253b09d92c546f589805c9aaebf15666c2"
+      }
+    }
+  ]
+}

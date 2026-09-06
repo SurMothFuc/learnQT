@@ -6,6 +6,7 @@
 #include <QAbstractButton>
 #include <QJsonDocument>
 #include <QDebug>
+#include <QUuid>
 
 namespace {
 void answerDialog(QMessageBox::StandardButton answer) {
@@ -23,6 +24,164 @@ void answerDialog(QMessageBox::StandardButton answer) {
 }
 void learnQT::configureSceneRegression()
 {
+    // Opt-in asset acceptance run. It exercises the real scene selector and
+    // render thread without changing production scene/render interfaces.
+    const auto importedArgs=QCoreApplication::arguments();
+    const int importedOption=importedArgs.indexOf("--imported-scene-regression");
+    if(importedOption>=0 && importedOption+1<importedArgs.size()) {
+        struct ImportedState {
+            int index=-1,phase=0,frames=0,resizeAttempts=0,failures=0,captureEdge=512;
+            QStringList paths; QString output; QSize desired; QElapsedTimer time;
+            QJsonArray results; QJsonObject manifest;
+        };
+        auto state=std::make_shared<ImportedState>();
+        const int edgeOption=importedArgs.indexOf("--imported-capture-edge");
+        if(edgeOption>=0 && edgeOption+1<importedArgs.size())
+            state->captureEdge=std::max(256,std::min(1600,importedArgs[edgeOption+1].toInt()));
+        state->output=QFileInfo(importedArgs[importedOption+1]).absoluteFilePath();
+        QDir().mkpath(state->output);
+        QFile manifest(QString::fromStdString(getResourcePath("imported/glslpt/conversion_manifest.json")));
+        if(!manifest.open(QIODevice::ReadOnly)) { QTimer::singleShot(0,[] { QCoreApplication::exit(6); }); return; }
+        const auto entries=QJsonDocument::fromJson(manifest.readAll()).object()["scenes"].toArray();
+        QStringList filters;
+        for(int i=0;i+1<importedArgs.size();++i) if(importedArgs[i]=="--imported-entry") filters.append(importedArgs[i+1]);
+        bool allDiscovered=entries.size()==55;
+        for(auto v:entries) {
+            auto entry=v.toObject(); const auto filename=QFileInfo(entry["output"].toString()).fileName();
+            const auto path=QString::fromStdString(getResourcePath(("scenes/"+filename).toStdString()));
+            allDiscovered=allDiscovered && m_sceneList->findData(path)>=0;
+            state->manifest[filename]=entry;
+            if(filters.isEmpty() || filters.contains(filename)) state->paths.append(path);
+        }
+        if(!allDiscovered || state->paths.isEmpty()) {
+            std::cerr << "Imported scenes: expected all 55 entries in the UI scene list" << std::endl;
+            QTimer::singleShot(0,[] { QCoreApplication::exit(6); }); return;
+        }
+        state->paths.append(state->paths.front()); // Return to first scene after all switches.
+        connect(ui.openGLWidget,&GLWidget::framePresented,this,[state] { ++state->frames; });
+        auto timer=new QTimer(this);timer->setInterval(100);state->time.start();
+        connect(timer,&QTimer::timeout,this,[this,state,timer] {
+            auto writeResults=[state] {
+                QFile file(state->output+"/results.json");
+                if(file.open(QIODevice::WriteOnly)) file.write(QJsonDocument(QJsonObject{
+                    {"scene_list_entries",55},{"capture_presentations",96},{"full_frame_accumulation_limit",64},
+                    {"results",state->results}}).toJson());
+            };
+            auto abort=[timer,state,writeResults](const QString& message) {
+                std::cerr << "Imported scene regression: " << message.toStdString() << std::endl;
+                state->results.append(QJsonObject{{"failure",message}});writeResults();
+                timer->stop();QCoreApplication::exit(6);
+            };
+            if(state->time.elapsed()>300000) { abort("Scene timed out");return; }
+            if(m_loading) { state->frames=0;return; }
+            if(state->phase==0) {
+                if(++state->index>=state->paths.size()) {
+                    grab().save(state->output+"/scene-list-ui.png");
+                    writeResults();timer->stop();QCoreApplication::exit(state->failures ? 6:0);return;
+                }
+                state->time.restart();m_sceneDirty=false;
+                const int index=m_sceneList->findData(state->paths[state->index]);
+                m_sceneList->setCurrentIndex(index);
+                QMetaObject::invokeMethod(m_sceneList,"activated",Qt::DirectConnection,Q_ARG(int,index));
+                state->phase=1;state->frames=0;return;
+            }
+            auto& scene=Scene::getInstance();
+            if(scene.document.filePath!=state->paths[state->index]) { abort("Scene selector did not load requested file");return; }
+            const auto filename=QFileInfo(scene.document.filePath).fileName();
+            if(state->phase==1) {
+                const auto resolution=scene.document.root["conversion"].toObject()["referenceResolution"].toArray();
+                const double w=resolution[0].toDouble(1280),h=resolution[1].toDouble(720);
+                const double scale=state->captureEdge/std::max(w,h);
+                state->desired=QSize(qRound(w*scale),qRound(h*scale));state->resizeAttempts=0;
+                auto settings=scene.document.settings();settings.useTileRendering=false;
+                settings.renderLow=false;settings.denoise=false;settings.maxRenderFrames=64;
+                RenderParams::instance().applySnapshot(settings);
+                ui.DeNoisecheckBox->setChecked(false);
+                state->phase=2;state->frames=0;return;
+            }
+            if(state->phase==2) {
+                const QSize current=ui.openGLWidget->size();
+                if(current!=state->desired && state->resizeAttempts++<4) {
+                    resize(size()+state->desired-current);state->frames=0;return;
+                }
+                state->phase=3;state->frames=0;return;
+            }
+            if(state->frames<96)return;
+            const QImage image=ui.openGLWidget->grabFramebuffer().convertToFormat(QImage::Format_RGB32);
+            double sum=0,squared=0;int nonBlack=0;
+            for(int y=0;y<image.height();++y) for(int x=0;x<image.width();++x) {
+                const double l=qGray(image.pixel(x,y));sum+=l;squared+=l*l;nonBlack+=l>0;
+            }
+            const double count=double(image.width())*image.height();
+            const double mean=count>0?sum/count:0;
+            const double deviation=count>0?std::sqrt(std::max(0.0,squared/count-mean*mean)):0;
+            const bool revisit=state->index==state->paths.size()-1;
+            const QString png=filename+(revisit?".revisit.png":".png");
+            bool passed=!image.isNull() && image.save(state->output+"/"+png) &&
+                nonBlack>count*.001 && mean<254.9 && deviation>.1;
+            const auto expected=state->manifest[filename].toObject();
+            passed=passed && scene.document.root["models"].toArray().size()==expected["models"].toInt() &&
+                int(scene.triangles.size())==expected["runtime"].toObject()["triangles"].toInt() &&
+                int(scene.textures.size())==expected["runtime"].toObject()["textures"].toInt();
+            QJsonObject result{{"file",filename},{"revisit",revisit},{"png",png},{"passed",passed},
+                {"width",image.width()},{"height",image.height()},{"mean",mean},{"stddev",deviation},
+                {"triangles",int(scene.triangles.size())},{"textures",int(scene.textures.size())},
+                {"materials",scene.document.root["materials"].toArray().size()},
+                {"encoded_lights",int(scene.lights_encoded.size())}};
+            if(filename=="glslpt_Camera_01_4k_gltf.scene.json") {
+                int gold=0,brown=0;
+                for(int y=0;y<image.height();++y) for(int x=0;x<image.width();++x) {
+                    const auto pixel=image.pixel(x,y);
+                    const double r=qRed(pixel),g=qGreen(pixel),b=qBlue(pixel);
+                    gold+=r>25 && g>15 && r>g*1.15 && g>b*1.5;
+                    brown+=r>8 && r>g*1.1 && g>b*1.1;
+                }
+                // The camera's warm metal trim and leather strap must survive
+                // the actual 4K texture resize/upload/material/shader path.
+                passed=passed && gold>count*.0005 && brown>count*.002;
+                result["gold_pixels"]=gold;result["brown_pixels"]=brown;result["passed"]=passed;
+            }
+            const bool packageCase=filename=="glslpt_cornell_box_orig.scene.json" ||
+                filename=="glslpt_jinx_gltf.scene.json" || filename=="glslpt_volume_cube.scene.json";
+            if(packageCase && !revisit) {
+                QString error;SceneDocument snapshot;
+                { QMutexLocker lock(&param_mutex);snapshot=scene.snapshotDocument(); }
+                const QString saved=state->output+"/"+filename+".roundtrip.json";
+                bool roundtrip=snapshot.saveScene(saved,error);
+                auto restored=roundtrip?Scene::prepareScene(saved,false,error):std::unique_ptr<Scene>();
+                roundtrip=restored && restored->triangles.size()==scene.triangles.size() &&
+                    restored->textures.size()==scene.textures.size() &&
+                    (restored->camera.position-scene.camera.position).length()<1e-5;
+                restored.reset();
+                const QString package=state->output+"/package-"+QUuid::createUuid().toString(QUuid::WithoutBraces);
+                bool portable=roundtrip && snapshot.exportScenePackage(package,error);
+                const QString moved=package+"-moved";
+                portable=portable && QDir().rename(package,moved);
+                auto packaged=portable?Scene::prepareScene(moved+"/scene.scene.json",false,error):std::unique_ptr<Scene>();
+                portable=packaged && packaged->triangles.size()==scene.triangles.size() &&
+                    packaged->textures.size()==scene.textures.size();
+                bool externalRejected=false;
+                if(packaged) {
+                    auto escaped=packaged->document;auto models=escaped.root["models"].toArray();
+                    auto model=models[0].toObject();model["source"]=snapshot.root["models"].toArray()[0].toObject()["source"];
+                    models[0]=model;escaped.root["models"]=models;
+                    QString rejection;externalRejected=!escaped.validate(rejection);
+                }
+                result["roundtrip"]=roundtrip;result["portable_moved"]=portable;
+                result["external_reference_rejected"]=externalRejected;
+                result["package"]=moved;
+                if(!roundtrip || !portable || !externalRejected) {result["error"]=error;passed=false;}
+                result["passed"]=passed;
+            }
+            if(!passed)++state->failures;
+            state->results.append(result);writeResults();
+            std::cout << "Imported render " << state->index+1 << "/" << state->paths.size() << " "
+                << filename.toStdString() << " mean=" << mean << " stddev=" << deviation
+                << " passed=" << passed << std::endl;
+            state->phase=0;state->frames=0;m_sceneDirty=false;
+        });
+        timer->start();return;
+    }
     const auto args=QCoreApplication::arguments(); const int option=args.indexOf("--scene-switch-regression");
     if(option<0 || option+1>=args.size()) return;
     struct State { int stage=0,frames=0; QImage before; QElapsedTimer time; };

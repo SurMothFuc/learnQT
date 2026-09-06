@@ -1,5 +1,6 @@
 ﻿#include "renderer.h"
 
+#include "MaterialTextureImage.h"
 #include <QDebug>
 #include <QDir>
 #include <QFile>
@@ -913,21 +914,8 @@ void Renderer::uploadMaterialTextures(bool recreateResources)
     }
     else {
         for (int layer = 0; layer < layerCount; ++layer) {
-            // Assimp exposes texture coordinates in OpenGL's lower-left
-            // convention. QImage stores scanline zero at the top, so flip the
-            // pixels once before uploading them to OpenGL. Without this the
-            // V coordinate is effectively flipped twice for glTF assets and
-            // atlas islands (such as Lantern's post) sample unrelated texels.
-            QImage image = sourceTextures[layer].image
-                .convertToFormat(QImage::Format_RGBA8888)
-                .mirrored(false, true);
-            if (image.width() != textureWidth || image.height() != textureHeight) {
-                image = image.scaled(
-                    textureWidth,
-                    textureHeight,
-                    Qt::IgnoreAspectRatio,
-                    Qt::SmoothTransformation);
-            }
+            const QImage image = prepareMaterialTextureImage(
+                sourceTextures[layer].image, QSize(textureWidth, textureHeight));
             glTexSubImage3D(
                 GL_TEXTURE_2D_ARRAY,
                 0,

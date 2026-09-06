@@ -1,0 +1,12 @@
+# Generated from GLSLPT quad light; two triangles, double-sided emission.
+v -0.618198 2.776746 -1.11928
+v -0.618198 2.776746 -2.23928
+v 0.521802 2.776746 -2.23928
+v 0.521802 2.776746 -1.11928
+vn 0 -1 0
+vt 0 0
+vt 1 0
+vt 1 1
+vt 0 1
+f 1/1/1 2/2/1 3/3/1
+f 1/1/1 3/3/1 4/4/1

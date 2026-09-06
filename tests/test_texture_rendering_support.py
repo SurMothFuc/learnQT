@@ -85,7 +85,8 @@ def test_cpu_import_and_gpu_sampling_contract_stays_connected():
     assert "GetTriangleLightSelectPdf" in material_shader
     assert "int middle = low + (high - low) / 2;" in light_shader
     assert "materialTextureInfoBuffer" in renderer
-    assert ".mirrored(false, true)" in renderer
+    assert "prepareMaterialTextureImage(" in renderer
+    assert ".mirrored(false, true)" in read("include/MaterialTextureImage.h")
     assert "gpu_render_regression" in cmake
     assert "--regression-lantern" in cmake
     assert "import_fbx_embedded_texture" in cmake
