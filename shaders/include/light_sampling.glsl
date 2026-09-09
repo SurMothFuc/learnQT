@@ -78,12 +78,12 @@ Triangle GetTriangleLightGeometry(int triangleIndex)
 {
     int offset = triangleIndex * SIZE_TRIANGLE;
     Triangle triangle;
-    triangle.p1 = texelFetch(triangles, offset + 0).xyz;
-    triangle.p2 = texelFetch(triangles, offset + 1).xyz;
-    triangle.p3 = texelFetch(triangles, offset + 2).xyz;
-    triangle.n1 = texelFetch(triangles, offset + 3).xyz;
-    triangle.n2 = texelFetch(triangles, offset + 4).xyz;
-    triangle.n3 = texelFetch(triangles, offset + 5).xyz;
+    triangle.p1 = FetchTriangleVector(offset + 0).xyz;
+    triangle.p2 = FetchTriangleVector(offset + 1).xyz;
+    triangle.p3 = FetchTriangleVector(offset + 2).xyz;
+    triangle.n1 = FetchTriangleVector(offset + 3).xyz;
+    triangle.n2 = FetchTriangleVector(offset + 4).xyz;
+    triangle.n3 = FetchTriangleVector(offset + 5).xyz;
     GetTriangleUVs(triangleIndex, triangle.uv1, triangle.uv2, triangle.uv3);
     return triangle;
 }

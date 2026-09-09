@@ -57,7 +57,11 @@ vec3 ShadowTransmittance(vec3 origin, vec3 normal, vec3 direction,
         float remaining = maxDistance < INF ? maxDistance-dot(ray.startPoint-origin,direction) : INF;
         float tolerance = 4.0 * RayEpsilon(ray.startPoint);
         if (remaining <= tolerance) return tr;
+#ifdef INSTANCED_SCENE
+        HitResult hit = hitBVH(ray, true);
+#else
         HitResult hit = hitBVH(ray);
+#endif
         float sphereDistance;
         int sphere = IntersectAnalyticLights(ray.startPoint, direction, sphereDistance);
         float segment = min(remaining, min(hit.hitDistance, sphereDistance));

@@ -4,8 +4,8 @@ float maxComponent(vec3 v) {
 }
 
 uint seed = uint(
-    uint((pix.x * 0.5 + 0.5) * width)  * uint(1973) + 
-    uint((pix.y * 0.5 + 0.5) * height) * uint(9277) + 
+    uint(gl_FragCoord.x) * uint(1973) +
+    uint(gl_FragCoord.y) * uint(9277) +
     uint(frameCounter) * uint(26699)) | uint(1);
 uint wang_hash(inout uint seed) {
     seed = (seed ^ uint(61)) ^ (seed >> uint(16));
@@ -21,8 +21,8 @@ float rand() {
 
 vec2 CranleyPattersonRotation(vec2 p) {
     uint pseed = uint(
-        uint((pix.x * 0.5 + 0.5) * width)  * uint(1973) + 
-        uint((pix.y * 0.5 + 0.5) * height) * uint(9277) + 
+        uint(gl_FragCoord.x) * uint(1973) +
+        uint(gl_FragCoord.y) * uint(9277) +
         uint(114514/1919) * uint(26699)) | uint(1);
     
     float u = float(wang_hash(pseed)) / 4294967296.0;
@@ -74,6 +74,12 @@ vec3 ToWorld(vec3 X, vec3 Y, vec3 Z, vec3 V)
     return V.x * X + V.y * Y + V.z * Z;
 }
 float RayEpsilon(vec3 p) { return max(1e-5, 2e-6 * maxComponent(abs(p))); }
+// Keep valid smooth/mapped normals. BSDF sampling assumes the incident direction
+// lies above the shading surface; flipping an invalid normal could change sides.
+vec3 ValidShadingNormal(vec3 shading, vec3 facingGeometry, vec3 incoming) {
+    return dot(shading, facingGeometry) > 0.0 && dot(shading, -incoming) > 0.0
+        ? shading : facingGeometry;
+}
 vec3 OffsetRayOrigin(vec3 p, vec3 normal, vec3 direction) {
     return p + normal * (dot(normal, direction) >= 0.0 ? RayEpsilon(p) : -RayEpsilon(p));
 }

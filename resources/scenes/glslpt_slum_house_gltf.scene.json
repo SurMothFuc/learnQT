@@ -1,0 +1,467 @@
+{
+  "camera": {
+    "fov": 53.13010025024414,
+    "position": [
+      0,
+      0.3499999940395355,
+      4.5
+    ],
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "conversion": {
+    "notes": [
+      "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+      "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+      "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+      "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+      "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+      "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+      "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+    ],
+    "referenceResolution": [
+      1280,
+      720
+    ],
+    "source": "slum_house.gltf"
+  },
+  "credits": [
+    {
+      "asset": "slum_house.gltf",
+      "attribution": "See resources/imported/glslpt/Model Credits.txt, HDR Credits.txt and LICENSE; asset licenses differ.",
+      "source": "GLSL-PathTracer local asset collection"
+    }
+  ],
+  "hdr": "../imported/glslpt/derived/hdr/Background_05_x1.5.hdr",
+  "lights": [],
+  "materials": [
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "default",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 2,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.5,
+      "roughnessChannel": 1,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/0",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 1,
+      "metallicChannel": 2,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 1,
+      "roughnessChannel": 1,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0",
+        "metallic": "model-000/texture/2",
+        "normal": "model-000/texture/1",
+        "roughness": "model-000/texture/2"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 3,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/1",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 1,
+      "metallicChannel": 2,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 1,
+      "roughnessChannel": 1,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/3",
+        "metallic": "model-000/texture/5",
+        "normal": "model-000/texture/4",
+        "roughness": "model-000/texture/5"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 3,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "emissive": [
+        1,
+        1,
+        1
+      ],
+      "id": "model-000/material/2",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 1,
+      "metallicChannel": 2,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 1,
+      "roughnessChannel": 1,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/6",
+        "emissive": "model-000/texture/9",
+        "metallic": "model-000/texture/8",
+        "normal": "model-000/texture/7",
+        "roughness": "model-000/texture/8"
+      },
+      "transmission": 0
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {
+        "buffers/original/0/slum_house.bin": "../imported/glslpt/assets/slum_house.bin",
+        "images/gamma22/0/01_-_Default_baseColor.png.png": "../imported/glslpt/derived/gamma22/textures/01_-_Default_baseColor.png.png",
+        "images/gamma22/3/03_-_Default_baseColor.png.png": "../imported/glslpt/derived/gamma22/textures/03_-_Default_baseColor.png.png",
+        "images/gamma22/6/02_-_Default_baseColor.png.png": "../imported/glslpt/derived/gamma22/textures/02_-_Default_baseColor.png.png",
+        "images/gamma22/8/02_-_Default_emissive.png.png": "../imported/glslpt/derived/gamma22/textures/02_-_Default_emissive.png.png",
+        "images/original/0/01_-_Default_baseColor.png": "../imported/glslpt/assets/textures/01_-_Default_baseColor.png",
+        "images/original/1/01_-_Default_metallicRoughness.png": "../imported/glslpt/assets/textures/01_-_Default_metallicRoughness.png",
+        "images/original/2/01_-_Default_normal.png": "../imported/glslpt/assets/textures/01_-_Default_normal.png",
+        "images/original/3/03_-_Default_baseColor.png": "../imported/glslpt/assets/textures/03_-_Default_baseColor.png",
+        "images/original/4/03_-_Default_metallicRoughness.png": "../imported/glslpt/assets/textures/03_-_Default_metallicRoughness.png",
+        "images/original/5/03_-_Default_normal.png": "../imported/glslpt/assets/textures/03_-_Default_normal.png",
+        "images/original/6/02_-_Default_baseColor.png": "../imported/glslpt/assets/textures/02_-_Default_baseColor.png",
+        "images/original/7/02_-_Default_metallicRoughness.png": "../imported/glslpt/assets/textures/02_-_Default_metallicRoughness.png",
+        "images/original/8/02_-_Default_emissive.png": "../imported/glslpt/assets/textures/02_-_Default_emissive.png",
+        "images/original/9/02_-_Default_normal.png": "../imported/glslpt/assets/textures/02_-_Default_normal.png",
+        "images/roughness/1/01_-_Default_metallicRoughness.png.png": "../imported/glslpt/derived/roughness/textures/01_-_Default_metallicRoughness.png.png",
+        "images/roughness/4/03_-_Default_metallicRoughness.png.png": "../imported/glslpt/derived/roughness/textures/03_-_Default_metallicRoughness.png.png",
+        "images/roughness/7/02_-_Default_metallicRoughness.png.png": "../imported/glslpt/derived/roughness/textures/02_-_Default_metallicRoughness.png.png"
+      },
+      "id": "model-000",
+      "materialBindings": {
+        "0": "model-000/material/0",
+        "1": "model-000/material/1",
+        "2": "model-000/material/2"
+      },
+      "normalize": false,
+      "smoothNormals": true,
+      "source": "../imported/glslpt/derived/gltf/slum_house.gltf",
+      "transform": [
+        0.26319923996925354,
+        0,
+        0,
+        0.13540349900722504,
+        0,
+        0.26319923996925354,
+        0,
+        -0.5772494077682495,
+        0,
+        0,
+        0.26319923996925354,
+        -0.07531771808862686,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "GLSLPT · slum_house (glTF)",
+  "portable": false,
+  "render": {
+    "denoise": false,
+    "maxBounces": 2,
+    "maxRenderFrames": 0,
+    "renderLow": false,
+    "tileSize": 100,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [
+    {
+      "dependencies": null,
+      "id": "model-000/texture/0",
+      "magFilter": 9729,
+      "minFilter": 9729,
+      "source": "../imported/glslpt/derived/gamma22/textures/01_-_Default_baseColor.png.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": null,
+      "id": "model-000/texture/1",
+      "magFilter": 9729,
+      "minFilter": 9729,
+      "source": "../imported/glslpt/assets/textures/01_-_Default_normal.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": null,
+      "id": "model-000/texture/2",
+      "magFilter": 9729,
+      "minFilter": 9729,
+      "source": "../imported/glslpt/derived/roughness/textures/01_-_Default_metallicRoughness.png.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": null,
+      "id": "model-000/texture/3",
+      "magFilter": 9729,
+      "minFilter": 9729,
+      "source": "../imported/glslpt/derived/gamma22/textures/03_-_Default_baseColor.png.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": null,
+      "id": "model-000/texture/4",
+      "magFilter": 9729,
+      "minFilter": 9729,
+      "source": "../imported/glslpt/assets/textures/03_-_Default_normal.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": null,
+      "id": "model-000/texture/5",
+      "magFilter": 9729,
+      "minFilter": 9729,
+      "source": "../imported/glslpt/derived/roughness/textures/03_-_Default_metallicRoughness.png.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": null,
+      "id": "model-000/texture/6",
+      "magFilter": 9729,
+      "minFilter": 9729,
+      "source": "../imported/glslpt/derived/gamma22/textures/02_-_Default_baseColor.png.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": null,
+      "id": "model-000/texture/7",
+      "magFilter": 9729,
+      "minFilter": 9729,
+      "source": "../imported/glslpt/assets/textures/02_-_Default_normal.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": null,
+      "id": "model-000/texture/8",
+      "magFilter": 9729,
+      "minFilter": 9729,
+      "source": "../imported/glslpt/derived/roughness/textures/02_-_Default_metallicRoughness.png.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": null,
+      "id": "model-000/texture/9",
+      "magFilter": 9729,
+      "minFilter": 9729,
+      "source": "../imported/glslpt/derived/gamma22/textures/02_-_Default_emissive.png.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    }
+  ],
+  "version": 1
+}

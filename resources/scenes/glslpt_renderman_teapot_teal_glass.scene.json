@@ -1,0 +1,446 @@
+{
+  "version": 1,
+  "name": "GLSLPT · renderman_teapot_teal_glass",
+  "portable": false,
+  "models": [
+    {
+      "id": "model-000",
+      "source": "../imported/glslpt/assets/renderman/background.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "name": "Background",
+      "material": "material-checker"
+    },
+    {
+      "id": "model-001",
+      "source": "../imported/glslpt/assets/renderman/teapot.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.001,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "name": "Teapot",
+      "material": "material-teal_glass"
+    },
+    {
+      "id": "model-002",
+      "source": "../imported/glslpt/assets/renderman/teapot_base.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "name": "Base",
+      "material": "material-base"
+    },
+    {
+      "id": "light-000",
+      "source": "../imported/glslpt/derived/lights/glslpt_renderman_teapot_teal_glass_light-000.obj",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": false,
+      "normalize": false,
+      "material": "light-000"
+    },
+    {
+      "id": "light-001",
+      "source": "../imported/glslpt/derived/lights/glslpt_renderman_teapot_teal_glass_light-001.obj",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": false,
+      "normalize": false,
+      "material": "light-001"
+    }
+  ],
+  "materials": [
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "default"
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0,
+      "roughness": 0.02,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 1.0,
+      "IOR": 1.5,
+      "mediumtype": 1,
+      "mediumDensity": 100.0,
+      "mediumColor": [
+        0.085,
+        0.917,
+        0.848
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-teal_glass",
+      "textures": {}
+    },
+    {
+      "baseColor": [
+        0.01,
+        0.01,
+        0.01
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1.0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-base",
+      "textures": {}
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-checker",
+      "textures": {
+        "baseColor": "texture-000"
+      }
+    },
+    {
+      "baseColor": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "emissive": [
+        40.0,
+        41.0,
+        41.0
+      ],
+      "metallic": 0,
+      "roughness": 1.0,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "light-000"
+    },
+    {
+      "baseColor": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "emissive": [
+        40.0,
+        41.0,
+        41.0
+      ],
+      "metallic": 0,
+      "roughness": 1.0,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "light-001"
+    }
+  ],
+  "textures": [
+    {
+      "id": "texture-000",
+      "source": "../imported/glslpt/derived/gamma22/renderman/textures/checker.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    }
+  ],
+  "lights": [],
+  "hdr": "",
+  "camera": {
+    "position": [
+      0.69,
+      0.33,
+      0.0
+    ],
+    "target": [
+      0.0,
+      0.07,
+      0.0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 12.479743531383683
+  },
+  "render": {
+    "denoise": false,
+    "renderLow": false,
+    "useTileRendering": true,
+    "tileSize": 144,
+    "maxBounces": 10,
+    "maxRenderFrames": 0,
+    "useEnvironmentMap": false
+  },
+  "credits": [
+    {
+      "source": "GLSL-PathTracer local asset collection",
+      "asset": "renderman_teapot_teal_glass.scene",
+      "attribution": "See resources/imported/glslpt/Model Credits.txt, HDR Credits.txt and LICENSE; asset licenses differ."
+    }
+  ],
+  "conversion": {
+    "source": "renderman_teapot_teal_glass.scene",
+    "referenceResolution": [
+      1280.0,
+      720.0
+    ],
+    "notes": [
+      "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+      "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+      "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+      "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+      "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+      "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+    ]
+  }
+}

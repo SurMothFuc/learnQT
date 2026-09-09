@@ -1,0 +1,4874 @@
+{
+  "format_version": 1,
+  "source_collection": "GLSL-PathTracer-master",
+  "reproduction": "tools/convert_glslpt_scenes.py --source <local source directory>",
+  "scenes": [
+    {
+      "source": "ajax.scene",
+      "output": "resources/scenes/glslpt_ajax.scene.json",
+      "reference_resolution": [
+        900.0,
+        900.0
+      ],
+      "source_renderer": {
+        "resolution": "900 900",
+        "maxdepth": "2",
+        "tilewidth": "100",
+        "tileheight": "100",
+        "envmapfile": "HDR/sunset.hdr",
+        "envmapintensity": "5.0"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source-loader ignored fields at line 53: materialType"
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_ajax.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 62.806480407714844,
+          "stddev": 53.97570822194432
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/sunset.hdr",
+        "intensity": 5.0
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 6,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/sunset.hdr",
+        "ajax/ajax.obj"
+      ],
+      "generated": [
+        "derived/hdr/sunset_x5.hdr"
+      ],
+      "runtime": {
+        "triangles": 544566,
+        "textures": 0,
+        "encoded_lights": 0,
+        "materials": 7,
+        "models": 1
+      },
+      "reference_triangles": 544566,
+      "source_sha256": "8647f1a04024bb0ae21da5a6a235fe50cd6565d8d08f51c7f5a38a532ae4ed0b",
+      "source_camera": {
+        "position": "0.0 0.5 -1.8",
+        "lookat": "0 0.5 0.0",
+        "fov": "35"
+      },
+      "ignored_source_fields": [
+        {
+          "kind": "material",
+          "name": "glass",
+          "line": 53,
+          "fields": {
+            "materialType": "1.0"
+          }
+        }
+      ]
+    },
+    {
+      "source": "BarberShopChair_01_4k.gltf",
+      "output": "resources/scenes/glslpt_BarberShopChair_01_4k_gltf.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {},
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_BarberShopChair_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 4.055230034722222,
+          "stddev": 15.358782495750486
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "BarberShopChair_01.bin",
+        "BarberShopChair_01_4k.gltf",
+        "HDR/Background_05.hdr",
+        "textures/BarberShopChair_01_arm_4k.jpg",
+        "textures/BarberShopChair_01_diff_4k.jpg",
+        "textures/BarberShopChair_01_nor_gl_4k.jpg"
+      ],
+      "generated": [
+        "derived/gamma22/textures/BarberShopChair_01_diff_4k.jpg.png",
+        "derived/gltf/BarberShopChair_01_4k.gltf",
+        "derived/hdr/Background_05_x1.5.hdr",
+        "derived/roughness/textures/BarberShopChair_01_arm_4k.jpg.png"
+      ],
+      "runtime": {
+        "triangles": 4280,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      },
+      "reference_triangles": 4280,
+      "source_sha256": "c2c90992f726b26fff6d91b4a1c99cab0c98c04dd76f6fa525d01970a5851eee",
+      "source_camera": null,
+      "ignored_source_fields": []
+    },
+    {
+      "source": "bedroom.scene",
+      "output": "resources/scenes/glslpt_bedroom.scene.json",
+      "reference_resolution": [
+        1270.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1270 720",
+        "maxdepth": "3",
+        "tilewidth": "100",
+        "tileheight": "100"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Duplicate material Curtains: kept first definition as source loader does.",
+        "Duplicate material Curtains: kept first definition as source loader does.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_bedroom.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 290,
+          "mean": 156.68797817887932,
+          "stddev": 60.18536198517177
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 68,
+      "models": 70,
+      "authored_materials": 30,
+      "analytic_lights": 0,
+      "quad_lights": 2,
+      "dependencies": [
+        "bedroom/Mesh000.obj",
+        "bedroom/Mesh001.obj",
+        "bedroom/Mesh002.obj",
+        "bedroom/Mesh003.obj",
+        "bedroom/Mesh005.obj",
+        "bedroom/Mesh006.obj",
+        "bedroom/Mesh007.obj",
+        "bedroom/Mesh008.obj",
+        "bedroom/Mesh009.obj",
+        "bedroom/Mesh010.obj",
+        "bedroom/Mesh011.obj",
+        "bedroom/Mesh012.obj",
+        "bedroom/Mesh013.obj",
+        "bedroom/Mesh014.obj",
+        "bedroom/Mesh015.obj",
+        "bedroom/Mesh016.obj",
+        "bedroom/Mesh017.obj",
+        "bedroom/Mesh018.obj",
+        "bedroom/Mesh019.obj",
+        "bedroom/Mesh020.obj",
+        "bedroom/Mesh021.obj",
+        "bedroom/Mesh022.obj",
+        "bedroom/Mesh023.obj",
+        "bedroom/Mesh024.obj",
+        "bedroom/Mesh025.obj",
+        "bedroom/Mesh026.obj",
+        "bedroom/Mesh027.obj",
+        "bedroom/Mesh028.obj",
+        "bedroom/Mesh029.obj",
+        "bedroom/Mesh030.obj",
+        "bedroom/Mesh031.obj",
+        "bedroom/Mesh032.obj",
+        "bedroom/Mesh033.obj",
+        "bedroom/Mesh034.obj",
+        "bedroom/Mesh035.obj",
+        "bedroom/Mesh036.obj",
+        "bedroom/Mesh037.obj",
+        "bedroom/Mesh038.obj",
+        "bedroom/Mesh039.obj",
+        "bedroom/Mesh040.obj",
+        "bedroom/Mesh041.obj",
+        "bedroom/Mesh042.obj",
+        "bedroom/Mesh043.obj",
+        "bedroom/Mesh044.obj",
+        "bedroom/Mesh045.obj",
+        "bedroom/Mesh046.obj",
+        "bedroom/Mesh047.obj",
+        "bedroom/Mesh048.obj",
+        "bedroom/Mesh049.obj",
+        "bedroom/Mesh050.obj",
+        "bedroom/Mesh051.obj",
+        "bedroom/Mesh052.obj",
+        "bedroom/Mesh053.obj",
+        "bedroom/Mesh054.obj",
+        "bedroom/Mesh055.obj",
+        "bedroom/Mesh056.obj",
+        "bedroom/Mesh058.obj",
+        "bedroom/Mesh059.obj",
+        "bedroom/Mesh060.obj",
+        "bedroom/Mesh061.obj",
+        "bedroom/Mesh062.obj",
+        "bedroom/Mesh063.obj",
+        "bedroom/Mesh064.obj",
+        "bedroom/Mesh065.obj",
+        "bedroom/Mesh066.obj",
+        "bedroom/Mesh067.obj",
+        "bedroom/Mesh068.obj",
+        "bedroom/Mesh069.obj",
+        "bedroom/textures/Teapot.png",
+        "bedroom/textures/panel-wood-3.jpg",
+        "bedroom/textures/wallpaper-1.jpg",
+        "bedroom/textures/wood4.jpg"
+      ],
+      "generated": [
+        "derived/gamma22/bedroom/textures/Teapot.png.png",
+        "derived/gamma22/bedroom/textures/panel-wood-3.jpg.png",
+        "derived/gamma22/bedroom/textures/wallpaper-1.jpg.png",
+        "derived/gamma22/bedroom/textures/wood4.jpg.png",
+        "derived/lights/glslpt_bedroom_light-000.obj",
+        "derived/lights/glslpt_bedroom_light-001.obj"
+      ],
+      "runtime": {
+        "triangles": 1491754,
+        "textures": 4,
+        "encoded_lights": 4,
+        "materials": 33,
+        "models": 70
+      },
+      "reference_triangles": 1491754,
+      "source_sha256": "41f2f8ad097eac6d398583b76874620885d3e0f5a2546f91081c67ed48deec27",
+      "source_camera": {
+        "position": "3 1.5 3.8",
+        "lookat": "0.0 1.0 0.31",
+        "fov": "60"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "brass_vase_01_4k.gltf",
+      "output": "resources/scenes/glslpt_brass_vase_01_4k_gltf.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {},
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_brass_vase_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 1.8993123372395833,
+          "stddev": 14.701171535428703
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/Background_05.hdr",
+        "brass_vase_01.bin",
+        "brass_vase_01_4k.gltf",
+        "textures/brass_vase_01_arm_4k.jpg",
+        "textures/brass_vase_01_diff_4k.jpg",
+        "textures/brass_vase_01_nor_gl_4k.jpg"
+      ],
+      "generated": [
+        "derived/gamma22/textures/brass_vase_01_diff_4k.jpg.png",
+        "derived/gltf/brass_vase_01_4k.gltf",
+        "derived/hdr/Background_05_x1.5.hdr",
+        "derived/roughness/textures/brass_vase_01_arm_4k.jpg.png"
+      ],
+      "runtime": {
+        "triangles": 21440,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      },
+      "reference_triangles": 21440,
+      "source_sha256": "47a404b9a7068fd97e8c3fe2d505199ea181d17af99cd98a48994ae299f6bfd9",
+      "source_camera": null,
+      "ignored_source_fields": []
+    },
+    {
+      "source": "Camera_01_4k.gltf",
+      "output": "resources/scenes/glslpt_Camera_01_4k_gltf.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {},
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_Camera_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 1.2409261067708333,
+          "stddev": 7.797403321387752,
+          "gold_pixels": 198,
+          "brown_pixels": 700
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed",
+        "camera_color": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "Camera_01.bin",
+        "Camera_01_4k.gltf",
+        "HDR/Background_05.hdr",
+        "textures/Camera_01_body_arm_4k.jpg",
+        "textures/Camera_01_body_diff_4k.jpg",
+        "textures/Camera_01_body_nor_gl_4k.jpg",
+        "textures/Camera_01_lens_body_arm_4k.jpg",
+        "textures/Camera_01_lens_body_diff_4k.jpg",
+        "textures/Camera_01_lens_body_nor_gl_4k.jpg",
+        "textures/Camera_01_strap_arm_4k.jpg",
+        "textures/Camera_01_strap_diff_4k.jpg",
+        "textures/Camera_01_strap_nor_gl_4k.jpg"
+      ],
+      "generated": [
+        "derived/gamma22/textures/Camera_01_body_diff_4k.jpg.png",
+        "derived/gamma22/textures/Camera_01_lens_body_diff_4k.jpg.png",
+        "derived/gamma22/textures/Camera_01_strap_diff_4k.jpg.png",
+        "derived/gltf/Camera_01_4k.gltf",
+        "derived/hdr/Background_05_x1.5.hdr",
+        "derived/roughness/textures/Camera_01_body_arm_4k.jpg.png",
+        "derived/roughness/textures/Camera_01_lens_body_arm_4k.jpg.png",
+        "derived/roughness/textures/Camera_01_strap_arm_4k.jpg.png"
+      ],
+      "runtime": {
+        "triangles": 26987,
+        "textures": 9,
+        "encoded_lights": 0,
+        "materials": 5,
+        "models": 1
+      },
+      "reference_triangles": 26987,
+      "source_sha256": "341e22e8604e1509195b18581101da1c14924c382373332418676a55b475a5e4",
+      "source_camera": null,
+      "ignored_source_fields": []
+    },
+    {
+      "source": "CashRegister_01_4k.gltf",
+      "output": "resources/scenes/glslpt_CashRegister_01_4k_gltf.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {},
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_CashRegister_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 18.49264187282986,
+          "stddev": 44.09577721197663
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "CashRegister_01.bin",
+        "CashRegister_01_4k.gltf",
+        "HDR/Background_05.hdr",
+        "textures/CashRegister_01_arm_4k.jpg",
+        "textures/CashRegister_01_diff_4k.jpg",
+        "textures/CashRegister_01_glass_arm_4k.jpg",
+        "textures/CashRegister_01_glass_diff_4k.jpg",
+        "textures/CashRegister_01_glass_nor_gl_4k.jpg",
+        "textures/CashRegister_01_nor_gl_4k.jpg"
+      ],
+      "generated": [
+        "derived/gamma22/textures/CashRegister_01_diff_4k.jpg.png",
+        "derived/gamma22/textures/CashRegister_01_glass_diff_4k.jpg.png",
+        "derived/gltf/CashRegister_01_4k.gltf",
+        "derived/hdr/Background_05_x1.5.hdr",
+        "derived/roughness/textures/CashRegister_01_arm_4k.jpg.png",
+        "derived/roughness/textures/CashRegister_01_glass_arm_4k.jpg.png"
+      ],
+      "runtime": {
+        "triangles": 9927,
+        "textures": 6,
+        "encoded_lights": 0,
+        "materials": 3,
+        "models": 1
+      },
+      "reference_triangles": 9927,
+      "source_sha256": "2647a6bc51b187cbae3674a3f73ad68fe6905f5b683334093dc2add56dd2bedb",
+      "source_camera": null,
+      "ignored_source_fields": []
+    },
+    {
+      "source": "Chandelier_01_4k.gltf",
+      "output": "resources/scenes/glslpt_Chandelier_01_4k_gltf.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {},
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_Chandelier_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 9.673441569010416,
+          "stddev": 37.37907552288781
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "Chandelier_01.bin",
+        "Chandelier_01_4k.gltf",
+        "HDR/Background_05.hdr",
+        "textures/Chandelier_01_arm_4k.jpg",
+        "textures/Chandelier_01_diff_4k.jpg",
+        "textures/Chandelier_01_nor_gl_4k.jpg"
+      ],
+      "generated": [
+        "derived/gamma22/textures/Chandelier_01_diff_4k.jpg.png",
+        "derived/gltf/Chandelier_01_4k.gltf",
+        "derived/hdr/Background_05_x1.5.hdr",
+        "derived/roughness/textures/Chandelier_01_arm_4k.jpg.png"
+      ],
+      "runtime": {
+        "triangles": 26860,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 3,
+        "models": 1
+      },
+      "reference_triangles": 26860,
+      "source_sha256": "64d0cc3e410b45b3a6e513b3a612c2b7ce42e7db94fac9b075c8a9aa2022f3c8",
+      "source_camera": null,
+      "ignored_source_fields": []
+    },
+    {
+      "source": "ClassicConsole_01_4k.gltf",
+      "output": "resources/scenes/glslpt_ClassicConsole_01_4k_gltf.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {},
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_ClassicConsole_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 1.7328016493055556,
+          "stddev": 9.470630022045864
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "ClassicConsole_01.bin",
+        "ClassicConsole_01_4k.gltf",
+        "HDR/Background_05.hdr",
+        "textures/ClassicConsole_01_arm_4k.jpg",
+        "textures/ClassicConsole_01_diff_4k.jpg",
+        "textures/ClassicConsole_01_nor_gl_4k.jpg"
+      ],
+      "generated": [
+        "derived/gamma22/textures/ClassicConsole_01_diff_4k.jpg.png",
+        "derived/gltf/ClassicConsole_01_4k.gltf",
+        "derived/hdr/Background_05_x1.5.hdr",
+        "derived/roughness/textures/ClassicConsole_01_arm_4k.jpg.png"
+      ],
+      "runtime": {
+        "triangles": 7566,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      },
+      "reference_triangles": 7566,
+      "source_sha256": "686d52a7d0013ec2e9d2e218eb4a36754074683b30b40d0013c44f2633903a3b",
+      "source_camera": null,
+      "ignored_source_fields": []
+    },
+    {
+      "source": "coffee_pot.scene",
+      "output": "resources/scenes/glslpt_coffee_pot.scene.json",
+      "reference_resolution": [
+        700.0,
+        900.0
+      ],
+      "source_renderer": {
+        "resolution": "700 900",
+        "maxdepth": "5",
+        "tilewidth": "100",
+        "tileheight": "100"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_coffee_pot.scene.json.png",
+        "render_metrics": {
+          "width": 398,
+          "height": 512,
+          "mean": 134.74428293812815,
+          "stddev": 50.133657913392284
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 20,
+      "models": 23,
+      "authored_materials": 5,
+      "analytic_lights": 0,
+      "quad_lights": 3,
+      "dependencies": [
+        "coffee_maker/Mesh000.obj",
+        "coffee_maker/Mesh001.obj",
+        "coffee_maker/Mesh002.obj",
+        "coffee_maker/Mesh003.obj",
+        "coffee_maker/Mesh004.obj",
+        "coffee_maker/Mesh005.obj",
+        "coffee_maker/Mesh006.obj",
+        "coffee_maker/Mesh007.obj",
+        "coffee_maker/Mesh008.obj",
+        "coffee_maker/Mesh009.obj",
+        "coffee_maker/Mesh010.obj",
+        "coffee_maker/Mesh011.obj",
+        "coffee_maker/Mesh012.obj",
+        "coffee_maker/Mesh013.obj",
+        "coffee_maker/Mesh014.obj",
+        "coffee_maker/Mesh015.obj",
+        "coffee_maker/Mesh016.obj",
+        "coffee_maker/Mesh017.obj",
+        "coffee_maker/Mesh018.obj",
+        "coffee_maker/Mesh019.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_coffee_pot_light-000.obj",
+        "derived/lights/glslpt_coffee_pot_light-001.obj",
+        "derived/lights/glslpt_coffee_pot_light-002.obj"
+      ],
+      "runtime": {
+        "triangles": 235271,
+        "textures": 0,
+        "encoded_lights": 6,
+        "materials": 9,
+        "models": 23
+      },
+      "reference_triangles": 235271,
+      "source_sha256": "e47b15d9a32685e3e91b6413a1c582ff1e8a5e3638af3229951e9c87428c4532",
+      "source_camera": {
+        "position": "0 0.26 0.7",
+        "lookat": "0 0.16 -0.1",
+        "fov": "30"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "CoffeeCart_01_4k.gltf",
+      "output": "resources/scenes/glslpt_CoffeeCart_01_4k_gltf.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {},
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_CoffeeCart_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 6.23626708984375,
+          "stddev": 22.620848732588616
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "CoffeeCart_01.bin",
+        "CoffeeCart_01_4k.gltf",
+        "HDR/Background_05.hdr",
+        "textures/CoffeeCart_01_cart_arm_4k.jpg",
+        "textures/CoffeeCart_01_cart_diff_4k.jpg",
+        "textures/CoffeeCart_01_cart_nor_gl_4k.jpg",
+        "textures/CoffeeCart_01_props_arm_4k.jpg",
+        "textures/CoffeeCart_01_props_diff_4k.jpg",
+        "textures/CoffeeCart_01_props_nor_gl_4k.jpg"
+      ],
+      "generated": [
+        "derived/gamma22/textures/CoffeeCart_01_cart_diff_4k.jpg.png",
+        "derived/gamma22/textures/CoffeeCart_01_props_diff_4k.jpg.png",
+        "derived/gltf/CoffeeCart_01_4k.gltf",
+        "derived/hdr/Background_05_x1.5.hdr",
+        "derived/roughness/textures/CoffeeCart_01_cart_arm_4k.jpg.png",
+        "derived/roughness/textures/CoffeeCart_01_props_arm_4k.jpg.png"
+      ],
+      "runtime": {
+        "triangles": 27659,
+        "textures": 6,
+        "encoded_lights": 0,
+        "materials": 4,
+        "models": 1
+      },
+      "reference_triangles": 27659,
+      "source_sha256": "bac811783d007b5e24260699c3f51434596966d52253d061e81b81bf3f3c8068",
+      "source_camera": null,
+      "ignored_source_fields": []
+    },
+    {
+      "source": "cornell_box_orig.scene",
+      "output": "resources/scenes/glslpt_cornell_box_orig.scene.json",
+      "reference_resolution": [
+        800.0,
+        800.0
+      ],
+      "source_renderer": {
+        "resolution": "800 800",
+        "maxdepth": "2",
+        "tilewidth": "200",
+        "tileheight": "200",
+        "envmapintensity": "2.0"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_cornell_box_orig.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 61.384525299072266,
+          "stddev": 27.495552845407527
+        },
+        "roundtrip": "passed",
+        "portable_moved": "passed",
+        "external_reference_rejected": "passed",
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 7,
+      "models": 8,
+      "authored_materials": 7,
+      "analytic_lights": 0,
+      "quad_lights": 1,
+      "dependencies": [
+        "cornell_box/cbox_back.obj",
+        "cornell_box/cbox_ceiling.obj",
+        "cornell_box/cbox_floor.obj",
+        "cornell_box/cbox_greenwall.obj",
+        "cornell_box/cbox_largebox.obj",
+        "cornell_box/cbox_redwall.obj",
+        "cornell_box/cbox_smallbox.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_cornell_box_orig_light-000.obj"
+      ],
+      "runtime": {
+        "triangles": 36,
+        "textures": 0,
+        "encoded_lights": 2,
+        "materials": 9,
+        "models": 8
+      },
+      "reference_triangles": 36,
+      "source_sha256": "1169e947b63f28aa39f2cb516e34410d8c0ec31987be9eddb4efc340430f0a6d",
+      "source_camera": {
+        "position": ".276 .275 -.75",
+        "lookat": ".276 .275 .10",
+        "fov": "40"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "cornell_box_sphere.scene",
+      "output": "resources/scenes/glslpt_cornell_box_sphere.scene.json",
+      "reference_resolution": [
+        800.0,
+        800.0
+      ],
+      "source_renderer": {
+        "resolution": "800 800",
+        "maxdepth": "3",
+        "tilewidth": "200",
+        "tileheight": "200"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_cornell_box_sphere.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 84.50818634033203,
+          "stddev": 27.920560437244596
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 7,
+      "models": 8,
+      "authored_materials": 8,
+      "analytic_lights": 0,
+      "quad_lights": 1,
+      "dependencies": [
+        "cornell_box/cbox_back.obj",
+        "cornell_box/cbox_ceiling.obj",
+        "cornell_box/cbox_floor.obj",
+        "cornell_box/cbox_greenwall.obj",
+        "cornell_box/cbox_largebox.obj",
+        "cornell_box/cbox_redwall.obj",
+        "cornell_box/glass_sphere.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_cornell_box_sphere_light-000.obj"
+      ],
+      "runtime": {
+        "triangles": 15896,
+        "textures": 0,
+        "encoded_lights": 2,
+        "materials": 10,
+        "models": 8
+      },
+      "reference_triangles": 15896,
+      "source_sha256": "dcad300558ab851d56ed186fda234c656cee51b852896765f1e75a98fbc37e68",
+      "source_camera": {
+        "position": ".276 .275 -.75",
+        "lookat": ".276 .275 .10",
+        "fov": "40"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "diningroom.scene",
+      "output": "resources/scenes/glslpt_diningroom.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "3",
+        "tilewidth": "256",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_diningroom.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 122.53835042317708,
+          "stddev": 60.92915514044753
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 44,
+      "models": 50,
+      "authored_materials": 28,
+      "analytic_lights": 0,
+      "quad_lights": 6,
+      "dependencies": [
+        "diningroom/book1.obj",
+        "diningroom/book10.obj",
+        "diningroom/book11.obj",
+        "diningroom/book12.obj",
+        "diningroom/book13.obj",
+        "diningroom/book14.obj",
+        "diningroom/book15.obj",
+        "diningroom/book16.obj",
+        "diningroom/book17.obj",
+        "diningroom/book18.obj",
+        "diningroom/book2.obj",
+        "diningroom/book3.obj",
+        "diningroom/book4.obj",
+        "diningroom/book5.obj",
+        "diningroom/book6.obj",
+        "diningroom/book7.obj",
+        "diningroom/book8.obj",
+        "diningroom/book9.obj",
+        "diningroom/bucket1.obj",
+        "diningroom/bucket2.obj",
+        "diningroom/bucket3.obj",
+        "diningroom/bucket4.obj",
+        "diningroom/chair_legs.obj",
+        "diningroom/chair_nuts.obj",
+        "diningroom/chair_rubber_pegs.obj",
+        "diningroom/chair_seats.obj",
+        "diningroom/cupboards.obj",
+        "diningroom/floor.obj",
+        "diningroom/floor_frame.obj",
+        "diningroom/frame1.obj",
+        "diningroom/frame2.obj",
+        "diningroom/left_front_wall.obj",
+        "diningroom/picture1.obj",
+        "diningroom/picture2.obj",
+        "diningroom/plant.obj",
+        "diningroom/rightwall.obj",
+        "diningroom/shelf.obj",
+        "diningroom/shelf_book1.obj",
+        "diningroom/shelf_book2.obj",
+        "diningroom/shelf_object2.obj",
+        "diningroom/shelf_objects.obj",
+        "diningroom/table_glass.obj",
+        "diningroom/table_legs.obj",
+        "diningroom/textures/book1.jpg",
+        "diningroom/textures/book10.jpg",
+        "diningroom/textures/book11.jpg",
+        "diningroom/textures/book14.jpg",
+        "diningroom/textures/book15.jpg",
+        "diningroom/textures/book16.jpg",
+        "diningroom/textures/book17.jpg",
+        "diningroom/textures/book18.jpg",
+        "diningroom/textures/book2.jpg",
+        "diningroom/textures/book3.jpg",
+        "diningroom/textures/book4.jpg",
+        "diningroom/textures/book6.jpg",
+        "diningroom/textures/book7.jpg",
+        "diningroom/textures/book8.jpg",
+        "diningroom/textures/book9.jpg",
+        "diningroom/textures/box.jpg",
+        "diningroom/textures/floor.jpg",
+        "diningroom/textures/painting.jpg",
+        "diningroom/textures/shelfbook1.jpg",
+        "diningroom/textures/shelfbook2.jpg",
+        "diningroom/vase.obj"
+      ],
+      "generated": [
+        "derived/gamma22/diningroom/textures/book1.jpg.png",
+        "derived/gamma22/diningroom/textures/book10.jpg.png",
+        "derived/gamma22/diningroom/textures/book11.jpg.png",
+        "derived/gamma22/diningroom/textures/book14.jpg.png",
+        "derived/gamma22/diningroom/textures/book15.jpg.png",
+        "derived/gamma22/diningroom/textures/book16.jpg.png",
+        "derived/gamma22/diningroom/textures/book17.jpg.png",
+        "derived/gamma22/diningroom/textures/book18.jpg.png",
+        "derived/gamma22/diningroom/textures/book2.jpg.png",
+        "derived/gamma22/diningroom/textures/book3.jpg.png",
+        "derived/gamma22/diningroom/textures/book4.jpg.png",
+        "derived/gamma22/diningroom/textures/book6.jpg.png",
+        "derived/gamma22/diningroom/textures/book7.jpg.png",
+        "derived/gamma22/diningroom/textures/book8.jpg.png",
+        "derived/gamma22/diningroom/textures/book9.jpg.png",
+        "derived/gamma22/diningroom/textures/box.jpg.png",
+        "derived/gamma22/diningroom/textures/floor.jpg.png",
+        "derived/gamma22/diningroom/textures/painting.jpg.png",
+        "derived/gamma22/diningroom/textures/shelfbook1.jpg.png",
+        "derived/gamma22/diningroom/textures/shelfbook2.jpg.png",
+        "derived/lights/glslpt_diningroom_light-000.obj",
+        "derived/lights/glslpt_diningroom_light-001.obj",
+        "derived/lights/glslpt_diningroom_light-002.obj",
+        "derived/lights/glslpt_diningroom_light-003.obj",
+        "derived/lights/glslpt_diningroom_light-004.obj",
+        "derived/lights/glslpt_diningroom_light-005.obj"
+      ],
+      "runtime": {
+        "triangles": 725264,
+        "textures": 20,
+        "encoded_lights": 12,
+        "materials": 35,
+        "models": 50
+      },
+      "reference_triangles": 725264,
+      "source_sha256": "2883ab50221fa72c8df06c08600c34781e1f6a3572f445722fde946021fb9e0b",
+      "source_camera": {
+        "position": "-4.5 1.6 0.0",
+        "lookat": "0.0 0.8 0.0",
+        "fov": "60"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "dragon.scene",
+      "output": "resources/scenes/glslpt_dragon.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "8",
+        "tilewidth": "256",
+        "tileheight": "144",
+        "envmapfile": "HDR/sunset.hdr",
+        "envmapintensity": "5.0",
+        "enablerr": "true",
+        "rrdepth": "3"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enablerr=true; native renderer behavior retained.",
+        "Source renderer rrdepth=3; native renderer behavior retained."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_dragon.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 132.7614949544271,
+          "stddev": 42.22376423429859
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/sunset.hdr",
+        "intensity": 5.0
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 1,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/sunset.hdr",
+        "dragon/dragon.obj"
+      ],
+      "generated": [
+        "derived/hdr/sunset_x5.hdr"
+      ],
+      "runtime": {
+        "triangles": 831812,
+        "textures": 0,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      },
+      "reference_triangles": 831812,
+      "source_sha256": "990e3da5966a4d0da98806c800689f5e39ebc648ef22e38219a7c56a4f1fc5f3",
+      "source_camera": {
+        "position": "-35.0 12.0 -26.0",
+        "lookat": "0 7 0",
+        "fov": "60"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "furnace.scene",
+      "output": "resources/scenes/glslpt_furnace.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "3",
+        "tilewidth": "320",
+        "tileheight": "180"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_furnace.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 0.7480807834201388,
+          "stddev": 9.544176314356086
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 1,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/Background_05.hdr",
+        "furnace/sphere.obj"
+      ],
+      "generated": [
+        "derived/hdr/Background_05_x1.5.hdr"
+      ],
+      "runtime": {
+        "triangles": 3968,
+        "textures": 0,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      },
+      "reference_triangles": 3968,
+      "source_sha256": "43f46bece0cdf24d6a8d09d724f40be19c151264ac9a882cff6df39f027c43dc",
+      "source_camera": {
+        "position": "0 0 10",
+        "lookat": "0 0 0",
+        "fov": "60"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "hyperion_distant_light.scene",
+      "output": "resources/scenes/glslpt_hyperion_distant_light.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "3",
+        "tilewidth": "256",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source-loader ignored fields at line 16: specular",
+        "Source-loader ignored fields at line 33: specular",
+        "Source-loader ignored fields at line 42: specular",
+        "Source-loader ignored fields at line 50: specular",
+        "Source-loader ignored fields at line 57: specular",
+        "Source-loader ignored fields at line 70: specular",
+        "Source-loader ignored fields at line 80: specular",
+        "Ideal distant light approximated by a visible 0.1-degree sun disk with matched integrated irradiance."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render-fixed/glslpt_hyperion_distant_light.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 111.39727105034723,
+          "stddev": 22.370306713043615
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 11,
+      "models": 11,
+      "authored_materials": 8,
+      "analytic_lights": 1,
+      "quad_lights": 0,
+      "dependencies": [
+        "hyperion/chrome.obj",
+        "hyperion/floor.obj",
+        "hyperion/glass.obj",
+        "hyperion/marb1.obj",
+        "hyperion/marb2.obj",
+        "hyperion/orange.obj",
+        "hyperion/pingpong.obj",
+        "hyperion/plate.obj",
+        "hyperion/ring1.obj",
+        "hyperion/ring2.obj",
+        "hyperion/ring3.obj"
+      ],
+      "generated": [],
+      "runtime": {
+        "triangles": 107534,
+        "textures": 0,
+        "encoded_lights": 1,
+        "materials": 9,
+        "models": 11
+      },
+      "reference_triangles": 107534,
+      "source_sha256": "df13dfa80b8af5d563165976386e6de3661565a1318bce59e24824033e71bd4b",
+      "source_camera": {
+        "position": "-15.0 15.0 0.0",
+        "lookat": "0 0 0",
+        "fov": "60"
+      },
+      "ignored_source_fields": [
+        {
+          "kind": "material",
+          "name": "orange",
+          "line": 16,
+          "fields": {
+            "specular": "0.5"
+          }
+        },
+        {
+          "kind": "material",
+          "name": "silver",
+          "line": 33,
+          "fields": {
+            "specular": "0.5"
+          }
+        },
+        {
+          "kind": "material",
+          "name": "ring_silver",
+          "line": 42,
+          "fields": {
+            "specular": "0.5"
+          }
+        },
+        {
+          "kind": "material",
+          "name": "off_white",
+          "line": 50,
+          "fields": {
+            "specular": "0.5"
+          }
+        },
+        {
+          "kind": "material",
+          "name": "ping",
+          "line": 57,
+          "fields": {
+            "specular": "0.5"
+          }
+        },
+        {
+          "kind": "material",
+          "name": "marb1",
+          "line": 70,
+          "fields": {
+            "specular": "0.5"
+          }
+        },
+        {
+          "kind": "material",
+          "name": "marb2",
+          "line": 80,
+          "fields": {
+            "specular": "0.5"
+          }
+        }
+      ]
+    },
+    {
+      "source": "hyperion_rect_lights.scene",
+      "output": "resources/scenes/glslpt_hyperion_rect_lights.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "3",
+        "tilewidth": "256",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source-loader ignored fields at line 100: position, scale",
+        "Duplicate material black: kept first definition as source loader does.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_hyperion_rect_lights.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 72.27817789713542,
+          "stddev": 63.71245758609857
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 11,
+      "models": 28,
+      "authored_materials": 10,
+      "analytic_lights": 0,
+      "quad_lights": 17,
+      "dependencies": [
+        "hyperion/chrome.obj",
+        "hyperion/floor.obj",
+        "hyperion/glass.obj",
+        "hyperion/marb1.obj",
+        "hyperion/marb2.obj",
+        "hyperion/orange.obj",
+        "hyperion/pingpong.obj",
+        "hyperion/plate.obj",
+        "hyperion/ring1.obj",
+        "hyperion/ring2.obj",
+        "hyperion/ring3.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_hyperion_rect_lights_light-000.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-001.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-002.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-003.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-004.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-005.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-006.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-007.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-008.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-009.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-010.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-011.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-012.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-013.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-014.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-015.obj",
+        "derived/lights/glslpt_hyperion_rect_lights_light-016.obj"
+      ],
+      "runtime": {
+        "triangles": 107568,
+        "textures": 0,
+        "encoded_lights": 34,
+        "materials": 28,
+        "models": 28
+      },
+      "reference_triangles": 107568,
+      "source_sha256": "1c0a627c4d1d455e8273c32f9ce818e20a1917a095a65354a2f868cbeb5ed96b",
+      "source_camera": {
+        "position": "-15.0 15.0 0.0",
+        "lookat": "0 0 0",
+        "fov": "60"
+      },
+      "ignored_source_fields": [
+        {
+          "kind": "material",
+          "name": "black",
+          "line": 100,
+          "fields": {
+            "position": "2.791 0.839 -0.59",
+            "scale": "0.1 0.1 0.1"
+          }
+        }
+      ]
+    },
+    {
+      "source": "hyperion_sphere_light.scene",
+      "output": "resources/scenes/glslpt_hyperion_sphere_light.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "3",
+        "tilewidth": "256",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source-loader ignored fields at line 16: specular",
+        "Source-loader ignored fields at line 33: specular",
+        "Source-loader ignored fields at line 42: specular",
+        "Source-loader ignored fields at line 50: specular",
+        "Source-loader ignored fields at line 57: specular",
+        "Source-loader ignored fields at line 70: specular",
+        "Source-loader ignored fields at line 80: specular"
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_hyperion_sphere_light.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 158.0874769422743,
+          "stddev": 34.64973962100202
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 11,
+      "models": 11,
+      "authored_materials": 8,
+      "analytic_lights": 1,
+      "quad_lights": 0,
+      "dependencies": [
+        "hyperion/chrome.obj",
+        "hyperion/floor.obj",
+        "hyperion/glass.obj",
+        "hyperion/marb1.obj",
+        "hyperion/marb2.obj",
+        "hyperion/orange.obj",
+        "hyperion/pingpong.obj",
+        "hyperion/plate.obj",
+        "hyperion/ring1.obj",
+        "hyperion/ring2.obj",
+        "hyperion/ring3.obj"
+      ],
+      "generated": [],
+      "runtime": {
+        "triangles": 107534,
+        "textures": 0,
+        "encoded_lights": 1,
+        "materials": 9,
+        "models": 11
+      },
+      "reference_triangles": 107534,
+      "source_sha256": "e178cca3c720218d10f240f563238e04d68306ccaeeec74baf75070f6cbb799f",
+      "source_camera": {
+        "position": "-15.0 15.0 0.0",
+        "lookat": "0 0 0",
+        "fov": "60"
+      },
+      "ignored_source_fields": [
+        {
+          "kind": "material",
+          "name": "orange",
+          "line": 16,
+          "fields": {
+            "specular": "0.5"
+          }
+        },
+        {
+          "kind": "material",
+          "name": "silver",
+          "line": 33,
+          "fields": {
+            "specular": "0.5"
+          }
+        },
+        {
+          "kind": "material",
+          "name": "ring_silver",
+          "line": 42,
+          "fields": {
+            "specular": "0.5"
+          }
+        },
+        {
+          "kind": "material",
+          "name": "off_white",
+          "line": 50,
+          "fields": {
+            "specular": "0.5"
+          }
+        },
+        {
+          "kind": "material",
+          "name": "ping",
+          "line": 57,
+          "fields": {
+            "specular": "0.5"
+          }
+        },
+        {
+          "kind": "material",
+          "name": "marb1",
+          "line": 70,
+          "fields": {
+            "specular": "0.5"
+          }
+        },
+        {
+          "kind": "material",
+          "name": "marb2",
+          "line": 80,
+          "fields": {
+            "specular": "0.5"
+          }
+        }
+      ]
+    },
+    {
+      "source": "jinx.gltf",
+      "output": "resources/scenes/glslpt_jinx_gltf.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {},
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_jinx_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 2.916659884982639,
+          "stddev": 18.082964087180706
+        },
+        "roundtrip": "passed",
+        "portable_moved": "passed",
+        "external_reference_rejected": "passed",
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/Background_05.hdr",
+        "jinx.bin",
+        "jinx.gltf",
+        "textures/mat0_BG_baseColor.png",
+        "textures/mat0_BG_metallicRoughness.png",
+        "textures/mat0_Bangs_baseColor.png",
+        "textures/mat0_Bangs_metallicRoughness.png",
+        "textures/mat0_Blast_baseColor.png",
+        "textures/mat0_Blast_metallicRoughness.png",
+        "textures/mat0_Braids_baseColor.png",
+        "textures/mat0_Braids_metallicRoughness.png",
+        "textures/mat0_Chest_baseColor.png",
+        "textures/mat0_Chest_metallicRoughness.png",
+        "textures/mat0_Ears_baseColor.png",
+        "textures/mat0_Ears_metallicRoughness.png",
+        "textures/mat0_Eyes_baseColor.png",
+        "textures/mat0_Eyes_metallicRoughness.png",
+        "textures/mat0_FX_baseColor.png",
+        "textures/mat0_FX_metallicRoughness.png",
+        "textures/mat0_Hair_Bracelet_2_baseColor.png",
+        "textures/mat0_Hair_Bracelet_2_metallicRoughness.png",
+        "textures/mat0_Hair_baseColor.png",
+        "textures/mat0_Hair_metallicRoughness.png",
+        "textures/mat0_Head_baseColor.png",
+        "textures/mat0_Head_metallicRoughness.png",
+        "textures/mat0_Lashes_baseColor.png",
+        "textures/mat0_Lashes_metallicRoughness.png",
+        "textures/mat0_Pin_baseColor.png",
+        "textures/mat0_Pin_metallicRoughness.png",
+        "textures/mat0_Teeth_baseColor.png",
+        "textures/mat0_Teeth_metallicRoughness.png"
+      ],
+      "generated": [
+        "derived/gamma22/textures/mat0_BG_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Bangs_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Blast_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Braids_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Chest_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Ears_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Eyes_baseColor.png.png",
+        "derived/gamma22/textures/mat0_FX_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Hair_Bracelet_2_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Hair_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Head_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Lashes_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Pin_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Teeth_baseColor.png.png",
+        "derived/gltf/jinx.gltf",
+        "derived/hdr/Background_05_x1.5.hdr",
+        "derived/roughness/textures/mat0_BG_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Bangs_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Blast_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Braids_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Chest_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Ears_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Eyes_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_FX_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Hair_Bracelet_2_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Hair_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Head_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Lashes_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Pin_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Teeth_metallicRoughness.png.png"
+      ],
+      "runtime": {
+        "triangles": 82217,
+        "textures": 28,
+        "encoded_lights": 88,
+        "materials": 15,
+        "models": 1
+      },
+      "reference_triangles": 82217,
+      "source_sha256": "47b252b89d6be7ecd7922d955ac832d5d31f9f649add15282450c1c7cc4fe14e",
+      "source_camera": null,
+      "ignored_source_fields": []
+    },
+    {
+      "source": "jinx.scene",
+      "output": "resources/scenes/glslpt_jinx.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "windowresolution": "1280 720",
+        "maxdepth": "2",
+        "tilewidth": "256",
+        "tileheight": "144",
+        "envmapfile": "HDR/san_giuseppe_bridge_blurred.hdr",
+        "envmapintensity": "2.0"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render-fixed/glslpt_jinx.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 77.86536322699652,
+          "stddev": 37.27099036688595
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/san_giuseppe_bridge_blurred.hdr",
+        "intensity": 2.0
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/san_giuseppe_bridge_blurred.hdr",
+        "jinx.bin",
+        "jinx.gltf",
+        "textures/mat0_BG_baseColor.png",
+        "textures/mat0_BG_metallicRoughness.png",
+        "textures/mat0_Bangs_baseColor.png",
+        "textures/mat0_Bangs_metallicRoughness.png",
+        "textures/mat0_Blast_baseColor.png",
+        "textures/mat0_Blast_metallicRoughness.png",
+        "textures/mat0_Braids_baseColor.png",
+        "textures/mat0_Braids_metallicRoughness.png",
+        "textures/mat0_Chest_baseColor.png",
+        "textures/mat0_Chest_metallicRoughness.png",
+        "textures/mat0_Ears_baseColor.png",
+        "textures/mat0_Ears_metallicRoughness.png",
+        "textures/mat0_Eyes_baseColor.png",
+        "textures/mat0_Eyes_metallicRoughness.png",
+        "textures/mat0_FX_baseColor.png",
+        "textures/mat0_FX_metallicRoughness.png",
+        "textures/mat0_Hair_Bracelet_2_baseColor.png",
+        "textures/mat0_Hair_Bracelet_2_metallicRoughness.png",
+        "textures/mat0_Hair_baseColor.png",
+        "textures/mat0_Hair_metallicRoughness.png",
+        "textures/mat0_Head_baseColor.png",
+        "textures/mat0_Head_metallicRoughness.png",
+        "textures/mat0_Lashes_baseColor.png",
+        "textures/mat0_Lashes_metallicRoughness.png",
+        "textures/mat0_Pin_baseColor.png",
+        "textures/mat0_Pin_metallicRoughness.png",
+        "textures/mat0_Teeth_baseColor.png",
+        "textures/mat0_Teeth_metallicRoughness.png"
+      ],
+      "generated": [
+        "derived/gamma22/textures/mat0_BG_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Bangs_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Blast_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Braids_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Chest_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Ears_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Eyes_baseColor.png.png",
+        "derived/gamma22/textures/mat0_FX_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Hair_Bracelet_2_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Hair_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Head_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Lashes_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Pin_baseColor.png.png",
+        "derived/gamma22/textures/mat0_Teeth_baseColor.png.png",
+        "derived/gltf/jinx.gltf",
+        "derived/hdr/san_giuseppe_bridge_blurred_x2.hdr",
+        "derived/roughness/textures/mat0_BG_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Bangs_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Blast_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Braids_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Chest_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Ears_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Eyes_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_FX_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Hair_Bracelet_2_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Hair_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Head_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Lashes_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Pin_metallicRoughness.png.png",
+        "derived/roughness/textures/mat0_Teeth_metallicRoughness.png.png"
+      ],
+      "runtime": {
+        "triangles": 82217,
+        "textures": 28,
+        "encoded_lights": 88,
+        "materials": 15,
+        "models": 1
+      },
+      "reference_triangles": 82217,
+      "source_sha256": "b3c64d11c4aaa3fc6cfa0aca2dac8870524ad3e93568bf65f56e9a01f6c96026",
+      "source_camera": {
+        "position": "-4.29 0.8 -0.4",
+        "lookat": "0 0.8 -0.4",
+        "fov": "45"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "mustang_red.scene",
+      "output": "resources/scenes/glslpt_mustang_red.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "7",
+        "tilewidth": "256",
+        "tileheight": "144",
+        "envmapfile": "HDR/peppermint_powerplant_4k.hdr",
+        "envmapintensity": "1.411",
+        "enablerr": "true",
+        "rrdepth": "2"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enablerr=true; native renderer behavior retained.",
+        "Source renderer rrdepth=2; native renderer behavior retained.",
+        "Native importer reported 36 zero-normal triangles in source geometry; see import log."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_mustang_red.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 51.870388454861114,
+          "stddev": 25.35580797466109
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/peppermint_powerplant_4k.hdr",
+        "intensity": 1.411
+      },
+      "source_models": 10,
+      "models": 10,
+      "authored_materials": 10,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/peppermint_powerplant_4k.hdr",
+        "Mustang/Black.obj",
+        "Mustang/Body.obj",
+        "Mustang/Chrome.obj",
+        "Mustang/Floor.obj",
+        "Mustang/Front_Blinkers.obj",
+        "Mustang/Glass.obj",
+        "Mustang/Lights.obj",
+        "Mustang/Red_Interior.obj",
+        "Mustang/Tail_Lights.obj",
+        "Mustang/Tyres.obj"
+      ],
+      "generated": [
+        "derived/hdr/peppermint_powerplant_4k_x1.411.hdr"
+      ],
+      "runtime": {
+        "triangles": 1839003,
+        "textures": 0,
+        "encoded_lights": 0,
+        "zero_normal_warnings": 36,
+        "materials": 11,
+        "models": 10
+      },
+      "reference_triangles": 1839003,
+      "source_sha256": "f0deddf854e0c94372139f66c7ee8585fadbfad8935a40513519b22566baa69e",
+      "source_camera": {
+        "position": "7.3 2.2 9.6",
+        "lookat": "-0.3 0.4 0",
+        "fov": "22"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "mustang_white.scene",
+      "output": "resources/scenes/glslpt_mustang_white.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "7",
+        "tilewidth": "256",
+        "tileheight": "144",
+        "envmapfile": "HDR/peppermint_powerplant_4k.hdr",
+        "envmapintensity": "1.411",
+        "enablerr": "true",
+        "rrdepth": "2"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enablerr=true; native renderer behavior retained.",
+        "Source renderer rrdepth=2; native renderer behavior retained.",
+        "Native importer reported 36 zero-normal triangles in source geometry; see import log."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_mustang_white.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 66.46786159939236,
+          "stddev": 50.69699699315605
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/peppermint_powerplant_4k.hdr",
+        "intensity": 1.411
+      },
+      "source_models": 10,
+      "models": 10,
+      "authored_materials": 10,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/peppermint_powerplant_4k.hdr",
+        "Mustang/Black.obj",
+        "Mustang/Body.obj",
+        "Mustang/Chrome.obj",
+        "Mustang/Floor.obj",
+        "Mustang/Front_Blinkers.obj",
+        "Mustang/Glass.obj",
+        "Mustang/Lights.obj",
+        "Mustang/Red_Interior.obj",
+        "Mustang/Tail_Lights.obj",
+        "Mustang/Tyres.obj"
+      ],
+      "generated": [
+        "derived/hdr/peppermint_powerplant_4k_x1.411.hdr"
+      ],
+      "runtime": {
+        "triangles": 1839003,
+        "textures": 0,
+        "encoded_lights": 0,
+        "zero_normal_warnings": 36,
+        "materials": 11,
+        "models": 10
+      },
+      "reference_triangles": 1839003,
+      "source_sha256": "20f728de1ff8644022db3ea5c48a0a8fba3e883b256e8160b70d62155392a817",
+      "source_camera": {
+        "position": "7.3 2.2 9.6",
+        "lookat": "-0.3 0.4 0",
+        "fov": "22"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "mustang_white_orig.scene",
+      "output": "resources/scenes/glslpt_mustang_white_orig.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "windowresolution": "1280 720",
+        "maxdepth": "7",
+        "tilewidth": "256",
+        "tileheight": "144",
+        "envmapfile": "HDR/Background_05_v2.hdr",
+        "envmapintensity": "1.0",
+        "enablerr": "true",
+        "rrdepth": "2"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enablerr=true; native renderer behavior retained.",
+        "Source renderer rrdepth=2; native renderer behavior retained.",
+        "Native importer reported 36 zero-normal triangles in source geometry; see import log."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_mustang_white_orig.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 51.27253553602431,
+          "stddev": 53.06953731513124
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05_v2.hdr",
+        "intensity": 1.0
+      },
+      "source_models": 10,
+      "models": 10,
+      "authored_materials": 10,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/Background_05_v2.hdr",
+        "Mustang/Black.obj",
+        "Mustang/Body.obj",
+        "Mustang/Chrome.obj",
+        "Mustang/Floor.obj",
+        "Mustang/Front_Blinkers.obj",
+        "Mustang/Glass.obj",
+        "Mustang/Lights.obj",
+        "Mustang/Red_Interior.obj",
+        "Mustang/Tail_Lights.obj",
+        "Mustang/Tyres.obj"
+      ],
+      "generated": [],
+      "runtime": {
+        "triangles": 1839003,
+        "textures": 0,
+        "encoded_lights": 0,
+        "zero_normal_warnings": 36,
+        "materials": 11,
+        "models": 10
+      },
+      "reference_triangles": 1839003,
+      "source_sha256": "57421cb01ca3040f1774a7b8873c12c96c00227087aa0069f9eceaaf00f786e0",
+      "source_camera": {
+        "position": "11.913 0.794643 12.0872",
+        "lookat": "-0.2 0.5 0",
+        "fov": "18"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "panther.scene",
+      "output": "resources/scenes/glslpt_panther.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "3",
+        "tilewidth": "100",
+        "tileheight": "100",
+        "hideemitters": "true"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Pinhole camera; source aperture=0.0002, focaldist=2.57 is not reproduced.",
+        "Source renderer hideemitters=true; native renderer behavior retained.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_panther.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 112.69638400607639,
+          "stddev": 66.06649580454885
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 2,
+      "models": 5,
+      "authored_materials": 1,
+      "analytic_lights": 0,
+      "quad_lights": 3,
+      "dependencies": [
+        "panther/background.obj",
+        "panther/panther.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_panther_light-000.obj",
+        "derived/lights/glslpt_panther_light-001.obj",
+        "derived/lights/glslpt_panther_light-002.obj"
+      ],
+      "runtime": {
+        "triangles": 2004848,
+        "textures": 0,
+        "encoded_lights": 6,
+        "materials": 5,
+        "models": 5
+      },
+      "reference_triangles": 2004848,
+      "source_sha256": "8fb520f9fb47cc4899a520b6f8077ba12a4ac57a583a6a0686d1feace84cc6e8",
+      "source_camera": {
+        "position": "-0.3 0.5 1.6",
+        "lookat": "-0.1 1.0 -1",
+        "aperture": "0.0002",
+        "focaldist": "2.57",
+        "fov": "50"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "potted_plant_04_4k.gltf",
+      "output": "resources/scenes/glslpt_potted_plant_04_4k_gltf.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {},
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_potted_plant_04_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 12.318535698784721,
+          "stddev": 38.06369644203669
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/Background_05.hdr",
+        "potted_plant_04.bin",
+        "potted_plant_04_4k.gltf",
+        "textures/potted_plant_04_arm_4k.jpg",
+        "textures/potted_plant_04_diff_4k.jpg",
+        "textures/potted_plant_04_nor_gl_4k.jpg"
+      ],
+      "generated": [
+        "derived/gamma22/textures/potted_plant_04_diff_4k.jpg.png",
+        "derived/gltf/potted_plant_04_4k.gltf",
+        "derived/hdr/Background_05_x1.5.hdr",
+        "derived/roughness/textures/potted_plant_04_arm_4k.jpg.png"
+      ],
+      "runtime": {
+        "triangles": 6097,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      },
+      "reference_triangles": 6097,
+      "source_sha256": "dda8476e8551b727b7573dcbf49c38c6fce7609bd55a1dbeedaccf38da7c9bfa",
+      "source_camera": null,
+      "ignored_source_fields": []
+    },
+    {
+      "source": "rank3police.scene",
+      "output": "resources/scenes/glslpt_rank3police.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "2",
+        "tilewidth": "256",
+        "tileheight": "144",
+        "envmapfile": "HDR/white_cliff_top_1k.hdr",
+        "hideemitters": "true"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer hideemitters=true; native renderer behavior retained.",
+        "Native importer reported 4 zero-normal triangles in source geometry; see import log."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_rank3police.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 93.16712782118056,
+          "stddev": 36.4227278985375
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/white_cliff_top_1k.hdr",
+        "intensity": 1.0
+      },
+      "source_models": 58,
+      "models": 58,
+      "authored_materials": 40,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/white_cliff_top_1k.hdr",
+        "rank3police/object10.obj",
+        "rank3police/object11.obj",
+        "rank3police/object12.obj",
+        "rank3police/object13.obj",
+        "rank3police/object14001.obj",
+        "rank3police/object15.obj",
+        "rank3police/object16.obj",
+        "rank3police/object17.obj",
+        "rank3police/object18.obj",
+        "rank3police/object19.obj",
+        "rank3police/object20.obj",
+        "rank3police/object21.obj",
+        "rank3police/object22.obj",
+        "rank3police/object23.obj",
+        "rank3police/object24.obj",
+        "rank3police/object25.obj",
+        "rank3police/object26.obj",
+        "rank3police/object27.obj",
+        "rank3police/object28.obj",
+        "rank3police/object29.obj",
+        "rank3police/object30.obj",
+        "rank3police/object31.obj",
+        "rank3police/object32.obj",
+        "rank3police/object33.obj",
+        "rank3police/object34.obj",
+        "rank3police/object35.obj",
+        "rank3police/object36.obj",
+        "rank3police/object37.obj",
+        "rank3police/object38.obj",
+        "rank3police/object39.obj",
+        "rank3police/object4.obj",
+        "rank3police/object40.obj",
+        "rank3police/object41.obj",
+        "rank3police/object42.obj",
+        "rank3police/object43.obj",
+        "rank3police/object44.obj",
+        "rank3police/object45.obj",
+        "rank3police/object46.obj",
+        "rank3police/object47.obj",
+        "rank3police/object48.obj",
+        "rank3police/object49.obj",
+        "rank3police/object5.obj",
+        "rank3police/object50.obj",
+        "rank3police/object51.obj",
+        "rank3police/object52.obj",
+        "rank3police/object53.obj",
+        "rank3police/object54.obj",
+        "rank3police/object55.obj",
+        "rank3police/object56.obj",
+        "rank3police/object57.obj",
+        "rank3police/object58.obj",
+        "rank3police/object60.obj",
+        "rank3police/object61.obj",
+        "rank3police/object62.obj",
+        "rank3police/object63.obj",
+        "rank3police/object64.obj",
+        "rank3police/object65.obj",
+        "rank3police/object66.obj",
+        "rank3police/textures/add_details_baseColor.png",
+        "rank3police/textures/add_details_metallicRoughness.png",
+        "rank3police/textures/backpart_baseColor.png",
+        "rank3police/textures/backpart_metallicRoughness.png",
+        "rank3police/textures/cam2_baseColor.png",
+        "rank3police/textures/cam2_metallicRoughness.png",
+        "rank3police/textures/comm_block_baseColor.png",
+        "rank3police/textures/ctrl_eye_baseColor.png",
+        "rank3police/textures/ctrl_eye_metallicRoughness.png",
+        "rank3police/textures/glass_baseColor.png",
+        "rank3police/textures/helmet_ad_01_baseColor.png",
+        "rank3police/textures/helmet_ad_01_metallicRoughness.png",
+        "rank3police/textures/helmet_ad_02_baseColor.png",
+        "rank3police/textures/helmet_ad_02_metallicRoughness.png",
+        "rank3police/textures/helmet_ad_03_baseColor.png",
+        "rank3police/textures/helmet_baseColor.png",
+        "rank3police/textures/helmet_logo_baseColor.png",
+        "rank3police/textures/helmet_metallicRoughness.png",
+        "rank3police/textures/helmet_sidelock_baseColor.png",
+        "rank3police/textures/helmet_sidelock_metallicRoughness.png",
+        "rank3police/textures/helmet_sidepart_baseColor.png",
+        "rank3police/textures/helmet_sidepart_metallicRoughness.png",
+        "rank3police/textures/innerpart_baseColor.png",
+        "rank3police/textures/innerpart_metallicRoughness.png",
+        "rank3police/textures/light_metal_baseColor.png",
+        "rank3police/textures/mask_ad_01_baseColor.png",
+        "rank3police/textures/mask_ad_01_metallicRoughness.png",
+        "rank3police/textures/mask_big_lock_baseColor.png",
+        "rank3police/textures/mask_big_lock_metallicRoughness.png",
+        "rank3police/textures/mask_dron_baseColor.png",
+        "rank3police/textures/mask_dron_metallicRoughness.png",
+        "rank3police/textures/mask_gen_baseColor.png",
+        "rank3police/textures/mask_gen_metallicRoughness.png",
+        "rank3police/textures/mask_part_01_baseColor.png",
+        "rank3police/textures/mask_part_01_metallicRoughness.png",
+        "rank3police/textures/mask_part_02_baseColor.png",
+        "rank3police/textures/mask_part_02_metallicRoughness.png",
+        "rank3police/textures/mask_part_03_baseColor.png",
+        "rank3police/textures/mask_part_03_metallicRoughness.png",
+        "rank3police/textures/mask_part_04_baseColor.png",
+        "rank3police/textures/mask_part_04_metallicRoughness.png",
+        "rank3police/textures/material_baseColor.png",
+        "rank3police/textures/material_metallicRoughness.png",
+        "rank3police/textures/mc_block_baseColor.png",
+        "rank3police/textures/mc_block_metallicRoughness.png",
+        "rank3police/textures/nose_baseColor.png",
+        "rank3police/textures/nose_metallicRoughness.png",
+        "rank3police/textures/red_parts_baseColor.png",
+        "rank3police/textures/red_parts_metallicRoughness.png",
+        "rank3police/textures/sd_block_baseColor.png",
+        "rank3police/textures/sd_block_metallicRoughness.png",
+        "rank3police/textures/skull_head_baseColor.png",
+        "rank3police/textures/skull_head_metallicRoughness.png",
+        "rank3police/textures/skull_head_normal.png",
+        "rank3police/textures/skull_jaw_baseColor.png",
+        "rank3police/textures/skull_jaw_metallicRoughness.png",
+        "rank3police/textures/skull_jaw_normal.png",
+        "rank3police/textures/suit_chest_baseColor.png",
+        "rank3police/textures/suit_chest_normal.png",
+        "rank3police/textures/suit_collar_baseColor.png",
+        "rank3police/textures/suit_collar_normal.png",
+        "rank3police/textures/suit_fabric_baseColor.png",
+        "rank3police/textures/suit_fabric_metallicRoughness.png",
+        "rank3police/textures/suit_fabric_normal.png",
+        "rank3police/textures/suit_front_stripe_baseColor.png",
+        "rank3police/textures/suit_front_stripe_metallicRoughness.png",
+        "rank3police/textures/suit_front_stripe_normal.png",
+        "rank3police/textures/suit_strap_baseColor.png",
+        "rank3police/textures/suit_strap_metallicRoughness.png"
+      ],
+      "generated": [
+        "derived/gamma22/rank3police/textures/add_details_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/backpart_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/cam2_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/comm_block_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/ctrl_eye_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/glass_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/helmet_ad_01_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/helmet_ad_02_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/helmet_ad_03_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/helmet_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/helmet_logo_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/helmet_sidelock_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/helmet_sidepart_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/innerpart_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/light_metal_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/mask_ad_01_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/mask_big_lock_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/mask_dron_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/mask_gen_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/mask_part_01_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/mask_part_02_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/mask_part_03_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/mask_part_04_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/material_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/mc_block_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/nose_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/red_parts_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/sd_block_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/skull_head_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/skull_jaw_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/suit_chest_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/suit_collar_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/suit_fabric_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/suit_front_stripe_baseColor.png.png",
+        "derived/gamma22/rank3police/textures/suit_strap_baseColor.png.png",
+        "derived/roughness/rank3police/textures/add_details_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/backpart_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/cam2_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/ctrl_eye_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/helmet_ad_01_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/helmet_ad_02_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/helmet_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/helmet_sidelock_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/helmet_sidepart_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/innerpart_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/mask_ad_01_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/mask_big_lock_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/mask_dron_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/mask_gen_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/mask_part_01_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/mask_part_02_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/mask_part_03_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/mask_part_04_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/material_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/mc_block_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/nose_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/red_parts_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/sd_block_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/skull_head_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/skull_jaw_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/suit_fabric_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/suit_front_stripe_metallicRoughness.png.png",
+        "derived/roughness/rank3police/textures/suit_strap_metallicRoughness.png.png"
+      ],
+      "runtime": {
+        "triangles": 1292108,
+        "textures": 69,
+        "encoded_lights": 104894,
+        "zero_normal_warnings": 4,
+        "materials": 41,
+        "models": 58
+      },
+      "reference_triangles": 1292108,
+      "source_sha256": "6d9eb58221f26f9325c510f96f0001badc4c0c41506f0847d5ae15ffcdc3db38",
+      "source_camera": {
+        "position": "70.8 -0.503 70",
+        "lookat": "0 -2 0",
+        "fov": "18.2"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "renderman_teapot_all.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_all.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "10",
+        "tilewidth": "240",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_all.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 143.57415093315973,
+          "stddev": 64.90010452947554
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 14,
+      "models": 17,
+      "authored_materials": 12,
+      "analytic_lights": 0,
+      "quad_lights": 3,
+      "dependencies": [
+        "renderman/background.obj",
+        "renderman/cloth.obj",
+        "renderman/teapot.obj",
+        "renderman/teapot_base.obj",
+        "renderman/textures/checker.png",
+        "renderman/textures/gold_base.png",
+        "renderman/textures/gold_mat_rgh.png",
+        "renderman/textures/gold_normal.png",
+        "renderman/textures/marble_base.png",
+        "renderman/textures/marble_mat_rgh.png",
+        "renderman/textures/scratches_base.png",
+        "renderman/textures/scratches_mat_rgh.png",
+        "renderman/textures/scratches_normal.png",
+        "renderman/textures/striped_base.png",
+        "renderman/textures/striped_mat_rgh.png",
+        "renderman/textures/striped_normal.png",
+        "renderman/textures/tiles_base.png",
+        "renderman/textures/tiles_mat_rgh.png",
+        "renderman/textures/tiles_normal.png"
+      ],
+      "generated": [
+        "derived/gamma22/renderman/textures/checker.png.png",
+        "derived/gamma22/renderman/textures/gold_base.png.png",
+        "derived/gamma22/renderman/textures/marble_base.png.png",
+        "derived/gamma22/renderman/textures/scratches_base.png.png",
+        "derived/gamma22/renderman/textures/striped_base.png.png",
+        "derived/gamma22/renderman/textures/tiles_base.png.png",
+        "derived/lights/glslpt_renderman_teapot_all_light-000.obj",
+        "derived/lights/glslpt_renderman_teapot_all_light-001.obj",
+        "derived/lights/glslpt_renderman_teapot_all_light-002.obj",
+        "derived/roughness/renderman/textures/gold_mat_rgh.png.png",
+        "derived/roughness/renderman/textures/marble_mat_rgh.png.png",
+        "derived/roughness/renderman/textures/scratches_mat_rgh.png.png",
+        "derived/roughness/renderman/textures/striped_mat_rgh.png.png",
+        "derived/roughness/renderman/textures/tiles_mat_rgh.png.png"
+      ],
+      "runtime": {
+        "triangles": 1796966,
+        "textures": 15,
+        "encoded_lights": 6,
+        "materials": 16,
+        "models": 17
+      },
+      "reference_triangles": 1796966,
+      "source_sha256": "fbae02d001e44184562cb2abd4ca51dd255f0bf92ee1fbc5b4f25ac33b54db39",
+      "source_camera": {
+        "position": "0.69 0.33 0.0",
+        "lookat": "0.0 0.07 0.0",
+        "fov": "22"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "renderman_teapot_chrome.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_chrome.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "3",
+        "tilewidth": "240",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_chrome.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 173.24419487847223,
+          "stddev": 51.131699999490436
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 3,
+      "models": 5,
+      "authored_materials": 3,
+      "analytic_lights": 0,
+      "quad_lights": 2,
+      "dependencies": [
+        "renderman/background.obj",
+        "renderman/teapot.obj",
+        "renderman/teapot_base.obj",
+        "renderman/textures/checker.png",
+        "renderman/textures/striped_base.png",
+        "renderman/textures/striped_mat_rgh.png",
+        "renderman/textures/striped_normal.png"
+      ],
+      "generated": [
+        "derived/gamma22/renderman/textures/checker.png.png",
+        "derived/gamma22/renderman/textures/striped_base.png.png",
+        "derived/lights/glslpt_renderman_teapot_chrome_light-000.obj",
+        "derived/lights/glslpt_renderman_teapot_chrome_light-001.obj",
+        "derived/roughness/renderman/textures/striped_mat_rgh.png.png"
+      ],
+      "runtime": {
+        "triangles": 268756,
+        "textures": 4,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 5
+      },
+      "reference_triangles": 268756,
+      "source_sha256": "04017cb671822e2e974c977d3e567d309bcc6722908461148a18ad13ca115c26",
+      "source_camera": {
+        "position": "0.69 0.33 0.0",
+        "lookat": "0.0 0.07 0.0",
+        "fov": "22"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "renderman_teapot_cloth.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_cloth.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "3",
+        "tilewidth": "240",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_cloth.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 164.8932359483507,
+          "stddev": 73.62624709224438
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 4,
+      "models": 7,
+      "authored_materials": 4,
+      "analytic_lights": 0,
+      "quad_lights": 3,
+      "dependencies": [
+        "renderman/background.obj",
+        "renderman/cloth.obj",
+        "renderman/teapot.obj",
+        "renderman/teapot_base.obj",
+        "renderman/textures/checker.png",
+        "renderman/textures/marble_base.png",
+        "renderman/textures/marble_mat_rgh.png"
+      ],
+      "generated": [
+        "derived/gamma22/renderman/textures/checker.png.png",
+        "derived/gamma22/renderman/textures/marble_base.png.png",
+        "derived/lights/glslpt_renderman_teapot_cloth_light-000.obj",
+        "derived/lights/glslpt_renderman_teapot_cloth_light-001.obj",
+        "derived/lights/glslpt_renderman_teapot_cloth_light-002.obj",
+        "derived/roughness/renderman/textures/marble_mat_rgh.png.png"
+      ],
+      "runtime": {
+        "triangles": 483926,
+        "textures": 3,
+        "encoded_lights": 6,
+        "materials": 8,
+        "models": 7
+      },
+      "reference_triangles": 483926,
+      "source_sha256": "397cd2d0367f306cc4acb44a28b7e40c4d1f4bf9fdede7c6a83cd026d33e9f4d",
+      "source_camera": {
+        "position": "0.69 0.33 0.0",
+        "lookat": "0.0 0.07 0.0",
+        "fov": "22"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "renderman_teapot_gold.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_gold.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "3",
+        "tilewidth": "240",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_gold.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 168.74443901909723,
+          "stddev": 57.51011923619701
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 3,
+      "models": 5,
+      "authored_materials": 3,
+      "analytic_lights": 0,
+      "quad_lights": 2,
+      "dependencies": [
+        "renderman/background.obj",
+        "renderman/teapot.obj",
+        "renderman/teapot_base.obj",
+        "renderman/textures/checker.png",
+        "renderman/textures/gold_base.png",
+        "renderman/textures/gold_mat_rgh.png",
+        "renderman/textures/gold_normal.png"
+      ],
+      "generated": [
+        "derived/gamma22/renderman/textures/checker.png.png",
+        "derived/gamma22/renderman/textures/gold_base.png.png",
+        "derived/lights/glslpt_renderman_teapot_gold_light-000.obj",
+        "derived/lights/glslpt_renderman_teapot_gold_light-001.obj",
+        "derived/roughness/renderman/textures/gold_mat_rgh.png.png"
+      ],
+      "runtime": {
+        "triangles": 268756,
+        "textures": 4,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 5
+      },
+      "reference_triangles": 268756,
+      "source_sha256": "885bf784f01b1305d2994c7c887f561403d1c16d65ed3538b5bd7c68f9aab34e",
+      "source_camera": {
+        "position": "0.69 0.33 0.0",
+        "lookat": "0.0 0.07 0.0",
+        "fov": "22"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "renderman_teapot_red_plastic.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_red_plastic.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "3",
+        "tilewidth": "240",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_red_plastic.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 174.23678927951389,
+          "stddev": 43.46230777232308
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 3,
+      "models": 5,
+      "authored_materials": 3,
+      "analytic_lights": 0,
+      "quad_lights": 2,
+      "dependencies": [
+        "renderman/background.obj",
+        "renderman/teapot.obj",
+        "renderman/teapot_base.obj",
+        "renderman/textures/checker.png"
+      ],
+      "generated": [
+        "derived/gamma22/renderman/textures/checker.png.png",
+        "derived/lights/glslpt_renderman_teapot_red_plastic_light-000.obj",
+        "derived/lights/glslpt_renderman_teapot_red_plastic_light-001.obj"
+      ],
+      "runtime": {
+        "triangles": 268756,
+        "textures": 1,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 5
+      },
+      "reference_triangles": 268756,
+      "source_sha256": "c6a224ac17948e4872ec5be9db5549bbe26a2f69c3ba4dc0f145ec4c5c19304c",
+      "source_camera": {
+        "position": "0.69 0.33 0.0",
+        "lookat": "0.0 0.07 0.0",
+        "fov": "22"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "renderman_teapot_scratched.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_scratched.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "3",
+        "tilewidth": "240",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_scratched.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 163.13035753038196,
+          "stddev": 58.64099069400908
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 3,
+      "models": 5,
+      "authored_materials": 3,
+      "analytic_lights": 0,
+      "quad_lights": 2,
+      "dependencies": [
+        "renderman/background.obj",
+        "renderman/teapot.obj",
+        "renderman/teapot_base.obj",
+        "renderman/textures/checker.png",
+        "renderman/textures/scratches_base.png",
+        "renderman/textures/scratches_mat_rgh.png",
+        "renderman/textures/scratches_normal.png"
+      ],
+      "generated": [
+        "derived/gamma22/renderman/textures/checker.png.png",
+        "derived/gamma22/renderman/textures/scratches_base.png.png",
+        "derived/lights/glslpt_renderman_teapot_scratched_light-000.obj",
+        "derived/lights/glslpt_renderman_teapot_scratched_light-001.obj",
+        "derived/roughness/renderman/textures/scratches_mat_rgh.png.png"
+      ],
+      "runtime": {
+        "triangles": 268756,
+        "textures": 4,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 5
+      },
+      "reference_triangles": 268756,
+      "source_sha256": "e5dce368e642ad4c57e4344637ffc135a9ce3cc3b91d8690f2ca88471b67492f",
+      "source_camera": {
+        "position": "0.69 0.33 0.0",
+        "lookat": "0.0 0.07 0.0",
+        "fov": "22"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "renderman_teapot_teal_glass.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_teal_glass.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "10",
+        "tilewidth": "240",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_teal_glass.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 176.78157552083334,
+          "stddev": 46.852919639274624
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 3,
+      "models": 5,
+      "authored_materials": 3,
+      "analytic_lights": 0,
+      "quad_lights": 2,
+      "dependencies": [
+        "renderman/background.obj",
+        "renderman/teapot.obj",
+        "renderman/teapot_base.obj",
+        "renderman/textures/checker.png"
+      ],
+      "generated": [
+        "derived/gamma22/renderman/textures/checker.png.png",
+        "derived/lights/glslpt_renderman_teapot_teal_glass_light-000.obj",
+        "derived/lights/glslpt_renderman_teapot_teal_glass_light-001.obj"
+      ],
+      "runtime": {
+        "triangles": 268756,
+        "textures": 1,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 5
+      },
+      "reference_triangles": 268756,
+      "source_sha256": "23dbacb3d8158e6089cef4c43f18b3f9040b534b221ea6a2ae75ff222b0f5719",
+      "source_camera": {
+        "position": "0.69 0.33 0.0",
+        "lookat": "0.0 0.07 0.0",
+        "fov": "22"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "renderman_teapot_tiles.scene",
+      "output": "resources/scenes/glslpt_renderman_teapot_tiles.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "3",
+        "tilewidth": "240",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_renderman_teapot_tiles.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 162.47313096788196,
+          "stddev": 60.062142160018304
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 3,
+      "models": 5,
+      "authored_materials": 3,
+      "analytic_lights": 0,
+      "quad_lights": 2,
+      "dependencies": [
+        "renderman/background.obj",
+        "renderman/teapot.obj",
+        "renderman/teapot_base.obj",
+        "renderman/textures/checker.png",
+        "renderman/textures/tiles_base.png",
+        "renderman/textures/tiles_mat_rgh.png",
+        "renderman/textures/tiles_normal.png"
+      ],
+      "generated": [
+        "derived/gamma22/renderman/textures/checker.png.png",
+        "derived/gamma22/renderman/textures/tiles_base.png.png",
+        "derived/lights/glslpt_renderman_teapot_tiles_light-000.obj",
+        "derived/lights/glslpt_renderman_teapot_tiles_light-001.obj",
+        "derived/roughness/renderman/textures/tiles_mat_rgh.png.png"
+      ],
+      "runtime": {
+        "triangles": 268756,
+        "textures": 4,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 5
+      },
+      "reference_triangles": 268756,
+      "source_sha256": "437272b7b91b3bb35024d4cfdad62a245d55742c002090dbcabdc2a4de7dfa71",
+      "source_camera": {
+        "position": "0.69 0.33 0.0",
+        "lookat": "0.0 0.07 0.0",
+        "fov": "22"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "roughness_mollification.scene",
+      "output": "resources/scenes/glslpt_roughness_mollification.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "8",
+        "tilewidth": "256",
+        "tileheight": "144",
+        "enablerr": "false",
+        "rrdepth": "3",
+        "enableroughnessmollification": "true",
+        "roughnessmollificationamt": "1.0"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enableroughnessmollification=true; native renderer behavior retained.",
+        "Source renderer enablerr=false; native renderer behavior retained.",
+        "Source renderer rrdepth=3; native renderer behavior retained.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_roughness_mollification.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 94.96635606553819,
+          "stddev": 30.78017263303789
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 2,
+      "models": 5,
+      "authored_materials": 2,
+      "analytic_lights": 0,
+      "quad_lights": 3,
+      "dependencies": [
+        "roughness_mollification/background.obj",
+        "roughness_mollification/box_and_spheres.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_roughness_mollification_light-000.obj",
+        "derived/lights/glslpt_roughness_mollification_light-001.obj",
+        "derived/lights/glslpt_roughness_mollification_light-002.obj"
+      ],
+      "runtime": {
+        "triangles": 37906,
+        "textures": 0,
+        "encoded_lights": 6,
+        "materials": 6,
+        "models": 5
+      },
+      "reference_triangles": 37906,
+      "source_sha256": "71edfaa0c1cf3f7b203d0e9386792387a43089657607e8a043d42fa495b90281",
+      "source_camera": {
+        "position": "-40.0 10.0 0.0",
+        "lookat": "0 7 0",
+        "fov": "60"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "slum_house.gltf",
+      "output": "resources/scenes/glslpt_slum_house_gltf.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {},
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_slum_house_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 6.767788357204861,
+          "stddev": 25.785088603271426
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/Background_05.hdr",
+        "slum_house.bin",
+        "slum_house.gltf",
+        "textures/01_-_Default_baseColor.png",
+        "textures/01_-_Default_metallicRoughness.png",
+        "textures/01_-_Default_normal.png",
+        "textures/02_-_Default_baseColor.png",
+        "textures/02_-_Default_emissive.png",
+        "textures/02_-_Default_metallicRoughness.png",
+        "textures/02_-_Default_normal.png",
+        "textures/03_-_Default_baseColor.png",
+        "textures/03_-_Default_metallicRoughness.png",
+        "textures/03_-_Default_normal.png"
+      ],
+      "generated": [
+        "derived/gamma22/textures/01_-_Default_baseColor.png.png",
+        "derived/gamma22/textures/02_-_Default_baseColor.png.png",
+        "derived/gamma22/textures/02_-_Default_emissive.png.png",
+        "derived/gamma22/textures/03_-_Default_baseColor.png.png",
+        "derived/gltf/slum_house.gltf",
+        "derived/hdr/Background_05_x1.5.hdr",
+        "derived/roughness/textures/01_-_Default_metallicRoughness.png.png",
+        "derived/roughness/textures/02_-_Default_metallicRoughness.png.png",
+        "derived/roughness/textures/03_-_Default_metallicRoughness.png.png"
+      ],
+      "runtime": {
+        "triangles": 127846,
+        "textures": 10,
+        "encoded_lights": 56447,
+        "materials": 4,
+        "models": 1
+      },
+      "reference_triangles": 127846,
+      "source_sha256": "d9e57e50916edfbdd47032af140d1c2470ff2e8516879e7344a00db2d002c0eb",
+      "source_camera": null,
+      "ignored_source_fields": []
+    },
+    {
+      "source": "sofa_03_4k.gltf",
+      "output": "resources/scenes/glslpt_sofa_03_4k_gltf.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {},
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_sofa_03_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 5.093743218315972,
+          "stddev": 17.525307064899103
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/Background_05.hdr",
+        "sofa_03.bin",
+        "sofa_03_4k.gltf",
+        "textures/sofa_03_diff_4k.jpg",
+        "textures/sofa_03_nor_gl_4k.jpg",
+        "textures/sofa_03_rough_4k.jpg"
+      ],
+      "generated": [
+        "derived/gamma22/textures/sofa_03_diff_4k.jpg.png",
+        "derived/gltf/sofa_03_4k.gltf",
+        "derived/hdr/Background_05_x1.5.hdr",
+        "derived/roughness/textures/sofa_03_rough_4k.jpg.png"
+      ],
+      "runtime": {
+        "triangles": 8004,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 3,
+        "models": 1
+      },
+      "reference_triangles": 8004,
+      "source_sha256": "44531e7b4076af91a126dec4b555cf7b53f935e3aa58b957a9a450da9a84b00e",
+      "source_camera": null,
+      "ignored_source_fields": []
+    },
+    {
+      "source": "spaceship.scene",
+      "output": "resources/scenes/glslpt_spaceship.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "6",
+        "tilewidth": "256",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_spaceship.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 33.58232286241319,
+          "stddev": 44.34671856214593
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 86,
+      "models": 88,
+      "authored_materials": 12,
+      "analytic_lights": 0,
+      "quad_lights": 2,
+      "dependencies": [
+        "spaceship/Mesh000.obj",
+        "spaceship/Mesh001.obj",
+        "spaceship/Mesh002.obj",
+        "spaceship/Mesh003.obj",
+        "spaceship/Mesh004.obj",
+        "spaceship/Mesh005.obj",
+        "spaceship/Mesh006.obj",
+        "spaceship/Mesh007.obj",
+        "spaceship/Mesh008.obj",
+        "spaceship/Mesh009.obj",
+        "spaceship/Mesh010.obj",
+        "spaceship/Mesh011.obj",
+        "spaceship/Mesh012.obj",
+        "spaceship/Mesh013.obj",
+        "spaceship/Mesh014.obj",
+        "spaceship/Mesh015.obj",
+        "spaceship/Mesh016.obj",
+        "spaceship/Mesh017.obj",
+        "spaceship/Mesh018.obj",
+        "spaceship/Mesh019.obj",
+        "spaceship/Mesh020.obj",
+        "spaceship/Mesh021.obj",
+        "spaceship/Mesh022.obj",
+        "spaceship/Mesh023.obj",
+        "spaceship/Mesh024.obj",
+        "spaceship/Mesh025.obj",
+        "spaceship/Mesh026.obj",
+        "spaceship/Mesh027.obj",
+        "spaceship/Mesh028.obj",
+        "spaceship/Mesh029.obj",
+        "spaceship/Mesh030.obj",
+        "spaceship/Mesh031.obj",
+        "spaceship/Mesh032.obj",
+        "spaceship/Mesh033.obj",
+        "spaceship/Mesh034.obj",
+        "spaceship/Mesh035.obj",
+        "spaceship/Mesh036.obj",
+        "spaceship/Mesh037.obj",
+        "spaceship/Mesh038.obj",
+        "spaceship/Mesh039.obj",
+        "spaceship/Mesh040.obj",
+        "spaceship/Mesh041.obj",
+        "spaceship/Mesh042.obj",
+        "spaceship/Mesh043.obj",
+        "spaceship/Mesh044.obj",
+        "spaceship/Mesh045.obj",
+        "spaceship/Mesh046.obj",
+        "spaceship/Mesh047.obj",
+        "spaceship/Mesh048.obj",
+        "spaceship/Mesh049.obj",
+        "spaceship/Mesh050.obj",
+        "spaceship/Mesh051.obj",
+        "spaceship/Mesh052.obj",
+        "spaceship/Mesh053.obj",
+        "spaceship/Mesh054.obj",
+        "spaceship/Mesh055.obj",
+        "spaceship/Mesh056.obj",
+        "spaceship/Mesh057.obj",
+        "spaceship/Mesh058.obj",
+        "spaceship/Mesh059.obj",
+        "spaceship/Mesh060.obj",
+        "spaceship/Mesh061.obj",
+        "spaceship/Mesh062.obj",
+        "spaceship/Mesh063.obj",
+        "spaceship/Mesh064.obj",
+        "spaceship/Mesh065.obj",
+        "spaceship/Mesh066.obj",
+        "spaceship/Mesh067.obj",
+        "spaceship/Mesh068.obj",
+        "spaceship/Mesh069.obj",
+        "spaceship/Mesh070.obj",
+        "spaceship/Mesh071.obj",
+        "spaceship/Mesh072.obj",
+        "spaceship/Mesh073.obj",
+        "spaceship/Mesh074.obj",
+        "spaceship/Mesh075.obj",
+        "spaceship/Mesh076.obj",
+        "spaceship/Mesh077.obj",
+        "spaceship/Mesh078.obj",
+        "spaceship/Mesh079.obj",
+        "spaceship/Mesh081.obj",
+        "spaceship/Mesh083.obj",
+        "spaceship/Mesh084.obj",
+        "spaceship/Mesh085.obj",
+        "spaceship/Mesh086.obj",
+        "spaceship/Mesh087.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_spaceship_light-000.obj",
+        "derived/lights/glslpt_spaceship_light-001.obj"
+      ],
+      "runtime": {
+        "triangles": 455160,
+        "textures": 0,
+        "encoded_lights": 1634,
+        "materials": 15,
+        "models": 88
+      },
+      "reference_triangles": 455160,
+      "source_sha256": "9e487e39fdd549d2e2e78b8768f2596e1e83cbbc36889d73e35448218ff34a33",
+      "source_camera": {
+        "position": "0.0 1.0 4.0",
+        "lookat": "0.0 1.0 -0.5",
+        "fov": "60"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "staircase.scene",
+      "output": "resources/scenes/glslpt_staircase.scene.json",
+      "reference_resolution": [
+        640.0,
+        800.0
+      ],
+      "source_renderer": {
+        "resolution": "640 800",
+        "maxdepth": "3",
+        "tilewidth": "100",
+        "tileheight": "100"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering.",
+        "Native importer reported 3 zero-normal triangles in source geometry; see import log."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_staircase.scene.json.png",
+        "render_metrics": {
+          "width": 410,
+          "height": 512,
+          "mean": 94.14878048780488,
+          "stddev": 59.34099103386875
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 20,
+      "models": 21,
+      "authored_materials": 20,
+      "analytic_lights": 0,
+      "quad_lights": 1,
+      "dependencies": [
+        "staircase/Black.obj",
+        "staircase/Brass.obj",
+        "staircase/BrushedAluminium.obj",
+        "staircase/Candles.obj",
+        "staircase/ChairSeat.obj",
+        "staircase/Glass.obj",
+        "staircase/Gold.obj",
+        "staircase/Lampshade.obj",
+        "staircase/MagnoliaPaint.obj",
+        "staircase/Painting1.obj",
+        "staircase/Painting2.obj",
+        "staircase/Painting3.obj",
+        "staircase/StainlessSteel.obj",
+        "staircase/Wallpaper.obj",
+        "staircase/WhitePaint.obj",
+        "staircase/WhitePlastic.obj",
+        "staircase/WoodChair.obj",
+        "staircase/WoodFloor.obj",
+        "staircase/WoodLamp.obj",
+        "staircase/WoodStairs.obj",
+        "staircase/textures/BrushedAluminium.png",
+        "staircase/textures/Fabric.png",
+        "staircase/textures/Painting1.png",
+        "staircase/textures/Painting2.png",
+        "staircase/textures/Painting3.png",
+        "staircase/textures/Wallpaper.png",
+        "staircase/textures/WoodChair.png",
+        "staircase/textures/WoodFloor.png",
+        "staircase/textures/WoodPanel.png"
+      ],
+      "generated": [
+        "derived/gamma22/staircase/textures/BrushedAluminium.png.png",
+        "derived/gamma22/staircase/textures/Fabric.png.png",
+        "derived/gamma22/staircase/textures/Painting1.png.png",
+        "derived/gamma22/staircase/textures/Painting2.png.png",
+        "derived/gamma22/staircase/textures/Painting3.png.png",
+        "derived/gamma22/staircase/textures/Wallpaper.png.png",
+        "derived/gamma22/staircase/textures/WoodChair.png.png",
+        "derived/gamma22/staircase/textures/WoodFloor.png.png",
+        "derived/gamma22/staircase/textures/WoodPanel.png.png",
+        "derived/lights/glslpt_staircase_light-000.obj"
+      ],
+      "runtime": {
+        "triangles": 254501,
+        "textures": 9,
+        "encoded_lights": 2,
+        "zero_normal_warnings": 3,
+        "materials": 22,
+        "models": 21
+      },
+      "reference_triangles": 254501,
+      "source_sha256": "ea61da83d7c8a44048e119723df7ef6bc33d26e7ef7deabacea0c8b642a4b656",
+      "source_camera": {
+        "position": "0.05555139 1.73679901 4.94515045",
+        "lookat": "0.05555139 1.73679901 0.93515045",
+        "fov": "42"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "stormtrooper.scene",
+      "output": "resources/scenes/glslpt_stormtrooper.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "2",
+        "tilewidth": "100",
+        "tileheight": "100"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Pinhole camera; source aperture=0.002, focaldist=4.8 is not reproduced.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_stormtrooper.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 132.03910319010416,
+          "stddev": 69.44501316379022
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 3,
+      "models": 6,
+      "authored_materials": 3,
+      "analytic_lights": 0,
+      "quad_lights": 3,
+      "dependencies": [
+        "stormtrooper/box.obj",
+        "stormtrooper/frame.obj",
+        "stormtrooper/helmets.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_stormtrooper_light-000.obj",
+        "derived/lights/glslpt_stormtrooper_light-001.obj",
+        "derived/lights/glslpt_stormtrooper_light-002.obj"
+      ],
+      "runtime": {
+        "triangles": 349884,
+        "textures": 0,
+        "encoded_lights": 6,
+        "materials": 7,
+        "models": 6
+      },
+      "reference_triangles": 349884,
+      "source_sha256": "d9e9859646865657b5a72293ed17ea9b08f0094d2d08ef35f6b335dfe90e63e3",
+      "source_camera": {
+        "position": "-0.2 -0.5 5.5",
+        "lookat": "0.25 -0.3 0",
+        "fov": "60",
+        "aperture": "0.002",
+        "focaldist": "4.8"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "substance_boy.scene",
+      "output": "resources/scenes/glslpt_substance_boy.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "2",
+        "tilewidth": "240",
+        "tileheight": "144"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_substance_boy.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 172.72047254774304,
+          "stddev": 58.152257812464136
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 7,
+      "models": 9,
+      "authored_materials": 4,
+      "analytic_lights": 0,
+      "quad_lights": 2,
+      "dependencies": [
+        "substance_boy/background.obj",
+        "substance_boy/base.obj",
+        "substance_boy/body.obj",
+        "substance_boy/head.obj",
+        "substance_boy/textures/01_Head_Base_Color.png",
+        "substance_boy/textures/01_Head_MetallicRoughness.png",
+        "substance_boy/textures/01_Head_Normal_DirectX.png",
+        "substance_boy/textures/02_Body_Base_Color.png",
+        "substance_boy/textures/02_Body_MetallicRoughness.png",
+        "substance_boy/textures/02_Body_Normal_DirectX.png",
+        "substance_boy/textures/03_Base_Base_Color.png",
+        "substance_boy/textures/03_Base_MetallicRoughness.png",
+        "substance_boy/textures/03_Base_Normal_DirectX.png",
+        "substance_boy/textures/grid.jpg"
+      ],
+      "generated": [
+        "derived/gamma22/substance_boy/textures/01_Head_Base_Color.png.png",
+        "derived/gamma22/substance_boy/textures/02_Body_Base_Color.png.png",
+        "derived/gamma22/substance_boy/textures/03_Base_Base_Color.png.png",
+        "derived/gamma22/substance_boy/textures/grid.jpg.png",
+        "derived/lights/glslpt_substance_boy_light-000.obj",
+        "derived/lights/glslpt_substance_boy_light-001.obj",
+        "derived/roughness/substance_boy/textures/01_Head_MetallicRoughness.png.png",
+        "derived/roughness/substance_boy/textures/02_Body_MetallicRoughness.png.png",
+        "derived/roughness/substance_boy/textures/03_Base_MetallicRoughness.png.png"
+      ],
+      "runtime": {
+        "triangles": 164312,
+        "textures": 10,
+        "encoded_lights": 4,
+        "materials": 7,
+        "models": 9
+      },
+      "reference_triangles": 164312,
+      "source_sha256": "06cf92eb998751bf727043ed9e4ba01058079db1553c22187b018e6de1acc36d",
+      "source_camera": {
+        "position": "0.3 0.11 0.0",
+        "lookat": "0.0 0.07 0.0",
+        "fov": "60"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "substance_boy_volume.scene",
+      "output": "resources/scenes/glslpt_substance_boy_volume.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "4",
+        "enablevolumemis": "true",
+        "tilewidth": "240",
+        "tileheight": "144",
+        "enablebackground": "true",
+        "backgroundcolor": "0.392 0.306 0.226"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enablebackground=true; native renderer behavior retained.",
+        "Source renderer enablevolumemis=true; native renderer behavior retained.",
+        "volume_scatter: zero-opacity Blend medium converted to Transparent boundary.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_substance_boy_volume.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 15.56485324435764,
+          "stddev": 39.00921589861271
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 3,
+      "models": 5,
+      "authored_materials": 1,
+      "analytic_lights": 0,
+      "quad_lights": 2,
+      "dependencies": [
+        "substance_boy/base.obj",
+        "substance_boy/body.obj",
+        "substance_boy/head.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_substance_boy_volume_light-000.obj",
+        "derived/lights/glslpt_substance_boy_volume_light-001.obj"
+      ],
+      "runtime": {
+        "triangles": 79086,
+        "textures": 0,
+        "encoded_lights": 4,
+        "materials": 4,
+        "models": 5
+      },
+      "reference_triangles": 79086,
+      "source_sha256": "a084f1bcec2a4573fa69a821688e9873e12e0206c60dd951a83e0d48d8c7d85a",
+      "source_camera": {
+        "position": "0.3 0.11 0.0",
+        "lookat": "0.0 0.07 0.0",
+        "fov": "60"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "tea_set_01_4k.gltf",
+      "output": "resources/scenes/glslpt_tea_set_01_4k_gltf.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {},
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Standalone glTF centered and scaled to maximum extent 3; fixed native default camera, no added key light.",
+        "Default environment from a fresh reference process: Background_05.hdr at 1.5."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-color-fix/glslpt_tea_set_01_4k_gltf.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 1.8686116536458333,
+          "stddev": 16.05703455957027
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/Background_05.hdr",
+        "intensity": 1.5
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 0,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/Background_05.hdr",
+        "tea_set_01.bin",
+        "tea_set_01_4k.gltf",
+        "textures/tea_set_01_arm_4k.jpg",
+        "textures/tea_set_01_diff_4k.jpg",
+        "textures/tea_set_01_nor_gl_4k.jpg"
+      ],
+      "generated": [
+        "derived/gamma22/textures/tea_set_01_diff_4k.jpg.png",
+        "derived/gltf/tea_set_01_4k.gltf",
+        "derived/hdr/Background_05_x1.5.hdr",
+        "derived/roughness/textures/tea_set_01_arm_4k.jpg.png"
+      ],
+      "runtime": {
+        "triangles": 40296,
+        "textures": 3,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      },
+      "reference_triangles": 40296,
+      "source_sha256": "570bd555438ad831c0df49498c89d0ba792c7a8f56ded267f652b282a8b7d58a",
+      "source_camera": null,
+      "ignored_source_fields": []
+    },
+    {
+      "source": "teapot.scene",
+      "output": "resources/scenes/glslpt_teapot.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "2",
+        "tilewidth": "320",
+        "tileheight": "180",
+        "envmapfile": "HDR/sunset.hdr",
+        "envmapintensity": "5.0"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_teapot.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 112.48666720920139,
+          "stddev": 30.483981434566754
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/sunset.hdr",
+        "intensity": 5.0
+      },
+      "source_models": 3,
+      "models": 3,
+      "authored_materials": 2,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/sunset.hdr",
+        "teapot/Mesh000.obj",
+        "teapot/Mesh001.obj",
+        "teapot/Mesh050.obj",
+        "teapot/checker.png"
+      ],
+      "generated": [
+        "derived/gamma22/teapot/checker.png.png",
+        "derived/hdr/sunset_x5.hdr"
+      ],
+      "runtime": {
+        "triangles": 126050,
+        "textures": 1,
+        "encoded_lights": 0,
+        "materials": 3,
+        "models": 3
+      },
+      "reference_triangles": 126050,
+      "source_sha256": "7712be434213cf7f66ba8f2f25011032ef4e4588103a1af01d49c25d64e56915",
+      "source_camera": {
+        "position": "20 12 0",
+        "lookat": "-0.953633 2.17253 -0.0972613",
+        "fov": "60"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "test.scene",
+      "output": "resources/scenes/glslpt_test.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "8",
+        "tilewidth": "256",
+        "tileheight": "144",
+        "envmapfile": "HDR/sunset.hdr",
+        "envmapintensity": "5.0",
+        "enablerr": "true",
+        "rrdepth": "3"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enablerr=true; native renderer behavior retained.",
+        "Source renderer rrdepth=3; native renderer behavior retained."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 114.67038302951389,
+          "stddev": 84.1004542319685
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/sunset.hdr",
+        "intensity": 5.0
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 1,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/sunset.hdr",
+        "test/hexagon.obj"
+      ],
+      "generated": [
+        "derived/hdr/sunset_x5.hdr"
+      ],
+      "runtime": {
+        "triangles": 3840,
+        "textures": 0,
+        "encoded_lights": 0,
+        "materials": 2,
+        "models": 1
+      },
+      "reference_triangles": 3840,
+      "source_sha256": "b20e5b1bacafc7eb489fadd2b57b274a2099c40f47919938a4f674ad435a428b",
+      "source_camera": {
+        "position": "-3.04 1.45 -2.51",
+        "lookat": "0 7 0",
+        "fov": "60"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "test_material.scene",
+      "output": "resources/scenes/glslpt_test_material.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "8",
+        "tilewidth": "256",
+        "tileheight": "144",
+        "enabletonemap": "false"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enabletonemap=false; native renderer behavior retained.",
+        "Source-loader ignored fields at line 26: specular",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test_material.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 49.854288736979164,
+          "stddev": 24.961031267185366
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 3,
+      "models": 4,
+      "authored_materials": 2,
+      "analytic_lights": 1,
+      "quad_lights": 1,
+      "dependencies": [
+        "material_test/cube.obj",
+        "material_test/floor.obj",
+        "material_test/sphere.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_test_material_light-001.obj"
+      ],
+      "runtime": {
+        "triangles": 976,
+        "textures": 0,
+        "encoded_lights": 3,
+        "materials": 4,
+        "models": 4
+      },
+      "reference_triangles": 976,
+      "source_sha256": "3c3225a803f71a07b94673ce4410a4c60fdba5479a10ec22eb8fc2b36963f554",
+      "source_camera": {
+        "position": "7.5 5 7",
+        "lookat": "0 0 0",
+        "fov": "45"
+      },
+      "ignored_source_fields": [
+        {
+          "kind": "material",
+          "name": "ground",
+          "line": 26,
+          "fields": {
+            "specular": "1.0"
+          }
+        }
+      ]
+    },
+    {
+      "source": "test_mis.scene",
+      "output": "resources/scenes/glslpt_test_mis.scene.json",
+      "reference_resolution": [
+        800.0,
+        800.0
+      ],
+      "source_renderer": {
+        "resolution": "800 800",
+        "maxdepth": "10",
+        "tilewidth": "200",
+        "tileheight": "200",
+        "enabletonemap": "false"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enabletonemap=false; native renderer behavior retained.",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test_mis.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 40.766971588134766,
+          "stddev": 77.05853498874131
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 2,
+      "models": 3,
+      "authored_materials": 1,
+      "analytic_lights": 0,
+      "quad_lights": 1,
+      "dependencies": [
+        "odyssey/cube.obj",
+        "odyssey/floor.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_test_mis_light-000.obj"
+      ],
+      "runtime": {
+        "triangles": 16,
+        "textures": 0,
+        "encoded_lights": 2,
+        "materials": 3,
+        "models": 3
+      },
+      "reference_triangles": 16,
+      "source_sha256": "3b6d9c320b8c661ba29a4d10a754ace40cb3108cdeca490d39d5f1b6c2148827",
+      "source_camera": {
+        "position": "15 10 16",
+        "lookat": "0 2 0",
+        "fov": "40"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "test_sphere_light_large.scene",
+      "output": "resources/scenes/glslpt_test_sphere_light_large.scene.json",
+      "reference_resolution": [
+        800.0,
+        800.0
+      ],
+      "source_renderer": {
+        "resolution": "800 800",
+        "maxdepth": "2",
+        "tilewidth": "200",
+        "tileheight": "200",
+        "enabletonemap": "false"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enabletonemap=false; native renderer behavior retained."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test_sphere_light_large.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 156.69401168823242,
+          "stddev": 66.25929951474401
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 1,
+      "analytic_lights": 1,
+      "quad_lights": 0,
+      "dependencies": [
+        "light_tests/floor.obj"
+      ],
+      "generated": [],
+      "runtime": {
+        "triangles": 2,
+        "textures": 0,
+        "encoded_lights": 1,
+        "materials": 2,
+        "models": 1
+      },
+      "reference_triangles": 2,
+      "source_sha256": "794b92ae1e6003e128053dd352966f2efcf3f1887216925325c1bd9652df03e8",
+      "source_camera": {
+        "position": "3 0.25 0",
+        "lookat": "0 0.5 0",
+        "fov": "40"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "test_sphere_light_medium.scene",
+      "output": "resources/scenes/glslpt_test_sphere_light_medium.scene.json",
+      "reference_resolution": [
+        800.0,
+        800.0
+      ],
+      "source_renderer": {
+        "resolution": "800 800",
+        "maxdepth": "2",
+        "tilewidth": "200",
+        "tileheight": "200",
+        "enabletonemap": "false"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enabletonemap=false; native renderer behavior retained."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test_sphere_light_medium.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 83.58538055419922,
+          "stddev": 95.74961145810083
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 1,
+      "analytic_lights": 1,
+      "quad_lights": 0,
+      "dependencies": [
+        "light_tests/floor.obj"
+      ],
+      "generated": [],
+      "runtime": {
+        "triangles": 2,
+        "textures": 0,
+        "encoded_lights": 1,
+        "materials": 2,
+        "models": 1
+      },
+      "reference_triangles": 2,
+      "source_sha256": "8b6858e2525f65054cdf74c1125d20d1ce36eddc4f61cd4e02e99acfa2514738",
+      "source_camera": {
+        "position": "3 0.25 0",
+        "lookat": "0 0.5 0",
+        "fov": "40"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "test_sphere_light_small.scene",
+      "output": "resources/scenes/glslpt_test_sphere_light_small.scene.json",
+      "reference_resolution": [
+        800.0,
+        800.0
+      ],
+      "source_renderer": {
+        "resolution": "800 800",
+        "maxdepth": "2",
+        "tilewidth": "200",
+        "tileheight": "200",
+        "enabletonemap": "false"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enabletonemap=false; native renderer behavior retained."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "object_counts": "passed",
+        "material_texture_bindings": "passed",
+        "project_local_resources": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test_sphere_light_small.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 43.804561614990234,
+          "stddev": 63.950278879269526
+        },
+        "audit": "passed"
+      },
+      "source_sha256": "514be6ca586ed075b588b147a51662f6809c624321de9e9b1d8a5c5df33c2f18",
+      "source_camera": {
+        "position": "3 0.25 0",
+        "lookat": "0 0.5 0",
+        "fov": "40"
+      },
+      "ignored_source_fields": [],
+      "source_models": 1,
+      "models": 1,
+      "authored_materials": 1,
+      "analytic_lights": 1,
+      "quad_lights": 0,
+      "dependencies": [
+        "light_tests/floor.obj"
+      ],
+      "generated": [],
+      "runtime": {
+        "triangles": 2,
+        "textures": 0,
+        "encoded_lights": 1,
+        "materials": 2,
+        "models": 1
+      },
+      "reference_triangles": 2
+    },
+    {
+      "source": "test_veach.scene",
+      "output": "resources/scenes/glslpt_test_veach.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "4",
+        "tilewidth": "256",
+        "tileheight": "144",
+        "enabletonemap": "false"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enabletonemap=false; native renderer behavior retained."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_test_veach.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 43.29119873046875,
+          "stddev": 40.90443553280344
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 6,
+      "models": 6,
+      "authored_materials": 5,
+      "analytic_lights": 4,
+      "quad_lights": 0,
+      "dependencies": [
+        "veach/floor.obj",
+        "veach/plate1.obj",
+        "veach/plate2.obj",
+        "veach/plate3.obj",
+        "veach/plate4.obj",
+        "veach/wall.obj"
+      ],
+      "generated": [],
+      "runtime": {
+        "triangles": 12,
+        "textures": 0,
+        "encoded_lights": 4,
+        "materials": 6,
+        "models": 6
+      },
+      "reference_triangles": 12,
+      "source_sha256": "fe3af979979da5633baff3d52dbf47d74dee7d8507fb53e02d50e46b0245f939",
+      "source_camera": {
+        "position": "18.0 4.0 0.0",
+        "lookat": "0 2.5 0",
+        "fov": "45"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "tropical_island.scene",
+      "output": "resources/scenes/glslpt_tropical_island.scene.json",
+      "reference_resolution": [
+        800.0,
+        800.0
+      ],
+      "source_renderer": {
+        "resolution": "800 800",
+        "maxdepth": "4",
+        "enablevolumemis": "true",
+        "tilewidth": "200",
+        "tileheight": "200",
+        "envmapfile": "HDR/spiaggia_di_mondello_4k_new.hdr",
+        "envmapintensity": "1.0"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enablevolumemis=true; native renderer behavior retained."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_tropical_island.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 512,
+          "mean": 166.9302864074707,
+          "stddev": 69.5695334110758
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/spiaggia_di_mondello_4k_new.hdr",
+        "intensity": 1.0
+      },
+      "source_models": 62,
+      "models": 62,
+      "authored_materials": 7,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/spiaggia_di_mondello_4k_new.hdr",
+        "tropical_island/boat.obj",
+        "tropical_island/dock1.obj",
+        "tropical_island/dock2.obj",
+        "tropical_island/floor.obj",
+        "tropical_island/grass.obj",
+        "tropical_island/leaf1.obj",
+        "tropical_island/leaf10.obj",
+        "tropical_island/leaf11.obj",
+        "tropical_island/leaf12.obj",
+        "tropical_island/leaf13.obj",
+        "tropical_island/leaf14.obj",
+        "tropical_island/leaf15.obj",
+        "tropical_island/leaf16.obj",
+        "tropical_island/leaf17.obj",
+        "tropical_island/leaf18.obj",
+        "tropical_island/leaf19.obj",
+        "tropical_island/leaf2.obj",
+        "tropical_island/leaf20.obj",
+        "tropical_island/leaf21.obj",
+        "tropical_island/leaf22.obj",
+        "tropical_island/leaf23.obj",
+        "tropical_island/leaf24.obj",
+        "tropical_island/leaf25.obj",
+        "tropical_island/leaf3.obj",
+        "tropical_island/leaf4.obj",
+        "tropical_island/leaf5.obj",
+        "tropical_island/leaf6.obj",
+        "tropical_island/leaf7.obj",
+        "tropical_island/leaf8.obj",
+        "tropical_island/leaf9.obj",
+        "tropical_island/oar1.obj",
+        "tropical_island/oar2.obj",
+        "tropical_island/plank1.obj",
+        "tropical_island/plank2.obj",
+        "tropical_island/plank3.obj",
+        "tropical_island/rock1.obj",
+        "tropical_island/rock2.obj",
+        "tropical_island/rock3.obj",
+        "tropical_island/rock4.obj",
+        "tropical_island/rock5.obj",
+        "tropical_island/rock6.obj",
+        "tropical_island/rock7.obj",
+        "tropical_island/rope.obj",
+        "tropical_island/sand.obj",
+        "tropical_island/shortleaf1.obj",
+        "tropical_island/shortleaf10.obj",
+        "tropical_island/shortleaf11.obj",
+        "tropical_island/shortleaf12.obj",
+        "tropical_island/shortleaf13.obj",
+        "tropical_island/shortleaf14.obj",
+        "tropical_island/shortleaf15.obj",
+        "tropical_island/shortleaf2.obj",
+        "tropical_island/shortleaf3.obj",
+        "tropical_island/shortleaf4.obj",
+        "tropical_island/shortleaf5.obj",
+        "tropical_island/shortleaf6.obj",
+        "tropical_island/shortleaf7.obj",
+        "tropical_island/shortleaf8.obj",
+        "tropical_island/shortleaf9.obj",
+        "tropical_island/textures/palm.png",
+        "tropical_island/trunk1.obj",
+        "tropical_island/trunk2.obj",
+        "tropical_island/water.obj"
+      ],
+      "generated": [
+        "derived/gamma22/tropical_island/textures/palm.png.png"
+      ],
+      "runtime": {
+        "triangles": 278586,
+        "textures": 1,
+        "encoded_lights": 0,
+        "materials": 8,
+        "models": 62
+      },
+      "reference_triangles": 278586,
+      "source_sha256": "72249180effd8f1adbdc5760281546c512a5fa7dc668aa8452f195bca595bda8",
+      "source_camera": {
+        "position": "9.38 13.12 -6",
+        "lookat": "0 0 0",
+        "fov": "10"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "tungsten-material-testball.scene",
+      "output": "resources/scenes/glslpt_tungsten-material-testball.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "2",
+        "tilewidth": "256",
+        "tileheight": "144",
+        "envmapfile": "HDR/material-test.hdr",
+        "envmapintensity": "1.0"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_tungsten-material-testball.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 132.1941392686632,
+          "stddev": 38.886749192984674
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "environment": {
+        "source": "HDR/material-test.hdr",
+        "intensity": 1.0
+      },
+      "source_models": 4,
+      "models": 4,
+      "authored_materials": 3,
+      "analytic_lights": 0,
+      "quad_lights": 0,
+      "dependencies": [
+        "HDR/material-test.hdr",
+        "tungsten-material-testball/models/Mesh000.obj",
+        "tungsten-material-testball/models/Mesh001.obj",
+        "tungsten-material-testball/models/Mesh002.obj",
+        "tungsten-material-testball/models/Plane.obj",
+        "tungsten-material-testball/textures/checker.png"
+      ],
+      "generated": [
+        "derived/gamma22/tungsten-material-testball/textures/checker.png.png"
+      ],
+      "runtime": {
+        "triangles": 80770,
+        "textures": 1,
+        "encoded_lights": 0,
+        "materials": 4,
+        "models": 4
+      },
+      "reference_triangles": 80770,
+      "source_sha256": "804c15ffa4c18fc650f18b51be59a882749c5bdc057f74295d0bb8a0fca8ba0a",
+      "source_camera": {
+        "matrix": "-0.721367 -0.373123 -0.583445 3.04068 -8.26273e-008 0.842456 -0.538765 3.17153 0.692553 -0.388647 -0.60772 3.20454 0 0 0 1",
+        "fov": "35"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "volume_cube - 1.scene",
+      "output": "resources/scenes/glslpt_volume_cube - 1.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "5",
+        "tilewidth": "320",
+        "tileheight": "180"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "volume: zero-opacity Blend medium converted to Transparent boundary.",
+        "volume: native medium scatter albedo is clamped to [0,1].",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_volume_cube - 1.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 13.648674858940971,
+          "stddev": 33.108035672675584
+        },
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 1,
+      "models": 2,
+      "authored_materials": 1,
+      "analytic_lights": 0,
+      "quad_lights": 1,
+      "dependencies": [
+        "volume/cube.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_volume_cube - 1_light-000.obj"
+      ],
+      "runtime": {
+        "triangles": 14,
+        "textures": 0,
+        "encoded_lights": 2,
+        "materials": 3,
+        "models": 2
+      },
+      "reference_triangles": 14,
+      "source_sha256": "59fbe1832437d0de069955de892ac1b2d05ea99055473a3e51482aafc6777b36",
+      "source_camera": {
+        "position": "6 6 6",
+        "lookat": "0 1 0",
+        "fov": "45"
+      },
+      "ignored_source_fields": []
+    },
+    {
+      "source": "volume_cube.scene",
+      "output": "resources/scenes/glslpt_volume_cube.scene.json",
+      "reference_resolution": [
+        1280.0,
+        720.0
+      ],
+      "source_renderer": {
+        "resolution": "1280 720",
+        "maxdepth": "5",
+        "tilewidth": "320",
+        "tileheight": "180",
+        "enablevolumemis": "true"
+      },
+      "notes": [
+        "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+        "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+        "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+        "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+        "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+        "Source renderer enablevolumemis=true; native renderer behavior retained.",
+        "volume: zero-opacity Blend medium converted to Transparent boundary.",
+        "volume: native medium scatter albedo is clamped to [0,1].",
+        "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+      ],
+      "validation": {
+        "conversion": "passed",
+        "load": "passed",
+        "render": "passed",
+        "topology": "passed",
+        "project_local_resources": "passed",
+        "object_counts": "passed",
+        "screenshot": "build/glslpt-render/glslpt_volume_cube.scene.json.png",
+        "render_metrics": {
+          "width": 512,
+          "height": 288,
+          "mean": 89.51890055338542,
+          "stddev": 65.59647845216621
+        },
+        "roundtrip": "passed",
+        "portable_moved": "passed",
+        "external_reference_rejected": "passed",
+        "audit": "passed",
+        "material_texture_bindings": "passed"
+      },
+      "source_models": 2,
+      "models": 3,
+      "authored_materials": 2,
+      "analytic_lights": 0,
+      "quad_lights": 1,
+      "dependencies": [
+        "volume/cube.obj",
+        "volume/floor.obj"
+      ],
+      "generated": [
+        "derived/lights/glslpt_volume_cube_light-000.obj"
+      ],
+      "runtime": {
+        "triangles": 16,
+        "textures": 0,
+        "encoded_lights": 2,
+        "materials": 4,
+        "models": 3
+      },
+      "reference_triangles": 16,
+      "source_sha256": "7442f06d624d7bc2d034255ec41c8ea8079ba5c985bafd7cfa21e1d86368ed43",
+      "source_camera": {
+        "position": "6 6 6",
+        "lookat": "0 1 0",
+        "fov": "45"
+      },
+      "ignored_source_fields": []
+    }
+  ],
+  "resources": {
+    "source_files": 669,
+    "source_bytes": 1463180142,
+    "bundle_bytes": 2136614693
+  },
+  "audit": {
+    "topology_and_project_paths": "passed",
+    "original_resource_hashes": "passed",
+    "failures": [],
+    "scene_list_entries": 55,
+    "revisit": "passed",
+    "render": "passed",
+    "capture": {
+      "capture_presentations": 96,
+      "full_frame_accumulation_limit": 64
+    }
+  }
+}

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "MaterialTextureImage.h"
 #include <QGuiApplication>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
@@ -6,6 +7,9 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFramebufferObject>
 #include <QFile>
+#include <QDir>
+#include <QFileInfo>
+#include <QRegularExpression>
 #include <QVector4D>
 #include <array>
 #include <cmath>
@@ -21,9 +25,16 @@ static void checkNear(double actual, double expected, double tolerance, const st
     std::cout << name << ": " << actual << " (expected " << expected << ")\n";
     check(std::isfinite(actual) && std::abs(actual-expected) <= tolerance, name);
 }
-static QString read(const QString& path) {
-    QFile file(path); check(file.open(QIODevice::ReadOnly), path.toStdString());
-    return QString::fromUtf8(file.readAll());
+static QString read(const QString &path)
+{
+    QFile file(path);
+    check(file.open(QIODevice::ReadOnly), path.toStdString());
+    QString source = QString::fromUtf8(file.readAll());
+    QRegularExpression expression("#include\\s+\"([^\"]+)\"");
+    for (auto match = expression.match(source); match.hasMatch(); match = expression.match(source))
+        source.replace(match.capturedStart(), match.capturedLength(),
+                       read(QFileInfo(path).dir().filePath(match.captured(1))));
+    return source;
 }
 
 class Audit : public QOpenGLFunctions_3_3_Core {
@@ -129,6 +140,33 @@ public:
         return sum;
     }
 };
+
+static void materialTextureUploadTests(Audit& a) {
+    GLuint texture=0;a.glGenTextures(1,&texture);
+    a.glActiveTexture(GL_TEXTURE5);a.glBindTexture(GL_TEXTURE_2D_ARRAY,texture);
+    for(auto format:{QImage::Format_RGB888,QImage::Format_RGBA8888,QImage::Format_ARGB32_Premultiplied}) {
+        QImage source(8,8,format);
+        for(int y=0;y<8;++y) for(int x=0;x<8;++x)
+            source.setPixelColor(x,y,y<4?QColor(220,150,30,128):QColor(10,60,240,255));
+        for(int size:{8,4,16}) {
+            const QImage image=prepareMaterialTextureImage(source,QSize(size,size));
+            a.glTexImage3D(GL_TEXTURE_2D_ARRAY,0,GL_RGBA8,size,size,1,0,GL_RGBA,GL_UNSIGNED_BYTE,image.constBits());
+            std::vector<unsigned char> pixels(size*size*4);
+            a.glGetTexImage(GL_TEXTURE_2D_ARRAY,0,GL_RGBA,GL_UNSIGNED_BYTE,pixels.data());
+            check(a.glGetError()==GL_NO_ERROR,"material texture upload/readback");
+            for(int half:{0,1}) {
+                const QColor expected=source.pixelColor(2,half==0?6:2);
+                const int offset=4*((half==0?size/4:3*size/4)*size+size/2);
+                const int channels[]={expected.red(),expected.green(),expected.blue(),expected.alpha()};
+                for(int c=0;c<4;++c)
+                    check(std::abs(int(pixels[offset+c])-channels[c])<=2,
+                        "resized texture preserves RGBA channels, straight alpha and vertical orientation");
+            }
+        }
+    }
+    a.glDeleteTextures(1,&texture);
+    std::cout<<"Material image GPU upload preserves color/alpha with and without scaling\n";
+}
 
 static void hdrTests(Audit& a) {
     const double pi=std::acos(-1.0);
@@ -343,7 +381,7 @@ float p=PhaseHG(dot(-incoming,d),.6);outputColor=vec4(d.z,1.0/p,0,1);})");
 
 int main(int argc,char** argv) {
     QGuiApplication app(argc,argv);
-    try { Audit audit; hdrTests(audit); analyticTests(audit); alphaDeltaTests(audit); mediumTests(audit); std::cout<<"Lighting numerical tests passed\n"; }
+    try { Audit audit; materialTextureUploadTests(audit); hdrTests(audit); analyticTests(audit); alphaDeltaTests(audit); mediumTests(audit); std::cout<<"Lighting numerical tests passed\n"; }
     catch(const std::exception& error) { std::cerr<<error.what()<<"\n"; return 1; }
     return 0;
 }

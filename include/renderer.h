@@ -1,10 +1,10 @@
 ﻿#ifndef RENDERER_H
 #define RENDERER_H
 
-#include <QObject>
 #include <QElapsedTimer>
 #include <QImage>
 #include <QMatrix4x4>
+#include <QObject>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
 #include <QtMath>
@@ -18,28 +18,81 @@
 
 #include "OpenImageDenoise/oidn.hpp"
 
+#include "PreviewDenoiser.h"
+#include "RenderJob.h"
 #include "RenderParams.h"
 #include "Scene.h"
 #include "SceneDirty.h"
+#include <atomic>
 
 class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
-public:
-    explicit Renderer(int width, int height, const RenderParams::Snapshot& initialSnapshot, QObject* parent = nullptr);
+  public:
+    explicit Renderer(int width, int height, const RenderParams::Snapshot &initialSnapshot,
+                      QObject *parent = nullptr);
     ~Renderer() override;
 
-    void render(int width, int height, const RenderParams::Snapshot& snapshot, SceneDirtyFlags dirtyFlags);
+    void render(int width, int height, const RenderParams::Snapshot &snapshot, SceneDirtyFlags dirtyFlags,
+                int maxTiles = 1, const std::function<bool()> &interrupted = {});
+    QSize renderSize() const
+    {
+        return {render_width, render_height};
+    }
+    int samples() const
+    {
+        return int(frameCounter);
+    }
+    int completedTiles() const
+    {
+        return int(chunkedRenderingCount);
+    }
+    bool completeRound() const
+    {
+        return nowChunkedCount == 0 && frameCounter > 0;
+    }
+    bool formal = false;
+    quint64 imageRevision() const
+    {
+        return m_imageRevision;
+    }
+    bool samplingActive(const RenderParams::Snapshot &snapshot) const;
+    bool previewDenoising() const
+    {
+        return previewDenoiser.busy() || denoiseReadbackFence;
+    }
+    std::atomic_bool *cancel = nullptr;
+    RenderStats stats;
+    std::function<void()> denoising;
+    QImage result(const RenderParams::Snapshot &snapshot);
+    void finishDenoise(const RenderParams::Snapshot &snapshot);
+    void prepareJob(QSize size, const RenderParams::Snapshot &snapshot, SceneDirtyFlags dirty = 0);
+    // Wait for the preceding tile/frame with a 1 ms timeout so the caller can recheck shutdown.
+    bool waitForGpuBoundary();
+    void submitGpuBoundary();
+    void pollGpuTimers();
+    quint64 allocatedBytes() const;
+    void updatePick(int width, int height, quint64 version);
+    void requestPick(QPoint pixel, quint64 request);
+    bool pollPick(quint64 &request, unsigned &id, quint64 &version);
+    GLuint pickFramebuffer() const
+    {
+        return pickFbo;
+    }
+    GLuint displayFramebuffer() const
+    {
+        return m_fbo;
+    }
     QOpenGLShaderProgram *getShaderProgram(
-        std::string fshader,
-        std::string vshader,
+        std::string fshader, std::string vshader,
         const std::unordered_map<std::string, std::string> &defines_Vertex = {},
         const std::unordered_map<std::string, std::string> &defines_Fragment = {});
     GLuint getTextureRGB32F(int width, int height);
     GLuint bindData(std::vector<GLuint> colorAttachments);
 
-private:
-    struct RefreshActions {
+  private:
+    struct RefreshActions
+    {
         bool rebuildShader = false;
         bool resizeTargets = false;
         bool syncCameraUniforms = false;
@@ -47,9 +100,10 @@ private:
         bool syncSceneBuffers = false;
         bool resetAccumulation = false;
         bool refreshDenoisePolicy = false;
+        bool refreshDisplay = false;
     };
 
-    void init(int width, int height, const RenderParams::Snapshot& snapshot);
+    void init(int width, int height, const RenderParams::Snapshot &snapshot);
     void initOIDN();
     void uninit();
     void updateOIDNBuffers();
@@ -57,9 +111,11 @@ private:
     void updateSizeParam();
     void calResolution(bool renderLow);
     void updateTileGrid(int tileSize);
+    void bindPathtraceInputs(int maxBounces);
+    void compositePreview(const RenderParams::Snapshot &snapshot, bool changed, bool force);
     void renderTile(int tileX, int tileY, int tileWidth, int tileHeight, int maxBounces); // 渲染单个块
-    void renderFullImage(int maxBounces); // 渲染完整图像
-    void rebuildPathtraceProgram(const RenderParams::Snapshot& snapshot);
+    void renderFullImage(int maxBounces);                                                 // 渲染完整图像
+    void rebuildPathtraceProgram(const RenderParams::Snapshot &snapshot);
 
     /**
      * @brief 设置屏幕分辨率并更新缓冲
@@ -73,12 +129,14 @@ private:
     /**
      * @brief 在帧首统一决策本帧需要执行的刷新动作
      */
-    RefreshActions resolveRefreshActions(int width, int height, const RenderParams::Snapshot& snapshot, SceneDirtyFlags dirtyFlags) const;
+    RefreshActions resolveRefreshActions(int width, int height, const RenderParams::Snapshot &snapshot,
+                                         SceneDirtyFlags dirtyFlags) const;
 
     /**
      * @brief 执行帧首已经决策好的刷新动作
      */
-    void applyRefreshActions(int width, int height, const RenderParams::Snapshot& snapshot, const RefreshActions& actions);
+    void applyRefreshActions(int width, int height, const RenderParams::Snapshot &snapshot,
+                             const RefreshActions &actions);
     void resetAccumulation();
     void clearTexture(GLuint texture);
     void syncCameraUniforms();
@@ -87,6 +145,10 @@ private:
     void uploadTriangleBuffer(bool recreateResources);
     void uploadNodeBuffer(bool recreateResources);
     void uploadLightBuffer(bool recreateResources);
+    void uploadInstanceBuffers(bool topology);
+    void bindInstanceBuffers(QOpenGLShaderProgram *program);
+    GLuint instanceBuffers[5] = {}, instanceTextures[5] = {};
+    QStringList uploadedMeshes;
     void uploadHdrTextures(bool recreateResources);
     void uploadMaterialTextures(bool recreateResources);
 
@@ -98,37 +160,41 @@ private:
     /**
      * @brief 执行渲染通道
      */
-    void executeRenderPass(const RenderParams::Snapshot& snapshot);
+    void executeRenderPass(const RenderParams::Snapshot &snapshot);
 
     /**
      * @brief 处理历史帧保存
      */
-    void processHistorySaving(const RenderParams::Snapshot& snapshot);
+    void processHistorySaving(const RenderParams::Snapshot &snapshot);
 
     /**
      * @brief 执行降噪处理
      */
-    void performDenoising(const RenderParams::Snapshot& snapshot, bool forceCurrentFrame = false);
+    void performDenoising(const RenderParams::Snapshot &snapshot, bool forceCurrentFrame = false);
+    bool pollPreviewDenoise(const RenderParams::Snapshot &snapshot);
+    void requestPreviewDenoise(const RenderParams::Snapshot &snapshot, bool force);
+    void invalidatePreviewDenoise();
+    void ensureDenoisePbos();
 
     /**
      * @brief 合成到屏幕
      */
-    void compositeToScreen(const RenderParams::Snapshot& snapshot);
+    void compositeToScreen(const RenderParams::Snapshot &snapshot);
 
     /**
      * @brief 更新分块渲染状态
      */
     void updateTileRenderingState();
 
-private: // 禁止拷贝和移动
-    Renderer(const Renderer&) = delete;
-    Renderer& operator =(const Renderer&) = delete;
-    Renderer(const Renderer&&) = delete;
-    Renderer& operator =(const Renderer&&) = delete;
+  private: // 禁止拷贝和移动
+    Renderer(const Renderer &) = delete;
+    Renderer &operator=(const Renderer &) = delete;
+    Renderer(const Renderer &&) = delete;
+    Renderer &operator=(const Renderer &&) = delete;
 
-private:
-    int m_width = 0;  // 屏幕宽度
-    int m_height = 0; // 屏幕高度
+  private:
+    int m_width = 0;       // 屏幕宽度
+    int m_height = 0;      // 屏幕高度
     int render_width = 0;  // 实际渲染宽度
     int render_height = 0; // 实际渲染高度
     int m_viewportX = 0;
@@ -136,8 +202,8 @@ private:
 
     int currentTileX = 0; // 当前渲染块的 X 坐标
     int currentTileY = 0; // 当前渲染块的 Y 坐标
-    int tilesX = 0; // X 方向的块数
-    int tilesY = 0; // Y 方向的块数
+    int tilesX = 0;       // X 方向的块数
+    int tilesY = 0;       // Y 方向的块数
 
     unsigned m_fbo = 0;
     unsigned pathtrace_fbo = 0;
@@ -191,12 +257,35 @@ private:
     oidn::BufferRef oidnOutputBuf;
 
     // PBO 对象，分别用于 color / normal / albedo。
-    GLuint pboIds[3] = { 0, 0, 0 };
+    GLuint pboIds[3] = {0, 0, 0};
+    QSize denoisePboSize, oidnSize;
+    PreviewDenoiser previewDenoiser;
+    GLsync denoiseReadbackFence = nullptr;
+    PreviewDenoiser::Snapshot previewSnapshot;
+    QElapsedTimer previewDenoiseClock;
+    quint64 m_imageRevision = 0;
+    bool previewDenoiseFailed = false;
+    bool previewHasGeometry = true;
 
     // 缓存上一帧已应用的快照，用于帧首差分判断。
     RenderParams::Snapshot m_lastAppliedSnapshot{};
     bool m_forceDenoiseRefresh = true;
     bool m_hasDenoisedFrame = false;
+    bool targetsValid = true;
+    GLuint timerQueries[12] = {};
+    bool timerPending[12] = {};
+    quint64 timerEpoch[12] = {};
+    double estimatedTileMs = 0;
+    QElapsedTimer compositeClock;
+    bool displayDirty = true, firstComposite = true;
+    int timerCursor = 0;
+    quint64 textureArrayBytes = 0;
+    GLuint pickFbo = 0, pickTextures[2] = {}, pickPbo = 0;
+    GLsync pickFence = nullptr;
+    GLsync workFence = nullptr;
+    QSize pickSize;
+    quint64 pickVersion = ~quint64(0), pickRequest = 0, readVersion = 0;
+    std::unique_ptr<QOpenGLShaderProgram> pickProgram;
     unsigned int m_lastDenoisedFrameCounter = 0;
 };
 

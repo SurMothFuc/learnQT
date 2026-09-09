@@ -1,10 +1,6 @@
-# 纹理与场景系统 v1
+# 纹理与场景 v1 兼容性
 
-更新日期：2026-09-05。纹理与场景 v1 的验收基线仍为 `6ee2661`；本次同步后续直接光采样改动涉及的 alpha/发光行为及文档入口。
-
-本阶段已收尾：常用 PBR 贴图从导入、CPU 编码、GPU 上传到命中点采样的链路已贯通，
-并接入场景保存、切换和便携导出。后续以具体模型的兼容性问题为驱动，不把 v1
-等同于所有格式、所有 glTF 扩展或完整材质编辑器的支持。
+本文保留 v1 的资产、纹理、路径和便携包约定及历史验收。当前工作台已升级到 v2，读取 v1 后在内存迁移，保存写 v2；操作和格式增量见 [scene_workbench_v2.md](./scene_workbench_v2.md)。历史 `6ee2661` / 8 项和直接光阶段的 9 项测试不代表新代码自动通过。
 
 ## 已实现的纹理链路
 
@@ -12,13 +8,13 @@
 | --- | --- | --- |
 | 模型导入 | Assimp 读取 OBJ、glTF/GLB、FBX；处理节点变换、外部图片与可解码的内嵌图片 | `src/Mesh.cpp` |
 | 几何属性 | UV0、顶点法线、导入切线及 handedness；无 authored tangent 时使用 Assimp fallback | `include/Mesh.h`, `src/Mesh.cpp` |
-| 编码 | `Triangle_encoded` 为 20 个 `QVector4D`，含 UV、材质纹理索引、alpha/normal 参数和切线 | `include/Scene.h`, `Scene::DataEncode()` |
+| 编码 | 当前使用几何 11 vec4、材质 10 vec4、实例 9 vec4 分表；旧 20 vec4 布局仅在兼容/数值测试路径保留 | `SceneEncoding.cpp`, `scene_access.glsl` |
 | 纹理资源 | `GL_TEXTURE_2D_ARRAY` 加 sampler/UV 元数据 TBO；统一 RGBA 像素和尺寸，生成 mipmap，重载和释放资源 | `Renderer::uploadMaterialTextures()` |
 | 材质采样 | base color、metallic、roughness、normal、emissive、opacity；颜色贴图转线性，标量贴图按通道读取 | `shaders/include/bvh_material.glsl` |
 | 法线贴图 | TBN 和切线 handedness，`normalScale`、`normalMapFlipY`；支持场景文件中的 Y 方向约定 | `ApplyNormalMap()` |
 | UV / sampler | 读取 Assimp 提供的 glTF sampler、`KHR_texture_transform`，保存缩放、偏移、旋转、wrap 和 filter 元数据 | `TextureAsset`, `TransformMaterialUV()` |
 | Alpha | `Opaque / Mask / Blend`，保留旧 `Transparent`；base color alpha、opacity、cutoff 进入 BVH 命中筛选，阴影复用该筛选并沿介质段计算透射率 | `RejectAlphaIntersection()`, `ShadowTransmittance()` |
-| 发光 | CPU 以面积、emissive 常量和贴图平均值建选择分布；GPU 在实际采样点读取发光贴图，乘 Mask/Blend 覆盖率并用于双面发光/MIS；材质修改同步更新两侧选择概率 | `Scene::buildLightData()`, `Scene::updateMaterial()`, `light_sampling.glsl` |
+| 发光 | CPU 以面积、emissive 常量和贴图平均值建选择分布；GPU 在实际采样点读取发光贴图，乘 Mask/Blend 覆盖率并用于双面发光/MIS；材质修改同步更新两侧选择概率 | `Scene::applyEditorDocument()`, `Scene::buildLightData()`, `light_sampling.glsl` |
 
 `Renderer::baseColorTex` 仍是 OIDN 的 albedo 辅助输出，不是导入贴图；
 导入贴图使用 `materialTextureArray` / `materialTextureInfoTexture`。
@@ -26,18 +22,18 @@ QImage 上传时进行垂直翻转，与 Assimp 导入后的 UV 约定对齐；L
 
 ## 场景文件与入口
 
-- 默认场景：[bedroom.scene.json](../resources/scenes/bedroom.scene.json)。
+- 无参数建立空文档并默认显示欢迎首页，可在设置中关闭欢迎页；卧室预设：[bedroom.scene.json](../resources/scenes/bedroom.scene.json)。
 - 路灯场景：[lantern.scene.json](../resources/scenes/lantern.scene.json)。
 - 两者均通过 `Scene::prepareScene()` / `buildDocument()` 加载，不按预设名称分派硬编码构建函数。
-- 侧栏提供场景列表、打开、保存、另存为、重新加载、导出便携包；外部场景加入本次会话列表。
-- 导入模型会替换当前内容并形成未保存的新场景。首次导入会居中并把最大边缩放到 3，
-  然后保存实际矩阵；加载场景文件不会再次按全场景包围盒缩放。
+- 首页与资源页提供场景预设，场景页对象树仍保留场景列表；文件菜单提供打开、保存、另存为、导出便携包。成功打开/保存的文件加入本机最近项目，可再次打开文件以重载。九页布局见 [工作区专题](./workspace_ui.md)。
+- 工作台导入会追加模型并保留源尺寸、位置及节点变换；有单独指定缩放入口。
+  CLI `--model` 保留独立场景适配能力；加载既有文档不重新按全场景包围盒缩放。
 
 ### v1 JSON 字段
 
 | 字段 | 保存内容 |
 | --- | --- |
-| `version`, `name` | 格式版本（当前为 1）、场景名 |
+| `version`, `name` | 输入格式版本 1；当前保存格式为 2、场景名 |
 | `models` | 稳定 ID、模型路径、行主序 4×4 仿射矩阵、平滑/归一化选项、材质绑定、依赖别名 |
 | `materials` | 稳定 ID、标量 PBR/alpha/介质参数、纹理槽到纹理 ID 的引用 |
 | `textures` | 稳定 ID、外部图片路径或模型 ID + 内嵌 key、UV 变换和 sampler 参数 |
@@ -58,18 +54,13 @@ QImage 上传时进行垂直翻转，与 Assimp 导入后的 UV 约定对齐；L
 普通保存把资源路径重算为相对于目标 JSON 的路径，跨盘时允许绝对路径。
 `QSaveFile` 禁用直接写入回退，提交失败不覆盖旧文件。
 
-首次启动仍在窗口构造阶段同步准备场景；运行中的切换/重载/模型导入使用
+首次场景 CPU 准备仍在窗口构造阶段同步执行，首页的 GL 初始化则推迟到首次显示编辑视口；运行中的切换/重载/模型导入使用
 `QThread::create()` 后台构建独立候选 `Scene`，包含模型、图片、BVH、灯光和 HDR cache。
 期间显示加载阶段并禁用冲突操作；CPU 构建失败保留原场景和未保存状态。
 
-成功时主线程调用 `GLWidget::replaceScene()`，通过 `RenderThread::replaceScene()`
-取得帧互斥锁及 `param_mutex` 后替换场景、应用参数并标记 dirty。
-渲染线程下一帧上传新资源，重置累计帧和降噪历史。恢复控件时使用 `QSignalBlocker`，
-避免材质滑块的信号意外覆盖刚加载的材质。
+成功时 UI 安装候选文档并向 Render Thread 提交带版本号的候选场景。渲染线程在 GPU 批次安全边界采用候选，更新资源、清除旧累积和降噪结果；不使用 UI 等待整帧的帧互斥锁。恢复控件抑制信号，避免误写新材质。
 
-相机、材质及持久渲染设置修改后标题显示 `*`。切换、重载、模型导入、关闭前可保存、
-放弃或取消。鼠标按下/松开产生的临时 `renderLow` 切换不单独标记文档 dirty。
-当前材质 UI 仍统一覆盖全场景常量，不包含对象树、变换编辑器或局部材质选择器。
+相机、模型、材质和场景持久设置通过 undo 命令影响 dirty 状态；本机布局及应用偏好不进入场景 undo。打开/关闭前可保存、放弃或取消。追加导入不丢弃当前场景。对象树、局部材质隔离和变换编辑现已实现；选择、展开及布局不标记未保存，也不主动清空采样；布局引起实际视口尺寸改变时仍重置预览累积。
 
 ### 便携导出
 
@@ -129,7 +120,7 @@ build\Release\learnQT.exe --scene my.scene.json --validate-scene
 
 `--scene` 与 `--model` 互斥。截图使用 `--render-regression <output.png>`，
 可附加 `--regression-frames 512 --regression-denoise`；路灯可加 `--regression-lantern`。
-这里的 frames 统计展示事件，不等于严格固定的完整 spp，不能替代采样算法的同 spp 对比。
+当前 `--regression-frames` 等待指定完整 spp；开启回归降噪时还等待匹配的结果。历史阶段曾统计展示事件，不能将其旧截图误作同 spp 数值对照。
 生成截图和临时测试包位于 `build/`，不是版本化资源。
 
 ## 明确保留的边界
@@ -144,5 +135,5 @@ build\Release\learnQT.exe --scene my.scene.json --validate-scene
 - FBX 已有内嵌图片小型夹具通过，不代表任意 DCC 导出的复杂 FBX 都已验收。
 - Blend 使用随机透过；基础 alpha 发光面、旧 Transparent 包围的均匀吸收/散射介质及嵌套透射率已在直接光阶段验证，复杂 alpha/玻璃/介质组合与 OIDN 辅助特征仍需专项验收。
 - 发光贴图的选择权重使用整张图片平均值，尚未做按三角形 UV 覆盖区域的功率估计或重要性分布。
-- 场景保存了实例矩阵，但运行时仍预变换并展开三角形，未实现 TLAS/BLAS、动态对象编辑。
-- HDR PDF 一致性、delta 和基础 volume MIS 的实现及验证见 [direct_lighting.md](./direct_lighting.md)；OIDN 法线输入范围、复杂介质与其他剩余项见 [to-do.md](./to-do.md)。
+- 当前已实现局部 BLAS/实例 TLAS、动态变换和局部材质编辑；v1 文档通过迁移进入同一运行时。
+- HDR PDF 一致性、delta 和基础 volume MIS 的实现及验证见 [direct_lighting.md](./direct_lighting.md)；OIDN 法线范围已修正；复杂介质与其他剩余项见 [to-do.md](./to-do.md)。

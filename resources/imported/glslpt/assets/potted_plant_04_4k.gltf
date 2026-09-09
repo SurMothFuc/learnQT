@@ -1,0 +1,155 @@
+{
+  "asset": {
+    "generator": "Khronos glTF Blender I/O v1.6.16",
+    "version": "2.0"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "potted_plant_04"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "PottedPlant_04",
+      "normalTexture": {
+        "index": 0
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 1
+        },
+        "metallicRoughnessTexture": {
+          "index": 2
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Plane.118",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    }
+  ],
+  "images": [
+    {
+      "mimeType": "image/jpeg",
+      "name": "potted_plant_04_gl_normal",
+      "uri": "textures/potted_plant_04_nor_gl_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "potted_plant_04_basecolor",
+      "uri": "textures/potted_plant_04_diff_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "potted_plant_04_metallic-potted_plant_04_roughness",
+      "uri": "textures/potted_plant_04_arm_4k.jpg"
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 4006,
+      "max": [
+        0.0851370319724083,
+        0.26760971546173096,
+        0.10080825537443161
+      ],
+      "min": [
+        -0.08513703942298889,
+        0.000013262033462524414,
+        -0.08513703942298889
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 4006,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 4006,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5123,
+      "count": 18291,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 48072,
+      "byteOffset": 0
+    },
+    {
+      "buffer": 0,
+      "byteLength": 48072,
+      "byteOffset": 48072
+    },
+    {
+      "buffer": 0,
+      "byteLength": 32048,
+      "byteOffset": 96144
+    },
+    {
+      "buffer": 0,
+      "byteLength": 36582,
+      "byteOffset": 128192
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 164776,
+      "uri": "potted_plant_04.bin"
+    }
+  ]
+}

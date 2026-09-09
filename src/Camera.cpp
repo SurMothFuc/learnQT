@@ -1,6 +1,8 @@
 ﻿#include "Camera.h"
 #include <QDebug>
 #include <qmath.h>
+#include <cmath>
+#include <limits>
 
 
 Camera::Camera(QVector3D position, QVector3D up, float yaw, float pitch) :
@@ -39,7 +41,7 @@ void Camera::restoreState(const QVector3D& eye, const QVector3D& lookAt, const Q
 {
     position=eye; target=lookAt; this->worldUp=worldUp.normalized(); zoom=fov;
     const QVector3D offset=position-target;
-    r=offset.length();
+    r=std::max(offset.length(), minimumOrbitDistance());
     upAngle=qRadiansToDegrees(std::asin(std::max(-1.0f,std::min(1.0f,offset.y()/r))));
     rotatAngle=qRadiansToDegrees(std::atan2(-offset.x(),offset.z()));
     std::fill(std::begin(keys),std::end(keys),false);
@@ -73,7 +75,7 @@ void Camera::processKeyboard(Camera_Movement direction, float deltaTime)
 {
     float velocity = this->movementSpeed * deltaTime;
     if (direction == FORWARD) {
-        this->r -= 0.005* velocity;
+        this->r = std::max(minimumOrbitDistance(), this->r - 0.005f * velocity);
         this->updateOrbitPosition();
         this->updateCameraVectors();
     }
@@ -144,15 +146,20 @@ void Camera::processMousePan(float xoffset, float yoffset)
 // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
 void Camera::processMouseScroll(float yoffset)
 {
-    /*if (this->zoom >= 1.0f && this->zoom <= 45.0f)
-        this->zoom -= yoffset;
-    if (this->zoom > 45.0f)
-        this->zoom = 45.0f;
-    if (this->zoom < 1.0f)
-        this->zoom = 1.0f;*/
-    r += -yoffset * 0.001;
+    if (!std::isfinite(yoffset) || yoffset == 0)
+        return;
+    // One wheel notch changes the orbit distance by 10%, never crossing the target.
+    const double factor = std::exp(std::max(-50., std::min(50., -double(yoffset) / 120. * .105360516)));
+    r = float(std::max(double(minimumOrbitDistance()), std::min(1e9, double(r) * factor)));
     this->updateOrbitPosition();
     this->updateCameraVectors();
+}
+
+float Camera::minimumOrbitDistance() const
+{
+    // Keep the offset representable even when a scene is far from the world origin.
+    const float scale = std::max({1.f, std::abs(target.x()), std::abs(target.y()), std::abs(target.z())});
+    return std::max(.001f, scale * 16.f * std::numeric_limits<float>::epsilon());
 }
 
 void Camera::processInput(float dt)

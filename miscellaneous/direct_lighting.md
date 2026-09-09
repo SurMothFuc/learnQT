@@ -1,6 +1,6 @@
 # 基础直接光采样
 
-更新日期：2026-09-05。本阶段以 `9cc6eda` 为父提交基础，代码与本文档一同交付。
+基础阶段日期：2026-09-05，基于 `9cc6eda`。当前数据布局和工作台接口已同步到 v2；下方 9 项数值验收保留为历史记录，本轮验收见 [工作台专题](./scene_workbench_v2.md)。
 
 概率同步、HDR 分布/PDF、解析光源 NEE 与命中贡献、alpha 发光面、delta，以及均匀介质中的直接光采样已阶段性完成。Release 构建与 9/9 CTest 通过。本文记录本阶段实际行为及验收，不将有限测试范围等同于任意场景均已验证；后续工作集中在 [to-do.md](./to-do.md)。
 
@@ -8,7 +8,7 @@
 
 `Scene::buildLightData()` 在 BVH 三角形排序后建立光源列表：先是发光三角形，尾部是场景中的解析 sphere / sun。选择权重使用功率估计，double 累加后存储 float CDF；每个光源的 `selectPdf` 使用相邻 CDF 值之差，保证与实际二分选择的区间一致。
 
-三角形 GPU 编码的 `textureParam1.z` 同时保存该概率。`Scene::updateMaterial()` 重建 light CDF 后回写此字段；下一帧同时上传三角形和 light buffer，更新 `nLights / nAnalyticLights` 并清空累计历史。材质编辑不会重建 BVH，但仍是全场景常量覆盖及整份三角形缓冲上传。
+当前实例渲染把该概率写入独立的 surface PDF 表，surface 引用同时区分几何三角形和实例。材质或实例变换后重建世界光源 CDF、面积及 PDF，更新绑定/光源表并清空历史；材质编辑不重建 BVH，也不上传整份几何。旧 `textureParam1.z` 布局保留在兼容数值测试中。
 
 `SampleOneLight()` 每个表面或体积散射点总共选一个显式光源样本：环境与非环境列表同时存在时各占 0.5，仅有一类时占 1。非环境列表包含发光三角形、球光源和有限角度太阳盘；其中具体光源再按功率 CDF 选择。这里的列表命名不代表太阳盘位于有限距离。
 
@@ -45,9 +45,9 @@ HDR cache 的 R/G/B 通道分别为 x 边缘 CDF、给定 x 的 y 条件 CDF、�
 
 先取得最近几何/解析球交点，处理到该端点前的介质自由程、衰减或发光，再累计端点/无限远发光，防止光源贡献绕过介质衰减。散射深度只统计真实表面或体积事件，RR 在完成第 3 次散射后启用；透明边界另有循环上限。
 
-`ShadowTransmittance()` 最多遍历 128 层，逐段累乘介质透射率，复用 BVH 的 alpha 筛选；旧 Transparent 边界可直穿并更新栈。解析球参与遮挡，目标光源用光源/三角形 ID 排除自遮挡。折射玻璃的 BSDF 表面阻断直线 NEE 连接，当前不采用“忽略折射直接穿过玻璃”的近似。
+`ShadowTransmittance()` 最多遍历 128 层，逐段累乘介质透射率，复用 BVH 的 alpha 筛选；旧 Transparent 边界可直穿并更新栈。解析球参与遮挡，目标光源用解析光源 ID 或含实例身份的逻辑 surface ID 排除自遮挡。折射玻璃的 BSDF 表面阻断直线 NEE 连接，当前不采用“忽略折射直接穿过玻璃”的近似。
 
-表面与阴影射线沿几何法线向出射侧偏移，距离为 `max(1e-5, 2e-6 * maxComponent(abs(position)))`；不以着色法线决定介质内外。极端尺度、掠射角和薄片仍需专项验证。
+表面与阴影射线沿几何法线向出射侧偏移，距离为 `max(1e-5, 2e-6 * maxComponent(abs(position)))`；不以着色法线决定介质内外。命中点已改为按重心权重在三角形表面重建；掠射时不合法的平滑/贴图法线回退到朝向几何法线，不改变介质内外。2026-09-09 的 GPU 求交回归覆盖部分长射线、共享边和镜像掠射夹具，详见 [实现逻辑](./logic_overview.md) 与 [本次验证](./workspace_ui.md)。极端尺度、复杂薄片及更广泛模型仍需专项验证，这些修复不包含穿过折射界面的光照采样。
 
 ## 本阶段验证记录
 
@@ -89,7 +89,7 @@ HDR cache 的 R/G/B 通道分别为 x 边缘 CDF、给定 x 的 y 条件 CDF、�
 
 球光源夹具在同样 65,536 样本下，BSDF-only 方差约为 `0.5295`，MIS 方差约为 `1.0966e-5`，NEE-only 约为 `3.0521e-6`。该结果说明这一个夹具中 MIS 相对 BSDF-only 降低了方差，不证明所有场景均优于 NEE-only，也不是同耗时性能比较。
 
-日志与截图位于未版本化的 `build/`：`Testing/Temporary/LastTest.log`、`scene-ui-regression/bedroom-before.png`、`scene-ui-regression/lantern.png`、`scene-ui-regression/bedroom-after.png`、`render_regression.png`。本线程查看过卧室与路灯回归截图；它们用于画面回归，不替代数值验收。`--regression-frames` 统计展示事件，不是严格 spp。
+日志与截图位于未版本化的 `build/`：`Testing/Temporary/LastTest.log`、`scene-ui-regression/bedroom-before.png`、`scene-ui-regression/lantern.png`、`scene-ui-regression/bedroom-after.png`、`render_regression.png`。本线程查看过卧室与路灯回归截图；它们用于画面回归，不替代数值验收。当时 `--regression-frames` 统计展示事件；当前实现已改为等待完整 spp 及对应的显示/降噪结果。
 
 可用 `ctest --test-dir build -C Release -R '^lighting_numerical_regression$' --output-on-failure` 单独复现数值测试；本阶段验收执行的是上面的完整 9 项命令。
 
@@ -99,8 +99,8 @@ HDR cache 的 R/G/B 通道分别为 x 边缘 CDF、给定 x 的 y 条件 CDF、�
 - 相机初始在一个吸收体内已有回归；实现仅根据首段背面命中推断一个介质，未构建完整初始多层栈。
 - 介质栈不包含 IOR，表面折射仍按真空与当前材质的 IOR 比计算；相邻非真空介质与复杂玻璃光路另需实现和验证。
 - 发光贴图权重仍使用整张纹理平均值，未按三角形 UV 覆盖区域估算功率，也未做纹理域重要性采样。
-- OIDN 法线仍以 `[0, 1]` 编码读回，尚未恢复到 `[-1, 1]`；透明/体积路径的辅助输入语义也未专门验收。本阶段采样能量测试不覆盖这些降噪问题。
+- OIDN 法线已在 v2 路径恢复为 `[-1,1]`，并验证普通/法线贴图预览的版本和尺寸失效。复杂透明/体积路径的辅助语义仍需专项验收；本节历史采样能量测试不替代降噪验收。
 - 未完成复杂玻璃、多光源和体积组合的广泛同 spp 噪声/firefly 对照；现有几何偏移尚未证明适用于所有尺度。
-- 本地参考 `D:/program/GLSL-PathTracer-master` 的相机 AA、景深、环境/背景控制、ACES、roughness mollification、实例化、AnyHit 和独立输出/预览等差距已加入待办。对比为源码检查，未运行参考项目做画质或性能基准。
+- 本地参考 `D:/program/GLSL-PathTracer-master` 的源码对照曾产生相机、环境、实例化等待办；当前已实现环境强度/旋转、ACES、实例化及独立出图。AA、景深、独立背景、roughness mollification 和 AnyHit 等仍见待办。对比为源码检查，未运行参考项目做画质或性能基准。
 
 参考项目没有发光网格重要性采样，也没有体积栈；当前已实现这两项。参考的矩形面光源和理想方向光与当前双面三角形、有限太阳盘的模型不同，后续按实际需求补齐专用类型。

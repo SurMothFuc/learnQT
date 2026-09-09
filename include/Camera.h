@@ -63,6 +63,7 @@ public:
     //Keyboard multi-touch
     bool keys[1024];
 private:
+    float minimumOrbitDistance() const;
     QVector3D orbitOffset() const;
     void updateOrbitPosition();
     void updateCameraVectors();

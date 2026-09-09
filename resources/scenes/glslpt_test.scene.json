@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "name": "GLSLPT · test",
+  "portable": false,
+  "models": [
+    {
+      "id": "model-000",
+      "source": "../imported/glslpt/assets/test/hexagon.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "name": "Glass",
+      "material": "material-glass"
+    }
+  ],
+  "materials": [
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "default"
+    },
+    {
+      "baseColor": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0,
+      "roughness": 0.001,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 1.0,
+      "IOR": 1.45,
+      "mediumtype": 1,
+      "mediumDensity": 1.0,
+      "mediumColor": [
+        0.905,
+        0.63,
+        0.3
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-glass",
+      "textures": {}
+    }
+  ],
+  "textures": [],
+  "lights": [],
+  "hdr": "../imported/glslpt/derived/hdr/sunset_x5.hdr",
+  "camera": {
+    "position": [
+      -3.04,
+      1.45,
+      -2.51
+    ],
+    "target": [
+      0.0,
+      7.0,
+      0.0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 35.98339777135763
+  },
+  "render": {
+    "denoise": false,
+    "renderLow": false,
+    "useTileRendering": true,
+    "tileSize": 144,
+    "maxBounces": 8,
+    "maxRenderFrames": 0,
+    "useEnvironmentMap": true
+  },
+  "credits": [
+    {
+      "source": "GLSL-PathTracer local asset collection",
+      "asset": "test.scene",
+      "attribution": "See resources/imported/glslpt/Model Credits.txt, HDR Credits.txt and LICENSE; asset licenses differ."
+    }
+  ],
+  "conversion": {
+    "source": "test.scene",
+    "referenceResolution": [
+      1280.0,
+      720.0
+    ],
+    "notes": [
+      "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+      "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+      "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+      "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+      "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+      "Source renderer enablerr=true; native renderer behavior retained.",
+      "Source renderer rrdepth=3; native renderer behavior retained."
+    ]
+  }
+}

@@ -1,0 +1,758 @@
+{
+  "version": 1,
+  "name": "GLSLPT · substance_boy",
+  "portable": false,
+  "models": [
+    {
+      "id": "model-000",
+      "source": "../imported/glslpt/assets/substance_boy/background.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "name": "Background",
+      "material": "material-grid"
+    },
+    {
+      "id": "model-001",
+      "source": "../imported/glslpt/assets/substance_boy/head.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.017,
+        0.0,
+        1.0,
+        0.0,
+        0.107,
+        0.0,
+        0.0,
+        1.0,
+        -0.05,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "name": "Head1",
+      "material": "material-head"
+    },
+    {
+      "id": "model-002",
+      "source": "../imported/glslpt/assets/substance_boy/body.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.049,
+        0.0,
+        0.0,
+        1.0,
+        -0.05,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "name": "Body1",
+      "material": "material-body"
+    },
+    {
+      "id": "model-003",
+      "source": "../imported/glslpt/assets/substance_boy/base.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0075,
+        0.0,
+        0.0,
+        1.0,
+        -0.05,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "name": "Base1",
+      "material": "material-base"
+    },
+    {
+      "id": "model-004",
+      "source": "../imported/glslpt/assets/substance_boy/head.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.017,
+        0.0,
+        1.0,
+        0.0,
+        0.107,
+        0.0,
+        0.0,
+        1.0,
+        0.05,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "name": "Head2",
+      "material": "material-head"
+    },
+    {
+      "id": "model-005",
+      "source": "../imported/glslpt/assets/substance_boy/body.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.049,
+        0.0,
+        0.0,
+        1.0,
+        0.05,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "name": "Body2",
+      "material": "material-body"
+    },
+    {
+      "id": "model-006",
+      "source": "../imported/glslpt/assets/substance_boy/base.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0075,
+        0.0,
+        0.0,
+        1.0,
+        0.05,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "name": "Base2",
+      "material": "material-base"
+    },
+    {
+      "id": "light-000",
+      "source": "../imported/glslpt/derived/lights/glslpt_substance_boy_light-000.obj",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": false,
+      "normalize": false,
+      "material": "light-000"
+    },
+    {
+      "id": "light-001",
+      "source": "../imported/glslpt/derived/lights/glslpt_substance_boy_light-001.obj",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": false,
+      "normalize": false,
+      "material": "light-001"
+    }
+  ],
+  "materials": [
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "default"
+    },
+    {
+      "baseColor": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-head",
+      "textures": {
+        "baseColor": "texture-000",
+        "normal": "texture-001",
+        "metallic": "texture-002",
+        "roughness": "texture-002"
+      }
+    },
+    {
+      "baseColor": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-body",
+      "textures": {
+        "baseColor": "texture-003",
+        "normal": "texture-004",
+        "metallic": "texture-005",
+        "roughness": "texture-005"
+      }
+    },
+    {
+      "baseColor": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-base",
+      "textures": {
+        "baseColor": "texture-006",
+        "normal": "texture-007",
+        "metallic": "texture-008",
+        "roughness": "texture-008"
+      }
+    },
+    {
+      "baseColor": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-grid",
+      "textures": {
+        "baseColor": "texture-009"
+      }
+    },
+    {
+      "baseColor": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "emissive": [
+        40.0,
+        41.0,
+        41.0
+      ],
+      "metallic": 0,
+      "roughness": 1.0,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "light-000"
+    },
+    {
+      "baseColor": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "emissive": [
+        40.0,
+        41.0,
+        41.0
+      ],
+      "metallic": 0,
+      "roughness": 1.0,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "light-001"
+    }
+  ],
+  "textures": [
+    {
+      "id": "texture-000",
+      "source": "../imported/glslpt/derived/gamma22/substance_boy/textures/01_Head_Base_Color.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-001",
+      "source": "../imported/glslpt/assets/substance_boy/textures/01_Head_Normal_DirectX.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-002",
+      "source": "../imported/glslpt/derived/roughness/substance_boy/textures/01_Head_MetallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-003",
+      "source": "../imported/glslpt/derived/gamma22/substance_boy/textures/02_Body_Base_Color.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-004",
+      "source": "../imported/glslpt/assets/substance_boy/textures/02_Body_Normal_DirectX.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-005",
+      "source": "../imported/glslpt/derived/roughness/substance_boy/textures/02_Body_MetallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-006",
+      "source": "../imported/glslpt/derived/gamma22/substance_boy/textures/03_Base_Base_Color.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-007",
+      "source": "../imported/glslpt/assets/substance_boy/textures/03_Base_Normal_DirectX.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-008",
+      "source": "../imported/glslpt/derived/roughness/substance_boy/textures/03_Base_MetallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-009",
+      "source": "../imported/glslpt/derived/gamma22/substance_boy/textures/grid.jpg.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    }
+  ],
+  "lights": [],
+  "hdr": "",
+  "camera": {
+    "position": [
+      0.3,
+      0.11,
+      0.0
+    ],
+    "target": [
+      0.0,
+      0.07,
+      0.0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 35.98339777135763
+  },
+  "render": {
+    "denoise": false,
+    "renderLow": false,
+    "useTileRendering": true,
+    "tileSize": 144,
+    "maxBounces": 2,
+    "maxRenderFrames": 0,
+    "useEnvironmentMap": false
+  },
+  "credits": [
+    {
+      "source": "GLSL-PathTracer local asset collection",
+      "asset": "substance_boy.scene",
+      "attribution": "See resources/imported/glslpt/Model Credits.txt, HDR Credits.txt and LICENSE; asset licenses differ."
+    }
+  ],
+  "conversion": {
+    "source": "substance_boy.scene",
+    "referenceResolution": [
+      1280.0,
+      720.0
+    ],
+    "notes": [
+      "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+      "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+      "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+      "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+      "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+      "Quad lights converted to two mesh triangles; native mesh emission is double-sided and has native surface scattering."
+    ]
+  }
+}

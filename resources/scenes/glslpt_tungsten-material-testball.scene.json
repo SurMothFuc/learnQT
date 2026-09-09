@@ -1,0 +1,339 @@
+{
+  "version": 1,
+  "name": "GLSLPT · tungsten-material-testball",
+  "portable": false,
+  "models": [
+    {
+      "id": "model-000",
+      "source": "../imported/glslpt/assets/tungsten-material-testball/models/Mesh000.obj",
+      "transform": [
+        0.482906,
+        0.0,
+        0.0,
+        0.110507,
+        0.0,
+        0.482906,
+        0.0,
+        0.494301,
+        0.0,
+        0.0,
+        0.482906,
+        0.126194,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-stand"
+    },
+    {
+      "id": "model-001",
+      "source": "../imported/glslpt/assets/tungsten-material-testball/models/Mesh001.obj",
+      "transform": [
+        0.482906,
+        0.0,
+        0.0,
+        0.0571719,
+        0.0,
+        0.482906,
+        0.0,
+        0.213656,
+        0.0,
+        0.0,
+        0.482906,
+        0.0682078,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-test"
+    },
+    {
+      "id": "model-002",
+      "source": "../imported/glslpt/assets/tungsten-material-testball/models/Mesh002.obj",
+      "transform": [
+        0.482906,
+        0.0,
+        0.0,
+        0.156382,
+        0.0,
+        0.482906,
+        0.0,
+        0.777229,
+        0.0,
+        0.0,
+        0.482906,
+        0.161698,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-test"
+    },
+    {
+      "id": "model-003",
+      "source": "../imported/glslpt/assets/tungsten-material-testball/models/Plane.obj",
+      "transform": [
+        -1.88298,
+        1.9602,
+        2.50299e-07,
+        -0.708772,
+        -2.37623e-07,
+        1.18811e-07,
+        -2.71809,
+        0.0,
+        -1.9602,
+        -1.88298,
+        8.90586e-08,
+        -0.732108,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-checker"
+    }
+  ],
+  "materials": [
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "default"
+    },
+    {
+      "baseColor": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-stand",
+      "textures": {}
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-checker",
+      "textures": {
+        "baseColor": "texture-000"
+      }
+    },
+    {
+      "baseColor": [
+        0.245,
+        0.0,
+        1.0
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.001,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-test",
+      "textures": {}
+    }
+  ],
+  "textures": [
+    {
+      "id": "texture-000",
+      "source": "../imported/glslpt/derived/gamma22/tungsten-material-testball/textures/checker.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    }
+  ],
+  "lights": [],
+  "hdr": "../imported/glslpt/assets/HDR/material-test.hdr",
+  "camera": {
+    "position": [
+      3.04068,
+      3.17153,
+      3.20454
+    ],
+    "target": [
+      2.457235,
+      2.632765,
+      2.59682
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 20.11429322446647
+  },
+  "render": {
+    "denoise": false,
+    "renderLow": false,
+    "useTileRendering": true,
+    "tileSize": 144,
+    "maxBounces": 2,
+    "maxRenderFrames": 0,
+    "useEnvironmentMap": true
+  },
+  "credits": [
+    {
+      "source": "GLSL-PathTracer local asset collection",
+      "asset": "tungsten-material-testball.scene",
+      "attribution": "See resources/imported/glslpt/Model Credits.txt, HDR Credits.txt and LICENSE; asset licenses differ."
+    }
+  ],
+  "conversion": {
+    "source": "tungsten-material-testball.scene",
+    "referenceResolution": [
+      1280.0,
+      720.0
+    ],
+    "notes": [
+      "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+      "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+      "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+      "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+      "Original output size is reference framing metadata only; native rendering follows the viewport size."
+    ]
+  }
+}

@@ -1,3 +1,10 @@
+#ifdef INSTANCED_SCENE
+uniform float environmentIntensity;
+uniform float environmentRotation;
+vec3 EnvironmentDirection(vec3 d,float sign){float a=environmentRotation*sign;return vec3(cos(a)*d.x-sin(a)*d.z,d.y,sin(a)*d.x+cos(a)*d.z);}
+#else
+vec3 EnvironmentDirection(vec3 d,float sign){return d;}
+#endif
 float HdrTexelSolidAngle(int y, ivec2 size)
 {
     return (TWO_PI / float(size.x)) * 2.0 *
@@ -7,7 +14,7 @@ float HdrTexelSolidAngle(int y, ivec2 size)
 float hdrPdf(vec3 L, int unusedResolution)
 {
     ivec2 size = textureSize(hdrCache, 0);
-    vec2 uv = toSphericalCoord(normalize(L));
+    vec2 uv = toSphericalCoord(normalize(EnvironmentDirection(L,-1.0)));
     ivec2 cell = clamp(ivec2(uv * vec2(size)), ivec2(0), size - 1);
     return texelFetch(hdrCache, cell, 0).b / HdrTexelSolidAngle(cell.y, size);
 }
@@ -53,10 +60,14 @@ vec3 SampleHdr(float xi1, float xi2, out float pdf)
         sinTheta = sqrt(max(0.0, onePlusCos * (2.0-onePlusCos)));
     }
     pdf = cdf.b / HdrTexelSolidAngle(y, size);
-    return vec3(sinTheta * cos(phi), cosTheta, sinTheta * sin(phi));
+    return EnvironmentDirection(vec3(sinTheta * cos(phi), cosTheta, sinTheta * sin(phi)),1.0);
 }
 
 vec3 hdrColor(vec3 L)
 {
-    return texture(hdrMap, toSphericalCoord(normalize(L))).rgb;
+    vec3 color=texture(hdrMap,toSphericalCoord(normalize(EnvironmentDirection(L,-1.0)))).rgb;
+#ifdef INSTANCED_SCENE
+    color*=environmentIntensity;
+#endif
+    return color;
 }

@@ -1,0 +1,4456 @@
+{
+  "version": 1,
+  "name": "GLSLPT · rank3police",
+  "portable": false,
+  "models": [
+    {
+      "id": "model-000",
+      "source": "../imported/glslpt/assets/rank3police/object10.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object10"
+    },
+    {
+      "id": "model-001",
+      "source": "../imported/glslpt/assets/rank3police/object11.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object11"
+    },
+    {
+      "id": "model-002",
+      "source": "../imported/glslpt/assets/rank3police/object12.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object12"
+    },
+    {
+      "id": "model-003",
+      "source": "../imported/glslpt/assets/rank3police/object13.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object13"
+    },
+    {
+      "id": "model-004",
+      "source": "../imported/glslpt/assets/rank3police/object14001.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object14001"
+    },
+    {
+      "id": "model-005",
+      "source": "../imported/glslpt/assets/rank3police/object15.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object15"
+    },
+    {
+      "id": "model-006",
+      "source": "../imported/glslpt/assets/rank3police/object16.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object16"
+    },
+    {
+      "id": "model-007",
+      "source": "../imported/glslpt/assets/rank3police/object17.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object16"
+    },
+    {
+      "id": "model-008",
+      "source": "../imported/glslpt/assets/rank3police/object18.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object18"
+    },
+    {
+      "id": "model-009",
+      "source": "../imported/glslpt/assets/rank3police/object19.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object19"
+    },
+    {
+      "id": "model-010",
+      "source": "../imported/glslpt/assets/rank3police/object20.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object20"
+    },
+    {
+      "id": "model-011",
+      "source": "../imported/glslpt/assets/rank3police/object21.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object21"
+    },
+    {
+      "id": "model-012",
+      "source": "../imported/glslpt/assets/rank3police/object22.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object22"
+    },
+    {
+      "id": "model-013",
+      "source": "../imported/glslpt/assets/rank3police/object23.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object23"
+    },
+    {
+      "id": "model-014",
+      "source": "../imported/glslpt/assets/rank3police/object24.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object23"
+    },
+    {
+      "id": "model-015",
+      "source": "../imported/glslpt/assets/rank3police/object25.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object25"
+    },
+    {
+      "id": "model-016",
+      "source": "../imported/glslpt/assets/rank3police/object26.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object26"
+    },
+    {
+      "id": "model-017",
+      "source": "../imported/glslpt/assets/rank3police/object27.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object26"
+    },
+    {
+      "id": "model-018",
+      "source": "../imported/glslpt/assets/rank3police/object28.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object26"
+    },
+    {
+      "id": "model-019",
+      "source": "../imported/glslpt/assets/rank3police/object29.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object26"
+    },
+    {
+      "id": "model-020",
+      "source": "../imported/glslpt/assets/rank3police/object30.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object26"
+    },
+    {
+      "id": "model-021",
+      "source": "../imported/glslpt/assets/rank3police/object31.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object26"
+    },
+    {
+      "id": "model-022",
+      "source": "../imported/glslpt/assets/rank3police/object32.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object32"
+    },
+    {
+      "id": "model-023",
+      "source": "../imported/glslpt/assets/rank3police/object33.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object33"
+    },
+    {
+      "id": "model-024",
+      "source": "../imported/glslpt/assets/rank3police/object34.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object33"
+    },
+    {
+      "id": "model-025",
+      "source": "../imported/glslpt/assets/rank3police/object35.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object35"
+    },
+    {
+      "id": "model-026",
+      "source": "../imported/glslpt/assets/rank3police/object36.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object36"
+    },
+    {
+      "id": "model-027",
+      "source": "../imported/glslpt/assets/rank3police/object37.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object37"
+    },
+    {
+      "id": "model-028",
+      "source": "../imported/glslpt/assets/rank3police/object38.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object38"
+    },
+    {
+      "id": "model-029",
+      "source": "../imported/glslpt/assets/rank3police/object39.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object39"
+    },
+    {
+      "id": "model-030",
+      "source": "../imported/glslpt/assets/rank3police/object4.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object3"
+    },
+    {
+      "id": "model-031",
+      "source": "../imported/glslpt/assets/rank3police/object40.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object40"
+    },
+    {
+      "id": "model-032",
+      "source": "../imported/glslpt/assets/rank3police/object41.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object40"
+    },
+    {
+      "id": "model-033",
+      "source": "../imported/glslpt/assets/rank3police/object42.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object42"
+    },
+    {
+      "id": "model-034",
+      "source": "../imported/glslpt/assets/rank3police/object43.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object43"
+    },
+    {
+      "id": "model-035",
+      "source": "../imported/glslpt/assets/rank3police/object44.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object44"
+    },
+    {
+      "id": "model-036",
+      "source": "../imported/glslpt/assets/rank3police/object45.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object45"
+    },
+    {
+      "id": "model-037",
+      "source": "../imported/glslpt/assets/rank3police/object46.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object46"
+    },
+    {
+      "id": "model-038",
+      "source": "../imported/glslpt/assets/rank3police/object47.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object47"
+    },
+    {
+      "id": "model-039",
+      "source": "../imported/glslpt/assets/rank3police/object48.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object48"
+    },
+    {
+      "id": "model-040",
+      "source": "../imported/glslpt/assets/rank3police/object49.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object48"
+    },
+    {
+      "id": "model-041",
+      "source": "../imported/glslpt/assets/rank3police/object5.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object5"
+    },
+    {
+      "id": "model-042",
+      "source": "../imported/glslpt/assets/rank3police/object50.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object48"
+    },
+    {
+      "id": "model-043",
+      "source": "../imported/glslpt/assets/rank3police/object51.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object51"
+    },
+    {
+      "id": "model-044",
+      "source": "../imported/glslpt/assets/rank3police/object52.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object52"
+    },
+    {
+      "id": "model-045",
+      "source": "../imported/glslpt/assets/rank3police/object53.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object53"
+    },
+    {
+      "id": "model-046",
+      "source": "../imported/glslpt/assets/rank3police/object54.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object54"
+    },
+    {
+      "id": "model-047",
+      "source": "../imported/glslpt/assets/rank3police/object55.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object48"
+    },
+    {
+      "id": "model-048",
+      "source": "../imported/glslpt/assets/rank3police/object56.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object48"
+    },
+    {
+      "id": "model-049",
+      "source": "../imported/glslpt/assets/rank3police/object57.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object57"
+    },
+    {
+      "id": "model-050",
+      "source": "../imported/glslpt/assets/rank3police/object58.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-object58"
+    },
+    {
+      "id": "model-051",
+      "source": "../imported/glslpt/assets/rank3police/object60.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-emissive_red"
+    },
+    {
+      "id": "model-052",
+      "source": "../imported/glslpt/assets/rank3police/object61.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-emissive"
+    },
+    {
+      "id": "model-053",
+      "source": "../imported/glslpt/assets/rank3police/object62.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-emissive"
+    },
+    {
+      "id": "model-054",
+      "source": "../imported/glslpt/assets/rank3police/object63.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-emissive"
+    },
+    {
+      "id": "model-055",
+      "source": "../imported/glslpt/assets/rank3police/object64.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-emissive"
+    },
+    {
+      "id": "model-056",
+      "source": "../imported/glslpt/assets/rank3police/object65.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-emissive"
+    },
+    {
+      "id": "model-057",
+      "source": "../imported/glslpt/assets/rank3police/object66.obj",
+      "transform": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "smoothNormals": true,
+      "normalize": false,
+      "material": "material-emissive"
+    }
+  ],
+  "materials": [
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "default"
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object10",
+      "textures": {
+        "baseColor": "texture-000",
+        "metallic": "texture-001",
+        "roughness": "texture-001"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object11",
+      "textures": {
+        "baseColor": "texture-002",
+        "metallic": "texture-003",
+        "roughness": "texture-003"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.843492,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object12",
+      "textures": {
+        "baseColor": "texture-004"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object13",
+      "textures": {
+        "baseColor": "texture-005",
+        "metallic": "texture-006",
+        "roughness": "texture-006"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0.5,
+      "roughness": 0.001,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object14001",
+      "textures": {
+        "baseColor": "texture-007"
+      }
+    },
+    {
+      "baseColor": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1.0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object15",
+      "textures": {}
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object16",
+      "textures": {
+        "baseColor": "texture-008",
+        "metallic": "texture-009",
+        "roughness": "texture-009"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object18",
+      "textures": {
+        "baseColor": "texture-010",
+        "metallic": "texture-011",
+        "roughness": "texture-011"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object19",
+      "textures": {
+        "baseColor": "texture-012",
+        "metallic": "texture-013",
+        "roughness": "texture-013"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.156508,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object20",
+      "textures": {
+        "baseColor": "texture-014"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.843,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object21",
+      "textures": {
+        "baseColor": "texture-015"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object22",
+      "textures": {
+        "baseColor": "texture-016",
+        "metallic": "texture-017",
+        "roughness": "texture-017"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object23",
+      "textures": {
+        "baseColor": "texture-018",
+        "metallic": "texture-019",
+        "roughness": "texture-019"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object25",
+      "textures": {
+        "baseColor": "texture-020",
+        "metallic": "texture-021",
+        "roughness": "texture-021"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1.0,
+      "roughness": 0.156508,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object26",
+      "textures": {
+        "baseColor": "texture-022"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object3",
+      "textures": {
+        "baseColor": "texture-023",
+        "metallic": "texture-024",
+        "roughness": "texture-024"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object32",
+      "textures": {
+        "baseColor": "texture-025",
+        "metallic": "texture-026",
+        "roughness": "texture-026"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object33",
+      "textures": {
+        "baseColor": "texture-027",
+        "metallic": "texture-028",
+        "roughness": "texture-028"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object35",
+      "textures": {
+        "baseColor": "texture-029",
+        "metallic": "texture-030",
+        "roughness": "texture-030"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object36",
+      "textures": {
+        "baseColor": "texture-031",
+        "metallic": "texture-032",
+        "roughness": "texture-032"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object37",
+      "textures": {
+        "baseColor": "texture-033",
+        "metallic": "texture-034",
+        "roughness": "texture-034"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object38",
+      "textures": {
+        "baseColor": "texture-035",
+        "metallic": "texture-036",
+        "roughness": "texture-036"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object39",
+      "textures": {
+        "baseColor": "texture-037",
+        "metallic": "texture-038",
+        "roughness": "texture-038"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object40",
+      "textures": {
+        "baseColor": "texture-039",
+        "metallic": "texture-040",
+        "roughness": "texture-040"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object42",
+      "textures": {
+        "baseColor": "texture-041",
+        "metallic": "texture-042",
+        "roughness": "texture-042"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object43",
+      "textures": {
+        "baseColor": "texture-043",
+        "metallic": "texture-044",
+        "roughness": "texture-044"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object44",
+      "textures": {
+        "baseColor": "texture-045",
+        "metallic": "texture-046",
+        "roughness": "texture-046"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object45",
+      "textures": {
+        "baseColor": "texture-047",
+        "metallic": "texture-048",
+        "roughness": "texture-048"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object46",
+      "textures": {
+        "baseColor": "texture-049",
+        "normal": "texture-050",
+        "metallic": "texture-051",
+        "roughness": "texture-051"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object47",
+      "textures": {
+        "baseColor": "texture-052",
+        "normal": "texture-053",
+        "metallic": "texture-054",
+        "roughness": "texture-054"
+      }
+    },
+    {
+      "baseColor": [
+        0.64,
+        0.64,
+        0.64
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.71,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object48",
+      "textures": {}
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object5",
+      "textures": {
+        "baseColor": "texture-055",
+        "metallic": "texture-056",
+        "roughness": "texture-056"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object51",
+      "textures": {
+        "baseColor": "texture-057",
+        "normal": "texture-058"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object52",
+      "textures": {
+        "baseColor": "texture-059",
+        "normal": "texture-060"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object53",
+      "textures": {
+        "baseColor": "texture-061",
+        "normal": "texture-062",
+        "metallic": "texture-063",
+        "roughness": "texture-063"
+      }
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object54",
+      "textures": {
+        "baseColor": "texture-064",
+        "normal": "texture-065",
+        "metallic": "texture-066",
+        "roughness": "texture-066"
+      }
+    },
+    {
+      "baseColor": [
+        0.005,
+        0.004,
+        0.004
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.71,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object57",
+      "textures": {}
+    },
+    {
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "metallic": 1,
+      "roughness": 1,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-object58",
+      "textures": {
+        "baseColor": "texture-067",
+        "metallic": "texture-068",
+        "roughness": "texture-068"
+      }
+    },
+    {
+      "baseColor": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "emissive": [
+        5.0,
+        5.0,
+        20.0
+      ],
+      "metallic": 0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-emissive",
+      "textures": {}
+    },
+    {
+      "baseColor": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "emissive": [
+        20.0,
+        0.0,
+        0.0
+      ],
+      "metallic": 0,
+      "roughness": 0.5,
+      "subsurface": 0,
+      "specularTint": 0,
+      "anisotropic": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "clearcoat": 0,
+      "clearcoatGloss": 0,
+      "transmission": 0,
+      "IOR": 1.5,
+      "mediumtype": 0,
+      "mediumDensity": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumAnisotropy": 0,
+      "alphaMode": 0,
+      "opacity": 1,
+      "alphaCutoff": 0,
+      "normalScale": 1,
+      "normalMapFlipY": false,
+      "metallicChannel": 2,
+      "roughnessChannel": 1,
+      "id": "material-emissive_red",
+      "textures": {}
+    }
+  ],
+  "textures": [
+    {
+      "id": "texture-000",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/material_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-001",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/material_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-002",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/cam2_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-003",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/cam2_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-004",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/comm_block_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-005",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/ctrl_eye_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-006",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/ctrl_eye_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-007",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/glass_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-008",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/helmet_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-009",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/helmet_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-010",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/helmet_ad_01_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-011",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/helmet_ad_01_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-012",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/helmet_ad_02_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-013",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/helmet_ad_02_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-014",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/helmet_ad_03_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-015",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/helmet_logo_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-016",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/helmet_sidelock_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-017",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/helmet_sidelock_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-018",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/helmet_sidepart_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-019",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/helmet_sidepart_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-020",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/innerpart_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-021",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/innerpart_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-022",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/light_metal_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-023",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/add_details_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-024",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/add_details_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-025",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/mask_ad_01_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-026",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/mask_ad_01_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-027",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/mask_big_lock_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-028",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/mask_big_lock_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-029",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/mask_dron_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-030",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/mask_dron_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-031",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/mask_gen_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-032",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/mask_gen_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-033",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/mask_part_01_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-034",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/mask_part_01_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-035",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/mask_part_02_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-036",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/mask_part_02_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-037",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/mask_part_03_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-038",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/mask_part_03_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-039",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/mask_part_04_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-040",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/mask_part_04_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-041",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/mc_block_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-042",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/mc_block_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-043",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/nose_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-044",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/nose_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-045",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/red_parts_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-046",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/red_parts_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-047",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/sd_block_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-048",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/sd_block_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-049",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/skull_head_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-050",
+      "source": "../imported/glslpt/assets/rank3police/textures/skull_head_normal.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-051",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/skull_head_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-052",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/skull_jaw_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-053",
+      "source": "../imported/glslpt/assets/rank3police/textures/skull_jaw_normal.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-054",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/skull_jaw_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-055",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/backpart_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-056",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/backpart_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-057",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/suit_chest_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-058",
+      "source": "../imported/glslpt/assets/rank3police/textures/suit_chest_normal.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-059",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/suit_collar_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-060",
+      "source": "../imported/glslpt/assets/rank3police/textures/suit_collar_normal.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-061",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/suit_fabric_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-062",
+      "source": "../imported/glslpt/assets/rank3police/textures/suit_fabric_normal.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-063",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/suit_fabric_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-064",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/suit_front_stripe_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-065",
+      "source": "../imported/glslpt/assets/rank3police/textures/suit_front_stripe_normal.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-066",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/suit_front_stripe_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-067",
+      "source": "../imported/glslpt/derived/gamma22/rank3police/textures/suit_strap_baseColor.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    },
+    {
+      "id": "texture-068",
+      "source": "../imported/glslpt/derived/roughness/rank3police/textures/suit_strap_metallicRoughness.png.png",
+      "uvScale": [
+        1,
+        1
+      ],
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "wrapS": 0,
+      "wrapT": 0,
+      "minFilter": 9729,
+      "magFilter": 9729
+    }
+  ],
+  "lights": [],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "camera": {
+    "position": [
+      70.8,
+      -0.503,
+      70.0
+    ],
+    "target": [
+      0.0,
+      -2.0,
+      0.0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fov": 10.296657669864024
+  },
+  "render": {
+    "denoise": false,
+    "renderLow": false,
+    "useTileRendering": true,
+    "tileSize": 144,
+    "maxBounces": 2,
+    "maxRenderFrames": 0,
+    "useEnvironmentMap": true
+  },
+  "credits": [
+    {
+      "source": "GLSL-PathTracer local asset collection",
+      "asset": "rank3police.scene",
+      "attribution": "See resources/imported/glslpt/Model Credits.txt, HDR Credits.txt and LICENSE; asset licenses differ."
+    }
+  ],
+  "conversion": {
+    "source": "rank3police.scene",
+    "referenceResolution": [
+      1280.0,
+      720.0
+    ],
+    "notes": [
+      "Native learnQT v1 renderer: pixel-center rays, current tone mapping, RR after depth 3, existing BSDF/medium implementation.",
+      "Source gamma 2.2 color textures converted to sRGB storage; RGBA8 quantization and filtering can cause small differences.",
+      "Packed roughness G squared, metallic B overrides constants; RGBA8 roughness floor is 1/255 instead of source 0.001.",
+      "Normal-map convention uses the source UV inversion / target image inversion equivalence; no extra green flip for OpenGL maps.",
+      "Original output size is reference framing metadata only; native rendering follows the viewport size.",
+      "Source renderer hideemitters=true; native renderer behavior retained."
+    ]
+  }
+}

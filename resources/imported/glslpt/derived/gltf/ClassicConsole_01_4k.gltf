@@ -1,0 +1,174 @@
+{
+  "asset": {
+    "generator": "Khronos glTF Blender I/O v1.6.16",
+    "version": "2.0"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "ClassicConsole_01"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "ClassicConsole_01",
+      "normalTexture": {
+        "index": 0,
+        "scale": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 3
+        },
+        "metallicRoughnessTexture": {
+          "index": 4
+        },
+        "metallicFactor": 1,
+        "roughnessFactor": 1
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Plane.000",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    },
+    {
+      "sampler": 0,
+      "source": 3
+    },
+    {
+      "sampler": 0,
+      "source": 4
+    }
+  ],
+  "images": [
+    {
+      "mimeType": "image/jpeg",
+      "name": "ClassicConsole_01_nor_gl",
+      "uri": "images/original/0/ClassicConsole_01_nor_gl_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "ClassicConsole_01_diff",
+      "uri": "images/original/1/ClassicConsole_01_diff_4k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "ClassicConsole_01_metallic-ClassicConsole_01_roughness",
+      "uri": "images/original/2/ClassicConsole_01_arm_4k.jpg"
+    },
+    {
+      "uri": "images/gamma22/1/ClassicConsole_01_diff_4k.jpg.png"
+    },
+    {
+      "uri": "images/roughness/2/ClassicConsole_01_arm_4k.jpg.png"
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 5506,
+      "max": [
+        0.772200882434845,
+        0.9490662217140198,
+        0.250885546207428
+      ],
+      "min": [
+        -0.7708194851875305,
+        -5.188380328036146e-06,
+        -0.33838987350463867
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 5506,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 5506,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5123,
+      "count": 22698,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 66072,
+      "byteOffset": 0
+    },
+    {
+      "buffer": 0,
+      "byteLength": 66072,
+      "byteOffset": 66072
+    },
+    {
+      "buffer": 0,
+      "byteLength": 44048,
+      "byteOffset": 132144
+    },
+    {
+      "buffer": 0,
+      "byteLength": 45396,
+      "byteOffset": 176192
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9729,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 221588,
+      "uri": "buffers/original/0/ClassicConsole_01.bin"
+    }
+  ]
+}

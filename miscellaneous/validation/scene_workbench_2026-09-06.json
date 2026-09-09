@@ -1,0 +1,580 @@
+{
+  "recordedAt": "2026-09-06T23:46:07+08:00",
+  "branch": "codex/scene-editor-workbench",
+  "baseCommit": "3148f92",
+  "revisionScope": "Working tree shipped in the commit containing this record; no subsequent push requested.",
+  "environment": {
+    "os": "Windows",
+    "configuration": "Release",
+    "gpu": "NVIDIA GeForce RTX 5070 Ti",
+    "nvidiaDriver": "610.88",
+    "qt": "5.15.2",
+    "oidn": "2.3.3"
+  },
+  "build": {
+    "passed": true,
+    "command": "cmake --build build --config Release --target renderer_batch_tests scene_tests presentation_tests traversal_tests lighting_tests --parallel 4 -- /clp:ErrorsOnly"
+  },
+  "ctest": {
+    "passed": 17,
+    "failed": 0,
+    "seconds": 252.63,
+    "command": "ctest --test-dir build -C Release --output-on-failure",
+    "scope": "Complete suite after batch optimizer, before the final display-only invalidation fix.",
+    "tests": [
+      {
+        "name": "renderer_batch_regression",
+        "seconds": 4.75,
+        "passed": true
+      },
+      {
+        "name": "display_buffer_handoff_regression",
+        "seconds": 0.67,
+        "passed": true
+      },
+      {
+        "name": "instanced_traversal_regression",
+        "seconds": 7.71,
+        "passed": true
+      },
+      {
+        "name": "lighting_numerical_regression",
+        "seconds": 107.48,
+        "passed": true
+      },
+      {
+        "name": "scene_ui_switch_regression",
+        "seconds": 45.55,
+        "passed": true
+      },
+      {
+        "name": "scene_roundtrip_and_package",
+        "seconds": 8.37,
+        "passed": true
+      },
+      {
+        "name": "workbench_ui_and_render_job",
+        "seconds": 10.58,
+        "passed": true
+      },
+      {
+        "name": "preview_interaction_regression",
+        "seconds": 14.78,
+        "passed": true
+      },
+      {
+        "name": "preview_mode_switch_regression",
+        "seconds": 23.41,
+        "passed": true
+      },
+      {
+        "name": "preview_mis_mode_switch_regression",
+        "seconds": 19.92,
+        "passed": true
+      },
+      {
+        "name": "unit_middle_mouse_orbit_target",
+        "seconds": 0.05,
+        "passed": true
+      },
+      {
+        "name": "unit_finite_analytic_lights",
+        "seconds": 0.05,
+        "passed": true
+      },
+      {
+        "name": "unit_texture_rendering_support",
+        "seconds": 0.05,
+        "passed": true
+      },
+      {
+        "name": "glslpt_conversion",
+        "seconds": 0.3,
+        "passed": true
+      },
+      {
+        "name": "gpu_render_regression",
+        "seconds": 7.84,
+        "passed": true
+      },
+      {
+        "name": "import_fbx_embedded_texture",
+        "seconds": 0.55,
+        "passed": true
+      },
+      {
+        "name": "import_gltf_tangent_sampler_transform",
+        "seconds": 0.55,
+        "passed": true
+      }
+    ]
+  },
+  "postDisplayFix": {
+    "passed": 6,
+    "failed": 0,
+    "seconds": 83.39,
+    "command": "ctest --test-dir build -C Release --output-on-failure -R \"renderer_batch|display_buffer|workbench_ui|preview_\"",
+    "scope": "Rebuilt final code; added stopped-preview exposure refresh without restarting samples.",
+    "tests": [
+      {
+        "name": "renderer_batch_regression",
+        "seconds": 5.44,
+        "passed": true
+      },
+      {
+        "name": "display_buffer_handoff_regression",
+        "seconds": 0.7,
+        "passed": true
+      },
+      {
+        "name": "workbench_ui_and_render_job",
+        "seconds": 11.8,
+        "passed": true
+      },
+      {
+        "name": "preview_interaction_regression",
+        "seconds": 16.85,
+        "passed": true
+      },
+      {
+        "name": "preview_mode_switch_regression",
+        "seconds": 25.59,
+        "passed": true
+      },
+      {
+        "name": "preview_mis_mode_switch_regression",
+        "seconds": 22.99,
+        "passed": true
+      }
+    ]
+  },
+  "batchBenchmark": {
+    "scene": "resources/scenes/glslpt_Camera_01_4k_gltf.scene.json",
+    "camera": "Preset plus processMouseScroll(1080), equivalent to nine upward wheel notches.",
+    "warmupSpp": 2,
+    "measuredSpp": 32,
+    "resultTotalSpp": 34,
+    "measurementScope": "Offscreen Renderer wall time, including burst fences; excludes loading, UI display bridge and OIDN.",
+    "baseline": "Frozen pre-batch workbench renderer, already containing validated BVH optimizations. Not master.",
+    "order": [
+      "before100",
+      "after100",
+      "after100",
+      "before100",
+      "after400",
+      "afterFull"
+    ],
+    "runs": [
+      {
+        "batches": 16704,
+        "bounces": 4,
+        "composites": 16704,
+        "denoise": false,
+        "fps": 2.669551183459174,
+        "full": false,
+        "height": 1782,
+        "logicalTiles": 16704,
+        "maximumBatch": 1,
+        "seconds": 11.9870337,
+        "spp": 32,
+        "tileSize": 100,
+        "width": 2848,
+        "variant": "before",
+        "run": 1
+      },
+      {
+        "batches": 3934,
+        "bounces": 4,
+        "composites": 464,
+        "denoise": false,
+        "fps": 3.5950742090724392,
+        "full": false,
+        "height": 1782,
+        "logicalTiles": 16704,
+        "maximumBatch": 16,
+        "seconds": 8.901068,
+        "spp": 32,
+        "tileSize": 100,
+        "width": 2848,
+        "variant": "after",
+        "run": 1
+      },
+      {
+        "batches": 3891,
+        "bounces": 4,
+        "composites": 455,
+        "denoise": false,
+        "fps": 3.6068584277746942,
+        "full": false,
+        "height": 1782,
+        "logicalTiles": 16704,
+        "maximumBatch": 16,
+        "seconds": 8.8719867,
+        "spp": 32,
+        "tileSize": 100,
+        "width": 2848,
+        "variant": "after",
+        "run": 2
+      },
+      {
+        "batches": 16704,
+        "bounces": 4,
+        "composites": 16704,
+        "denoise": false,
+        "fps": 2.681540209322537,
+        "full": false,
+        "height": 1782,
+        "logicalTiles": 16704,
+        "maximumBatch": 1,
+        "seconds": 11.9334403,
+        "spp": 32,
+        "tileSize": 100,
+        "width": 2848,
+        "variant": "before",
+        "run": 2
+      },
+      {
+        "batches": 1280,
+        "bounces": 4,
+        "composites": 289,
+        "denoise": false,
+        "fps": 5.2638565678043125,
+        "full": false,
+        "height": 1782,
+        "logicalTiles": 1280,
+        "maximumBatch": 1,
+        "seconds": 6.079193,
+        "spp": 32,
+        "tileSize": 400,
+        "width": 2848,
+        "variant": "after",
+        "run": 1
+      },
+      {
+        "batches": 32,
+        "bounces": 4,
+        "composites": 32,
+        "denoise": false,
+        "fps": 5.255697656663437,
+        "full": true,
+        "height": 1782,
+        "logicalTiles": 32,
+        "maximumBatch": 1,
+        "seconds": 6.0886303,
+        "spp": 32,
+        "tileSize": 100,
+        "width": 2848,
+        "variant": "after",
+        "run": 1
+      }
+    ],
+    "meanThroughputGainPercent": 34.588107513209195,
+    "compositeReductionPercent": 97.24916187739464,
+    "rgbaPixelEquality": {
+      "after-100-tile-2": true,
+      "after-400-tile-1": true,
+      "after-100-full-1": true,
+      "versioned_cli_current_binary": true
+    },
+    "rgbaSha256": "8e31c107699f6671de399eacfe1dc230648e35dba81f9ea151d940700a1f8557",
+    "versionedCliCommand": "build/Release/renderer_batch_tests.exe --benchmark resources/scenes/glslpt_Camera_01_4k_gltf.scene.json build/render-batch-final/cli-verification.json 2848 1782 100 32 --closeup",
+    "versionedCliVerification": {
+      "batches": 3909,
+      "bounces": 4,
+      "closeup": true,
+      "composites": 468,
+      "denoise": false,
+      "fps": 3.553907963823527,
+      "full": false,
+      "height": 1782,
+      "maximumBatch": 16,
+      "seconds": 9.0041724,
+      "spp": 32,
+      "tileSize": 100,
+      "width": 2848
+    },
+    "limitation": "100 px tiles retain a GPU execution efficiency gap. The 400 px result is scene/hardware-specific, not a new default."
+  },
+  "dpi": {
+    "command": "learnQT.exe --workbench-regression <output>",
+    "environment": {
+      "QT_SCALE_FACTOR": "1",
+      "QT_AUTO_SCREEN_SCALE_FACTOR": "0",
+      "QT_SCREEN_SCALE_FACTORS": [
+        "1.5",
+        "2"
+      ]
+    },
+    "requestedLogicalSizes": [
+      [
+        1366,
+        768
+      ],
+      [
+        1920,
+        1080
+      ]
+    ],
+    "note": "At 200 percent, the 1920x1080 request is clamped by the available desktop area to 1920x1027; screenshot sizes are physical pixels.",
+    "results": [
+      {
+        "dpr": 1.5,
+        "viewportHeight": 632,
+        "viewportWidth": 847,
+        "windowHeight": 768,
+        "windowWidth": 1366,
+        "transform": {
+          "blasRebuilds": 0,
+          "geometryUploadBytes": 0,
+          "gpuBeforeTransformMs": 9.307264,
+          "gpuMs": 17.911808,
+          "initialBlasBuilds": 1,
+          "initialBlasMs": 0.0019,
+          "initialGeometryUploadBytes": 352,
+          "resolution": "2102x1416",
+          "targetSpp": 8,
+          "tlasMs": 0.01,
+          "uploadMs": 0.3617
+        },
+        "workbenchPassed": true,
+        "screenshots": {
+          "workbench-1366.png": [
+            2049,
+            1152
+          ],
+          "workbench-1920.png": [
+            2880,
+            1620
+          ],
+          "result.png": [
+            2049,
+            1152
+          ]
+        }
+      },
+      {
+        "dpr": 2,
+        "viewportHeight": 648,
+        "viewportWidth": 849,
+        "windowHeight": 768,
+        "windowWidth": 1366,
+        "transform": {
+          "blasRebuilds": 0,
+          "geometryUploadBytes": 0,
+          "gpuBeforeTransformMs": 41.677696,
+          "gpuMs": 31.126048,
+          "initialBlasBuilds": 1,
+          "initialBlasMs": 0.0027,
+          "initialGeometryUploadBytes": 352,
+          "resolution": "2806x1814",
+          "targetSpp": 8,
+          "tlasMs": 0.0107,
+          "uploadMs": 0.2847
+        },
+        "workbenchPassed": true,
+        "screenshots": {
+          "workbench-1366.png": [
+            2732,
+            1536
+          ],
+          "workbench-1920.png": [
+            3840,
+            2054
+          ],
+          "result.png": [
+            2732,
+            1536
+          ]
+        }
+      }
+    ]
+  },
+  "uiLatency": {
+    "command": "learnQT.exe --interaction-regression build/render-batch-final/ui-latency",
+    "screenScale": 2,
+    "timerIntervalMs": 16,
+    "scope": "Camera preset original framing, not closeup; phase transitions/loading are included in maxima.",
+    "stages": [
+      {
+        "duration": 8010,
+        "frames": 3,
+        "images": 3,
+        "panelHeight": 196,
+        "panelWidth": 511,
+        "phase": 0,
+        "uiMaxMs": 190,
+        "uiMedianMs": 16,
+        "uiP95Ms": 17,
+        "uiP99Ms": 17,
+        "description": "empty scene"
+      },
+      {
+        "duration": 8015,
+        "frames": 136,
+        "images": 135,
+        "panelHeight": 196,
+        "panelWidth": 511,
+        "phase": 1,
+        "uiMaxMs": 144,
+        "uiMedianMs": 16,
+        "uiP95Ms": 17,
+        "uiP99Ms": 17,
+        "description": "Camera preset, compact performance panel"
+      },
+      {
+        "duration": 8015,
+        "frames": 443,
+        "images": 443,
+        "panelHeight": 911,
+        "panelWidth": 511,
+        "phase": 2,
+        "uiMaxMs": 25,
+        "uiMedianMs": 16,
+        "uiP95Ms": 17,
+        "uiP99Ms": 20,
+        "description": "Camera preset, full-height performance panel"
+      },
+      {
+        "duration": 4014,
+        "frames": 3,
+        "images": 5,
+        "panelHeight": 911,
+        "panelWidth": 511,
+        "phase": 3,
+        "uiMaxMs": 179,
+        "uiMedianMs": 16,
+        "uiP95Ms": 17,
+        "uiP99Ms": 18,
+        "description": "finite preview idle"
+      }
+    ]
+  },
+  "earlierBvhStage": {
+    "scope": "Earlier measured stage in this workbench effort, before batch/global RNG changes. Do not compound gains across different scenes or resolutions.",
+    "settings": {
+      "width": 1280,
+      "height": 720,
+      "tileSize": 128,
+      "bounces": 4,
+      "denoise": false,
+      "warmupSpp": 1,
+      "cameraMeasuredSpp": 256,
+      "bedroomMeasuredSpp": 8,
+      "runsPerVariant": 2
+    },
+    "results": {
+      "camera": {
+        "fixed": {
+          "tileFps": {
+            "mean": 1926.20480159932,
+            "range": [
+              1925.299941613023,
+              1927.109661585617
+            ]
+          },
+          "gpuPathMsPerTile": {
+            "mean": 0.41632120312500076,
+            "range": [
+              0.41626710208333384,
+              0.41637530416666774
+            ]
+          },
+          "cpuCoresUsed": {
+            "mean": 1.4029503417207936,
+            "range": [
+              1.3898933411297631,
+              1.4160073423118242
+            ]
+          }
+        },
+        "production": {
+          "tileFps": {
+            "mean": 3033.6238925847792,
+            "range": [
+              3026.6917561547366,
+              3040.5560290148223
+            ]
+          },
+          "gpuPathMsPerTile": {
+            "mean": 0.22862887708333526,
+            "range": [
+              0.22831304166666816,
+              0.22894471250000237
+            ]
+          },
+          "cpuCoresUsed": {
+            "mean": 1.635439877065656,
+            "range": [
+              1.5867159453171833,
+              1.6841638088141284
+            ]
+          }
+        },
+        "throughputGainPct": 57.49228171718674,
+        "matchesValidatedPrototype": [
+          true,
+          true
+        ]
+      },
+      "bedroom": {
+        "fixed": {
+          "tileFps": {
+            "mean": 52.539415116449625,
+            "range": [
+              52.48615948175429,
+              52.59267075114496
+            ]
+          },
+          "gpuPathMsPerTile": {
+            "mean": 18.76938276666668,
+            "range": [
+              18.75616253333334,
+              18.78260300000002
+            ]
+          },
+          "cpuCoresUsed": {
+            "mean": 1.0543928657731578,
+            "range": [
+              1.0404971069136837,
+              1.068288624632632
+            ]
+          }
+        },
+        "production": {
+          "tileFps": {
+            "mean": 99.09498205537379,
+            "range": [
+              99.09395915792925,
+              99.09600495281833
+            ]
+          },
+          "gpuPathMsPerTile": {
+            "mean": 9.874402966666661,
+            "range": [
+              9.872689466666655,
+              9.876116466666668
+            ]
+          },
+          "cpuCoresUsed": {
+            "mean": 1.1112702418465168,
+            "range": [
+              1.109645896820562,
+              1.1128945868724716
+            ]
+          }
+        },
+        "throughputGainPct": 88.61074459191691,
+        "matchesValidatedPrototype": [
+          true,
+          true
+        ]
+      }
+    }
+  },
+  "remaining": [
+    "AA and AA/OIDN integration",
+    "broader glass and volume OIDN comparisons",
+    "hard interaction latency bound for extremely heavy single tiles or full passes",
+    "EXR, transparent background, animation, depth of field and job queue"
+  ]
+}
