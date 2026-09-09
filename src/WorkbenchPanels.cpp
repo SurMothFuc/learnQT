@@ -20,7 +20,7 @@ MixedSpin::MixedSpin(QWidget *p) : QDoubleSpinBox(p)
     setDecimals(4);
     setSingleStep(.1);
     setKeyboardTracking(false);
-    setMinimumWidth(65);
+    setMinimumWidth(58);
 }
 void MixedSpin::showValue(double value, bool mixed)
 {
@@ -78,10 +78,13 @@ ObjectInspector::ObjectInspector(EditorController *e, QWidget *p) : QWidget(p), 
     layout->setContentsMargins(12, 10, 12, 12);
     summary = new QLabel(tr("选择模型以编辑属性"));
     summary->setWordWrap(true);
+    summary->setObjectName("muted");
     layout->addWidget(summary);
     auto transformBox = new QGroupBox(tr("变换"));
+    transformSection = transformBox;
     auto form = new QFormLayout(transformBox);
     form->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    form->setRowWrapPolicy(QFormLayout::WrapLongRows);
     for (int row = 0; row < 3; ++row)
     {
         auto line = new QHBoxLayout;
@@ -91,6 +94,8 @@ ObjectInspector::ObjectInspector(EditorController *e, QWidget *p) : QWidget(p), 
             int i = row * 3 + c;
             transform[i] = new MixedSpin;
             transform[i]->setObjectName(QString("transform%1").arg(i));
+            transform[i]->setButtonSymbols(QAbstractSpinBox::NoButtons);
+            transform[i]->setMinimumWidth(92);
             transform[i]->setPrefix(QString("XYZ")[c] + QString(" "));
             line->addWidget(transform[i]);
             connect(transform[i], QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
@@ -104,15 +109,27 @@ ObjectInspector::ObjectInspector(EditorController *e, QWidget *p) : QWidget(p), 
     }
     layout->addWidget(transformBox);
     auto materialBox = new QGroupBox(tr("材质"));
-    auto materialForm = new QFormLayout(materialBox);
+    materialBox->setObjectName("materialSection");
+    auto materialLayout = new QVBoxLayout(materialBox);
+    auto materialForm = new QFormLayout;
+    materialLayout->addLayout(materialForm);
+    auto textureBox = new QGroupBox(tr("纹理贴图"));
+    auto textureForm = new QFormLayout(textureBox);
+    auto advancedBox = new QGroupBox(tr("高级参数"));
+    auto advancedForm = new QFormLayout(advancedBox);
+    for (auto f : {materialForm, textureForm, advancedForm}) {
+        f->setRowWrapPolicy(QFormLayout::WrapLongRows);
+        f->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    }
     materialList = new QComboBox;
     materialList->setMinimumContentsLength(10);
     materialList->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     materialForm->addRow(tr("材质槽"), materialList);
+    materialSlotLabel = materialForm->labelForField(materialList);
     connect(materialList, QOverload<int>::of(&QComboBox::activated), this, [this] { refresh(); });
     auto colorButton = [&](const QString &label, const QString &field) {
         auto b = new QPushButton(tr("选择颜色…"));
-        materialForm->addRow(label, b);
+        (field == "mediumColor" ? advancedForm : materialForm)->addRow(label, b);
         connect(b, &QPushButton::clicked, this, [this, field] { chooseColor(field); });
         return b;
     };
@@ -145,7 +162,7 @@ ObjectInspector::ObjectInspector(EditorController *e, QWidget *p) : QWidget(p), 
                     : QStringList{tr("无介质"), tr("吸收"), tr("散射"), tr("发光介质")};
             for (int j = 0; j < options.size(); ++j)
                 box->addItem(options[j], j);
-            materialForm->addRow(key == "alphaMode" ? tr("透明模式") : tr("介质类型"), box);
+            (key == "mediumtype" ? advancedForm : materialForm)->addRow(key == "alphaMode" ? tr("透明模式") : tr("介质类型"), box);
             connect(box, QOverload<int>::of(&QComboBox::activated), this, [this, key, box](int index) {
                 int value = box->itemData(index).toInt();
                 if (value >= 0 && !restoring)
@@ -175,7 +192,7 @@ ObjectInspector::ObjectInspector(EditorController *e, QWidget *p) : QWidget(p), 
         }
         fields[key] = spin;
         spin->setObjectName(key);
-        materialForm->addRow(labels[i], spin);
+        (i >= 7 ? advancedForm : materialForm)->addRow(labels[i], spin);
         connect(spin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, [this, key, i](double v) {
             if (!restoring)
             {
@@ -190,9 +207,12 @@ ObjectInspector::ObjectInspector(EditorController *e, QWidget *p) : QWidget(p), 
     {
         auto b = new QPushButton;
         textures[slot] = b;
-        materialForm->addRow(tr("纹理 %1").arg(slot), b);
+        const QMap<QString, QString> textureLabels{{"baseColor", tr("基础色")}, {"normal", tr("法线")}, {"metallic", tr("金属度")}, {"roughness", tr("粗糙度")}, {"emissive", tr("发光")}, {"opacity", tr("不透明度")}};
+        textureForm->addRow(textureLabels.value(slot), b);
         connect(b, &QPushButton::clicked, this, [this, slot] { chooseTexture(slot); });
     }
+    materialLayout->addWidget(textureBox);
+    materialLayout->addWidget(advancedBox);
     layout->addWidget(materialBox);
     layout->addStretch();
     connect(editor, &EditorController::selectionChanged, this, [this] { refresh(); });
@@ -202,14 +222,17 @@ ObjectInspector::ObjectInspector(EditorController *e, QWidget *p) : QWidget(p), 
 }
 QString ObjectInspector::materialId() const
 {
-    return materialList->currentData().toString();
+    return browsedMaterial.isEmpty() ? materialList->currentData().toString() : browsedMaterial;
 }
 void ObjectInspector::refresh()
 {
     restoring = true;
     auto ids = editor->selectedModels();
     auto editable = editor->selectedModels(true);
-    bool enabled = !editable.isEmpty() && !editor->busy && !editor->renderLocked;
+    bool scopeEditable = browsedMaterial.isEmpty();
+    for (auto id : editable)
+        scopeEditable |= editor->node(id)["material"].toString() == browsedMaterial;
+    bool enabled = !editable.isEmpty() && scopeEditable && !editor->busy && !editor->renderLocked;
     for (auto s : transform)
         s->setEnabled(enabled);
     for (auto s : fields)
@@ -227,12 +250,17 @@ void ObjectInspector::refresh()
                                          .arg(editable.size())
                                          .arg(ids.size() > 1 ? tr("多选旋转 / 缩放围绕整体中心按增量应用")
                                                              : editor->node(ids.front())["name"].toString()));
-    if (ids.isEmpty())
+    if (ids.isEmpty() && browsedMaterial.isEmpty())
     {
+        materialList->clear();
+        for (auto field : fields) field->clear();
+        for (auto texture : textures) texture->setText(tr("未选择材质"));
         restoring = false;
         return;
     }
-    auto m = sceneMatrix(editor->node(ids.front())["transform"]);
+    if (!browsedMaterial.isEmpty())
+        summary->setText(enabled ? tr("编辑所选对象使用的材质") : tr("只读浏览 · 选择使用此材质的对象后可编辑"));
+    auto m = sceneMatrix(editor->node(ids.isEmpty() ? QString() : ids.front())["transform"]);
     auto position = ids.size() > 1 ? editor->bounds(ids).center() : m.column(3).toVector3D();
     auto rotation = ids.size() > 1 ? QVector3D() : rotationOf(m);
     auto scale = ids.size() > 1 ? QVector3D(1, 1, 1) : scaleOf(m);
@@ -249,6 +277,8 @@ void ObjectInspector::refresh()
         materialList->addItem(id, id);
     if (materialList->findData(previous) >= 0)
         materialList->setCurrentIndex(materialList->findData(previous));
+    if (!browsedMaterial.isEmpty())
+        materials = QSet<QString>{browsedMaterial};
     QList<QJsonObject> definitions;
     for (auto id : materials)
         if (materialId().isEmpty() || id == materialId())
@@ -303,6 +333,21 @@ void ObjectInspector::refresh()
         it.value()->setToolTip(id);
     }
     restoring = false;
+}
+void ObjectInspector::setMaterialPage(bool enabled)
+{
+    transformSection->setVisible(!enabled);
+    if (!enabled) browsedMaterial.clear();
+    materialList->setVisible(browsedMaterial.isEmpty());
+    materialSlotLabel->setVisible(browsedMaterial.isEmpty());
+    refresh();
+}
+void ObjectInspector::browseMaterial(const QString &id)
+{
+    browsedMaterial = id;
+    materialList->setVisible(id.isEmpty());
+    materialSlotLabel->setVisible(id.isEmpty());
+    refresh();
 }
 void ObjectInspector::editTransform(int index, double value)
 {
@@ -370,7 +415,7 @@ void ObjectInspector::chooseColor(const QString &field)
     auto ids = editor->selectedModels(true);
     if (ids.isEmpty())
         return;
-    auto m = findMaterial(editor->document, editor->node(ids.front())["material"].toString());
+    auto m = findMaterial(editor->document, materialId().isEmpty() ? editor->node(ids.front())["material"].toString() : materialId());
     auto c = sceneVector(m[field]);
     auto chosen = QColorDialog::getColor(
         QColor::fromRgbF(qBound(0.f, c.x(), 1.f), qBound(0.f, c.y(), 1.f), qBound(0.f, c.z(), 1.f)), this,
@@ -518,7 +563,7 @@ void PerformancePanel::paintEvent(QPaintEvent *)
 void PerformancePanel::drawChart(QPainter &p)
 {
     p.setRenderHint(QPainter::Antialiasing);
-    p.fillRect(rect(), QColor("#171c23"));
+    p.fillRect(rect(), QColor("#1c202a"));
     if (history.isEmpty())
         return;
     auto s = history.last();
@@ -541,7 +586,7 @@ void PerformancePanel::drawChart(QPainter &p)
     };
     int left = std::max(40, p.fontMetrics().horizontalAdvance(label(maxFps, maxFps)) + 14);
     int right = s.tiled ? std::max(40, p.fontMetrics().horizontalAdvance(label(maxTile, maxTile)) + 14) : 10;
-    QRectF graph(left, 44, std::max(30, width() - left - right), std::max(16, height() - 122));
+    QRectF graph(left, 68, std::max(30, width() - left - right), std::max(16, height() - 178));
     const int divisions = graph.height() < 100 ? 2 : 4;
     for (int i = 0; i <= divisions; ++i)
     {
@@ -582,22 +627,30 @@ void PerformancePanel::drawChart(QPainter &p)
         p.drawPath(path);
     }
     p.restore();
-    p.setPen(QColor("#b9c4d2"));
-    p.drawText(QRect(10, 6, width() - 20, 34),
-               tr("整图 %1 FPS    块 %2\n左轴：整图/秒 · 右轴：块/秒 · 近 60 秒")
-                   .arg(s.fps, 0, 'f', 1)
-                   .arg(s.tiled ? QString::number(s.tileFps, 'f', 1) : tr("不适用")));
-    p.drawText(
-        QRect(10, height() - 58, width() - 20, 56),
-        tr("光追 %1 · OIDN %2 ms\n上传 %3 · BLAS %4 · TLAS %5 ms\n渲染资源 %6 MiB · 历史 %7 / 合成 %8 ms")
-            .arg(s.gpuMs, 0, 'f', 1)
-            .arg(s.oidnMs, 0, 'f', 1)
-            .arg(s.uploadMs, 0, 'f', 1)
-            .arg(s.blasMs, 0, 'f', 1)
-            .arg(s.tlasMs, 0, 'f', 2)
-            .arg(s.allocatedBytes / 1048576., 0, 'f', 1)
-            .arg(s.gpuHistoryMs, 0, 'f', 1)
-            .arg(s.gpuCompositeMs, 0, 'f', 1));
+    const auto bodyFont = p.font();
+    auto metricFont = bodyFont;
+    metricFont.setPointSize(19);
+    metricFont.setWeight(QFont::DemiBold);
+    p.setFont(metricFont);
+    p.setPen(QColor("#70c9f0"));
+    p.drawText(QRect(14, 8, width() / 2, 32), Qt::AlignVCenter,
+               tr("%1 FPS").arg(s.fps, 0, 'f', 1));
+    p.setFont(bodyFont);
+    p.setPen(QColor("#b3aafa"));
+    p.drawText(QRect(width() / 2, 10, width() / 2 - 14, 28), Qt::AlignRight | Qt::AlignVCenter,
+               tr("块 %1 / s").arg(s.tiled ? QString::number(s.tileFps, 'f', 1) : tr("—")));
+    p.setPen(QColor("#8c97ad"));
+    p.drawText(QRect(14, 43, width() - 28, 18), tr("整图采样速率  ·  最近 60 秒"));
+    p.setPen(QColor("#b4bed0"));
+    const QStringList details = {
+        tr("光追 %1 ms  ·  OIDN %2 ms").arg(s.gpuMs, 0, 'f', 1).arg(s.oidnMs, 0, 'f', 1),
+        tr("上传 %1  ·  BLAS %2  ·  TLAS %3 ms").arg(s.uploadMs, 0, 'f', 1).arg(s.blasMs, 0, 'f', 1).arg(s.tlasMs, 0, 'f', 2),
+        tr("渲染资源  %1 MiB").arg(s.allocatedBytes / 1048576., 0, 'f', 1),
+        tr("历史 %1 ms  ·  合成 %2 ms").arg(s.gpuHistoryMs, 0, 'f', 1).arg(s.gpuCompositeMs, 0, 'f', 1)
+    };
+    for (int i = 0; i < details.size(); ++i)
+        p.drawText(QRect(14, height() - 82 + i * 19, width() - 28, 19),
+                   p.fontMetrics().elidedText(details[i], Qt::ElideRight, width() - 28));
 }
 ResultView::ResultView(QWidget *p) : QGraphicsView(p), canvas(this)
 {
@@ -642,4 +695,14 @@ void ResultView::resizeEvent(QResizeEvent *e)
     QGraphicsView::resizeEvent(e);
     if (fitting)
         fit();
+}
+void ResultView::drawForeground(QPainter *p, const QRectF &)
+{
+    if (!image.isNull()) return;
+    p->save();
+    p->resetTransform();
+    p->setPen(QColor("#96acc6"));
+    p->drawText(viewport()->rect().adjusted(24, 24, -24, -24), Qt::AlignCenter | Qt::TextWordWrap,
+                tr("尚无渲染结果\n\n在右侧配置输出参数，点击“开始渲染”。\n生成完整采样轮次后，结果将显示在这里。"));
+    p->restore();
 }

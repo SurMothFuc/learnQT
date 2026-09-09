@@ -1,6 +1,7 @@
 ﻿#include "learnQT.h"
 #include <QDebug>
 #include <QTextCodec>
+#include <QSettings>
 #include <QtWidgets/QApplication>
 #include <algorithm>
 #include <cmath>
@@ -15,6 +16,19 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
     const QStringList arguments = a.arguments();
+#ifdef SCENE_TESTING
+    // UI regressions must not read or overwrite a person's workspace preferences.
+    for (int i = 1; i + 1 < arguments.size(); ++i)
+        if (arguments[i].contains("-regression") && !arguments[i].startsWith("--regression-"))
+        {
+            QFileInfo output(arguments[i + 1]);
+            auto directory = output.suffix() == "png" ? output.absolutePath() : output.absoluteFilePath();
+            QDir().mkpath(directory + "/preferences");
+            QSettings::setDefaultFormat(QSettings::IniFormat);
+            QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, directory + "/preferences");
+            break;
+        }
+#endif
     const int modelArgument = arguments.indexOf(QStringLiteral("--model"));
     const int sceneArgument = arguments.indexOf(QStringLiteral("--scene"));
     if ((modelArgument >= 0 && sceneArgument >= 0) ||

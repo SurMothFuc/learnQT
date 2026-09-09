@@ -21,6 +21,8 @@ class ObjectInspector : public QWidget
   public:
     ObjectInspector(EditorController *editor, QWidget *parent = nullptr);
     void refresh();
+    void setMaterialPage(bool enabled);
+    void browseMaterial(const QString &id);
 
   private:
     EditorController *editor;
@@ -34,6 +36,9 @@ class ObjectInspector : public QWidget
     int epoch = 1;
     bool restoring = false;
     QString materialId() const;
+    QString browsedMaterial;
+    QWidget *transformSection = nullptr;
+    QWidget *materialSlotLabel = nullptr;
     void editTransform(int component, double value);
     void chooseColor(const QString &field);
     void chooseTexture(const QString &slot);
@@ -43,7 +48,7 @@ class PerformancePanel : public QWidget
   public:
     explicit PerformancePanel(QWidget *parent = nullptr) : QWidget(parent)
     {
-        setMinimumSize(250, 180);
+        setMinimumSize(280, 230);
         setAttribute(Qt::WA_OpaquePaintEvent);
     }
     void append(const RenderStats &stats);
@@ -81,6 +86,7 @@ class ResultView : public QGraphicsView
     QImage image;
 
   protected:
+    void drawForeground(QPainter *, const QRectF &) override;
     void wheelEvent(QWheelEvent *) override;
     void resizeEvent(QResizeEvent *) override;
 

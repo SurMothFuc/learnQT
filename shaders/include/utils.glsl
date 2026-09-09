@@ -74,6 +74,12 @@ vec3 ToWorld(vec3 X, vec3 Y, vec3 Z, vec3 V)
     return V.x * X + V.y * Y + V.z * Z;
 }
 float RayEpsilon(vec3 p) { return max(1e-5, 2e-6 * maxComponent(abs(p))); }
+// Keep valid smooth/mapped normals. BSDF sampling assumes the incident direction
+// lies above the shading surface; flipping an invalid normal could change sides.
+vec3 ValidShadingNormal(vec3 shading, vec3 facingGeometry, vec3 incoming) {
+    return dot(shading, facingGeometry) > 0.0 && dot(shading, -incoming) > 0.0
+        ? shading : facingGeometry;
+}
 vec3 OffsetRayOrigin(vec3 p, vec3 normal, vec3 direction) {
     return p + normal * (dot(normal, direction) >= 0.0 ? RayEpsilon(p) : -RayEpsilon(p));
 }

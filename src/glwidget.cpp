@@ -282,22 +282,9 @@ void GLWidget::drawOverlay(QPainter &p)
     if (!editor || editor->renderLocked)
         return;
     p.setRenderHint(QPainter::Antialiasing);
-    p.setPen(QColor("#87919f"));
-    p.drawText(QRect(18, 14, width() - 36, 24), Qt::AlignLeft,
-               tr("透视  ·  %1")
-                   .arg(QStringList{tr("选择 Q"), tr("移动 W"), tr("旋转 E"), tr("缩放 R")}.value(tool)));
     auto ids = editor->selectedModels();
     if (ids.isEmpty())
-    {
-        if (editor->document.root["objects"].toArray().isEmpty())
-        {
-            p.setPen(QColor("#b8c1cc"));
-            p.drawText(
-                rect(), Qt::AlignCenter,
-                tr("空场景\n\n导入模型，或将文件拖入窗口\n\nAlt + 左键环绕  ·  中键平移  ·  滚轮缩放"));
-        }
         return;
-    }
     p.setPen(QPen(QColor(241, 151, 61, 160), 1, Qt::DashLine));
     for (auto id : ids)
     {

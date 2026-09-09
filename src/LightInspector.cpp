@@ -48,6 +48,7 @@ LightInspector::LightInspector(EditorController *e, QWidget *p) : QWidget(p), ed
     for (bool sun : {false, true})
     {
         auto b = new QPushButton(sun ? tr("添加太阳") : tr("添加球光"));
+        b->setObjectName(sun ? "addSunLight" : "addSphereLight");
         buttons->addWidget(b);
         connect(b, &QPushButton::clicked, this, [this, sun] {
             auto d = editor->document;

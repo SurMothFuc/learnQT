@@ -180,8 +180,10 @@ if(BUILD_TESTING)
     target_link_libraries(lighting_tests PRIVATE Qt5::Core Qt5::Gui Qt5::OpenGL opengl32)
     add_test(NAME lighting_numerical_regression COMMAND lighting_tests)
     set_tests_properties(lighting_numerical_regression PROPERTIES LABELS "gpu;lighting" TIMEOUT 300)
-    target_sources(learnQT PRIVATE tests/SceneUiRegression.cpp tests/WorkbenchUiRegression.cpp tests/InteractionRegression.cpp tests/PreviewModeRegression.cpp)
+    target_sources(learnQT PRIVATE tests/SceneUiRegression.cpp tests/WorkbenchUiRegression.cpp tests/InteractionRegression.cpp tests/PreviewModeRegression.cpp tests/WorkspaceUiRegression.cpp)
     target_compile_definitions(learnQT PRIVATE SCENE_TESTING)
+    add_test(NAME workspace_pages_regression COMMAND $<TARGET_FILE:learnQT> --workspace-regression ${CMAKE_CURRENT_BINARY_DIR}/workspace-regression)
+    set_tests_properties(workspace_pages_regression PROPERTIES LABELS "scene;gpu;ui;workspace" TIMEOUT 120)
     add_test(NAME scene_ui_switch_regression COMMAND $<TARGET_FILE:learnQT>
         --scene ${CMAKE_CURRENT_SOURCE_DIR}/resources/scenes/bedroom.scene.json
         --scene-switch-regression ${CMAKE_CURRENT_BINARY_DIR}/scene-ui-regression)
@@ -276,7 +278,7 @@ if(BUILD_TESTING)
     get_filename_component(QT_RUNTIME_DIRECTORY "${QT_CORE_RUNTIME}" DIRECTORY)
     set(SCENE_TEST_PATH "${QT_RUNTIME_DIRECTORY};$ENV{PATH}")
     string(REPLACE ";" "\\;" SCENE_TEST_PATH "${SCENE_TEST_PATH}")
-    set_tests_properties(instanced_traversal_regression lighting_numerical_regression scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression workbench_ui_and_render_job preview_interaction_regression preview_mode_switch_regression preview_mis_mode_switch_regression display_buffer_handoff_regression renderer_batch_regression
+    set_tests_properties(workspace_pages_regression instanced_traversal_regression lighting_numerical_regression scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression workbench_ui_and_render_job preview_interaction_regression preview_mode_switch_regression preview_mis_mode_switch_regression display_buffer_handoff_regression renderer_batch_regression
         import_fbx_embedded_texture import_gltf_tangent_sampler_transform
         PROPERTIES ENVIRONMENT "PATH=${SCENE_TEST_PATH}")
 endif()

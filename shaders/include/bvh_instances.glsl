@@ -159,6 +159,7 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
         float blasEntry = BoundsDistance(local, localReciprocal, blasRoot.AA, blasRoot.BB, res.hitDistance);
         if (blasEntry < 0)
             continue;
+        TriangleRay triangleRay = PrepareTriangleRay(local);
         blasDistances[bp] = blasEntry;
         bs[bp++] = int(info.y);
         while (bp > 0)
@@ -216,19 +217,14 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
             {
                 vec3 p1 = texelFetch(triangles, i * 11).xyz, p2 = texelFetch(triangles, i * 11 + 1).xyz,
                      p3 = texelFetch(triangles, i * 11 + 2).xyz;
-                vec3 e0 = p2 - p1, e1 = p3 - p1, p = cross(local.direction, e1);
-                float det = dot(e0, p);
-                if (abs(det) < 1e-12)
-                    continue;
-                vec3 t = local.startPoint - p1, q = cross(t, e0);
-                float u = dot(t, p) / det, v = dot(local.direction, q) / det, d = dot(e1, q) / det;
-                if (u < 0 || v < 0 || u + v > 1 || d <= 0 || d > res.hitDistance)
+                vec3 candidate;
+                float d;
+                if (!IntersectTriangle(triangleRay, p1, p2, p3, candidate, d) || d > res.hitDistance)
                     continue;
                 // Logical surface order is independent of BVH traversal order.
                 int surface = i + int(info.z);
                 if (d == res.hitDistance && res.triangleIndex >= 0 && surface > res.triangleIndex)
                     continue;
-                vec3 candidate = vec3(1 - u - v, u, v);
                 vec2 uv = vec2(0);
                 if (instanceAlphaMode == ALPHA_MODE_MASK || instanceAlphaMode == ALPHA_MODE_BLEND)
                 {
@@ -262,9 +258,12 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
         if (dot(normal, res.geometricNormal) < 0)
             normal = -normal;
         res.isInside = dot(res.geometricNormal, ray.direction) > 0;
-        res.normal = res.isInside ? -normal : normal;
+        vec3 facingGeometry = res.isInside ? -res.geometricNormal : res.geometricNormal;
+        res.normal = ValidShadingNormal(res.isInside ? -normal : normal, facingGeometry, ray.direction);
         res.viewDir = ray.direction;
-        res.hitPoint = ray.startPoint + ray.direction * res.hitDistance;
+        // Reconstruct on the triangle, avoiding cancellation along long rays.
+        // Keep hitDistance as the original ray parameter for traversal/light ordering.
+        res.hitPoint = a + bary.y * (b - a) + bary.z * (c - a);
         if (shadowOnly)
             res.material = ShadowMaterial(res.triangleIndex);
         else
@@ -272,6 +271,7 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
             materialEvaluationUV = res.uv;
             res.material = getMaterial(res.triangleIndex);
             res.normal = ApplyNormalMap(res.triangleIndex, res.uv, bary, res.normal, res.material);
+            res.normal = ValidShadingNormal(res.normal, facingGeometry, ray.direction);
         }
     }
     return res;

@@ -5,11 +5,14 @@
 ```mermaid
 flowchart LR
     subgraph UI[UI Thread]
-        Window[learnQT / Fusion docks]
+        Window[learnQT / nine workspaces]
+        Pages[WorkspaceUi / navigation / catalog]
         Editor[EditorController / QUndoStack]
         Tree[SceneTreeModel / inspectors]
         View[GLWidget / overlay]
         Result[ResultView]
+        Window --> Pages
+        Pages --> Tree
         Window --> Editor
         Editor --> Tree
         Editor --> View
@@ -49,8 +52,10 @@ flowchart LR
 
 | 模块 | 当前职责 |
 | --- | --- |
-| `main.cpp` | CLI、Qt 高 DPI 和交换间隔设置；无参数启动空场景。 |
-| `learnQT` | 中文 Fusion 工作台、停靠布局、场景读写、导入、输出任务和状态栏。 |
+| `main.cpp` | CLI、Qt 高 DPI 和交换间隔设置；无参数建立空文档并默认进入首页；回归测试隔离偏好存储。 |
+| `learnQT` | 中文 Fusion 工作台、固定分区布局、场景读写、导入、输出任务和状态栏。 |
+| `WorkspacePages.cpp` / `WorkspaceUi` | 九页路由、各页左右/底部面板、共享资源目录、最近文件、偏好和独立任务展示记录。 |
+| `WorkbenchStyle` | 深蓝灰与亮蓝样式、按 DPI 绘制的线性图标；不添加渲染或资源加载依赖。 |
 | `EditorController` | UI 文档副本、共享选择、材质作用域、撤销重做、后台准备与编辑命令。 |
 | `SceneTreeModel` | 三列对象树、编辑/拖放协议；搜索由代理模型完成。 |
 | `GLWidget` | UI 相机、GPU 拾取请求、选择轮廓和操纵器；绘制显示桥提供的图像。 |
@@ -63,6 +68,9 @@ flowchart LR
 
 ## 状态归属与同步
 
+- UI 通过 `navigateWorkspace(WorkspacePage)` 切换首页、场景、材质、灯光、相机、环境、渲染、资源、设置。`GLWidget` 始终属于同一宿主，不因切页销毁或重设父级；页面共用一份选择和 undo。
+- 固定位置的 `QDockWidget` 使用 `NoDockWidgetFeatures`，保留尺寸调整、隐藏和恢复，不允许用户自由浮动或重排。首页、资源、设置使用全幅页；场景到环境页使用同一编辑视口，渲染页使用 ResultView。
+- `WorkspaceUi` 的每页布局、欢迎页、工具提示、状态栏、最近文件及吸附步长保存在本机 QSettings，使用 `workspaceV4/` 命名空间；不写入 SceneDocument v2。浏览器共用目录模型，搜索代理各自独立。
 - UI 使用 `EditorController::document` 和 `GLWidget::camera`，正常编辑不直接写活动 Scene。创建渲染线程前的同步初始化是例外。
 - 运行中的 Scene 由 Render Thread 修改；Load Worker 构建独立候选实例，几何通过只读共享资源缓存复用。
 - UI 的提交接口只更新短队列；GPU fence 完成后才应用最新文档及资源变动。没有覆盖整帧的 `m_frameMutex`。

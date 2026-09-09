@@ -486,6 +486,179 @@ void normalsAndMedia(Gpu &gpu)
                 "Instanced shadow material lost medium extinction");
     std::cout << "GPU normal maps and Beer-Lambert shadow through instanced absorber passed\n";
 }
+void grazingShadingNormals(Gpu &gpu)
+{
+    for (bool mapped : {false, true})
+        for (bool mirrored : {false, true})
+        {
+            Fixture f;
+            auto mesh = plane();
+            const auto authored = QVector3D(1, 0, .1f).normalized();
+            if (!mapped)
+                for (auto &t : mesh->triangles)
+                    t.n1 = t.n2 = t.n3 = authored;
+            f.meshes = {mesh};
+            SceneInstance instance;
+            instance.mesh = instance.material = 0;
+            instance.transform.rotate(34, QVector3D(0, 1, 0));
+            instance.transform.scale(mirrored ? -2.f : 2.f, .6f, 1.7f);
+            f.instances = {instance};
+            if (mapped)
+                f.materials[0].normalTex = 1;
+            f.prepare();
+            gpu.scene(f);
+            const auto geometry = instance.transform.inverted().transposed().mapVector(QVector3D(0, 0, 1)).normalized();
+            const auto tangent = instance.transform.mapVector(QVector3D(1, 0, 0)).normalized();
+            const auto grazing = geometry * .2f - tangent * 4;
+            // The authored tangent keeps its direction on the back face, unlike
+            // the interpolated normal. Aim against the mapped tangent on both sides.
+            const auto rearGrazing = mapped ? -geometry * .2f - tangent * 4 : -grazing;
+            const std::vector<TestRay> rays = {{grazing, -grazing.normalized()},
+                                               {rearGrazing, -rearGrazing.normalized()},
+                                               {geometry * 4, -geometry}};
+            const auto pixels = gpu.run(rays,
+                "HitResult h=hitBVH(r);outputColor=vec4(h.normal,h.isInside?1:0);");
+            for (int side = 0; side < 2; ++side)
+            {
+                const QVector3D actual(pixels[4 * side], pixels[4 * side + 1], pixels[4 * side + 2]);
+                require(QVector3D::dotProduct(actual, side ? -geometry : geometry) > .9999f,
+                        "Grazing normal did not fall back: mapped=" + std::to_string(mapped) +
+                            " mirrored=" + std::to_string(mirrored) + " side=" + std::to_string(side));
+                require(pixels[4 * side + 3] == float(side), "Normal repair changed medium side");
+            }
+            const auto expected = mapped ? (geometry + tangent).normalized()
+                : instance.transform.inverted().transposed().mapVector(authored).normalized();
+            require(QVector3D::dotProduct(QVector3D(pixels[8], pixels[9], pixels[10]), expected) > .9999f,
+                    "Valid smooth/mapped normal was flattened");
+        }
+    std::cout << "GPU grazing smooth/mapped normals preserve valid shading and front/back medium sides\n";
+}
+void surfaceReconstruction(Gpu &gpu)
+{
+    Fixture f;
+    f.meshes = {plane()};
+    SceneInstance instance;
+    instance.mesh = instance.material = 0;
+    instance.transform.translate(.123456f, -.234567f, .345678f);
+    instance.transform.rotate(37, QVector3D(1, 2, 3));
+    instance.transform.scale(-.7f, 1.3f, .4f);
+    f.instances = {instance};
+    f.prepare();
+    gpu.scene(f);
+    const auto geometry = instance.transform.inverted().transposed().mapVector(QVector3D(0, 0, 1)).normalized();
+    const auto tangent = instance.transform.mapVector(QVector3D(1, 0, 0)).normalized();
+    std::vector<TestRay> rays;
+    for (float distance : {20.f, 200.f, 2000.f})
+        for (float side : {-1.f, 1.f})
+            for (int i = 0; i < 16; ++i)
+            {
+                const auto point = instance.transform.map(QVector3D(-.7f + .09f * i, .123f, 0));
+                const auto direction = (geometry * side + tangent * .7f).normalized();
+                rays.push_back({point + direction * distance, -direction});
+            }
+    const auto pixels = gpu.run(rays,
+        "HitResult h=hitBVH(r);vec3 n=h.isInside?-h.geometricNormal:h.geometricNormal;"
+        "Ray secondary;secondary.startPoint=OffsetRayOrigin(h.hitPoint,h.geometricNormal,n);secondary.direction=n;"
+        "HitResult again=hitBVH(secondary);"
+        "vec3 local=(InstanceMatrix(0,4)*vec4(h.hitPoint,1)).xyz;"
+        "outputColor=vec4(h.isHit?1:0,abs(local.z),again.isHit?1:0,h.hitDistance);");
+    for (size_t i = 0; i < rays.size(); ++i)
+    {
+        require(pixels[i * 4] == 1, "Precision fixture missed its plane");
+        require(pixels[i * 4 + 1] < 2e-6f, "Reconstructed hit left the triangle plane");
+        require(pixels[i * 4 + 2] == 0, "Outward secondary ray self-intersected after reconstruction");
+        require(pixels[i * 4 + 3] > 0, "Reconstruction lost ray distance");
+    }
+    std::cout << "GPU long-ray surface reconstruction: 96 front/back rays, no self-intersections\n";
+}
+void islandEdgeHits(Gpu &gpu)
+{
+    // Minimal front-surface triangles/rays captured from the two remaining island
+    // black pixels. Moller-Trumbore rejected them and exposed the boat interior.
+    auto mesh = std::make_shared<MeshGeometry>();
+    const QVector3D vertices[][3] = {
+        {{-.107321f,.202763f,.050457f},{-.049725f,.206243f,.056664f},{-.100586f,.203407f,.035539f}},
+        {{-.105568f,.354137f,-.237264f},{-.079036f,.347426f,-.251262f},{-.078182f,.356149f,-.254705f}}};
+    for (const auto &v : vertices)
+    {
+        Triangle t;
+        t.p1 = v[0]; t.p2 = v[1]; t.p3 = v[2];
+        t.n1 = t.n2 = t.n3 = QVector3D::crossProduct(t.p2-t.p1,t.p3-t.p1).normalized();
+        mesh->triangles.push_back(t);
+    }
+    mesh->build();
+    Fixture f;
+    f.meshes = {mesh};
+    SceneInstance instance; instance.mesh = instance.material = 0;
+    f.instances = {instance}; f.prepare(); gpu.scene(f);
+    const QVector3D eye(9.38f,13.12f,-6);
+    const std::vector<TestRay> rays = {
+        {eye,{-.5530031323432922f,-.7544493675231934f,.3535445034503937f}},
+        {eye,{-.5601868033409119f,-.7551976442337036f,.3403927683830261f}}};
+    const float expected[] = {17.119807f,16.908560f};
+    for (bool picking : {false,true})
+    {
+        const auto pixels = gpu.run(rays, hitBody, picking);
+        for (int i=0;i<2;++i)
+        {
+            require(pixels[4*i] > 0, "Island near-edge front surface was missed");
+            require(std::abs(pixels[4*i+1]-expected[i]) < 3e-5f, "Island front hit distance changed");
+        }
+    }
+    const auto shadow = gpu.run(rays,"HitResult h=hitBVH(r,true);outputColor=vec4(h.isHit?1:0,h.hitDistance,0,0);");
+    for (int i=0;i<2;++i) require(shadow[4*i] == 1, "Shadow traversal missed island edge");
+    std::cout << "GPU island edge fixtures hit the front surfaces in beauty/picking/shadow paths\n";
+}
+void sharedEdgesAndGaps(Gpu &gpu)
+{
+    Fixture f; f.meshes = {plane(8)};
+    SceneInstance instance; instance.mesh = instance.material = 0;
+    for (bool mirrored : {false,true})
+    {
+        instance.transform.setToIdentity();
+        instance.transform.rotate(21,QVector3D(1,2,3));
+        instance.transform.scale(mirrored ? -1.7f : 1.7f,.8f,1.3f);
+        f.instances = {instance}; f.prepare(); gpu.scene(f);
+        const auto n=f.instances[0].inverse.transposed().mapVector(QVector3D(0,0,1)).normalized();
+        const auto tangent=instance.transform.mapVector(QVector3D(1,0,0)).normalized();
+        std::vector<TestRay> rays;
+        for (int y=-2;y<=2;++y) for (int x=-2;x<=2;++x)
+            for (float side : {-1.f,1.f}) for(float slope : {0.f,20.f})
+            {
+                const auto point=instance.transform.map(QVector3D(x*.25f,y*.25f,0));
+                const auto direction=(n*side+tangent*slope).normalized();
+                rays.push_back({point+direction*10,-direction});
+            }
+        const auto pixels=gpu.run(rays,hitBody);
+        for(size_t i=0;i<rays.size();++i)
+            require(pixels[4*i]>0 && std::abs(pixels[4*i+1]-10.f)<1e-3f,
+                    "Shared vertex/edge failed: ray=" + std::to_string(i) +
+                        " mirrored=" + std::to_string(mirrored) + " surface=" +
+                        std::to_string(pixels[4*i]) + " distance=" + std::to_string(pixels[4*i+1]));
+    }
+    // A real slit must remain open; no barycentric epsilon should fill it.
+    f.meshes={plane()}; f.instances.clear();
+    for(float side : {-1.f,1.f})
+    {
+        SceneInstance part;part.mesh=part.material=0;
+        part.transform.translate(side*.50005f,0,0);part.transform.scale(.49995f,1,1);
+        f.instances.push_back(part);
+    }
+    f.prepare();gpu.scene(f);
+    const auto gap=gpu.run({{{0,0,2},{0,0,-1}}},hitBody);
+    require(gap[0]==0,"Robust intersection closed a real geometry gap");
+    const auto degenerate=gpu.run({{{0,0,2},{0,0,-1}},{{0,0,2},{1,0,0}},{{0,0,2},{0,0,1}}},
+        "TriangleRay tr=PrepareTriangleRay(r);vec3 bary;float d;"
+        "bool bad=IntersectTriangle(tr,vec3(0),vec3(1,0,0),vec3(2,0,0),bary,d);"
+        "bool hit=IntersectTriangle(tr,vec3(-1,-1,0),vec3(1,-1,0),vec3(0,1,0),bary,d);"
+        "outputColor=vec4(bad?1:0,hit?1:0,0,0);");
+    for(int i=0;i<3;++i)
+    {
+        require(degenerate[4*i]==0,"Degenerate triangle produced an intersection");
+        require(degenerate[4*i+1]==(i==0?1.f:0.f),"Parallel or backward triangle test failed");
+    }
+    std::cout << "GPU shared edges/vertices, grazing/mirrored rays, real gaps and degenerates passed\n";
+}
 } // namespace
 int main(int argc, char **argv)
 {
@@ -496,6 +669,10 @@ int main(int argc, char **argv)
         randomized(gpu);
         tiesAndAlpha(gpu);
         normalsAndMedia(gpu);
+        grazingShadingNormals(gpu);
+        surfaceReconstruction(gpu);
+        islandEdgeHits(gpu);
+        sharedEdgesAndGaps(gpu);
     }
     catch (const std::exception &error)
     {

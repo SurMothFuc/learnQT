@@ -16,14 +16,23 @@
 #include <QSpinBox>
 #include <QTabWidget>
 #include <QTreeView>
+struct WorkspaceUi;
 class learnQT : public QMainWindow
 {
     Q_OBJECT
   public:
+    enum class WorkspacePage { Home, Scene, Material, Lights, Camera, Environment, Render, Resources, Settings };
     explicit learnQT(QWidget *parent = nullptr);
     ~learnQT() override;
+    void navigateWorkspace(WorkspacePage page);
 
   private:
+    std::shared_ptr<WorkspaceUi> workspace;
+    void setupWorkspace();
+    void refreshWorkspace();
+    void syncWorkspaceAvailability();
+    void rememberScene(const QString &path);
+    void configureWorkspaceRegression();
     EditorController *editor;
     GLWidget *viewport;
     SceneTreeModel *treeModel;
@@ -53,6 +62,7 @@ class learnQT : public QMainWindow
     RenderJobState jobState = RenderJobState::Idle;
     void setupWorkbench();
     void setupTree();
+    void setupDockTitle(QDockWidget *dock, const QString &icon);
     QWidget *createSettings();
     void connectRenderThread();
     void startRender();
@@ -87,4 +97,6 @@ class learnQT : public QMainWindow
     void keyPressEvent(QKeyEvent *) override;
     void dragEnterEvent(QDragEnterEvent *) override;
     void dropEvent(QDropEvent *) override;
+    void resizeEvent(QResizeEvent *) override;
+    bool eventFilter(QObject *, QEvent *) override;
 };

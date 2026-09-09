@@ -1,0 +1,156 @@
+{
+  "date": "2026-09-09",
+  "base_commit": "6de78ca",
+  "scope": "Nine workspaces and pre-existing GPU surface precision fixes in the working tree.",
+  "environment": {
+    "os": "Windows",
+    "qt": "5.15.2",
+    "configuration": "Release",
+    "toolchain": "MSVC / Visual Studio 2022",
+    "oidn": "2.3.3"
+  },
+  "configure": {
+    "command": "cmake -S . -B build",
+    "passed": true
+  },
+  "final_build": {
+    "command": "cmake --build build --config Release -- /clp:ErrorsOnly",
+    "passed": true
+  },
+  "full_suite_before_final_ui_fixes": {
+    "command": "ctest --test-dir build -C Release --output-on-failure",
+    "passed": 18,
+    "total": 18,
+    "seconds": 387.12,
+    "note": "Later changes were confined to UI and UI regression coverage; final code was checked with the targeted suite and DPI cases below."
+  },
+  "final_targeted_suite": {
+    "command": "ctest --test-dir build -C Release --output-on-failure -R 'scene_ui_switch_regression|workbench_ui_and_render_job|preview_interaction_regression'",
+    "passed": 3,
+    "total": 3,
+    "seconds": 86.89,
+    "tests": {
+      "scene_ui_switch_regression": 50.93,
+      "workbench_ui_and_render_job": 15.13,
+      "preview_interaction_regression": 20.82
+    }
+  },
+  "dpi": [
+    {
+      "percent": 100,
+      "passed": true,
+      "report": "build/workspace-dpi100/report.json",
+      "command": "build/Release/learnQT.exe --workspace-regression build/workspace-dpi100 --cold-home",
+      "environment": {
+        "QT_SCALE_FACTOR": "1",
+        "QT_AUTO_SCREEN_SCALE_FACTOR": "0",
+        "QT_SCREEN_SCALE_FACTORS": "1"
+      },
+      "captures": 21,
+      "compact": {
+        "bottomHidden": true,
+        "bottomVisible": false,
+        "dpi": 1,
+        "file": "compact-1.png",
+        "height": 768,
+        "page": 1,
+        "width": 1366
+      },
+      "large": {
+        "bottomHidden": false,
+        "bottomVisible": true,
+        "dpi": 1,
+        "file": "large-6.png",
+        "height": 1080,
+        "page": 6,
+        "width": 1920
+      }
+    },
+    {
+      "percent": 150,
+      "passed": true,
+      "report": "build/workspace-dpi150/report.json",
+      "command": "build/Release/learnQT.exe --workspace-regression build/workspace-dpi150 --cold-home",
+      "environment": {
+        "QT_SCALE_FACTOR": "1",
+        "QT_AUTO_SCREEN_SCALE_FACTOR": "0",
+        "QT_SCREEN_SCALE_FACTORS": "1.5"
+      },
+      "captures": 21,
+      "compact": {
+        "bottomHidden": true,
+        "bottomVisible": false,
+        "dpi": 1.5,
+        "file": "compact-1.png",
+        "height": 768,
+        "page": 1,
+        "width": 1366
+      },
+      "large": {
+        "bottomHidden": false,
+        "bottomVisible": true,
+        "dpi": 1.5,
+        "file": "large-6.png",
+        "height": 1080,
+        "page": 6,
+        "width": 1920
+      }
+    },
+    {
+      "percent": 200,
+      "passed": true,
+      "report": "build/workspace-dpi200/report.json",
+      "command": "build/Release/learnQT.exe --workspace-regression build/workspace-dpi200 --cold-home",
+      "environment": {
+        "QT_SCALE_FACTOR": "1",
+        "QT_AUTO_SCREEN_SCALE_FACTOR": "0",
+        "QT_SCREEN_SCALE_FACTORS": "2"
+      },
+      "captures": 21,
+      "compact": {
+        "bottomHidden": true,
+        "bottomVisible": false,
+        "dpi": 2,
+        "file": "compact-1.png",
+        "height": 768,
+        "page": 1,
+        "width": 1366
+      },
+      "large": {
+        "bottomHidden": false,
+        "bottomVisible": true,
+        "dpi": 2,
+        "file": "large-6.png",
+        "height": 1065,
+        "page": 6,
+        "width": 1920
+      }
+    }
+  ],
+  "limitations": [
+    "No independent material preview renderer, node editor, multiple cameras, depth of field or persistent job queue.",
+    "No physical refraction-connection sampling or generalized extreme-scale/GPU portability validation.",
+    "Screenshots use low-spp test renders and are not render-quality or performance benchmarks.",
+    "Documentation closeout reused these records; tests were not rerun solely for documentation changes."
+  ],
+  "final_source_sha256_lf": {
+    "CMakeLists.txt": "ba694aa152d10c645f2d194ef09baf81dd2f60536c3d4a33d3d6f87348486f9c",
+    "include/learnQT.h": "b98ba012509ef674cf770e1605a16dabbba83b17527585e4641f79d180ea6e54",
+    "include/WorkbenchPanels.h": "526cec77b85e45a6c0aebfa17ef1e4a02a42bb23f4ea638d347a6b7dd65ec5f7",
+    "include/WorkbenchStyle.h": "32d479e5054585fab0ad8db990fda8967a908a6b14e3be560576e9ae7cc505ee",
+    "include/WorkspaceUi.h": "da2fe10416184f757bb34d8b8def4c6665831f6a107d70dc0b1f04173af9c225",
+    "src/WorkspacePages.cpp": "6a674f05dfe30cb1e07b53e9ff92b8eac81ed8f1baffd25bd3c3514068e4db62",
+    "src/learnQT.cpp": "261ab3aa837358c530beb8036fe66a4e7508f459e38e329c428076cd5f33de36",
+    "src/WorkbenchPanels.cpp": "e7a652a5073144f3019f63f90acc12eef34ad9dfa95460d48aadf0796e42c6f7",
+    "src/LightInspector.cpp": "6b98e6e970621e537a55bc8a1aeb962153214652ec98de63b39c4be97b8e778f",
+    "src/SceneTreeModel.cpp": "fba237a7051fc3dc24a1033c80cf3100f1006df8933f00301fd9db597f1dc9fd",
+    "src/glwidget.cpp": "fd33f8382b6beb5ac04ba35f6c22fc22eee2251d2bb59a4a107d6a09bb426f74",
+    "src/main.cpp": "9f33cc867d5d7de71277228b0962d2ce3498069ba3cdf707f3acef91a8518f42",
+    "tests/WorkspaceUiRegression.cpp": "f4761af4dc8681feacdde74826acee332ae1eac0364b1cbfe0a9207488c9b3cf",
+    "tests/TraversalTests.cpp": "3930e4faae4acdc2ce72a9ee24d7998dffc4f122a0853b56cdc3d383dca6aeff",
+    "shaders/include/triangle_intersection.glsl": "ca6100e593a74734e74f992361a3ea097c924d55470521d42f8bf22e2d277af2",
+    "shaders/include/bvh_instances.glsl": "0bdbddf51957f1d892e77cca7feac53b03263813f1ab58761fb7990e218d2c33",
+    "shaders/include/bvh_material.glsl": "a00c1573a2aebd9e6aafd0d649bf5ff91188427af464d274ccd01e694ab25189",
+    "shaders/include/utils.glsl": "e2fdc83fb55c0ca609bd5a80f8d882409a99def5544e21b30938399217a090ff"
+  }
+}

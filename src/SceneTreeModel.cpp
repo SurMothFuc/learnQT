@@ -1,4 +1,5 @@
 #include "SceneTreeModel.h"
+#include "WorkbenchStyle.h"
 #include <QApplication>
 #include <QJsonDocument>
 #include <QMimeData>
@@ -109,7 +110,7 @@ QVariant SceneTreeModel::data(const QModelIndex &i, int role) const
         return i.column() == 1 ? (o["visible"].toBool(true) ? Qt::Checked : Qt::Unchecked)
                                : (o["locked"].toBool() ? Qt::Checked : Qt::Unchecked);
     if (role == Qt::DecorationRole && i.column() == 0)
-        return QApplication::style()->standardIcon(group ? QStyle::SP_DirIcon : QStyle::SP_FileIcon);
+        return WorkbenchStyle::icon(group ? "open" : "object");
     if (role == Qt::ForegroundRole && !group && !o["visible"].toBool(true))
         return QColor("#78818c");
     return {};

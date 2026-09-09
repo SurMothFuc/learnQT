@@ -1,4 +1,5 @@
 #include "scene_access.glsl"
+#include "triangle_intersection.glsl"
 float SrgbChannelToLinear(float value)
 {
     return value <= 0.04045
@@ -340,6 +341,7 @@ HitResult hitBVH(Ray ray) {
     res.triangleIndex = -1;
     res.hitDistance = INF;
     if (nTriangles <= 0 || nNodes <= 1) return res;
+    TriangleRay triangleRay = PrepareTriangleRay(ray);
     vec3 bary;
     int triID = -1;
     vec3 vert1;
@@ -367,36 +369,18 @@ HitResult hitBVH(Ray ray) {
                 vec3 p2 = FetchTriangleVector(offset + 1).xyz;
                 vec3 p3 = FetchTriangleVector(offset + 2).xyz;
 
-                vec3 e0 = p2.xyz - p1.xyz;
-                vec3 e1 = p3.xyz - p1.xyz;
-                vec3 pv = cross(ray.direction, e1);
-                float det = dot(e0, pv);
-
-                if (abs(det) < 1e-12) continue;
-
-                vec3 tv = ray.startPoint - p1.xyz;
-                vec3 qv = cross(tv, e0);
-
-                vec4 uvt;
-                uvt.x = dot(tv, pv);
-                uvt.y = dot(ray.direction, qv);
-                uvt.z = dot(e1, qv);
-                uvt.xyz = uvt.xyz / det;
-                uvt.w = 1.0 - uvt.x - uvt.y;
-                
-                if(uvt.z<=0.0)
-                    continue;
-
-                if (all(greaterThanEqual(uvt, vec4(0.0))) && uvt.z < res.hitDistance)
+                vec3 candidateBary;
+                float hitDistance;
+                if (IntersectTriangle(triangleRay, p1, p2, p3, candidateBary, hitDistance) &&
+                    hitDistance < res.hitDistance)
                 {
-                    vec3 candidateBary = uvt.wxy;
                     vec2 candidateUV = InterpolateTriangleUV(i, candidateBary);
                     if (RejectAlphaIntersection(i, candidateUV)) {
                         continue;
                     }
                     res.isHit = true;
-                    res.hitPoint = ray.startPoint + ray.direction * uvt.z;
-                    res.hitDistance = uvt.z;
+                    res.hitPoint = p1 + candidateBary.y * (p2 - p1) + candidateBary.z * (p3 - p1);
+                    res.hitDistance = hitDistance;
                     res.viewDir = ray.direction;
                     bary = candidateBary;
                     res.uv = candidateUV;
@@ -483,9 +467,12 @@ HitResult hitBVH(Ray ray) {
             res.normal=Nsmooth;
         }
 
+        vec3 facingGeometry = res.isInside ? -res.geometricNormal : res.geometricNormal;
+        res.normal = ValidShadingNormal(res.normal, facingGeometry, ray.direction);
         materialEvaluationUV = res.uv;
         res.material = getMaterial(triID);
         res.normal = ApplyNormalMap(triID, res.uv, bary, res.normal, res.material);
+        res.normal = ValidShadingNormal(res.normal, facingGeometry, ray.direction);
         res.triangleIndex = triID;
     }
     return res;
