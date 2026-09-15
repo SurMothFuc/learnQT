@@ -23,6 +23,7 @@
 #include "RenderParams.h"
 #include "Scene.h"
 #include "SceneDirty.h"
+#include "RasterEnvironment.h"
 #include <atomic>
 
 class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
@@ -280,6 +281,10 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     size_t rasterVertexCount = 0;
     bool m_rasterActive = false, m_rasterRequested = false;
     bool m_rasterCapable = false;
+    std::array<QVector3D, 9> rasterEnvironment{};
+    const float *rasterEnvironmentSource = nullptr;
+    QSize rasterEnvironmentSize;
+    QString rasterEnvironmentPath;
     bool m_rasterGeometryUploaded = false, m_rasterInstancesUploaded = false;
 
     std::vector<unsigned> batchTextureSettings;

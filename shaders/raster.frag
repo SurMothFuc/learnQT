@@ -1,12 +1,13 @@
 #version 330 core
 
-// 光栅化交互预览：环境背景 + 直射主光 + 环境常数项 + 基础 GGX 高光。
-// 明确不支持：阴影、环境反射（只取方向色作背景与环境项）、法线贴图、折射与透明混合、体积与 AO。
+// 光栅化交互预览：独立环境背景 + 直射主光 + 低频环境漫反射 + 基础 GGX 高光。
+// 明确不支持：阴影、环境镜面反射、法线贴图、折射与透明混合、体积与 AO。
 // 透明/玻璃材质按不透明处理，属刻意近似。
 #include "include/defines.glsl"
 #include "include/uniforms.glsl"
 #include "include/utils.glsl"
 #include "include/hdr_utils.glsl"
+#include "include/raster_environment.glsl"
 #include "include/material_texture_sampling.glsl"
 
 in vec3 worldPosition;
@@ -97,13 +98,12 @@ void main()
         radiance += directIntensity * NoL * (diffuseColor / 3.14159265 + specular);
     }
 
-    // 环境项：只取视线方向的环境色，不做反射（不做 IBL）。
+    // Irradiance is convolved over the hemisphere, not sampled behind the surface.
     vec3 ambient = vec3(0.055, 0.06, 0.07);
 #ifdef USEENVIRONMENTMAP
-    ambient = max(hdrColor(-viewDirection), vec3(0.0));
+    ambient = RasterDiffuseEnvironment(normal);
 #endif
     radiance += diffuseColor * ambient;
-    radiance += specularColor * ambient * 0.3;
 
     fragColor = vec4(max(radiance, vec3(0.0)), 1.0);
 }

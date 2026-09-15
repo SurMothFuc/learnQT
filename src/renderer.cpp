@@ -1092,6 +1092,18 @@ void Renderer::uploadLightBuffer(bool recreateResources)
 
 void Renderer::uploadHdrTextures(bool recreateResources)
 {
+    const auto &scene = Scene::getInstance();
+    const QSize hdrSize(scene.hdrRes.width, scene.hdrRes.height);
+    const QString hdrPath = scene.document.root["hdr"].toString();
+    // Scene HDR pixels are immutable; transforms and environment toggles reuse them.
+    if (rasterEnvironmentSource != scene.hdrRes.cols || rasterEnvironmentSize != hdrSize ||
+        rasterEnvironmentPath != hdrPath)
+    {
+        rasterEnvironment = rasterDiffuseEnvironment(scene.hdrRes.cols, hdrSize.width(), hdrSize.height());
+        rasterEnvironmentSource = scene.hdrRes.cols;
+        rasterEnvironmentSize = hdrSize;
+        rasterEnvironmentPath = hdrPath;
+    }
     const auto uploadTexture = [&](GLuint &texture, float *data) {
         if (recreateResources && texture != 0)
         {
@@ -1669,7 +1681,7 @@ void Renderer::rebuildRasterProgram(const RenderParams::Snapshot &snapshot)
 }
 
 // 光栅化交互预览：一次前向着色，不累积、不分块、不做降噪。
-// 明确不支持阴影、IBL、法线贴图、折射与透明混合、体积与 AO，透明材质按不透明处理。
+// 不支持阴影、环境镜面反射、法线贴图、折射与透明混合、体积与 AO；透明材质按不透明处理。
 bool Renderer::renderRasterPreview(const RenderParams::Snapshot &snapshot)
 {
     if (!raster_program || !rasterBackgroundProgram || !rasterVao)
@@ -1737,6 +1749,7 @@ bool Renderer::renderRasterPreview(const RenderParams::Snapshot &snapshot)
     raster_program->setUniformValue("environmentRotation",
                                     float(environment["rotation"].toDouble() * PI / 180));
     raster_program->setUniformValue("hdrResolution", Scene::getInstance().hdrResolution);
+    raster_program->setUniformValueArray("diffuseEnvironment", rasterEnvironment.data(), 9);
     raster_program->setUniformValue("hdrMap", 9);
     glActiveTexture(GL_TEXTURE9);
     glBindTexture(GL_TEXTURE_2D, hdrMap);
