@@ -7,12 +7,12 @@
 #include <QFileInfo>
 #include <QMutex>
 #include <QMutexLocker>
-#include <QTextStream>
 
 #include <algorithm>
 #include <cstring>
 #include <ctime>
 #include <regex>
+#include <vector>
 
 extern QMutex param_mutex;
 
@@ -76,7 +76,8 @@ std::string processIncludes(const std::string &source, const std::string &shader
                 includeCache[includePath] = "";
                 continue;
             }
-            includeContent = QTextStream(&file).readAll().toStdString();
+            // 必须按 UTF-8 读取：着色器源码含中文注释，用本地编码解码会破坏字节并吞掉换行。
+            includeContent = QString::fromUtf8(file.readAll()).toStdString();
             file.close();
 
             // 递归处理包含文件中的 #include
@@ -145,7 +146,7 @@ QOpenGLShaderProgram *Renderer::getShaderProgram(
         throw std::runtime_error("Cannot load or compile shader: " + fshader + " / " + vshader + " " +
                                  shaderProgram->log().toStdString());
     }
-    std::string vSource = QTextStream(&vFile).readAll().toStdString();
+    std::string vSource = QString::fromUtf8(vFile.readAll()).toStdString();
     vFile.close();
     vSource = processIncludes(vSource, vshader);
     vSource = injectDefines(vSource, defines_Vertex);
@@ -166,7 +167,7 @@ QOpenGLShaderProgram *Renderer::getShaderProgram(
         throw std::runtime_error("Cannot load or compile shader: " + fshader + " / " + vshader + " " +
                                  shaderProgram->log().toStdString());
     }
-    std::string fSource = QTextStream(&fFile).readAll().toStdString();
+    std::string fSource = QString::fromUtf8(fFile.readAll()).toStdString();
     fFile.close();
     fSource = processIncludes(fSource, fshader);
     fSource = injectDefines(fSource, defines_Fragment);
@@ -217,6 +218,33 @@ GLuint Renderer::bindData(std::vector<GLuint> colorAttachments)
     return fbo;
 }
 
+// 路径追踪只画全屏四边形，它的 FBO 没有也不需要深度附件。
+// 光栅化交互预览需要深度测试，所以单独建一个只含「RenderColorTex + 深度」的 FBO，
+// 颜色靶与路径追踪共用，但绝不改动 pathtrace_fbo 本身，避免影响既有预览行为。
+void Renderer::ensureDepthAttachment()
+{
+    if (!pathtrace_fbo || render_width <= 0 || render_height <= 0)
+        return;
+    if (rasterFbo && rasterDepthSize == QSize(render_width, render_height))
+        return;
+    if (!rasterFbo)
+        glGenFramebuffers(1, &rasterFbo);
+    if (depthRenderbuffer)
+        glDeleteRenderbuffers(1, &depthRenderbuffer);
+    glGenRenderbuffers(1, &depthRenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, render_width, render_height);
+    glBindFramebuffer(GL_FRAMEBUFFER, rasterFbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, RenderColorTex, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
+    const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+        throw std::runtime_error("Raster preview framebuffer is incomplete");
+    rasterDepthSize = QSize(render_width, render_height);
+}
+
 Renderer::Renderer(int width, int height, const RenderParams::Snapshot &initialSnapshot, QObject *parent)
     : QObject(parent)
 {
@@ -233,6 +261,8 @@ Renderer::~Renderer()
         glDeleteSync(workFence);
     if (pickFence)
         glDeleteSync(pickFence);
+    releaseRasterResources();
+    glDeleteQueries(1, &rasterTimerQuery);
     glDeleteBuffers(1, &pickPbo);
     glDeleteFramebuffers(1, &pickFbo);
     glDeleteTextures(2, pickTextures);
@@ -268,6 +298,18 @@ void Renderer::submitGpuBoundary()
 }
 void Renderer::pollGpuTimers()
 {
+    if (rasterTimerQuery && rasterTimerPending)
+    {
+        GLint ready = 0;
+        glGetQueryObjectiv(rasterTimerQuery, GL_QUERY_RESULT_AVAILABLE, &ready);
+        if (ready)
+        {
+            GLuint64 ns = 0;
+            glGetQueryObjectui64v(rasterTimerQuery, GL_QUERY_RESULT, &ns);
+            stats.rasterMs = ns / 1e6;
+            rasterTimerPending = false;
+        }
+    }
     for (int i = 0; i < 12; ++i)
         if (timerPending[i])
         {
@@ -295,6 +337,29 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot &snaps
 {
     const RefreshActions actions = resolveRefreshActions(width, height, snapshot, dirtyFlags);
     applyRefreshActions(width, height, snapshot, actions);
+
+    // 交互回退决策：进入或离开光栅化时重置累积，避免两种模式的画面互相残留。
+    const bool raster = m_rasterActive && m_rasterCapable;
+    if (raster != m_rasterRequested)
+    {
+        resetAccumulation();
+        m_rasterRequested = raster;
+    }
+    if (raster)
+    {
+        if (!m_rasterGeometryUploaded)
+            uploadRasterGeometry();
+        if (!m_rasterInstancesUploaded)
+            uploadRasterInstances();
+        // Resize the depth attachment only when the render resolution changes.
+        ensureDepthAttachment();
+        if (renderRasterPreview(snapshot))
+            return;
+        // 光栅化资源不可用时回到路径追踪，本帧不再重复重置累积。
+        setRasterActive(false);
+        m_rasterRequested = false;
+    }
+
     const bool previewChanged = pollPreviewDenoise(snapshot);
     stats.batchTiles = 0;
     if (!samplingActive(snapshot))
@@ -353,8 +418,11 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot &snaps
 void Renderer::compositePreview(const RenderParams::Snapshot &snapshot, bool changed, bool force)
 {
     displayDirty |= changed;
-    if (formal || !displayDirty ||
-        (!firstComposite && !force && compositeClock.isValid() && compositeClock.elapsed() < 16))
+    // A new raster image remains pending until the throttled composite consumes it.
+    const bool needed = m_rasterActive ? rasterNeedsComposite : displayDirty;
+    if (formal || !needed ||
+        (!m_rasterActive && !firstComposite && !force && compositeClock.isValid() &&
+         compositeClock.elapsed() < 16))
         return;
     int query = ((std::max(1, timerCursor) - 1) % 4) * 3 + 2;
     bool timed = timerQueries[query] && !timerPending[query];
@@ -368,6 +436,7 @@ void Renderer::compositePreview(const RenderParams::Snapshot &snapshot, bool cha
         timerEpoch[query] = stats.accumulationVersion;
     }
     compositeClock.restart();
+    rasterNeedsComposite = false;
     firstComposite = displayDirty = false;
 }
 
@@ -401,6 +470,7 @@ void Renderer::init(int width, int height, const RenderParams::Snapshot &snapsho
                                 {preRenderColorTex, RenderColorTex, normal_texture, baseColorTex});
 
     pathtrace_fbo = bindData(std::vector<GLuint>{RenderColorTex, normal_texture, baseColorTex});
+    ensureDepthAttachment();
 
     historysave_program.reset(
         getShaderProgram(getShaderPath("historysave.frag"), getShaderPath("triangle.vert")));
@@ -410,6 +480,7 @@ void Renderer::init(int width, int height, const RenderParams::Snapshot &snapsho
     batchTextureSettings.push_back(RenderColorTexfiltered);
 
     m_program.reset(getShaderProgram(getShaderPath("triangle.frag"), getShaderPath("triangle.vert")));
+    rebuildRasterProgram(snapshot);
     m_texture = getTextureRGB32F(m_width, m_height);
     m_fbo = bindData(std::vector<GLuint>{m_texture});
 
@@ -455,6 +526,8 @@ void Renderer::uninit()
     glDeleteFramebuffers(1, &m_fbo);
     glDeleteFramebuffers(1, &pathtrace_fbo);
     glDeleteFramebuffers(1, &historysave_fbo);
+    glDeleteRenderbuffers(1, &depthRenderbuffer);
+    glDeleteFramebuffers(1, &rasterFbo);
 
     glDeleteTextures(1, &m_texture);
     for (auto &perTex : batchTextureSettings)
@@ -503,7 +576,9 @@ void Renderer::uninit()
         std::fill(std::begin(pboIds), std::end(pboIds), 0);
     }
 
-    historysave_fbo = m_fbo = pathtrace_fbo = 0;
+    historysave_fbo = m_fbo = pathtrace_fbo = rasterFbo = 0;
+    depthRenderbuffer = 0;
+    rasterDepthSize = {};
     m_texture = 0;
     hdrMap = hdrCache = trianglesTextureBuffer = nodesTextureBuffer = lightsTextureBuffer =
         materialTextureArray = materialTextureInfoTexture = 0;
@@ -674,6 +749,8 @@ void Renderer::bindPathtraceInputs(int maxBounces)
 
 void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, int)
 {
+    glBindVertexArray(VAO);
+    glDisable(GL_DEPTH_TEST);
     pathtrace_program->bind();
     glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
     glViewport(tileX, tileY, tileWidth, tileHeight);
@@ -749,6 +826,8 @@ Renderer::RefreshActions Renderer::resolveRefreshActions(int width, int height,
     if (environmentMapChanged)
     {
         actions.rebuildShader = true;
+        // 光栅化预览程序也要跟着重建：环境开关决定是否注入 USEENVIRONMENTMAP。
+        actions.refreshRasterProgram = true;
         actions.syncSceneBuffers = true;
         actions.syncCameraUniforms = true;
         actions.resetAccumulation = true;
@@ -809,6 +888,11 @@ void Renderer::applyRefreshActions(int width, int height, const RenderParams::Sn
     if (actions.rebuildShader)
     {
         rebuildPathtraceProgram(snapshot);
+    }
+
+    if (actions.refreshRasterProgram)
+    {
+        rebuildRasterProgram(snapshot);
     }
 
     if (actions.resizeTargets)
@@ -1225,6 +1309,8 @@ void Renderer::syncMaterialBuffer()
     QMutexLocker lock(&param_mutex);
     // 材质脏路径只重传三角形编码缓冲，不触碰 BVH / HDR 资源。
     uploadInstanceBuffers(false);
+    // 光栅化预览从 instance/material 表读取，材质编辑后实例属性必须重传。
+    m_rasterInstancesUploaded = false;
     uploadLightBuffer(tboLights == 0 || lightsTextureBuffer == 0);
     pathtrace_program->bind();
     pathtrace_program->setUniformValue("nLights",
@@ -1257,6 +1343,9 @@ void Renderer::syncSceneBuffers()
     uploadLightBuffer(tboLights == 0 || lightsTextureBuffer == 0);
     uploadHdrTextures(hdrMap == 0 || hdrCache == 0);
     uploadMaterialTextures(materialTextureArray == 0 || materialTextureInfoTexture == 0);
+    // 场景或几何变化后光栅化的顶点缓冲与实例属性都要重建。
+    m_rasterGeometryUploaded = false;
+    m_rasterInstancesUploaded = false;
 
     pathtrace_program->bind();
     pathtrace_program->setUniformValue("nTriangles", static_cast<int>(Scene::getInstance().triangles.size()));
@@ -1354,6 +1443,8 @@ void Renderer::processHistorySaving(const RenderParams::Snapshot &snapshot)
 
         historysave_program->bind();
         {
+            glBindVertexArray(VAO);
+            glDisable(GL_DEPTH_TEST);
             glBindFramebuffer(GL_FRAMEBUFFER, historysave_fbo);
 
             glActiveTexture(GL_TEXTURE0);
@@ -1504,6 +1595,8 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
 
 void Renderer::compositeToScreen(const RenderParams::Snapshot &snapshot)
 {
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_SCISSOR_TEST);
     ++m_imageRevision;
     ++stats.compositeCount;
     m_program->bind();
@@ -1511,7 +1604,7 @@ void Renderer::compositeToScreen(const RenderParams::Snapshot &snapshot)
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE5);
-        if (snapshot.denoise && m_hasDenoisedFrame)
+        if (!m_rasterActive && snapshot.denoise && m_hasDenoisedFrame)
         {
             glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
         }
@@ -1529,9 +1622,309 @@ void Renderer::compositeToScreen(const RenderParams::Snapshot &snapshot)
         glViewport(m_viewportX, m_viewportY, m_width, m_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // 全屏四边形的 VAO 必须在绘制前绑定：光栅化交互预览会解绑它，
+        // 否则合成阶段没有顶点数据，显示纹理会一直是黑的。
+        glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
     }
     m_program->release();
+}
+
+void Renderer::setRasterActive(bool active)
+{
+    m_rasterActive = active && m_rasterCapable && !formal;
+    stats.rasterActive = m_rasterActive;
+}
+
+// 光栅化交互预览程序。启用环境贴图时注入 USEENVIRONMENTMAP，与路径追踪的开关语义一致；
+// 编译失败只降级到路径追踪，不影响应用其余功能。
+void Renderer::rebuildRasterProgram(const RenderParams::Snapshot &snapshot)
+{
+    std::unordered_map<std::string, std::string> defines;
+    defines.insert({"INSTANCED_SCENE", "1"});
+    if (snapshot.useEnvironmentMap)
+        defines.insert({"USEENVIRONMENTMAP", ""});
+    try
+    {
+        raster_program.reset(
+            getShaderProgram(getShaderPath("raster.frag"), getShaderPath("raster.vert"), {}, defines));
+        rasterBackgroundProgram.reset(getShaderProgram(getShaderPath("raster_background.frag"),
+                                                       getShaderPath("triangle.vert"), {}, defines));
+        m_rasterCapable = raster_program && raster_program->isLinked() &&
+                          rasterBackgroundProgram && rasterBackgroundProgram->isLinked();
+    }
+    catch (const std::exception &error)
+    {
+        qWarning() << "Raster preview shader unavailable:" << error.what();
+        raster_program.reset();
+        rasterBackgroundProgram.reset();
+        m_rasterCapable = false;
+    }
+    if (!m_rasterCapable)
+    {
+        setRasterActive(false);
+        qWarning() << "Raster preview disabled: falling back to the path traced preview";
+    }
+}
+
+// 光栅化交互预览：一次前向着色，不累积、不分块、不做降噪。
+// 明确不支持阴影、IBL、法线贴图、折射与透明混合、体积与 AO，透明材质按不透明处理。
+bool Renderer::renderRasterPreview(const RenderParams::Snapshot &snapshot)
+{
+    if (!raster_program || !rasterBackgroundProgram || !rasterVao)
+        return false;
+
+    QMutexLocker lock(&param_mutex);
+
+    // 光栅化耗时用 GPU 计时查询测，和路径追踪的 gpuMs 口径一致；
+    // 查询未就绪时保留上一帧数值，不冒充本帧结果。
+    pollGpuTimers();
+    if (!rasterTimerQuery)
+        glGenQueries(1, &rasterTimerQuery);
+    const bool rasterTimed = !rasterTimerPending;
+    if (rasterTimed)
+        glBeginQuery(GL_TIME_ELAPSED, rasterTimerQuery);
+
+    // 光栅化写进专用 FBO（颜色靶与路径追踪共用 RenderColorTex），不触碰 pathtrace_fbo。
+    glBindFramebuffer(GL_FRAMEBUFFER, rasterFbo);
+    glViewport(0, 0, render_width, render_height);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_BLEND);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    rasterNeedsComposite = true;
+
+    raster_program->bind();
+    const QMatrix4x4 view = Scene::getInstance().camera.getViewMatrix();
+    // 路径追踪把视场角烘进光线方向，光栅化必须自己做透视投影。
+    const float fov = float(qBound(1.0, double(Scene::getInstance().camera.zoom), 179.0));
+    const float aspect = render_height > 0 ? float(render_width) / float(render_height) : 1.0f;
+    QMatrix4x4 projection;
+    projection.perspective(fov, aspect, 0.01f, 1.0e6f);
+    raster_program->setUniformValue("projection", projection);
+    raster_program->setUniformValue("view", view);
+    raster_program->setUniformValue("eye", Scene::getInstance().camera.position);
+    raster_program->setUniformValue("nLights", int(Scene::getInstance().lights_encoded.size()));
+    raster_program->setUniformValue(
+        "nAnalyticLights",
+        std::min(Scene::getInstance().document.root["lights"].toArray().size(),
+                 int(Scene::getInstance().lights_encoded.size())));
+
+    raster_program->setUniformValue("lights", 4);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_BUFFER, lightsTextureBuffer);
+
+    raster_program->setUniformValue("materialTextures", 5);
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, materialTextureArray);
+
+    raster_program->setUniformValue("materialTextureInfo", 6);
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_BUFFER, materialTextureInfoTexture);
+
+    raster_program->setUniformValue("materialTextureCount", materialTextureLayerCount);
+    raster_program->setUniformValue("materialTable", 8);
+    glActiveTexture(GL_TEXTURE8);
+    glBindTexture(GL_TEXTURE_BUFFER, instanceTextures[1]);
+
+    // 环境背景与环境项：开关由 USEENVIRONMENTMAP 决定，强度/旋转跟随文档设置。
+    const auto environment = Scene::getInstance().document.root["environment"].toObject();
+    raster_program->setUniformValue("environmentIntensity", float(environment["intensity"].toDouble(1)));
+    raster_program->setUniformValue("environmentRotation",
+                                    float(environment["rotation"].toDouble() * PI / 180));
+    raster_program->setUniformValue("hdrResolution", Scene::getInstance().hdrResolution);
+    raster_program->setUniformValue("hdrMap", 9);
+    glActiveTexture(GL_TEXTURE9);
+    glBindTexture(GL_TEXTURE_2D, hdrMap);
+    raster_program->setUniformValue("hdrCache", 10);
+    glActiveTexture(GL_TEXTURE10);
+    glBindTexture(GL_TEXTURE_2D, hdrCache);
+
+    // Fill uncovered pixels independently of mesh fragments. Geometry then overwrites
+    // the background using its own depth buffer and unmodified material radiance.
+    rasterBackgroundProgram->bind();
+    rasterBackgroundProgram->setUniformValue("view", view.inverted());
+    rasterBackgroundProgram->setUniformValue("cameraFov", fov);
+    rasterBackgroundProgram->setUniformValue("width", render_width);
+    rasterBackgroundProgram->setUniformValue("height", render_height);
+    rasterBackgroundProgram->setUniformValue("hdrMap", 9);
+    rasterBackgroundProgram->setUniformValue("environmentIntensity", float(environment["intensity"].toDouble(1)));
+    rasterBackgroundProgram->setUniformValue("environmentRotation", float(environment["rotation"].toDouble() * PI / 180));
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDepthMask(GL_TRUE);
+    glEnable(GL_DEPTH_TEST);
+    raster_program->bind();
+
+    glBindVertexArray(rasterVao);
+    // 实例属性缓冲按实例顺序排列；同 mesh 的实例区间在构建时已保证连续。
+    GLint instanceOffset = 0;
+    for (size_t mesh = 0; mesh < rasterRanges.size(); ++mesh)
+    {
+        int instances = 0;
+        while (instanceOffset + instances < rasterInstanceCount &&
+               rasterInstanceMesh[size_t(instanceOffset + instances)] == int(mesh))
+            ++instances;
+        if (instances > 0 && rasterRanges[mesh].count > 0)
+        {
+            // OpenGL 3.3 has no base-instance draw: offset the instanced attributes per mesh.
+            glBindBuffer(GL_ARRAY_BUFFER, rasterInstanceBuffer);
+            const size_t base = size_t(instanceOffset) * 5 * sizeof(QVector4D);
+            for (GLuint column = 0; column < 5; ++column)
+                glVertexAttribPointer(3 + column, column == 4 ? 1 : 4, GL_FLOAT, GL_FALSE,
+                                      5 * sizeof(QVector4D),
+                                      reinterpret_cast<const void *>(base + column * sizeof(QVector4D)));
+            glDrawArraysInstanced(GL_TRIANGLES, rasterRanges[mesh].first, rasterRanges[mesh].count, instances);
+        }
+        instanceOffset += instances;
+    }
+    glBindVertexArray(0);
+    raster_program->release();
+    if (rasterTimed)
+    {
+        glEndQuery(GL_TIME_ELAPSED);
+        rasterTimerPending = true;
+    }
+    pollGpuTimers();
+    stats.rasterActive = true;
+    // 显示桥仍然按 16 ms 节奏消费，这里走与路径追踪相同的合成路径，
+    // 曝光与色调映射因此对两种预览完全一致。
+    compositePreview(snapshot, displayDirty, firstComposite);
+    return true;
+}
+void Renderer::uploadRasterGeometry()
+{
+    // 顶点按 mesh 展开，记录每个 mesh 的连续区间；绘制时同 mesh 的实例合并成一次实例化绘制。
+    // 实例化绘制没有 baseVertex 重映射，所以这里必须按 mesh 展开，而不是共用一份索引缓冲。
+    const auto &scene = Scene::getInstance();
+    std::vector<float> vertices;
+    size_t totalVertices = 0;
+    for (const auto &mesh : scene.meshes)
+        totalVertices += mesh ? mesh->triangles.size() * 3u : 0u;
+    vertices.reserve(totalVertices * 8u);
+    rasterRanges.assign(scene.meshes.size(), RasterDrawRange{});
+    for (size_t i = 0; i < scene.meshes.size(); ++i)
+    {
+        const auto &mesh = scene.meshes[i];
+        if (!mesh)
+            continue;
+        rasterRanges[i].first = GLint(vertices.size() / 8u);
+        for (const auto &triangle : mesh->triangles)
+        {
+            const QVector3D positions[3] = {triangle.p1, triangle.p2, triangle.p3};
+            const QVector3D normals[3] = {triangle.n1, triangle.n2, triangle.n3};
+            const QVector2D uvs[3] = {triangle.uv1, triangle.uv2, triangle.uv3};
+            for (int corner = 0; corner < 3; ++corner)
+            {
+                vertices.insert(vertices.end(), {positions[corner].x(), positions[corner].y(),
+                                                 positions[corner].z(), normals[corner].x(),
+                                                 normals[corner].y(), normals[corner].z(),
+                                                 uvs[corner].x(), uvs[corner].y()});
+            }
+        }
+        rasterRanges[i].count = GLsizei(vertices.size() / 8u) - rasterRanges[i].first;
+    }
+    rasterVertexCount = vertices.size() / 8u;
+
+    if (!rasterVertexBuffer)
+        glGenBuffers(1, &rasterVertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, rasterVertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER,
+                 GLsizeiptr(std::max<size_t>(vertices.size() * sizeof(float), sizeof(float) * 8u)),
+                 vertices.empty() ? nullptr : vertices.data(), GL_STATIC_DRAW);
+
+    if (!rasterVao)
+        glGenVertexArrays(1, &rasterVao);
+    glBindVertexArray(rasterVao);
+    glBindBuffer(GL_ARRAY_BUFFER, rasterVertexBuffer);
+    const GLsizei stride = GLsizei(8 * sizeof(float));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<GLvoid *>(0));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<GLvoid *>(3 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<GLvoid *>(6 * sizeof(float)));
+    for (GLuint location = 0; location < 3; ++location)
+        glEnableVertexAttribArray(location);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    m_rasterGeometryUploaded = true;
+    m_rasterInstancesUploaded = false; // 几何变化后实例的 mesh 分组也要重建
+    qInfo() << "Raster preview geometry:" << rasterVertexCount << "vertices" << rasterRanges.size() << "meshes";
+}
+
+void Renderer::uploadRasterInstances()
+{
+    // Each visible instance stores four matrix columns and one material vector, grouped by mesh.
+    const auto &scene = Scene::getInstance();
+    std::vector<QVector4D> data;
+    rasterInstanceMesh.clear();
+    std::vector<const SceneInstance *> sorted;
+    for (const auto &instance : scene.instances)
+        if (instance.visible)
+            sorted.push_back(&instance);
+    std::stable_sort(sorted.begin(), sorted.end(), [](const SceneInstance *a, const SceneInstance *b) {
+        return a->mesh < b->mesh;
+    });
+    for (const auto *entry : sorted)
+    {
+        const auto &instance = *entry;
+        if (!instance.visible)
+            continue;
+        // 材质下标越界时回退到 0，避免着色器读到材质表外的数据。
+        const int material = instance.material >= 0 && instance.material < int(scene.materials.size())
+                                 ? instance.material
+                                 : 0;
+        for (int column = 0; column < 4; ++column)
+            data.push_back(instance.transform.column(column));
+        data.push_back(QVector4D(float(material), 0.0f, 0.0f, 0.0f));
+        rasterInstanceMesh.push_back(instance.mesh);
+    }
+    rasterInstanceCount = GLsizei(rasterInstanceMesh.size());
+
+    if (!rasterInstanceBuffer)
+        glGenBuffers(1, &rasterInstanceBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, rasterInstanceBuffer);
+    glBufferData(GL_ARRAY_BUFFER,
+                 GLsizeiptr(std::max<size_t>(data.size() * sizeof(QVector4D), sizeof(QVector4D))),
+                 data.empty() ? nullptr : data.data(), GL_DYNAMIC_DRAW);
+    if (!rasterVao)
+        glGenVertexArrays(1, &rasterVao);
+    glBindVertexArray(rasterVao);
+    glBindBuffer(GL_ARRAY_BUFFER, rasterInstanceBuffer);
+    const GLsizei instStride = GLsizei(5 * sizeof(QVector4D));
+    for (int column = 0; column < 4; ++column)
+    {
+        const GLuint location = 3 + column;
+        glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE, instStride,
+                              reinterpret_cast<GLvoid *>(size_t(column) * sizeof(QVector4D)));
+        glEnableVertexAttribArray(location);
+        glVertexAttribDivisor(location, 1);
+    }
+    glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, instStride,
+                          reinterpret_cast<GLvoid *>(4 * sizeof(QVector4D)));
+    glEnableVertexAttribArray(7);
+    glVertexAttribDivisor(7, 1);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    m_rasterInstancesUploaded = true;
+}
+
+void Renderer::releaseRasterResources()
+{
+    if (rasterVao)
+        glDeleteVertexArrays(1, &rasterVao);
+    if (rasterVertexBuffer)
+        glDeleteBuffers(1, &rasterVertexBuffer);
+    if (rasterInstanceBuffer)
+        glDeleteBuffers(1, &rasterInstanceBuffer);
+    rasterVao = rasterVertexBuffer = rasterInstanceBuffer = 0;
+    raster_program.reset();
+    rasterBackgroundProgram.reset();
 }
 
 QImage Renderer::result(const RenderParams::Snapshot &snapshot)
@@ -1556,6 +1949,7 @@ void Renderer::finishDenoise(const RenderParams::Snapshot &snapshot)
 void Renderer::prepareJob(QSize size, const RenderParams::Snapshot &snapshot, SceneDirtyFlags dirty)
 {
     formal = true;
+    setRasterActive(false);
     GLint maximum = 0;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maximum);
     if (size.width() > maximum || size.height() > maximum)
@@ -1582,5 +1976,8 @@ quint64 Renderer::allocatedBytes() const
         bytes += oidnColorBuf.getSize() + oidnAlbedoBuf.getSize() + oidnNormalBuf.getSize() +
                  oidnOutputBuf.getSize();
     bytes += previewDenoiser.allocatedBytes();
+    bytes += quint64(rasterVertexCount) * 8 * sizeof(float) +
+             quint64(rasterInstanceCount) * 5 * sizeof(QVector4D) +
+             quint64(rasterDepthSize.width()) * rasterDepthSize.height() * 4;
     return bytes;
 }

@@ -98,6 +98,14 @@ int main(int argc, char **argv)
         check(bool(scene), error);
         ground(*scene);
         const auto original = scene->document;
+        for (int mode : {-1, 3})
+        {
+            auto invalid = original;
+            auto render = invalid.root["render"].toObject();
+            render["interactionMode"] = mode;
+            invalid.root["render"] = render;
+            check(!invalid.validate(error, false), "Unknown interaction mode was accepted");
+        }
         auto settings = original.settings();
         settings.denoise = false;
         settings.useTileRendering = false;
@@ -106,6 +114,9 @@ int main(int argc, char **argv)
         settings.maxBounces = 7;
         settings.maxRenderFrames = 19;
         settings.renderLow = true;
+        settings.interactionMode = RenderParams::InteractionLowResolution;
+        settings.interactionIdleMs = 333;
+        settings.rasterLocked = true;
         RenderParams::instance().applySnapshot(settings);
         scene->camera.restoreState(QVector3D(3, 2, 5), QVector3D(1, .5f, -.2f), QVector3D(0, 1, 0), 61);
         scene->camera.processMouseMovement(0, 0);

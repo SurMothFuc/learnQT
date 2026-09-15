@@ -155,7 +155,7 @@ void learnQT::configureSceneRegression()
                 settings.denoise = false;
                 settings.maxRenderFrames = 64;
                 RenderParams::instance().applySnapshot(settings);
-                m_denoise->setChecked(false);
+                applyPreviewSettingsForTesting(settings);
                 state->phase = 2;
                 state->frames = 0;
                 return;
@@ -303,6 +303,7 @@ void learnQT::configureSceneRegression()
     {
         int stage = 0, frames = 0;
         QImage before;
+        RenderStats stats;
         QElapsedTimer time;
     };
     auto state = std::make_shared<State>();
@@ -310,6 +311,12 @@ void learnQT::configureSceneRegression()
     const QString output = QFileInfo(args[option + 1]).absoluteFilePath();
     QDir().mkpath(output);
     connect(viewport, &GLWidget::framePresented, this, [state] { ++state->frames; });
+    auto attachStats = [this, state] {
+        connect(viewport->renderThread(), &RenderThread::statsReady, this,
+                [state](RenderStats stats) { state->stats = stats; });
+    };
+    if (viewport->renderThread()) attachStats();
+    else connect(viewport, &GLWidget::renderThreadReady, this, attachStats);
     auto timer = new QTimer(this);
     timer->setInterval(100);
     connect(timer, &QTimer::timeout, this, [this, state, output, timer] {
@@ -329,6 +336,14 @@ void learnQT::configureSceneRegression()
             return;
         }
         viewport->update();
+        // A private-desktop frame pump can repaint the same incomplete tile many
+        // times. Wait for this scene's completed PT rounds before comparing images.
+        if (state->stats.version != viewport->sceneVersion() || state->stats.rasterActive ||
+            state->stats.samples < 4)
+        {
+            state->frames = 0;
+            return;
+        }
         if (state->frames < 24)
             return;
         auto &scene = Scene::getInstance();

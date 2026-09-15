@@ -293,10 +293,10 @@ bool SceneDocument::validate(QString &error, bool checkFiles) const
     if (!root["render"].isObject())
         return fail("Missing render settings.");
     auto render = root["render"].toObject();
-    for (auto key : {"denoise", "renderLow", "useTileRendering", "useEnvironmentMap"})
+    for (auto key : {"denoise", "renderLow", "useTileRendering", "useEnvironmentMap", "rasterLocked"})
         if (render.contains(key) && !render[key].isBool())
             return fail("Invalid render toggle.");
-    for (auto key : {"tileSize", "maxBounces", "maxRenderFrames"})
+    for (auto key : {"tileSize", "maxBounces", "maxRenderFrames", "interactionMode", "interactionIdleMs"})
         if (render.contains(key) && (!render[key].isDouble() || render[key].toInt(-1) < 0))
             return fail("Invalid render setting.");
     const auto s = settings();
@@ -325,7 +325,8 @@ bool SceneDocument::validate(QString &error, bool checkFiles) const
     if (environment["intensity"].toDouble(1) < 0)
         return fail("Environment intensity cannot be negative.");
     if (s.tileSize < 1 || s.tileSize > 16384 || s.maxBounces < 0 || s.maxBounces > int(MAX_BOUNCES_LIMIT) ||
-        s.maxRenderFrames < 0)
+        s.maxRenderFrames < 0 || s.interactionMode < RenderParams::InteractionKeepPathtrace ||
+        s.interactionMode > RenderParams::InteractionLowResolution)
         return fail("Render settings out of range.");
     for (auto v : root["lights"].toArray())
     {
@@ -498,11 +499,14 @@ void SceneDocument::captureSettings(const RenderParams::Snapshot &s)
 {
     root["render"] = QJsonObject{{"denoise", s.denoise},
                                  {"renderLow", s.renderLow},
+                                 {"interactionMode", s.interactionMode},
                                  {"useTileRendering", s.useTileRendering},
                                  {"tileSize", s.tileSize},
                                  {"useEnvironmentMap", s.useEnvironmentMap},
                                  {"maxBounces", s.maxBounces},
-                                 {"maxRenderFrames", s.maxRenderFrames}};
+                                 {"maxRenderFrames", s.maxRenderFrames},
+                                 {"rasterLocked", s.rasterLocked},
+                                 {"interactionIdleMs", s.interactionIdleMs}};
 }
 RenderParams::Snapshot SceneDocument::settings() const
 {
@@ -513,10 +517,13 @@ RenderParams::Snapshot SceneDocument::settings() const
         s.name = o[#name].toVariant().value<decltype(s.name)>();
     SETTING(denoise)
     SETTING(renderLow)
+    SETTING(interactionMode)
     SETTING(useTileRendering)
     SETTING(tileSize) SETTING(useEnvironmentMap) SETTING(maxBounces) SETTING(maxRenderFrames)
+    SETTING(rasterLocked) SETTING(interactionIdleMs)
 #undef SETTING
-        return s;
+    // Persistent preview resolution and the temporary interaction strategy are independent.
+    return s;
 }
 QJsonObject SceneDocument::materialJson(const Material &m)
 {

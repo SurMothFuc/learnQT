@@ -33,7 +33,7 @@ void TextureBuffer::deleteTexture(QOpenGLContext *c)
     displayed = -1;
 }
 bool TextureBuffer::updateTexture(QOpenGLContext *c, int w, int h, GLuint pickFbo, quint64 version,
-                                  GLuint beautyFbo)
+                                  GLuint beautyFbo, quint64 minimumVersion)
 {
     auto f = c->versionFunctions<QOpenGLFunctions_3_3_Core>();
     auto signaled = [&](GLsync s) {
@@ -48,7 +48,8 @@ bool TextureBuffer::updateTexture(QOpenGLContext *c, int w, int h, GLuint pickFb
         {
             QMutexLocker lock(&mutex);
             if (i == displayed || buffers[i].reading || buffers[i].writing ||
-                (buffers[i].pending && buffers[i].version == version))
+                (buffers[i].pending && (buffers[i].version == version ||
+                                        buffers[i].version >= minimumVersion)))
                 continue;
             buffers[i].writing = true;
         }
@@ -111,7 +112,8 @@ bool TextureBuffer::updateTexture(QOpenGLContext *c, int w, int h, GLuint pickFb
     m_ready = true;
     return true;
 }
-bool TextureBuffer::drawTexture(QOpenGLContext *c, int count, quint64 version)
+bool TextureBuffer::drawTexture(QOpenGLContext *c, int count, quint64 version,
+                                quint64 minimumVersion, const std::function<void(bool, quint64)> &beforeDraw)
 {
     auto f = c->versionFunctions<QOpenGLFunctions_3_3_Core>();
     int index;
@@ -146,12 +148,15 @@ bool TextureBuffer::drawTexture(QOpenGLContext *c, int count, quint64 version)
                 newest = buffers[i].serial;
             }
         }
-    if (index < 0 || buffers[index].version != version)
+    if (index < 0 || (buffers[index].version != version &&
+                     (buffers[index].version < minimumVersion || buffers[index].version > version)))
     {
         release();
         return false;
     }
     auto &b = buffers[index];
+    if (beforeDraw)
+        beforeDraw(b.version == version, b.serial);
     f->glActiveTexture(GL_TEXTURE0);
     f->glBindTexture(GL_TEXTURE_2D, b.texture);
     f->glActiveTexture(GL_TEXTURE1);

@@ -244,7 +244,9 @@ void learnQT::configurePreviewRegression()
                 }
             }
             editor->setCamera(original);
-            m_denoise->setChecked(true);
+            auto denoiseSettings = editor->document.settings();
+            denoiseSettings.denoise = true;
+            applyPreviewSettingsForTesting(denoiseSettings);
             next();
         }
         else if (state->phase == 2)

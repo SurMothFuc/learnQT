@@ -28,6 +28,7 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QWidgetAction>
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #endif
@@ -103,6 +104,7 @@ learnQT::learnQT(QWidget *parent) : QMainWindow(parent)
     else
         navigateWorkspace(WorkspacePage::Scene);
     configureRegressionCapture();
+    configureUiCapture();
 #ifdef SCENE_TESTING
     configureSceneRegression();
     configureWorkbenchRegression();
@@ -110,6 +112,14 @@ learnQT::learnQT(QWidget *parent) : QMainWindow(parent)
     configurePreviewRegression();
     configurePreviewModeRegression();
     configureWorkspaceRegression();
+    configurePreviewPanelRegression();
+    configureRasterRegression();
+    // 回归入口可关闭交互回退，避免默认的光栅化回退改变既有预览用例的判断。
+    if (QCoreApplication::arguments().contains(QStringLiteral("--no-interaction-fallback")))
+        connect(viewport, &GLWidget::renderThreadReady, this, [this] {
+            if (viewport->renderThread())
+                viewport->renderThread()->setInteractionFallbackDisabled(true);
+        });
 #endif
 }
 learnQT::~learnQT()
@@ -136,7 +146,7 @@ void learnQT::setupWorkbench()
     auto chromeLayout = new QHBoxLayout(chrome);
     chromeLayout->setContentsMargins(8, 4, 8, 4);
     chromeLayout->addWidget(new QLabel(tr("透视")));
-    auto previewBadge = new QLabel(tr("●  路径追踪预览"));
+    previewBadge = new QLabel(tr("●  路径追踪预览"));
     previewBadge->setObjectName("muted");
     chromeLayout->addWidget(previewBadge);
     chromeLayout->addStretch();
@@ -331,7 +341,34 @@ void learnQT::setupWorkbench()
     });
     pauseAction->setIcon(WorkbenchStyle::icon("pause"));
     stopAction->setIcon(WorkbenchStyle::icon("stop"));
-    auto settingsAction = toolbar->addAction(WorkbenchStyle::icon("settings"), tr("渲染设置"));
+    // 顶栏的预览设置入口取代原“渲染设置”按钮：弹出面板里直接改常用项，更多设置走不跳页的弹窗。
+    previewChromePanel = new PreviewSettingsPanel;
+    previewDetailPanel = new PreviewSettingsPanel(this);
+    previewDetailPanel->hide();
+    connect(previewChromePanel, &PreviewSettingsPanel::changed, this,
+            [this](const RenderParams::Snapshot &settings) { commitPreviewSettings(settings); });
+    connect(previewDetailPanel, &PreviewSettingsPanel::changed, this,
+            [this](const RenderParams::Snapshot &settings) { commitPreviewSettings(settings); });
+    auto previewButton = new QToolButton(toolbar);
+    previewButton->setObjectName("previewSettingsButton");
+    previewButton->setText(tr("预览设置"));
+    previewButton->setIcon(WorkbenchStyle::icon("settings"));
+    previewButton->setToolTip(tr("交互预览的采样上限、反弹数、块大小与降噪"));
+    previewButton->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    previewButton->setPopupMode(QToolButton::InstantPopup);
+    auto previewMenu = new QMenu(previewButton);
+    auto previewWidgetAction = new QWidgetAction(previewMenu);
+    previewWidgetAction->setDefaultWidget(previewChromePanel);
+    previewMenu->addAction(previewWidgetAction);
+    previewMenu->addSeparator();
+    previewMenu->addAction(tr("更多预览设置…"), this, [this] { showPreviewSettingsDialog(); });
+    connect(previewMenu, &QMenu::aboutToShow, this, [this] {
+        previewChromePanel->setValues(editor->document.settings());
+    });
+    previewButton->setMenu(previewMenu);
+    auto previewWidgetActionForToolbar = new QWidgetAction(toolbar);
+    previewWidgetActionForToolbar->setDefaultWidget(previewButton);
+    toolbar->insertAction(pauseAction, previewWidgetActionForToolbar);
     toolbar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     auto renderControls = new QWidget;
     renderControls->setObjectName("renderControls");
@@ -428,7 +465,6 @@ void learnQT::setupWorkbench()
     setupDockTitle(inspectorDock, "settings");
     setupDockTitle(performanceDock, "chart");
     setupDockTitle(logDock, "log");
-    connect(settingsAction, &QAction::triggered, this, [this] { navigateWorkspace(WorkspacePage::Render); });
     setupWorkspace();
     auto resetLayout = viewMenu->addAction(tr("恢复当前页面布局"), this, [this] {
         int page = workspace->page;
@@ -651,42 +687,6 @@ QWidget *learnQT::createSettings()
     for (auto s : {outputWidth, outputHeight, outputSamples, outputTile, outputBounces})
         connect(s, &QSpinBox::editingFinished, this, commitOutput);
     connect(outputDenoise, &QCheckBox::toggled, this, [commitOutput] { commitOutput(); });
-    form = section(tr("交互预览"), "previewSection");
-    m_denoise = new QCheckBox(tr("预览降噪"));
-    form->addRow(m_denoise);
-    connect(m_denoise, &QCheckBox::toggled, this, [this](bool b) {
-        if (m_restoring)
-            return;
-        auto d = editor->document;
-        auto settings = d.root["render"].toObject();
-        settings["denoise"] = b;
-        d.root["render"] = settings;
-        editor->submit(d, tr("预览降噪"), EditorController::Display);
-    });
-    previewSamples = spin(tr("预览 spp（0 无限）"), 0, 1000000, 0);
-    previewBounces = spin(tr("预览反弹数"), 1, 64, 4);
-    previewTile = spin(tr("预览块大小"), 16, 1024, 128);
-    previewTiled = new QCheckBox(tr("分块预览"));
-    previewLow = new QCheckBox(tr("降低预览分辨率"));
-    form->addRow(previewTiled);
-    form->addRow(previewLow);
-    auto commitPreview = [this] {
-        if (m_restoring)
-            return;
-        auto d = editor->document;
-        auto settings = d.settings();
-        settings.maxRenderFrames = previewSamples->value();
-        settings.maxBounces = previewBounces->value();
-        settings.tileSize = previewTile->value();
-        settings.useTileRendering = previewTiled->isChecked();
-        settings.renderLow = previewLow->isChecked();
-        d.captureSettings(settings);
-        editor->submit(d, tr("预览设置"), EditorController::Display);
-    };
-    for (auto s : {previewSamples, previewBounces, previewTile})
-        connect(s, &QSpinBox::editingFinished, this, commitPreview);
-    for (auto s : {previewTiled, previewLow})
-        connect(s, &QCheckBox::toggled, this, [commitPreview] { commitPreview(); });
     form = section(tr("色彩管理"), "displaySection");
     auto exposure = new MixedSpin;
     exposure->setRange(-16, 16);
@@ -783,12 +783,22 @@ void learnQT::connectRenderThread()
         QTimer::singleShot(0, this, [this] { workspace->pendingRender = false; startRender(); });
     connect(thread, &RenderThread::statsReady, this, [this](RenderStats s) {
         performance->append(s);
-        statsLabel->setText(tr("%1 × %2  |  %3 spp  |  已选 %4")
-                                .arg(s.size.width())
-                                .arg(s.size.height())
-                                .arg(s.samples)
-                                .arg(editor->selectedModels().size()) +
-                            tr("  |  %1 秒").arg(s.jobSeconds, 0, 'f', 1));
+        if (previewBadge)
+            previewBadge->setText(s.rasterActive ? tr("●  光栅化预览")
+                                                 : tr("●  路径追踪预览"));
+        // 光栅化交互预览不累积采样，只显示帧耗时，避免把静态的 spp 当成卡住。
+        statsLabel->setText(s.rasterActive
+                                ? tr("%1 × %2  |  光栅化 %3 ms  |  已选 %4")
+                                      .arg(s.size.width())
+                                      .arg(s.size.height())
+                                      .arg(s.rasterMs, 0, 'f', 1)
+                                      .arg(editor->selectedModels().size())
+                                : tr("%1 × %2  |  %3 spp  |  已选 %4")
+                                          .arg(s.size.width())
+                                          .arg(s.size.height())
+                                          .arg(s.samples)
+                                          .arg(editor->selectedModels().size()) +
+                                      tr("  |  %1 秒").arg(s.jobSeconds, 0, 'f', 1));
         progress->setValue(s.target > 0 ? std::min(100, int(100. * s.samples / s.target)) : 0);
         if (workspace->page == int(WorkspacePage::Render) && workspace->taskTarget > 0) {
             statsLabel->setText(tr("输出 %1 × %2  |  %3 / %4 spp")
@@ -964,8 +974,46 @@ void learnQT::refreshScenes()
     int current = m_sceneList->findData(editor->document.filePath);
     m_sceneList->setCurrentIndex(std::max(0, current));
 }
+void learnQT::commitPreviewSettings(const RenderParams::Snapshot &settings)
+{
+    if (m_restoring || editor->busy || editor->renderLocked)
+        return;
+    auto d = editor->document;
+    d.captureSettings(settings);
+    editor->submit(d, tr("预览设置"), EditorController::Display);
+    syncPreviewControls(editor->document.settings());
+}
+// 文档设置变化后把顶栏弹出面板与详情弹窗对齐。控件信号在写入期间被屏蔽，不会回灌成新的提交。
+void learnQT::syncPreviewControls(const RenderParams::Snapshot &settings)
+{
+    if (previewChromePanel)
+        previewChromePanel->setValues(settings);
+    if (previewDetailPanel)
+        previewDetailPanel->setValues(settings);
+}
+// 不跳页的预览设置弹窗：非模态，改动即时提交，视口实时跟着变。
+void learnQT::showPreviewSettingsDialog()
+{
+    if (!previewDialog)
+    {
+        previewDialog = new QDialog(this);
+        previewDialog->setObjectName("previewSettingsDialog");
+        previewDialog->setWindowTitle(tr("预览设置"));
+        previewDialog->setModal(false);
+        auto layout = new QVBoxLayout(previewDialog);
+        layout->addWidget(new QLabel(tr("交互预览显示在场景页视口；改动即时生效，不会启动正式任务。")));
+        layout->addWidget(previewDetailPanel);
+        previewDetailPanel->show();
+        layout->addStretch();
+    }
+    previewDetailPanel->setValues(editor->document.settings());
+    previewDialog->show();
+    previewDialog->raise();
+    previewDialog->activateWindow();
+}
 void learnQT::restoreSceneControls()
 {
+    auto settings = editor->document.settings();
     m_restoring = true;
     auto output = RenderJobSettings::fromJson(editor->document.root["output"].toObject());
     outputWidth->setValue(output.size.width());
@@ -974,14 +1022,8 @@ void learnQT::restoreSceneControls()
     outputTile->setValue(output.tileSize);
     outputBounces->setValue(output.bounces);
     outputDenoise->setChecked(output.denoise);
-    m_denoise->setChecked(editor->document.settings().denoise);
-    auto preview = editor->document.settings();
-    previewSamples->setValue(preview.maxRenderFrames);
-    previewBounces->setValue(preview.maxBounces);
-    previewTile->setValue(preview.tileSize);
-    previewTiled->setChecked(preview.useTileRendering);
-    previewLow->setChecked(preview.renderLow);
     m_restoring = false;
+    syncPreviewControls(settings);
     inspector->refresh();
 }
 bool learnQT::confirmDiscard()

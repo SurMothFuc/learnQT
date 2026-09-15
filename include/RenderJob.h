@@ -74,6 +74,9 @@ struct RenderStats
     quint64 compositeCount = 0;
     QSize size;
     RenderJobState state = RenderJobState::Idle;
+    // 交互预览当前是否由光栅化提供，以及最近一帧光栅化耗时。
+    bool rasterActive = false;
+    double rasterMs = 0, rasterFps = 0;
 };
 Q_DECLARE_METATYPE(RenderStats)
 Q_DECLARE_METATYPE(RenderJobState)

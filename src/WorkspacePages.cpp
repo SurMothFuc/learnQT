@@ -301,7 +301,8 @@ void learnQT::setupWorkspace()
     auto renderPanel = new QWidget;
     auto renderLayout = column(renderPanel);
     renderLayout->addWidget(label("路径追踪 · OpenGL 3.3\n当前上下文设备；最终降噪使用 CPU OIDN。"));
-    for (auto key : {"outputSection", "previewSection", "displaySection"})
+    // 交互预览设置已移出本页：入口在顶栏“预览设置”的弹出面板与详情弹窗。
+    for (auto key : {"outputSection", "displaySection"})
         renderLayout->addWidget(settingsSection(key));
     auto exports = new QPushButton("导出当前结果 · PNG / JPEG…");
     connect(exports, &QPushButton::clicked, this, &learnQT::saveGLImage);
@@ -312,6 +313,11 @@ void learnQT::setupWorkspace()
     w.rightPages[6] = scrolling(renderPanel);
     w.rightStack->addWidget(w.rightPages[6]);
     w.mutationWidgets << renderPanel;
+    // 视口顶部 chrome 条的预览弹层也是场景变更入口，正式任务期间与右栏一起禁用。
+    if (previewChromePanel)
+        w.mutationWidgets << previewChromePanel;
+    if (previewDetailPanel)
+        w.mutationWidgets << previewDetailPanel;
 
     auto environment = new QWidget;
     auto envLayout = column(environment);

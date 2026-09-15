@@ -128,9 +128,15 @@ void RenderThread::run()
         interval.start();
         presentationClock.start();
         RenderRateTracker rates;
+        RenderRateTracker rasterRates;
+        int rasterFrames = 0;
+        bool wasRaster = false;
+        QElapsedTimer rasterCadence;
         bool wasSampling = true;
         bool presentationPending = false;
         quint64 presentedRevision = 0, presentedVersion = 0;
+        quint64 minimumPresentationVersion = 1;
+        QSize presentationSize;
         double jobSeconds = 0;
         while (m_running)
         {
@@ -138,6 +144,14 @@ void RenderThread::run()
             // A bounded driver wait avoids adding a coarse OS sleep after each tile.
             if (!renderer.waitForGpuBoundary())
                 continue;
+            // Pace from submission start, including GPU work, rather than adding 16 ms
+            // to every frame. The previous frame's fence was submitted before this wait.
+            if (wasRaster && rasterCadence.isValid())
+            {
+                const qint64 remainingMs = 16 - rasterCadence.elapsed();
+                if (remainingMs > 0)
+                    msleep(static_cast<unsigned long>(remainingMs));
+            }
             if (presentationPending)
             {
                 emit imageReady();
@@ -145,6 +159,10 @@ void RenderThread::run()
             }
             rates.observe(clock.nsecsElapsed() / 1e9, renderer.samples(), renderer.completedTiles(),
                           renderer.stats.accumulationVersion, wasSampling);
+            if (wasRaster)
+                ++rasterFrames;
+            rasterRates.observe(clock.nsecsElapsed() / 1e9, rasterFrames, 0, 0, wasRaster);
+            wasRaster = false;
             wasSampling = false;
             bool gpuWork = false;
             SceneDirtyFlags dirty;
@@ -180,12 +198,16 @@ void RenderThread::run()
                 {
                     scene.adoptPrepared(*prepared);
                     currentVersion = v;
+                    minimumPresentationVersion = v;
                     RenderParams::instance().applySnapshot(scene.document.settings());
                     dirty |= kInitialSceneDirty;
                 }
                 if (has)
                 {
                     currentVersion = v;
+                    // resizeGL submits Organization even when rapid resizes return to the same size.
+                    if (changes & (1 << EditorController::Organization))
+                        minimumPresentationVersion = v;
                     if (changes & (1 << EditorController::Display))
                         dirty |= toSceneDirtyFlags(SceneDirtyFlag::Display);
                     if (changes &
@@ -234,6 +256,28 @@ void RenderThread::run()
                 auto snapshot = job ? jobSnapshot : RenderParams::instance().snapshot();
                 if (job)
                     size = settings.size;
+                // 回归入口可显式关闭交互回退，专心验证路径追踪预览。
+                if (!job && m_interactionFallbackDisabled)
+                {
+                    interactionActive = false;
+                    snapshot.interactionMode = RenderParams::InteractionKeepPathtrace;
+                    snapshot.rasterLocked = false;
+                }
+                // 交互判定：相机变更或对象/材质更新到达即视为交互开始，停手由 interactionIdleMs 控制。
+                // 正式任务不参与，避免出图期间被交互回退打断。
+                if (!job && !m_interactionFallbackDisabled &&
+                    (hasSceneDirtyFlag(dirty, SceneDirtyFlag::Camera) ||
+                     hasSceneDirtyFlag(dirty, SceneDirtyFlag::SceneBuffers) ||
+                     hasSceneDirtyFlag(dirty, SceneDirtyFlag::Material)))
+                {
+                    interactionActive = true;
+                    interactionClock.restart();
+                }
+                else if (interactionActive && (!interactionClock.isValid() ||
+                                               interactionClock.elapsed() >= snapshot.interactionIdleMs))
+                {
+                    interactionActive = false;
+                }
                 if (job && m_cancel)
                 {
                     if (renderer.samples() > 0)
@@ -267,13 +311,51 @@ void RenderThread::run()
                     {
                         if (job && state != RenderJobState::Rendering)
                             setState(RenderJobState::Rendering);
+                        // 交互回退：只有非正式任务才参与，正式出图必须走完整路径追踪。
+                        bool raster = false, keepPathtrace = false;
+                        if (!job)
+                        {
+                            const bool interacting = interactionClock.isValid() &&
+                                                     interactionClock.elapsed() < snapshot.interactionIdleMs;
+                            keepPathtrace = interactionActive && interacting &&
+                                            snapshot.interactionMode == RenderParams::InteractionLowResolution;
+                            raster = !m_interactionFallbackDisabled &&
+                                     (snapshot.rasterLocked || m_forceRaster.load() ||
+                                      (interactionActive && interacting &&
+                                       snapshot.interactionMode == RenderParams::InteractionRaster));
+                            if (raster || keepPathtrace)
+                            {
+                                snapshot.renderLow = !raster && (snapshot.renderLow || keepPathtrace);
+                                snapshot.interactionMode = raster ? RenderParams::InteractionRaster
+                                                                  : RenderParams::InteractionKeepPathtrace;
+                            }
+                            if (!raster && rasterRequested)
+                            {
+                                // 离开光栅化：重置累积，避免显示上一帧光栅结果。
+                                dirty |= toSceneDirtyFlags(SceneDirtyFlag::Camera);
+                            }
+                            if (keepPathtrace != keepPathtraceApplied)
+                                dirty |= toSceneDirtyFlags(SceneDirtyFlag::Camera);
+                            keepPathtraceApplied = keepPathtrace;
+                            rasterRequested = raster;
+                            renderer.setRasterActive(raster);
+                        }
+                        else
+                        {
+                            rasterRequested = false;
+                            keepPathtraceApplied = false;
+                            renderer.setRasterActive(false);
+                        }
                         const int before = renderer.samples(), tilesBefore = renderer.completedTiles();
+                        if (renderer.rasterActive())
+                            rasterCadence.restart();
                         gpuWork = true;
                         renderer.render(size.width(), size.height(), snapshot, dirty, 16, [&] {
                             return !m_running || (job && (m_cancel || m_paused)) ||
                                    controlRevision.load() != batchRevision;
                         });
-                        wasSampling = renderer.samplingActive(snapshot);
+                        wasSampling = !renderer.rasterActive() && renderer.samplingActive(snapshot);
+                        wasRaster = renderer.rasterActive();
                         if (!job)
                         {
                             renderer.updatePick(size.width(), size.height(), currentVersion);
@@ -294,14 +376,20 @@ void RenderThread::run()
                                                 : QString(),
                                             request, revision);
                         }
-                        if (!job && presentationClock.elapsed() >= 16 &&
+                        if (!job && (renderer.rasterActive() || presentationClock.elapsed() >= 16) &&
                             (presentedRevision != renderer.imageRevision() ||
-                             presentedVersion != currentVersion))
+                             presentedVersion != currentVersion || renderer.rasterActive()))
                         {
+                            if (presentationSize != size)
+                            {
+                                presentationSize = size;
+                                minimumPresentationVersion = currentVersion;
+                            }
                             if (TextureBuffer::instance()->updateTexture(context, size.width(), size.height(),
                                                                          job ? 0 : renderer.pickFramebuffer(),
                                                                          currentVersion,
-                                                                         renderer.displayFramebuffer()))
+                                                                         renderer.displayFramebuffer(),
+                                                                         minimumPresentationVersion))
                             {
                                 presentationPending = true;
                                 presentedRevision = renderer.imageRevision();
@@ -323,7 +411,9 @@ void RenderThread::run()
                         }
                         else if (job && renderer.completeRound() && interval.elapsed() >= 200)
                             emit resultReady(renderer.result(snapshot), false);
-                        if (renderer.samples() == before && renderer.completedTiles() == tilesBefore)
+                        // 光栅化每帧都是新画面，没有完整轮次概念，不能按采样进度限流。
+                        if (!renderer.rasterActive() && renderer.samples() == before &&
+                            renderer.completedTiles() == tilesBefore)
                             msleep(16);
                     }
                     catch (const std::exception &e)
@@ -362,6 +452,7 @@ void RenderThread::run()
                 s.seconds = clock.elapsed() / 1000.;
                 s.version = currentVersion;
                 s.fps = wasSampling ? rates.fps(s.seconds) : 0;
+                s.rasterFps = wasRaster ? rasterRates.fps(s.seconds) : 0;
                 s.tileFps = wasSampling ? rates.tileFps(s.seconds) : 0;
                 s.samples = renderer.samples();
                 s.target = snapshot.maxRenderFrames;

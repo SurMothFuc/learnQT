@@ -1,13 +1,21 @@
-﻿#include "learnQT.h"
+#include "learnQT.h"
+#include "BackgroundTestSession.h"
 #include <QDebug>
+#include <QDir>
+#include <QFileInfo>
 #include <QTextCodec>
 #include <QSettings>
+#include <QTemporaryDir>
 #include <QtWidgets/QApplication>
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <iostream>
 int main(int argc, char *argv[])
 {
+    const int backgroundResult = BackgroundTestSession::launchIfNeeded(argc, argv);
+    if (backgroundResult >= 0)
+        return backgroundResult;
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QSurfaceFormat fmt;
@@ -15,7 +23,33 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(fmt);
 
     QApplication a(argc, argv);
+    std::unique_ptr<QTemporaryDir> backgroundPreferences;
+    if (BackgroundTestSession::active())
+    {
+        qInstallMessageHandler([](QtMsgType type, const QMessageLogContext &context, const QString &message) {
+            const auto text = qFormatLogMessage(type, context, message).toUtf8();
+            std::fprintf(stderr, "%s\n", text.constData());
+        });
+        backgroundPreferences.reset(new QTemporaryDir);
+        if (!backgroundPreferences->isValid())
+        {
+            std::cerr << "Cannot create isolated background preferences.\n";
+            return 125;
+        }
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, backgroundPreferences->path());
+    }
     const QStringList arguments = a.arguments();
+    // 界面截图模式把偏好重定向到输出目录：既不读取个人的页面布局，也不写入个人配置。
+    const int captureArgument = arguments.indexOf(QStringLiteral("--capture-ui"));
+    if (captureArgument >= 0 && captureArgument + 1 < arguments.size() &&
+        !arguments[captureArgument + 1].startsWith(QStringLiteral("--")))
+    {
+        const QString directory = QFileInfo(arguments[captureArgument + 1]).absoluteFilePath() + "/preferences";
+        QDir().mkpath(directory);
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, directory);
+    }
 #ifdef SCENE_TESTING
     // UI regressions must not read or overwrite a person's workspace preferences.
     for (int i = 1; i + 1 < arguments.size(); ++i)
@@ -42,6 +76,14 @@ int main(int argc, char *argv[])
     }
     if (sceneArgument >= 0)
         Scene::setStartupScenePath(arguments[sceneArgument + 1]);
+    // 回归入口可用它关闭交互回退（光栅化），专心验证路径追踪预览。
+    if (arguments.contains(QStringLiteral("--no-interaction-fallback")))
+    {
+        RenderParams::Snapshot fallback = RenderParams::instance().snapshot();
+        fallback.interactionMode = RenderParams::InteractionKeepPathtrace;
+        fallback.rasterLocked = false;
+        RenderParams::instance().applySnapshot(fallback);
+    }
     if (modelArgument >= 0 && modelArgument + 1 < arguments.size())
     {
         Scene::setStartupModelPath(arguments[modelArgument + 1].toStdString());
@@ -125,6 +167,7 @@ int main(int argc, char *argv[])
             return failed ? 3 : 0;
         }
         learnQT w;
+        BackgroundTestSession::startFramePump(&w);
         w.show();
         return a.exec();
     }

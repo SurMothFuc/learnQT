@@ -18,10 +18,13 @@ RenderParams::Snapshot RenderParams::snapshot() const {
     return Snapshot{
         m_denoise.load(std::memory_order_relaxed),
         m_renderLow.load(std::memory_order_relaxed),
+        m_interactionMode.load(std::memory_order_relaxed),
         m_useTileRendering.load(std::memory_order_relaxed),
         m_tileSize.load(std::memory_order_relaxed),
         m_useEnvironmentMap.load(std::memory_order_relaxed),
         m_maxBounces.load(std::memory_order_relaxed),
-        m_maxRenderFrames.load(std::memory_order_relaxed)
+        m_maxRenderFrames.load(std::memory_order_relaxed),
+        m_rasterLocked.load(std::memory_order_relaxed),
+        m_interactionIdleMs.load(std::memory_order_relaxed)
     };
 }

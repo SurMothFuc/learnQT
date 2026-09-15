@@ -52,7 +52,7 @@ void main(void)
     float alpha =1.0/(frameCounter+1.0);//该项控制累计帧数
     
     // 使用相同的归一化坐标获取上一帧的结果
-    vec4 prevIllum= texture2D(preRenderColor, normalizedCoords);
+    vec4 prevIllum= texture(preRenderColor, normalizedCoords);
     
     float hasNaN = float(any(isnan(RenderColorResult.xyz)));
     float finalAlpha = mix(alpha, 0.0, hasNaN);

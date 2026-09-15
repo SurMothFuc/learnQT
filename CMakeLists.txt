@@ -65,6 +65,7 @@ set(MOC_HEADERS
     include/renderthread.h
     include/RenderParams.h
     include/EditorController.h
+    include/WorkbenchPanels.h
 )
 qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 qt5_add_resources(RCC_SOURCES ${RCC_FILES})
@@ -157,6 +158,9 @@ if(BUILD_TESTING)
     target_link_libraries(renderer_batch_tests PRIVATE Qt5::Widgets Qt5::OpenGL opengl32 OpenImageDenoise_core OpenImageDenoise assimp::assimp)
     add_dependencies(renderer_batch_tests learnQT)
     add_test(NAME renderer_batch_regression COMMAND renderer_batch_tests)
+    add_test(NAME environment_sphere_regression COMMAND renderer_batch_tests
+        --environment-regression ${CMAKE_CURRENT_BINARY_DIR}/environment-sphere-regression)
+    set_tests_properties(environment_sphere_regression PROPERTIES LABELS "gpu;render;lighting" TIMEOUT 120)
     set_tests_properties(renderer_batch_regression PROPERTIES LABELS "gpu;render" TIMEOUT 60)
     add_executable(presentation_tests tests/PresentationTests.cpp src/texturebuffer.cpp)
     target_include_directories(presentation_tests PRIVATE include)
@@ -180,7 +184,7 @@ if(BUILD_TESTING)
     target_link_libraries(lighting_tests PRIVATE Qt5::Core Qt5::Gui Qt5::OpenGL opengl32)
     add_test(NAME lighting_numerical_regression COMMAND lighting_tests)
     set_tests_properties(lighting_numerical_regression PROPERTIES LABELS "gpu;lighting" TIMEOUT 300)
-    target_sources(learnQT PRIVATE tests/SceneUiRegression.cpp tests/WorkbenchUiRegression.cpp tests/InteractionRegression.cpp tests/PreviewModeRegression.cpp tests/WorkspaceUiRegression.cpp)
+    target_sources(learnQT PRIVATE tests/SceneUiRegression.cpp tests/WorkbenchUiRegression.cpp tests/InteractionRegression.cpp tests/PreviewModeRegression.cpp tests/WorkspaceUiRegression.cpp tests/PreviewPanelRegression.cpp tests/RasterPreviewRegression.cpp)
     target_compile_definitions(learnQT PRIVATE SCENE_TESTING)
     add_test(NAME workspace_pages_regression COMMAND $<TARGET_FILE:learnQT> --workspace-regression ${CMAKE_CURRENT_BINARY_DIR}/workspace-regression)
     set_tests_properties(workspace_pages_regression PROPERTIES LABELS "scene;gpu;ui;workspace" TIMEOUT 120)
@@ -207,6 +211,12 @@ if(BUILD_TESTING)
     set_tests_properties(preview_mode_switch_regression PROPERTIES LABELS "gpu;ui;preview" TIMEOUT 120)
     add_test(NAME preview_mis_mode_switch_regression COMMAND $<TARGET_FILE:learnQT> --preview-mode-regression ${CMAKE_CURRENT_BINARY_DIR}/preview-mis-mode-regression --mode-mis)
     set_tests_properties(preview_mis_mode_switch_regression PROPERTIES LABELS "gpu;ui;preview" TIMEOUT 120)
+    add_test(NAME preview_panel_regression COMMAND $<TARGET_FILE:learnQT> --preview-panel-regression ${CMAKE_CURRENT_BINARY_DIR}/preview-panel-regression)
+    set_tests_properties(preview_panel_regression PROPERTIES LABELS "gpu;ui;preview;workspace" TIMEOUT 90)
+    add_test(NAME raster_preview_regression COMMAND $<TARGET_FILE:learnQT>
+        --scene ${CMAKE_CURRENT_SOURCE_DIR}/resources/scenes/glslpt_test.scene.json
+        --raster-regression ${CMAKE_CURRENT_BINARY_DIR}/raster-preview-regression)
+    set_tests_properties(raster_preview_regression PROPERTIES LABELS "gpu;ui;preview;raster" TIMEOUT 180)
     if(CMAKE_VERSION VERSION_LESS 3.12)
         find_package(PythonInterp REQUIRED)
         set(TEST_PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE})
@@ -274,11 +284,28 @@ if(BUILD_TESTING)
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     # Tests locate the configured Qt runtime without requiring a hand-edited PATH.
+    if(WIN32)
+        add_test(NAME background_ui_regression COMMAND ${TEST_PYTHON_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_background_ui.py $<TARGET_FILE:learnQT>
+            ${CMAKE_CURRENT_BINARY_DIR}/background-ui-regression)
+        set_tests_properties(background_ui_regression PROPERTIES LABELS "gpu;ui;background" TIMEOUT 180)
+    endif()
     get_target_property(QT_CORE_RUNTIME Qt5::Core IMPORTED_LOCATION_RELEASE)
     get_filename_component(QT_RUNTIME_DIRECTORY "${QT_CORE_RUNTIME}" DIRECTORY)
     set(SCENE_TEST_PATH "${QT_RUNTIME_DIRECTORY};$ENV{PATH}")
     string(REPLACE ";" "\\;" SCENE_TEST_PATH "${SCENE_TEST_PATH}")
-    set_tests_properties(workspace_pages_regression instanced_traversal_regression lighting_numerical_regression scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression workbench_ui_and_render_job preview_interaction_regression preview_mode_switch_regression preview_mis_mode_switch_regression display_buffer_handoff_regression renderer_batch_regression
-        import_fbx_embedded_texture import_gltf_tangent_sampler_transform
+    set_tests_properties(workspace_pages_regression instanced_traversal_regression lighting_numerical_regression scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression workbench_ui_and_render_job preview_interaction_regression preview_mode_switch_regression preview_mis_mode_switch_regression display_buffer_handoff_regression renderer_batch_regression environment_sphere_regression
+        import_fbx_embedded_texture import_gltf_tangent_sampler_transform preview_panel_regression raster_preview_regression
         PROPERTIES ENVIRONMENT "PATH=${SCENE_TEST_PATH}")
+    if(WIN32)
+        set_tests_properties(background_ui_regression PROPERTIES ENVIRONMENT "PATH=${SCENE_TEST_PATH}")
+    endif()
+    # Even with ctest -j, GPU/UI workloads share one lane to limit foreground contention.
+    get_property(LEARNQT_TESTS DIRECTORY PROPERTY TESTS)
+    foreach(test IN LISTS LEARNQT_TESTS)
+        get_test_property(${test} LABELS labels)
+        if(labels MATCHES "(^|;)gpu(;|$)")
+            set_tests_properties(${test} PROPERTIES RESOURCE_LOCK learnqt_gpu)
+        endif()
+    endforeach()
 endif()

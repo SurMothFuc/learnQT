@@ -97,7 +97,10 @@ void GLWidget::submitPrepared(std::shared_ptr<Scene> s)
     cancelDrag();
     s->document.restoreCamera(camera);
     if (thread)
+    {
         thread->submitScene(s, ++version);
+        minimumDisplayVersion = version;
+    }
     else
         Scene::getInstance().adoptPrepared(*s);
     selectionDirty = true;
@@ -218,8 +221,19 @@ void GLWidget::paintGL()
     glBindVertexArray(vao);
     if (TextureBuffer::instance()->ready())
     {
-        if (TextureBuffer::instance()->drawTexture(context(), 6, version))
+        bool fresh = false;
+        if (TextureBuffer::instance()->drawTexture(context(), 6, version, minimumDisplayVersion,
+                [&](bool current, quint64 serial) {
+                    fresh = serial != lastPresentationSerial;
+                    lastPresentationSerial = serial;
+                    program->setUniformValue("overlays", current && hasSelection && editor &&
+                                                        !editor->renderLocked);
+                }))
+        {
             emit framePresented();
+            if (fresh)
+                emit freshFramePresented();
+        }
     }
     glBindVertexArray(0);
     program->release();
@@ -231,7 +245,10 @@ void GLWidget::resizeGL(int w, int h)
     {
         thread->setNewSize(qRound(w * devicePixelRatioF()), qRound(h * devicePixelRatioF()));
         if (editor && !editor->renderLocked && !thread->jobActive())
+        {
             thread->submitDocument(editor->document, EditorController::Organization, ++version);
+            minimumDisplayVersion = version;
+        }
     }
 }
 QPointF GLWidget::project(const QVector3D &p, bool *visible) const

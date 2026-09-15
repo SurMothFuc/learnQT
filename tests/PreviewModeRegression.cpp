@@ -75,13 +75,13 @@ void learnQT::configurePreviewModeRegression()
             settings.denoise = state->phase == 8;
             settings.renderLow = false;
             settings.maxRenderFrames = state->phase >= 6 ? 0 : 8;
-            d.captureSettings(settings);
-            editor->submit(d, "Mode regression setup", EditorController::Display);
-            // Exercise the real checkbox/undo command path, not only RenderParams.
-            previewTiled->setChecked(state->phase < 6 ? state->phase % 3 != 1 : state->phase == 7);
+            // Exercise the real settings commit path, not only RenderParams.
+            settings.useTileRendering = state->phase < 6 ? state->phase % 3 != 1 : state->phase == 7;
+            applyPreviewSettingsForTesting(settings);
             state->configured = true;
             state->reports = state->presentations = 0;
-            std::cout << "Mode phase " << state->phase << " tiled=" << previewTiled->isChecked() << std::endl;
+            std::cout << "Mode phase " << state->phase
+                      << " tiled=" << editor->document.settings().useTileRendering << std::endl;
             return;
         }
         if (state->reports < (state->phase >= 6 ? 10 : 3) || state->stats.version != viewport->sceneVersion())

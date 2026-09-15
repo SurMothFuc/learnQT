@@ -65,7 +65,9 @@ vec3 SampleHdr(float xi1, float xi2, out float pdf)
 
 vec3 hdrColor(vec3 L)
 {
-    vec3 color=texture(hdrMap,toSphericalCoord(normalize(EnvironmentDirection(L,-1.0)))).rgb;
+    // Path lanes diverge at surfaces/emitters. Implicit texture derivatives are
+    // undefined there; the HDR has one level, so always sample that level explicitly.
+    vec3 color=textureLod(hdrMap,toSphericalCoord(normalize(EnvironmentDirection(L,-1.0))),0.0).rgb;
 #ifdef INSTANCED_SCENE
     color*=environmentIntensity;
 #endif

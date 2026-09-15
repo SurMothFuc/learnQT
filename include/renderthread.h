@@ -1,6 +1,7 @@
 #pragma once
 #include "renderer.h"
 #include "texturebuffer.h"
+#include <QElapsedTimer>
 #include <QMutex>
 #include <QOpenGLContext>
 #include <QThread>
@@ -60,4 +61,21 @@ class RenderThread : public QThread
     QPoint pickPixel;
     quint64 pickSerial = 0, pickSceneVersion = 0;
     bool pickPending = false;
+    // 交互回退状态：interactionClock 在相机/变换变更时重启，interactionActive 表示仍在交互窗口内。
+    QElapsedTimer interactionClock;
+    bool interactionActive = false, rasterRequested = false, keepPathtraceApplied = false;
+    // 截图等入口可强制打开光栅化交互预览，忽略交互窗口。
+    std::atomic_bool m_forceRaster{false};
+    std::atomic_bool m_interactionFallbackDisabled{false};
+
+  public:
+    void setForceRaster(bool forced)
+    {
+        m_forceRaster.store(forced);
+    }
+    // 回归入口用来关闭交互回退，专心验证路径追踪预览路径。
+    void setInteractionFallbackDisabled(bool disabled)
+    {
+        m_interactionFallbackDisabled.store(disabled);
+    }
 };

@@ -56,13 +56,13 @@ int main(int argc, char **argv)
         GLuint sourceTexture, sourceFbo = target(pg, sourceTexture);
         auto bridge = TextureBuffer::instance();
         bridge->createTexture(&producer);
-        auto publish = [&](float red, quint64 version) {
+        auto publish = [&](float red, quint64 version, quint64 minimumVersion = ~quint64(0)) {
             pg->glBindFramebuffer(GL_FRAMEBUFFER, sourceFbo);
             pg->glClearColor(red, 0, 0, 1);
             pg->glClear(GL_COLOR_BUFFER_BIT);
             // Compositing is independent of path tracing; the ambient FBO can be different at publication.
             pg->glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-            bool submitted = bridge->updateTexture(&producer, 8, 8, 0, version, sourceFbo);
+            bool submitted = bridge->updateTexture(&producer, 8, 8, 0, version, sourceFbo, minimumVersion);
             finishGpu(pg);
             return submitted;
         };
@@ -111,6 +111,26 @@ int main(int argc, char **argv)
         require(publish(.9f, 2), "Obsolete scene frames blocked the new scene");
         require(consumer.makeCurrent(&surface), "Consumer version switch failed");
         display(2, 230);
+        require(!bridge->drawTexture(&consumer, 3, 3), "Strict consumers accepted stale IDs");
+        bool exact = true;
+        require(bridge->drawTexture(&consumer, 3, 3, 2, [&](bool current, quint64) { exact = current; }),
+                "Camera updates starved completed images from the same scene");
+        require(!exact, "Stale image was marked safe for selection overlays");
+        require(!bridge->drawTexture(&consumer, 3, 3, 3),
+                "An image crossed the scene/resize version boundary");
+        require(bridge->drawTexture(&consumer, 3, 2, 2, [&](bool current, quint64) { exact = current; }) && exact,
+                "Current image lost its selection overlay eligibility");
+        finishGpu(cg);
+        require(producer.makeCurrent(&surface), "Producer interaction resume failed");
+        require(publish(.3f, 3, 2) && publish(.4f, 4, 2), "Could not queue interactive images");
+        require(!publish(.5f, 5, 2), "Camera revisions overwrote an unread compatible image");
+        require(consumer.makeCurrent(&surface), "Consumer interaction resume failed");
+        cg->glBindFramebuffer(GL_FRAMEBUFFER, destinationFbo);
+        shader.bind();
+        require(bridge->drawTexture(&consumer, 3, 5, 2), "Continuous input starved the UI");
+        unsigned char interactivePixel[4] = {};
+        cg->glReadPixels(4, 4, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, interactivePixel);
+        require(std::abs(int(interactivePixel[0]) - 102) <= 1, "UI lost the newest queued interactive image");
         shader.release();
         cg->glDeleteVertexArrays(1, &vao);
         cg->glDeleteFramebuffers(1, &destinationFbo);

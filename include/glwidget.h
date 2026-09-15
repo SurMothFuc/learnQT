@@ -50,6 +50,7 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     }
   signals:
     void framePresented();
+    void freshFramePresented();
     void sceneEdited();
     void toolChanged(int tool);
     void renderThreadReady();
@@ -74,6 +75,9 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     bool selectionDirty = true, orbit = false, pan = false;
     QPoint lastPos, dragStart;
     quint64 version = 1, pickSerial = 0;
+    // Completed interactive images may lag edits, but never cross scene/size replacement.
+    quint64 minimumDisplayVersion = 1;
+    quint64 lastPresentationSerial = 0;
     bool pickCtrl = false;
     int dragAxis = -1;
     QVector3D dragCenter, dragDirection;

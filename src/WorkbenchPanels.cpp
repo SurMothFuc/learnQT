@@ -570,7 +570,7 @@ void PerformancePanel::drawChart(QPainter &p)
     double maxFps = .1, maxTile = 1;
     for (const auto &v : history)
     {
-        maxFps = std::max(maxFps, v.fps);
+        maxFps = std::max(maxFps, v.rasterActive ? v.rasterFps : v.fps);
         maxTile = std::max(maxTile, v.tileFps);
     }
     auto niceMaximum = [](double value) {
@@ -617,7 +617,8 @@ void PerformancePanel::drawChart(QPainter &p)
         {
             const auto &v = history[i];
             QPointF point(graph.right() - (s.seconds - v.seconds) * graph.width() / 60,
-                          graph.bottom() - (curve ? v.tileFps / maxTile : v.fps / maxFps) * graph.height());
+                          graph.bottom() - (curve ? v.tileFps / maxTile :
+                              (v.rasterActive ? v.rasterFps : v.fps) / maxFps) * graph.height());
             if (i == 0)
                 path.moveTo(point);
             else
@@ -634,16 +635,18 @@ void PerformancePanel::drawChart(QPainter &p)
     p.setFont(metricFont);
     p.setPen(QColor("#70c9f0"));
     p.drawText(QRect(14, 8, width() / 2, 32), Qt::AlignVCenter,
-               tr("%1 FPS").arg(s.fps, 0, 'f', 1));
+               tr("%1 FPS").arg(s.rasterActive ? s.rasterFps : s.fps, 0, 'f', 1));
     p.setFont(bodyFont);
     p.setPen(QColor("#b3aafa"));
     p.drawText(QRect(width() / 2, 10, width() / 2 - 14, 28), Qt::AlignRight | Qt::AlignVCenter,
-               tr("块 %1 / s").arg(s.tiled ? QString::number(s.tileFps, 'f', 1) : tr("—")));
+               tr("块 %1 / s").arg(s.tiled && !s.rasterActive ? QString::number(s.tileFps, 'f', 1) : tr("—")));
     p.setPen(QColor("#8c97ad"));
-    p.drawText(QRect(14, 43, width() - 28, 18), tr("整图采样速率  ·  最近 60 秒"));
+    p.drawText(QRect(14, 43, width() - 28, 18), s.rasterActive ?
+               tr("光栅化完成帧率  ·  最近 60 秒") : tr("整图采样速率  ·  最近 60 秒"));
     p.setPen(QColor("#b4bed0"));
     const QStringList details = {
-        tr("光追 %1 ms  ·  OIDN %2 ms").arg(s.gpuMs, 0, 'f', 1).arg(s.oidnMs, 0, 'f', 1),
+        s.rasterActive ? tr("光栅化 %1 ms").arg(s.rasterMs, 0, 'f', 1) :
+            tr("光追 %1 ms  ·  OIDN %2 ms").arg(s.gpuMs, 0, 'f', 1).arg(s.oidnMs, 0, 'f', 1),
         tr("上传 %1  ·  BLAS %2  ·  TLAS %3 ms").arg(s.uploadMs, 0, 'f', 1).arg(s.blasMs, 0, 'f', 1).arg(s.tlasMs, 0, 'f', 2),
         tr("渲染资源  %1 MiB").arg(s.allocatedBytes / 1048576., 0, 'f', 1),
         tr("历史 %1 ms  ·  合成 %2 ms").arg(s.gpuHistoryMs, 0, 'f', 1).arg(s.gpuCompositeMs, 0, 'f', 1)
@@ -651,6 +654,88 @@ void PerformancePanel::drawChart(QPainter &p)
     for (int i = 0; i < details.size(); ++i)
         p.drawText(QRect(14, height() - 82 + i * 19, width() - 28, 19),
                    p.fontMetrics().elidedText(details[i], Qt::ElideRight, width() - 28));
+}
+PreviewSettingsPanel::PreviewSettingsPanel(QWidget *p) : QWidget(p)
+{
+    setObjectName("previewSettingsPanel");
+    auto layout = new QFormLayout(this);
+    layout->setContentsMargins(12, 10, 12, 8);
+    layout->setSpacing(8);
+    layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    layout->setRowWrapPolicy(QFormLayout::WrapLongRows);
+    auto spin = [&](const QString &label, int lo, int hi, int value) {
+        auto s = new QSpinBox;
+        s->setRange(lo, hi);
+        s->setValue(value);
+        s->setKeyboardTracking(false);
+        layout->addRow(label, s);
+        return s;
+    };
+    samples = spin(tr("预览 spp（0 无限）"), 0, 1000000, 0);
+    bounces = spin(tr("预览反弹数"), 1, 64, 4);
+    tile = spin(tr("预览块大小"), 16, 1024, 128);
+    tiled = new QCheckBox(tr("分块预览"));
+    lowResolution = new QCheckBox(tr("降低预览分辨率"));
+    lowResolution->setObjectName("previewLowResolution");
+    denoise = new QCheckBox(tr("预览降噪"));
+    layout->addRow(tiled);
+    layout->addRow(lowResolution);
+    layout->addRow(denoise);
+    interaction = new QComboBox;
+    interaction->addItems({tr("保持路径追踪"), tr("光栅化"), tr("降低分辨率路径追踪")});
+    interaction->setObjectName("interactionMode");
+    interaction->setToolTip(tr("拖动相机或对象时的预览方式；停手后回到路径追踪继续累积。"));
+    layout->addRow(tr("交互期间"), interaction);
+    rasterLock = new QCheckBox(tr("锁定光栅化（始终）"));
+    rasterLock->setObjectName("rasterLock");
+    idle = spin(tr("回到路径追踪延迟 ms"), 50, 2000, 250);
+    idle->setObjectName("interactionIdle");
+    layout->addRow(rasterLock);
+    // 只有用户操作才提交；setValues() 用 QSignalBlocker 同步文档值，不会触发这里。
+    auto publish = [this] {
+        if (syncing)
+            return;
+        emit changed(values());
+    };
+    for (auto s : {samples, bounces, tile, idle})
+        connect(s, QOverload<int>::of(&QSpinBox::valueChanged), this, [publish](int) { publish(); });
+    for (auto c : {tiled, lowResolution, denoise, rasterLock})
+        connect(c, &QCheckBox::toggled, this, [publish](bool) { publish(); });
+    connect(interaction, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            [publish](int) { publish(); });
+}
+// setValues() 期间用 syncing 屏蔽提交，避免程序性同步被当成用户编辑再提交一次。
+void PreviewSettingsPanel::setValues(const RenderParams::Snapshot &settings)
+{
+    syncing = true;
+    originalSettings = settings;
+    QSignalBlocker blockSamples(samples), blockBounces(bounces), blockTile(tile), blockIdle(idle);
+    QSignalBlocker blockTiled(tiled), blockLow(lowResolution), blockDenoise(denoise);
+    QSignalBlocker blockLock(rasterLock), blockInteraction(interaction);
+    samples->setValue(settings.maxRenderFrames);
+    bounces->setValue(settings.maxBounces);
+    tile->setValue(settings.tileSize);
+    tiled->setChecked(settings.useTileRendering);
+    lowResolution->setChecked(settings.renderLow);
+    denoise->setChecked(settings.denoise);
+    interaction->setCurrentIndex(qBound(0, settings.interactionMode, 2));
+    rasterLock->setChecked(settings.rasterLocked);
+    idle->setValue(settings.interactionIdleMs);
+    syncing = false;
+}
+RenderParams::Snapshot PreviewSettingsPanel::values() const
+{
+    RenderParams::Snapshot settings = originalSettings;
+    settings.maxRenderFrames = samples->value();
+    settings.maxBounces = bounces->value();
+    settings.tileSize = tile->value();
+    settings.useTileRendering = tiled->isChecked();
+    settings.renderLow = lowResolution->isChecked();
+    settings.denoise = denoise->isChecked();
+    settings.interactionMode = interaction->currentIndex();
+    settings.rasterLocked = rasterLock->isChecked();
+    settings.interactionIdleMs = idle->value();
+    return settings;
 }
 ResultView::ResultView(QWidget *p) : QGraphicsView(p), canvas(this)
 {

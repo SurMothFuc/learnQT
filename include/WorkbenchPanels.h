@@ -1,6 +1,8 @@
 #pragma once
 #include "EditorController.h"
 #include "RenderJob.h"
+#include "RenderParams.h"
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QGraphicsPixmapItem>
@@ -8,6 +10,7 @@
 #include <QLabel>
 #include <QPixmap>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QWidget>
 class MixedSpin : public QDoubleSpinBox
 {
@@ -75,6 +78,31 @@ class LightInspector : public QWidget
     bool restoring = false;
     void refresh();
     void edit(int field, double value);
+};
+// 交互预览预算的紧凑编辑面板。视口顶部 chrome 条的弹出菜单用它，
+// 顶栏弹层与非模态详情窗共用它，两边读写同一份 SceneDocument 设置。
+class PreviewSettingsPanel : public QWidget
+{
+    Q_OBJECT
+  public:
+    explicit PreviewSettingsPanel(QWidget *parent = nullptr);
+    // 用当前设置填充控件，不发出 changed()。
+    void setValues(const RenderParams::Snapshot &settings);
+    RenderParams::Snapshot values() const;
+  signals:
+    void changed(const RenderParams::Snapshot &settings);
+  private:
+    QSpinBox *samples;
+    QSpinBox *bounces;
+    QSpinBox *tile;
+    QCheckBox *tiled;
+    QCheckBox *lowResolution;
+    QCheckBox *denoise;
+    QComboBox *interaction;
+    QCheckBox *rasterLock;
+    QSpinBox *idle;
+    bool syncing = false;
+    RenderParams::Snapshot originalSettings;
 };
 class ResultView : public QGraphicsView
 {

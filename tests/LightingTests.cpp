@@ -321,8 +321,27 @@ static void alphaDeltaTests(Audit& a) {
     auto tir=a.mean(R"(
 void main(){Material m=getMaterial(0);vec3 V=normalize(vec3(.9,0,.43589));
 BsdfSample s=SampleDisneyBSDF(V,vec3(0,0,1),m,1.5,vec3(rand(),rand(),rand()));
-outputColor=vec4(s.weight.r,float(s.delta),dot(s.direction,reflect(-V,vec3(0,0,1))),s.pdf);})");
-    checkNear(tir[0],1,1e-6,"total internal reflection weight");checkNear(tir[1],1,0,"TIR is delta");checkNear(tir[2],1,1e-5,"TIR direction");checkNear(tir[3],0,0,"delta has no solid-angle density");
+outputColor=vec4(s.weight.r,float(s.delta),0,s.pdf);})");
+    // Read actual directions and compare against a CPU double-precision oracle.
+    // A GPU dot(normalize(...), normalize(...)) also tests driver constant folding,
+    // and produced 0.999869 on Intel even when the returned direction was correct.
+    auto tirDirections=a.run(R"(
+void main(){Material m=getMaterial(0);float x=.76+.23*gl_FragCoord.x/float(width);
+vec3 V=vec3(x,0,sqrt(1.0-x*x));
+BsdfSample s=SampleDisneyBSDF(V,vec3(0,0,1),m,1.5,vec3(rand(),rand(),rand()));
+outputColor=vec4(s.direction,float(s.delta));})");
+    double maxDirectionError=0;
+    for(int y=0;y<Audit::resolution;++y) for(int x=0;x<Audit::resolution;++x) {
+        const double vx=.76+.23*(x+.5)/Audit::resolution;
+        const double expected[]={-vx,0,std::sqrt(1-vx*vx)};
+        const size_t pixel=4*(y*Audit::resolution+x);
+        for(int c=0;c<3;++c)
+            maxDirectionError=std::max(maxDirectionError,std::abs(tirDirections[pixel+c]-expected[c]));
+        check(tirDirections[pixel+3]==1,"TIR direction sweep remains delta");
+    }
+    checkNear(tir[0],1,1e-6,"total internal reflection weight");checkNear(tir[1],1,0,"TIR is delta");
+    checkNear(maxDirectionError,0,1e-5,"TIR maximum direction error (CPU reference)");
+    checkNear(tir[3],0,0,"delta has no solid-angle density");
     glass[37]=1;glass[45]=.5f;a.setGeometry(glass);
     checkNear(a.mean(surfacePath)[0],1,.001,"index-matched rough transmission is straight-through delta");
     auto mixed=triangle(0);mixed[37]=1.5f;mixed[45]=0;a.setGeometry(mixed);

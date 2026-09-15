@@ -15,6 +15,12 @@ def read(path):
     return (ROOT / path).read_text(encoding="utf-8-sig")
 
 
+def read_shader(path):
+    path = Path(path)
+    return re.sub(r'#include\s+"([^"]+)"',
+                  lambda match: read_shader(path.parent / match[1]), read(path))
+
+
 def read_glb_json(path):
     data = path.read_bytes()
     magic, version, declared_length = struct.unpack_from("<4sII", data)
@@ -45,7 +51,7 @@ def test_cpu_import_and_gpu_sampling_contract_stays_connected():
     scene = read("src/Scene.cpp")
     defines = read("shaders/include/defines.glsl")
     uniforms = read("shaders/include/uniforms.glsl")
-    material_shader = read("shaders/include/bvh_material.glsl")
+    material_shader = read_shader("shaders/include/bvh_material.glsl")
     light_shader = read("shaders/include/light_sampling.glsl")
     renderer = read("src/renderer.cpp")
     main_window = read("src/learnQT.cpp")

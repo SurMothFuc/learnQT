@@ -5,6 +5,7 @@
 #include <QCheckBox>
 #include <QCloseEvent>
 #include <QComboBox>
+#include <QDialog>
 #include <QDir>
 #include <QDockWidget>
 #include <QFileInfo>
@@ -33,6 +34,8 @@ class learnQT : public QMainWindow
     void syncWorkspaceAvailability();
     void rememberScene(const QString &path);
     void configureWorkspaceRegression();
+    void configurePreviewPanelRegression();
+    void configureRasterRegression();
     EditorController *editor;
     GLWidget *viewport;
     SceneTreeModel *treeModel;
@@ -50,13 +53,13 @@ class learnQT : public QMainWindow
     QStringList m_sessionScenes;
     QSet<QString> expanded;
     bool syncingSelection = false;
-    QCheckBox *m_denoise, *outputDenoise;
+    QCheckBox *outputDenoise;
     QSpinBox *outputWidth, *outputHeight, *outputSamples, *outputTile, *outputBounces;
-    QSpinBox *previewSamples, *previewTile, *previewBounces;
-    QCheckBox *previewTiled, *previewLow;
+    PreviewSettingsPanel *previewChromePanel = nullptr, *previewDetailPanel = nullptr;
+    QDialog *previewDialog = nullptr;
     QAction *renderAction, *pauseAction, *stopAction, *undoAction, *redoAction;
     QList<QAction *> editActions;
-    QLabel *taskLabel, *statsLabel;
+    QLabel *taskLabel, *statsLabel, *previewBadge = nullptr;
     QProgressBar *progress;
     QImage lastResult;
     RenderJobState jobState = RenderJobState::Idle;
@@ -81,7 +84,16 @@ class learnQT : public QMainWindow
     void contextMenu(QPoint position);
     void updateTitle();
     void logMessage(const QString &message);
+    void commitPreviewSettings(const RenderParams::Snapshot &settings);
+    // 供界面回归设置交互预览参数，走的正是 UI 的提交路径。
+    void applyPreviewSettingsForTesting(const RenderParams::Snapshot &settings)
+    {
+        commitPreviewSettings(settings);
+    }
+    void syncPreviewControls(const RenderParams::Snapshot &settings);
+    void showPreviewSettingsDialog();
     void configureRegressionCapture();
+    void configureUiCapture();
     void configureSceneRegression();
     void captureRegressionFrame();
     void configureWorkbenchRegression();

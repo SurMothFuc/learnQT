@@ -3,6 +3,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions_3_3_Core>
 #include <atomic>
+#include <functional>
 class TextureBuffer
 {
   public:
@@ -14,8 +15,10 @@ class TextureBuffer
     void createTexture(QOpenGLContext *);
     void deleteTexture(QOpenGLContext *);
     bool updateTexture(QOpenGLContext *, int width, int height, GLuint pickFbo = 0, quint64 version = 0,
-                       GLuint beautyFbo = 0);
-    bool drawTexture(QOpenGLContext *, int count, quint64 version);
+                       GLuint beautyFbo = 0, quint64 minimumVersion = ~quint64(0));
+    bool drawTexture(QOpenGLContext *, int count, quint64 version,
+                     quint64 minimumVersion = ~quint64(0),
+                     const std::function<void(bool, quint64)> &beforeDraw = {});
 
   private:
     struct Slot
