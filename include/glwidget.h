@@ -48,6 +48,25 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     {
         return version;
     }
+    // 描边绘制统计：只有 outstandingStaleIdsFrames() 是可观测的缺陷信号——它是「槽明明是最新版本、
+    // 但 ID 图还是上一次拾取重绘的结果」却把描边放行的次数。相机拖动中允许出现
+    // staleHiddenFrames()（描边被隐藏），但绝不允许前者。
+    quint64 staleHiddenFrames() const
+    {
+        return staleHiddenCount;
+    }
+    quint64 overlayDrawnFrames() const
+    {
+        return overlayDrawnCount;
+    }
+    quint64 outstandingStaleIdsFrames() const
+    {
+        return outstandingStaleCount;
+    }
+    void resetOverlayCounters()
+    {
+        staleHiddenCount = overlayDrawnCount = outstandingStaleCount = 0;
+    }
   signals:
     void framePresented();
     void freshFramePresented();
@@ -91,5 +110,6 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     void cancelDrag();
     void publishCamera();
     bool hasSelection = false;
+    quint64 staleHiddenCount = 0, overlayDrawnCount = 0, outstandingStaleCount = 0;
     void updateEditorOverlay();
 };

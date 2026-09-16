@@ -33,7 +33,7 @@ void TextureBuffer::deleteTexture(QOpenGLContext *c)
     displayed = -1;
 }
 bool TextureBuffer::updateTexture(QOpenGLContext *c, int w, int h, GLuint pickFbo, quint64 version,
-                                  GLuint beautyFbo, quint64 minimumVersion)
+                                  GLuint beautyFbo, quint64 minimumVersion, quint64 carriedPickVersion)
 {
     auto f = c->versionFunctions<QOpenGLFunctions_3_3_Core>();
     auto signaled = [&](GLsync s) {
@@ -107,13 +107,16 @@ bool TextureBuffer::updateTexture(QOpenGLContext *c, int w, int h, GLuint pickFb
     QMutexLocker lock(&mutex);
     b.serial = ++serial;
     b.version = version;
+    // 只有拾取缓冲恰好是这个版本重绘的，ID 图才与 beauty 配对。拾取是延迟补绘的，
+    // 版本追平并不代表 ID 图已经跟上，所以这个标记必须随拷贝一起记录。
+    b.pickFresh = pickFbo != 0 && carriedPickVersion == version;
     b.pending = true;
     b.writing = false;
     m_ready = true;
     return true;
 }
-bool TextureBuffer::drawTexture(QOpenGLContext *c, int count, quint64 version,
-                                quint64 minimumVersion, const std::function<void(bool, quint64)> &beforeDraw)
+bool TextureBuffer::drawTexture(QOpenGLContext *c, int count, quint64 version, quint64 minimumVersion,
+                                const std::function<void(bool, bool, quint64)> &beforeDraw)
 {
     auto f = c->versionFunctions<QOpenGLFunctions_3_3_Core>();
     int index;
@@ -156,7 +159,7 @@ bool TextureBuffer::drawTexture(QOpenGLContext *c, int count, quint64 version,
     }
     auto &b = buffers[index];
     if (beforeDraw)
-        beforeDraw(b.version == version, b.serial);
+        beforeDraw(b.version == version, b.pickFresh, b.serial);
     f->glActiveTexture(GL_TEXTURE0);
     f->glBindTexture(GL_TEXTURE_2D, b.texture);
     f->glActiveTexture(GL_TEXTURE1);

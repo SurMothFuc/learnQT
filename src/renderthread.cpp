@@ -482,11 +482,11 @@ void RenderThread::run()
                                 minimumPresentationVersion = currentVersion;
                             }
                             segmentClock.restart();
-                            if (TextureBuffer::instance()->updateTexture(context, size.width(), size.height(),
-                                                                         job ? 0 : renderer.pickFramebuffer(),
-                                                                         currentVersion,
-                                                                         renderer.displayFramebuffer(),
-                                                                         minimumPresentationVersion))
+                            if (TextureBuffer::instance()->updateTexture(
+                                    context, size.width(), size.height(),
+                                    job ? 0 : renderer.pickFramebuffer(), currentVersion,
+                                    renderer.displayFramebuffer(), minimumPresentationVersion,
+                                    job ? ~quint64(0) : renderer.pickBufferVersion()))
                             {
                                 diagnostics.presentMs += segmentClock.nsecsElapsed() / 1e6;
                                 presentationPending = true;

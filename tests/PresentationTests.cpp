@@ -56,13 +56,15 @@ int main(int argc, char **argv)
         GLuint sourceTexture, sourceFbo = target(pg, sourceTexture);
         auto bridge = TextureBuffer::instance();
         bridge->createTexture(&producer);
-        auto publish = [&](float red, quint64 version, quint64 minimumVersion = ~quint64(0)) {
+        auto publish = [&](float red, quint64 version, quint64 minimumVersion = ~quint64(0),
+                           quint64 pickVersion = ~quint64(0), GLuint idsFbo = 0) {
             pg->glBindFramebuffer(GL_FRAMEBUFFER, sourceFbo);
             pg->glClearColor(red, 0, 0, 1);
             pg->glClear(GL_COLOR_BUFFER_BIT);
             // Compositing is independent of path tracing; the ambient FBO can be different at publication.
             pg->glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-            bool submitted = bridge->updateTexture(&producer, 8, 8, 0, version, sourceFbo, minimumVersion);
+            bool submitted =
+                bridge->updateTexture(&producer, 8, 8, idsFbo, version, sourceFbo, minimumVersion, pickVersion);
             finishGpu(pg);
             return submitted;
         };
@@ -113,12 +115,14 @@ int main(int argc, char **argv)
         display(2, 230);
         require(!bridge->drawTexture(&consumer, 3, 3), "Strict consumers accepted stale IDs");
         bool exact = true;
-        require(bridge->drawTexture(&consumer, 3, 3, 2, [&](bool current, quint64) { exact = current; }),
+        require(bridge->drawTexture(&consumer, 3, 3, 2,
+                                    [&](bool current, bool, quint64) { exact = current; }),
                 "Camera updates starved completed images from the same scene");
         require(!exact, "Stale image was marked safe for selection overlays");
         require(!bridge->drawTexture(&consumer, 3, 3, 3),
                 "An image crossed the scene/resize version boundary");
-        require(bridge->drawTexture(&consumer, 3, 2, 2, [&](bool current, quint64) { exact = current; }) && exact,
+        require(bridge->drawTexture(&consumer, 3, 2, 2,
+                                    [&](bool current, bool, quint64) { exact = current; }) && exact,
                 "Current image lost its selection overlay eligibility");
         finishGpu(cg);
         require(producer.makeCurrent(&surface), "Producer interaction resume failed");
@@ -135,7 +139,33 @@ int main(int argc, char **argv)
         cg->glDeleteVertexArrays(1, &vao);
         cg->glDeleteFramebuffers(1, &destinationFbo);
         cg->glDeleteTextures(1, &destinationTexture);
+        // 拾取缓冲是延迟补绘的：版本匹配只说明画面新，ID 图未必是这个版本画的。
+        // UI 必须靠 pickFresh 而不是 current 决定是否画选中描边。
+        GLuint idsTexture = 0, idsFbo = target(pg, idsTexture);
+        bool overlays = true, pickFresh = true;
+        require(publish(.1f, 6, ~quint64(0), 4, idsFbo), "Pick-stale frame was not published");
+        require(consumer.makeCurrent(&surface), "Consumer pick-fresh resume failed");
+        require(bridge->drawTexture(&consumer, 3, 6, 6, [&](bool current, bool freshIds, quint64) {
+                    overlays = current;
+                    pickFresh = freshIds;
+                }),
+                "UI could not acquire the pick-stale frame");
+        require(overlays, "The pick-stale frame was not the current version");
+        require(!pickFresh, "Stale IDs were accepted as a fresh pick buffer");
+        finishGpu(cg);
+        require(producer.makeCurrent(&surface), "Producer pick-fresh resume failed");
+        require(publish(.2f, 6, ~quint64(0), 6, idsFbo), "Pick-fresh frame was not published");
+        require(consumer.makeCurrent(&surface), "Consumer pick-fresh check failed");
+        require(bridge->drawTexture(&consumer, 3, 6, 6, [&](bool current, bool freshIds, quint64) {
+                    overlays = current;
+                    pickFresh = freshIds;
+                }),
+                "UI could not acquire the pick-fresh frame");
+        require(overlays && pickFresh, "A matching pick generation was not accepted for overlays");
+        finishGpu(cg);
         require(producer.makeCurrent(&surface), "Producer cleanup failed");
+        pg->glDeleteFramebuffers(1, &idsFbo);
+        pg->glDeleteTextures(1, &idsTexture);
         bridge->deleteTexture(&producer);
         pg->glDeleteFramebuffers(1, &sourceFbo);
         pg->glDeleteTextures(1, &sourceTexture);

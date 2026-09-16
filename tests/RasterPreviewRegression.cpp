@@ -204,6 +204,8 @@ void learnQT::configureRasterRegression()
         Camera base;
         QSize fullSize, lowSize;
         QStringList notes;
+        // 拾取描边观察用：被选中的对象 id。
+        QString watchTarget;
     };
     auto state = std::make_shared<State>();
     connect(viewport, &GLWidget::freshFramePresented, this, [state] { ++state->freshFrames; });
@@ -595,6 +597,84 @@ void learnQT::configureRasterRegression()
                                 .arg(round.interactionMode)
                                 .arg(round.rasterLocked)
                                 .arg(round.interactionIdleMs);
+            // 7) 拾取延迟补绘不能把旧 ID 图当成当前画面放行：
+            //    拖动相机后停手，允许出现「ID 图过期」的帧，但不允许在选定对象的情况下
+            //    用这种帧画选中描边（那会在停手瞬间把描边留在旧位置）。
+            aimCamera(true);
+            viewport->resetOverlayCounters();
+            state->phase = 9;
+            state->phaseClock.start();
+            return;
+        }
+        // 9) 先选中一个对象，再连续拖动相机，然后停手观察。
+        if (state->phase == 9)
+        {
+            if (state->phaseClock.elapsed() < 800)
+                return;
+            QString target;
+            for (auto v : editor->document.root["objects"].toArray())
+                if (!v.toObject()["id"].toString().isEmpty())
+                {
+                    target = v.toObject()["id"].toString();
+                    break;
+                }
+            if (target.isEmpty())
+            {
+                state->notes << QStringLiteral("overlayWatch skipped: scene has no object to select");
+                finish(QString());
+                return;
+            }
+            editor->select({target});
+            state->watchTarget = target;
+            viewport->resetOverlayCounters();
+            state->phase = 10;
+            state->phaseClock.start();
+            return;
+        }
+        // 10) 连续相机输入到一个新版本，模拟拖动中；然后停手等补绘与补发布完成。
+        if (state->phase == 10)
+        {
+            if (state->phaseClock.elapsed() < 900)
+            {
+                nudgeCamera(0.6);
+                return;
+            }
+            restoreCamera();
+            state->phase = 11;
+            state->phaseClock.start();
+            return;
+        }
+        if (state->phase == 11)
+        {
+            // 等相机变化彻底停下（版本静默）后再清零计数：拖动过程中的旧 ID 帧属于
+            // 「描边被隐藏」的正常阶段，这里要钉住的是停稳之后不许再出现旧 ID 描边。
+            if (state->phaseClock.elapsed() < 600)
+                return;
+            viewport->resetOverlayCounters();
+            state->phase = 12;
+            state->phaseClock.start();
+            return;
+        }
+        if (state->phase == 12)
+        {
+            if (state->phaseClock.elapsed() < 1800)
+                return;
+            if (viewport->outstandingStaleIdsFrames() != 0)
+            {
+                finish(QStringLiteral("Stale pick IDs outlined a frame %1 time(s) after the camera "
+                                      "had settled")
+                           .arg(viewport->outstandingStaleIdsFrames()));
+                return;
+            }
+            if (viewport->overlayDrawnFrames() == 0)
+            {
+                finish(QStringLiteral("Selection outline never drew after the camera stopped"));
+                return;
+            }
+            state->notes << QStringLiteral("pickFreshFrames=%1 staleHidden=%2 target=%3")
+                                .arg(viewport->overlayDrawnFrames())
+                                .arg(viewport->staleHiddenFrames())
+                                .arg(state->watchTarget);
             finish(QString());
         }
     });

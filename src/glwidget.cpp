@@ -217,7 +217,9 @@ void GLWidget::paintGL()
     program->setUniformValue("ids", 1);
     program->setUniformValue("selection", 2);
     program->setUniformValue("count", editor ? editor->document.root["objects"].toArray().size() + 1 : 1);
-    program->setUniformValue("overlays", hasSelection && editor && !editor->renderLocked);
+    // ID 图是延迟补绘的：只有「槽是当前版本」且「这版 ID 图就是这个版本画的」才允许画选中描边。
+    // 两个条件缺一：版本匹配只能说明画面新，不能说明拾取已经跟上。
+    program->setUniformValue("overlays", false);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_BUFFER, selectionTexture);
     glBindVertexArray(vao);
@@ -225,10 +227,20 @@ void GLWidget::paintGL()
     {
         bool fresh = false;
         if (TextureBuffer::instance()->drawTexture(context(), 6, version, minimumDisplayVersion,
-                [&](bool current, quint64 serial) {
+                [&](bool current, bool pickFresh, quint64 serial) {
                     fresh = serial != lastPresentationSerial;
                     lastPresentationSerial = serial;
-                    program->setUniformValue("overlays", current && hasSelection && editor &&
+                    // 版本已是最新、但 ID 图还是上一次拾取重绘的结果：这说明延迟补绘与发布
+                    // 之间出现了空档，此时若把描边放行就会画在旧位置上。
+                    if (current && !pickFresh)
+                    {
+                        ++staleHiddenCount;
+                        if (hasSelection && editor && !editor->renderLocked)
+                            ++outstandingStaleCount;
+                    }
+                    if (current && pickFresh && hasSelection && editor && !editor->renderLocked)
+                        ++overlayDrawnCount;
+                    program->setUniformValue("overlays", current && pickFresh && hasSelection && editor &&
                                                         !editor->renderLocked);
                 }))
         {

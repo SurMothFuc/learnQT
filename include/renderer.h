@@ -97,6 +97,11 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     {
         return stats.pickPasses;
     }
+    // 拾取缓冲当前对应的版本；与某一帧版本相同才说明该帧的 ID 图是新鲜的。
+    quint64 pickBufferVersion() const
+    {
+        return pickVersion;
+    }
     void requestPick(QPoint pixel, quint64 request);
     bool pollPick(quint64 &request, unsigned &id, quint64 &version);
     GLuint pickFramebuffer() const
