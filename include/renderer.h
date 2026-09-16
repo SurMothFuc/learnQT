@@ -79,7 +79,24 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     void submitGpuBoundary();
     void pollGpuTimers();
     quint64 allocatedBytes() const;
-    void updatePick(int width, int height, quint64 version);
+    // 返回本次调用是否真的重绘了拾取缓冲；只有版本或尺寸变化才会重绘。
+    bool updatePick(int width, int height, quint64 version);
+    // 最近一次拾取 pass 的 GPU 执行耗时，用于区分拾取与光栅化预览的开销。
+    double pickGpuMs() const
+    {
+        return stats.pickMs;
+    }
+    // 取走自上次调用以来新完成的拾取耗时；没有新结果时返回 0，避免重复累计同一帧。
+    double takePickGpuMs()
+    {
+        const double completed = pickCompletedMs;
+        pickCompletedMs = 0;
+        return completed;
+    }
+    int pickPasses() const
+    {
+        return stats.pickPasses;
+    }
     void requestPick(QPoint pixel, quint64 request);
     bool pollPick(quint64 &request, unsigned &id, quint64 &version);
     GLuint pickFramebuffer() const
@@ -320,6 +337,11 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     // 光栅化交互预览的 GPU 计时查询，单独一个槽位，不参与路径追踪的三段计时。
     GLuint rasterTimerQuery = 0;
     bool rasterTimerPending = false;
+    // GPU 拾取 pass 的计时查询，同样独立于路径追踪与光栅化的计时槽位。
+    GLuint pickTimerQuery = 0;
+    bool pickTimerPending = false;
+    // 最近一次查询完成时结算的耗时，由渲染线程取走后清零。
+    double pickCompletedMs = 0;
     double estimatedTileMs = 0;
     QElapsedTimer compositeClock;
     bool displayDirty = true, firstComposite = true;

@@ -193,7 +193,8 @@ if(BUILD_TESTING)
         --scene-switch-regression ${CMAKE_CURRENT_BINARY_DIR}/scene-ui-regression)
     set_tests_properties(scene_ui_switch_regression PROPERTIES LABELS "scene;gpu;ui" TIMEOUT 300)
     add_executable(scene_tests tests/SceneTests.cpp src/Scene.cpp src/SceneRuntime.cpp src/SceneDocument.cpp src/SceneGraph.cpp src/SceneEncoding.cpp
-        tests/EditorTests.cpp src/EditorController.cpp src/SceneTreeModel.cpp ${CMAKE_CURRENT_BINARY_DIR}/include/moc_EditorController.cpp
+        tests/EditorTests.cpp src/EditorController.cpp src/SceneTreeModel.cpp src/UiDiagnostics.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/include/moc_EditorController.cpp
         src/SceneAssets.cpp src/Mesh.cpp src/Camera.cpp src/BVH.cpp src/common.cpp src/hdrloader.cpp src/RenderParams.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/include/moc_RenderParams.cpp)
     target_include_directories(scene_tests PRIVATE include libs/Assimp/include)

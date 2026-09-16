@@ -1,5 +1,7 @@
 #include "WorkspaceUi.h"
 #include "learnQT.h"
+#include "SceneTreeModel.h"
+#include "UiDiagnostics.h"
 #include <QApplication>
 #include <QDir>
 #include <QElapsedTimer>
@@ -32,7 +34,21 @@ void learnQT::configureRasterRegression()
             int stage = -1, images = 0, paints = 0, fresh = 0;
             double gpuSum = 0;
             int reports = 0;
+            double framesSum = 0, windowSum = 0, boundaryWaitSum = 0, rasterSubmitSum = 0;
+            double ticksSum = 0, loopSum = 0, cadenceSleepSum = 0, tailSum = 0;
+            int pickMaxPasses = 0;
+            double pickMaxMs = 0;
+            double pickSubmitSum = 0, pickGpuSum = 0, pickPassSum = 0, presentSum = 0;
+            // 直接量墙钟间隔：发布间隔与 UI 心跳间隔，避免只靠率估计误判。
+            QElapsedTimer sinceImage, sinceTick;
+            double lastImageMs = 0, maxImageGapMs = 0;
+            int uiTicks = 0;
+            double lastUiTickMs = 0, maxUiGapMs = 0;
+            UiDiagnostics editor, editorLive;
             RenderStats stats;
+            QJsonObject editorSlots, editorSlotMax;
+            int treeItems = 0;
+            quint64 treeDataCalls = 0;
             QJsonArray results;
             Camera camera;
         };
@@ -40,10 +56,29 @@ void learnQT::configureRasterRegression()
         auto timer = new QTimer(this);
         timer->setInterval(16);
         auto attach = [this, p] {
-            connect(viewport->renderThread(), &RenderThread::imageReady, this, [p] { ++p->images; });
+            connect(viewport->renderThread(), &RenderThread::imageReady, this, [p] {
+                ++p->images;
+                if (p->sinceImage.isValid())
+                    p->maxImageGapMs = std::max(p->maxImageGapMs, double(p->sinceImage.elapsed()));
+                p->sinceImage.restart();
+            });
             connect(viewport->renderThread(), &RenderThread::statsReady, this, [p](RenderStats s) {
                 p->stats = s;
                 p->gpuSum += s.rasterMs;
+                p->framesSum += s.frames;
+                p->ticksSum += s.ticks;
+                p->windowSum += s.windowMs;
+                p->loopSum += s.loopMs;
+                p->cadenceSleepSum += s.cadenceSleepMs;
+                p->tailSum += s.tailMs;
+                p->boundaryWaitSum += s.boundaryWaitMs;
+                p->rasterSubmitSum += s.rasterSubmitMs;
+                p->pickSubmitSum += s.pickSubmitMs;
+                p->pickGpuSum += s.pickWindowMs;
+                p->pickPassSum += s.pickPasses;
+                p->pickMaxPasses = std::max(p->pickMaxPasses, s.pickPasses);
+                p->pickMaxMs = std::max(p->pickMaxMs, s.pickMaxMs);
+                p->presentSum += s.presentMs;
                 ++p->reports;
             });
         };
@@ -53,6 +88,8 @@ void learnQT::configureRasterRegression()
         connect(viewport, &GLWidget::freshFramePresented, this, [p] { ++p->fresh; });
         connect(timer, &QTimer::timeout, this, [this, p, timer, output] {
             if (!viewport->renderThread() || m_loading) return;
+            // UI 线程上采样编辑器提交计数；相机拖动时这些槽函数是同步执行的。
+            p->editorLive = UiDiagnostics::snapshot();
             if (p->stage == -1) {
                 auto d = editor->document;
                 auto s = d.settings();
@@ -60,8 +97,13 @@ void learnQT::configureRasterRegression()
                 d.captureSettings(s);
                 editor->submit(d, "Raster profile", EditorController::Display);
                 p->camera = viewport->camera;
+                UiDiagnostics::instance().reset();
                 p->stage = 0; p->clock.start();
             }
+            if (p->sinceTick.isValid())
+                p->maxUiGapMs = std::max(p->maxUiGapMs, double(p->sinceTick.elapsed()));
+            p->sinceTick.restart();
+            ++p->uiTicks;
             if (p->stage == 2) {
                 auto camera = p->camera;
                 camera.processMouseScroll(12.0 * std::sin(p->clock.elapsed() / 500.0));
@@ -70,16 +112,65 @@ void learnQT::configureRasterRegression()
             if (p->stage == 0 && (!p->stats.rasterActive || p->images < 3)) return;
             if (p->clock.elapsed() < (p->stage == 0 ? 2000 : 5000)) return;
             if (p->stage > 0) {
-                p->results.append(QJsonObject{{"stage", p->stage == 1 ? "static" : "camera"},
+                QJsonObject slotTotals;
+                for (int i = 0; i < UiSlotCount; ++i)
+                    slotTotals.insert(QString::fromLatin1(UiDiagnostics::slotName(i)),
+                                      p->editorLive.slotMs[i]);
+                p->editorSlots = slotTotals;
+                QJsonObject slotMax;
+                for (int i = 0; i < UiSlotCount; ++i)
+                    slotMax.insert(QString::fromLatin1(UiDiagnostics::slotName(i)),
+                                   p->editorLive.maxSlotMs[i]);
+                p->editorSlotMax = slotMax;
+                if (auto *model = findChild<SceneTreeModel *>())
+                {
+                    p->treeItems = model->itemCount();
+                    p->treeDataCalls = model->dataCalls;
+                }
+                const double reports = std::max(1, p->reports);
+                const char *stageName = p->stage == 1 ? "static" : (p->stage == 2 ? "camera" : "idle");
+                p->results.append(QJsonObject{{"stage", stageName},
                     {"seconds", p->clock.elapsed() / 1000.}, {"images", p->images},
                     {"paints", p->paints}, {"publishedFps", p->images * 1000. / p->clock.elapsed()},
                     {"paintFps", p->paints * 1000. / p->clock.elapsed()},
                     {"displayedFps", p->fresh * 1000. / p->clock.elapsed()},
                     {"reportedRasterFps", p->stats.rasterFps},
-                    {"rasterGpuMs", p->gpuSum / std::max(1, p->reports)},
+                    {"rasterGpuMs", p->gpuSum / reports},
+                    // 每帧耗时分解：窗口总时长、等待 GPU 边界、光栅化提交、拾取提交/GPU、显示拷贝。
+                    {"framesPerReport", p->framesSum / reports},
+                    {"ticksPerReport", p->ticksSum / reports},
+                    {"windowMs", p->windowSum / reports},
+                    {"loopMs", p->loopSum / reports},
+                    {"cadenceSleepMs", p->cadenceSleepSum / reports},
+                    {"tailMs", p->tailSum / reports},
+                    {"boundaryWaitMs", p->boundaryWaitSum / reports},
+                    {"rasterSubmitMs", p->rasterSubmitSum / reports},
+                    {"pickSubmitMs", p->pickSubmitSum / reports},
+                    {"pickGpuMs", p->pickGpuSum / reports},
+                    {"pickPasses", p->pickPassSum / reports},
+                    {"pickMaxPasses", p->pickMaxPasses},
+                    {"pickMaxMs", p->pickMaxMs},
+                    {"presentMs", p->presentSum / reports},
+                    {"maxImageGapMs", p->maxImageGapMs},
+                    {"uiTicks", p->uiTicks},
+                    {"maxUiGapMs", p->maxUiGapMs},
+                    // UI 相机提交路径的分解：比较文档、校验、undo、同步槽函数。
+                    {"editorSubmits", p->editorLive.submits},
+                    {"editorSkipped", p->editorLive.skipped},
+                    {"editorCompareMs", p->editorLive.compareMs},
+                    {"editorValidateMs", p->editorLive.validateMs},
+                    {"editorPushMs", p->editorLive.pushMs},
+                    {"editorSignalMs", p->editorLive.signalMs},
+                    {"editorMaxSubmitMs", p->editorLive.maxSubmitMs},
+                    {"editorSubmitMs", p->editorLive.submitMs},
+                    {"editorMaxSubmitCallMs", p->editorLive.maxSubmitCallMs},
+                    {"editorSlots", p->editorSlots},
+                    {"editorSlotMax", p->editorSlotMax},
+                    {"treeItems", p->treeItems},
+                    {"treeDataCalls", double(p->treeDataCalls)},
                     {"width", p->stats.size.width()}, {"height", p->stats.size.height()}});
             }
-            if (++p->stage == 3) {
+            if (++p->stage == 4) {
                 timer->stop();
                 QFile f(output + "/profile.json");
                 if (f.open(QIODevice::WriteOnly)) f.write(QJsonDocument(p->results).toJson());
@@ -88,6 +179,12 @@ void learnQT::configureRasterRegression()
                 return;
             }
             p->clock.restart(); p->images = p->paints = p->reports = p->fresh = 0; p->gpuSum = 0;
+            p->framesSum = p->windowSum = p->boundaryWaitSum = p->rasterSubmitSum = 0;
+            p->ticksSum = p->loopSum = p->cadenceSleepSum = p->tailSum = 0;
+            p->pickSubmitSum = p->pickGpuSum = p->pickPassSum = p->presentSum = 0;
+            p->maxImageGapMs = p->maxUiGapMs = 0; p->uiTicks = 0;
+            p->pickMaxPasses = 0; p->pickMaxMs = 0;
+            p->sinceImage.restart(); p->sinceTick.restart();
         });
         timer->start();
         return;

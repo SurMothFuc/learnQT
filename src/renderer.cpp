@@ -263,6 +263,7 @@ Renderer::~Renderer()
         glDeleteSync(pickFence);
     releaseRasterResources();
     glDeleteQueries(1, &rasterTimerQuery);
+    glDeleteQueries(1, &pickTimerQuery);
     glDeleteBuffers(1, &pickPbo);
     glDeleteFramebuffers(1, &pickFbo);
     glDeleteTextures(2, pickTextures);
@@ -308,6 +309,20 @@ void Renderer::pollGpuTimers()
             glGetQueryObjectui64v(rasterTimerQuery, GL_QUERY_RESULT, &ns);
             stats.rasterMs = ns / 1e6;
             rasterTimerPending = false;
+        }
+    }
+    if (pickTimerQuery && pickTimerPending)
+    {
+        GLint ready = 0;
+        glGetQueryObjectiv(pickTimerQuery, GL_QUERY_RESULT_AVAILABLE, &ready);
+        if (ready)
+        {
+            GLuint64 ns = 0;
+            glGetQueryObjectui64v(pickTimerQuery, GL_QUERY_RESULT, &ns);
+            stats.pickMs = ns / 1e6;
+            // 同时记一份「本帧完成」的量，供渲染线程按窗口累计后清零。
+            pickCompletedMs = stats.pickMs;
+            pickTimerPending = false;
         }
     }
     for (int i = 0; i < 12; ++i)

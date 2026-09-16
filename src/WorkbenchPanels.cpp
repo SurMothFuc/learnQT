@@ -1,4 +1,5 @@
 #include "WorkbenchPanels.h"
+#include "UiDiagnostics.h"
 #include <QColorDialog>
 #include <QFileDialog>
 #include <QFormLayout>
@@ -216,7 +217,10 @@ ObjectInspector::ObjectInspector(EditorController *e, QWidget *p) : QWidget(p), 
     layout->addWidget(materialBox);
     layout->addStretch();
     connect(editor, &EditorController::selectionChanged, this, [this] { refresh(); });
-    connect(editor, &EditorController::changed, this, [this](int) { refresh(); });
+    connect(editor, &EditorController::changed, this, [this](int) {
+        UiSlotTimer timer(UiSlotObjectInspector);
+        refresh();
+    });
     connect(editor, &EditorController::busyChanged, this, [this] { refresh(); });
     refresh();
 }

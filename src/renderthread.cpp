@@ -1,5 +1,6 @@
 #include "renderthread.h"
 #include "EditorController.h"
+#include "RenderDiagnostics.h"
 #include "RenderRateTracker.h"
 #include <QElapsedTimer>
 RenderThread::RenderThread(QSurface *s, QOpenGLContext *shared, QObject *p) : QThread(p), surface(s)
@@ -132,8 +133,16 @@ void RenderThread::run()
         int rasterFrames = 0;
         bool wasRaster = false;
         QElapsedTimer rasterCadence;
+        // 拾取补绘用的相机运动计时：版本一旦变化就重启，静默一段时间后补一次 ID 图。
+        // 不能依赖 interactionActive 或"本轮是否收到文档"，因为停手后两者都会先失效。
+        QElapsedTimer pickMotionClock;
+        constexpr qint64 pickSettleMs = 80;
         bool wasSampling = true;
         bool presentationPending = false;
+        // 每帧耗时分解，只服务性能剖析与统计，不参与渲染决策。
+        RenderLoopDiagnostics diagnostics;
+        QElapsedTimer diagnosticsClock;
+        diagnosticsClock.start();
         quint64 presentedRevision = 0, presentedVersion = 0;
         quint64 minimumPresentationVersion = 1;
         QSize presentationSize;
@@ -142,15 +151,31 @@ void RenderThread::run()
         {
             // Wait for the bounded tile burst before applying scene or output changes.
             // A bounded driver wait avoids adding a coarse OS sleep after each tile.
+            QElapsedTimer boundaryClock;
+            boundaryClock.start();
             if (!renderer.waitForGpuBoundary())
+            {
+                // 超时只是这一批还没结束：本轮不产出统计，等下一次真正进入帧体能。
+                diagnostics.reset();
+                diagnosticsClock.restart();
                 continue;
+            }
+            diagnostics.boundaryWaitMs += boundaryClock.nsecsElapsed() / 1e6;
+            ++diagnostics.ticks;
+            QElapsedTimer iterationClock;
+            iterationClock.start();
             // Pace from submission start, including GPU work, rather than adding 16 ms
             // to every frame. The previous frame's fence was submitted before this wait.
             if (wasRaster && rasterCadence.isValid())
             {
                 const qint64 remainingMs = 16 - rasterCadence.elapsed();
                 if (remainingMs > 0)
+                {
+                    QElapsedTimer cadenceClock;
+                    cadenceClock.start();
                     msleep(static_cast<unsigned long>(remainingMs));
+                    diagnostics.cadenceSleepMs += cadenceClock.nsecsElapsed() / 1e6;
+                }
             }
             if (presentationPending)
             {
@@ -165,12 +190,18 @@ void RenderThread::run()
             wasRaster = false;
             wasSampling = false;
             bool gpuWork = false;
+            // 本轮刚补绘过拾取缓冲：要求显示端再发布一次，让新的 ID 图进入显示槽。
+            bool pickRepublish = false;
+            // 本轮拾取缓冲的过期原因与「相机是否已停」，显示阶段也要用到。
+            bool pickCameraSettled = false, pickGeometryChanged = false;
             SceneDirtyFlags dirty;
             std::shared_ptr<Scene> prepared;
             SceneDocument doc;
             int changes = 0;
             bool final = true, has = false, start = false;
             quint64 v = 0, batchRevision = 0;
+            const QSize previousSize = size;
+            const quint64 previousVersion = currentVersion;
             {
                 QMutexLocker lock(&mutex);
                 batchRevision = controlRevision.load();
@@ -265,6 +296,7 @@ void RenderThread::run()
                 }
                 // 交互判定：相机变更或对象/材质更新到达即视为交互开始，停手由 interactionIdleMs 控制。
                 // 正式任务不参与，避免出图期间被交互回退打断。
+                const bool interactionWasActive = interactionActive;
                 if (!job && !m_interactionFallbackDisabled &&
                     (hasSceneDirtyFlag(dirty, SceneDirtyFlag::Camera) ||
                      hasSceneDirtyFlag(dirty, SceneDirtyFlag::SceneBuffers) ||
@@ -350,24 +382,87 @@ void RenderThread::run()
                         if (renderer.rasterActive())
                             rasterCadence.restart();
                         gpuWork = true;
+                        QElapsedTimer segmentClock;
+                        segmentClock.start();
                         renderer.render(size.width(), size.height(), snapshot, dirty, 16, [&] {
                             return !m_running || (job && (m_cancel || m_paused)) ||
                                    controlRevision.load() != batchRevision;
                         });
+                        const double renderMs = segmentClock.nsecsElapsed() / 1e6;
                         wasSampling = !renderer.rasterActive() && renderer.samplingActive(snapshot);
                         wasRaster = renderer.rasterActive();
+                        ++diagnostics.frames;
+                        if (wasRaster)
+                            diagnostics.rasterSubmitMs += renderMs;
                         if (!job)
                         {
-                            renderer.updatePick(size.width(), size.height(), currentVersion);
+                            // 拾取缓冲只在几何、相机、材质或分辨率变化后失效。分辨率变化会重建
+                            // 拾取纹理，所以必须立刻重绘，否则整张 ID 图是未初始化的。
+                            const bool pickTargetsRecreated = size != previousSize;
+                            pickGeometryChanged = prepared || pickTargetsRecreated ||
+                                                  (changes & ((1 << EditorController::Topology) |
+                                                              (1 << EditorController::MaterialChange))) != 0;
+                            const bool pickVersionChanged = currentVersion != previousVersion;
+                            if (pickVersionChanged)
+                                pickMotionClock.restart();
+                            // 相机停手后不再有新文档到达（has 为 false），interactionActive 也要等
+                            // interactionIdleMs 才落，所以这里用「版本静默了多久」判断停稳：
+                            // 拖动期间它一直为假，停手约 80 ms 后为真，只补绘一次。
+                            pickCameraSettled = pickMotionClock.isValid() &&
+                                                pickMotionClock.elapsed() >= pickSettleMs;
+                            if (pickGeometryChanged || currentVersion != pickVersion)
+                                pickNeedsRedraw = true;
+                            // pickVersion 只在真正重绘后同步（见下），所以 pickNeedsRedraw
+                            // 在整个相机拖动期间一直为真，停稳后才会被补绘清除。
+                            bool pickDemanded = false;
+                            QPoint demandPixel;
+                            quint64 demandSerial = 0;
                             {
                                 QMutexLocker lock(&mutex);
                                 if (pickPending)
                                 {
-                                    if (pickSceneVersion == currentVersion)
-                                        renderer.requestPick(pickPixel, pickSerial);
+                                    // 请求带了发起时的场景版本：版本已经被后续编辑覆盖时直接丢弃。
+                                    pickDemanded = pickSceneVersion == currentVersion;
+                                    if (pickDemanded)
+                                    {
+                                        demandPixel = pickPixel;
+                                        // 序列号与像素一起在锁内取走，避免在锁外读被 UI 线程改写的字段。
+                                        demandSerial = pickSerial;
+                                    }
                                     pickPending = false;
                                 }
                             }
+                            // 整屏 BVH 拾取 pass 比光栅化预览本身还贵（集显上约 20 ms），
+                            // 所以相机拖动期间不按帧重绘；停手（版本静默）或几何变化时补一次，
+                            // 否则显示用 ID 图会一直停在旧相机上，选中描边与物体错位。
+                            // 注意读回与重绘是两件事：拾取缓冲已经是最新时同样要提交像素读回。
+                            const bool interactionEnded =
+                                interactionWasActive && !interactionActive && !job;
+                            segmentClock.restart();
+                            const bool redrawn = pickNeedsRedraw &&
+                                                 (pickGeometryChanged || pickDemanded || interactionEnded ||
+                                                  pickCameraSettled) &&
+                                                 renderer.updatePick(size.width(), size.height(), currentVersion);
+                            diagnostics.pickSubmitMs += segmentClock.nsecsElapsed() / 1e6;
+                            if (redrawn)
+                            {
+                                ++diagnostics.pickPasses;
+                                pickNeedsRedraw = false;
+                                // 只有重绘成功才记录这个版本，否则补绘条件会被自己抹掉。
+                                pickVersion = currentVersion;
+                            }
+                            // 取走本帧完成的拾取计时；没有新结果时返回 0，同一帧不会被重复累计。
+                            const double completedPickMs = renderer.takePickGpuMs();
+                            diagnostics.pickGpuMs += completedPickMs;
+                            if (completedPickMs > diagnostics.pickMaxMs)
+                                diagnostics.pickMaxMs = completedPickMs;
+                            // 拾取缓冲已经是当前相机与几何，可以立刻读回这一像素。
+                            if (pickDemanded)
+                                renderer.requestPick(demandPixel, demandSerial);
+                            // 本帧的显示复制发生在这之后：它会把已更新的 ID 图一并拷进显示槽。
+                            // 但补绘前可能已经发过一版旧 ID 图，所以补绘后必须再发布一次；
+                            // pickNeedsRedraw 在补绘后清除，同一段静止期因此只补发布一次。
+                            pickRepublish = redrawn;
                             quint64 request, revision;
                             unsigned id;
                             if (renderer.pollPick(request, id, revision) && revision == currentVersion)
@@ -376,8 +471,9 @@ void RenderThread::run()
                                                 : QString(),
                                             request, revision);
                         }
-                        if (!job && (renderer.rasterActive() || presentationClock.elapsed() >= 16) &&
-                            (presentedRevision != renderer.imageRevision() ||
+                        if (!job && (pickRepublish || renderer.rasterActive() ||
+                                     presentationClock.elapsed() >= 16) &&
+                            (pickRepublish || presentedRevision != renderer.imageRevision() ||
                              presentedVersion != currentVersion || renderer.rasterActive()))
                         {
                             if (presentationSize != size)
@@ -385,16 +481,19 @@ void RenderThread::run()
                                 presentationSize = size;
                                 minimumPresentationVersion = currentVersion;
                             }
+                            segmentClock.restart();
                             if (TextureBuffer::instance()->updateTexture(context, size.width(), size.height(),
                                                                          job ? 0 : renderer.pickFramebuffer(),
                                                                          currentVersion,
                                                                          renderer.displayFramebuffer(),
                                                                          minimumPresentationVersion))
                             {
+                                diagnostics.presentMs += segmentClock.nsecsElapsed() / 1e6;
                                 presentationPending = true;
                                 presentedRevision = renderer.imageRevision();
                                 presentedVersion = currentVersion;
                                 presentationClock.restart();
+                                pickRepublish = false;
                             }
                         }
                         if (job && renderer.samples() >= settings.samples)
@@ -441,8 +540,11 @@ void RenderThread::run()
                 markSceneDirty(kInitialSceneDirty);
             }
             const bool showingJob = job || (!m_previewVisible && jobClock.isValid());
+            diagnostics.loopMs += iterationClock.nsecsElapsed() / 1e6;
             if (gpuWork)
                 renderer.submitGpuBoundary();
+            QElapsedTimer tailClock;
+            tailClock.start();
             auto snapshot = showingJob ? jobSnapshot : RenderParams::instance().snapshot();
             if (interval.elapsed() >= 200)
             {
@@ -465,8 +567,26 @@ void RenderThread::run()
                 s.tlasMs = scene.tlasUpdateMs;
                 s.allocatedBytes = renderer.allocatedBytes() + quint64(size.width()) * size.height() * 3 * 8;
                 s.jobSeconds = jobSeconds;
+                s.pickMs = renderer.pickGpuMs();
+                // 与其他字段一致：这是本统计窗口内的拾取重绘次数与累计 GPU 耗时，不是启动以来的累计值。
+                s.pickPasses = diagnostics.pickPasses;
+                s.pickWindowMs = diagnostics.pickGpuMs;
+                s.pickMaxMs = diagnostics.pickMaxMs;
+                s.frames = diagnostics.frames;
+                s.ticks = diagnostics.ticks;
+                s.boundaryWaitMs = diagnostics.boundaryWaitMs;
+                s.cadenceSleepMs = diagnostics.cadenceSleepMs;
+                s.tailMs = diagnostics.tailMs;
+                s.loopMs = diagnostics.loopMs;
+                s.rasterSubmitMs = diagnostics.rasterSubmitMs;
+                s.pickSubmitMs = diagnostics.pickSubmitMs;
+                s.presentMs = diagnostics.presentMs;
+                s.windowMs = diagnosticsClock.elapsed() / 1e6;
+                diagnostics.reset();
+                diagnosticsClock.restart();
                 emit statsReady(s);
             }
+            diagnostics.tailMs += tailClock.nsecsElapsed() / 1e6;
         }
     }
     catch (const std::exception &e)

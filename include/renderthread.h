@@ -61,6 +61,9 @@ class RenderThread : public QThread
     QPoint pickPixel;
     quint64 pickSerial = 0, pickSceneVersion = 0;
     bool pickPending = false;
+    // 拾取缓冲的失效标记：相机/几何/材质/尺寸变化后置位，只在有拾取请求或几何/尺寸变化时才重绘。
+    bool pickNeedsRedraw = true;
+    quint64 pickVersion = 0;
     // 交互回退状态：interactionClock 在相机/变换变更时重启，interactionActive 表示仍在交互窗口内。
     QElapsedTimer interactionClock;
     bool interactionActive = false, rasterRequested = false, keepPathtraceApplied = false;

@@ -1,4 +1,5 @@
 #include "learnQT.h"
+#include "UiDiagnostics.h"
 #include "WorkbenchStyle.h"
 #include "WorkspaceUi.h"
 #include <QActionGroup>
@@ -76,6 +77,7 @@ learnQT::learnQT(QWidget *parent) : QMainWindow(parent)
     }
 #endif
     connect(editor, &EditorController::changed, this, [this](int) {
+        UiSlotTimer timer(UiSlotWindow);
         m_sceneDirty = !editor->undo.isClean();
         restoreSceneControls();
         updateTitle();
@@ -205,7 +207,10 @@ void learnQT::setupWorkbench()
                                  editor->document.root["hdr"].toString().isEmpty());
     };
     refreshEmpty();
-    connect(editor, &EditorController::changed, this, [refreshEmpty](int) { refreshEmpty(); });
+    connect(editor, &EditorController::changed, this, [refreshEmpty](int) {
+        UiSlotTimer timer(UiSlotEmptySurface);
+        refreshEmpty();
+    });
     connect(editor, &EditorController::busyChanged, empty,
             [empty](bool busy) { empty->setEnabled(!busy); });
     editorLayout->addWidget(canvas, 1);
@@ -750,8 +755,10 @@ QWidget *learnQT::createSettings()
         m_restoring = false;
     };
     restoreEnvironment();
-    connect(editor, &EditorController::changed, this,
-            [restoreEnvironment](int) { restoreEnvironment(); });
+    connect(editor, &EditorController::changed, this, [restoreEnvironment](int) {
+        UiSlotTimer timer(UiSlotEnvironment);
+        restoreEnvironment();
+    });
     form = section(tr("变换吸附"), "snapSection");
     auto snapMove = new MixedSpin;
     snapMove->setRange(.0001, 1e6);

@@ -1,4 +1,5 @@
 #include "WorkbenchStyle.h"
+#include "UiDiagnostics.h"
 #include "WorkspaceUi.h"
 #include "learnQT.h"
 #include <QActionGroup>
@@ -839,6 +840,7 @@ void learnQT::setupWorkspace()
     }
     w.baseline = saveState(4);
     connect(editor, &EditorController::changed, this, [this](int change) {
+        UiSlotTimer timer(UiSlotWorkspacePages);
         if (change == EditorController::CameraChange)
         {
             workspace->refreshCamera();

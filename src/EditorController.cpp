@@ -1,8 +1,11 @@
 #include "EditorController.h"
+#include "UiDiagnostics.h"
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QUndoCommand>
 #include <algorithm>
+#include <cmath>
 
 namespace
 {
@@ -141,6 +144,7 @@ void EditorController::install(Scene &s)
 {
     document = s.document;
     cache = s.assetCache;
+    invalidateNodeCache();
     refreshBounds(s);
     selection.clear();
     active.clear();
@@ -149,20 +153,40 @@ void EditorController::install(Scene &s)
     emit changed(Topology);
     emit selectionChanged();
 }
+void EditorController::invalidateNodeCache() const
+{
+    nodeCacheValid = false;
+    nodeCache.clear();
+    groupCache.clear();
+}
+void EditorController::rebuildNodeCache() const
+{
+    nodeCache.clear();
+    groupCache.clear();
+    for (auto key : {"groups", "objects"})
+        for (auto value : document.root[key].toArray())
+        {
+            const auto object = value.toObject();
+            const QString identifier = object["id"].toString();
+            if (identifier.isEmpty())
+                continue;
+            nodeCache.insert(identifier, object);
+            if (QLatin1String(key) == QLatin1String("groups"))
+                groupCache.insert(identifier);
+        }
+    nodeCacheValid = true;
+}
 QJsonObject EditorController::node(const QString &id) const
 {
-    for (auto key : {"groups", "objects"})
-        for (auto v : document.root[key].toArray())
-            if (v.toObject()["id"] == id)
-                return v.toObject();
-    return {};
+    if (!nodeCacheValid)
+        rebuildNodeCache();
+    return nodeCache.value(id);
 }
 bool EditorController::isGroup(const QString &id) const
 {
-    for (auto v : document.root["groups"].toArray())
-        if (v.toObject()["id"] == id)
-            return true;
-    return false;
+    if (!nodeCacheValid)
+        rebuildNodeCache();
+    return groupCache.contains(id);
 }
 void EditorController::select(const QSet<QString> &ids, const QString &a)
 {
@@ -255,6 +279,7 @@ void EditorController::apply(const SceneDocument &next, Change change, std::shar
     }
     else
         document = candidate;
+    invalidateNodeCache();
     ++version;
     QSet<QString> kept;
     for (auto id : selection)
@@ -263,30 +288,56 @@ void EditorController::apply(const SceneDocument &next, Change change, std::shar
     selection = kept;
     if (!selection.contains(active))
         active = selection.isEmpty() ? QString() : *selection.begin();
+    // changed() 的所有槽函数是同步执行的，这里的耗时就是相机交互卡顿的直接来源。
+    QElapsedTimer signalClock;
+    signalClock.start();
     emit changed(change);
+    UiDiagnostics::instance().signalMs += signalClock.nsecsElapsed() / 1e6;
     emit selectionChanged();
 }
 void EditorController::submit(SceneDocument next, const QString &label, Change c, int key)
 {
-    if (busy || renderLocked || next.root == document.root)
+    auto &diagnostics = UiDiagnostics::instance();
+    QElapsedTimer submitClock, segmentClock;
+    submitClock.start();
+    segmentClock.start();
+    const bool skip = busy || renderLocked || next.root == document.root;
+    diagnostics.compareMs += segmentClock.nsecsElapsed() / 1e6;
+    if (skip)
+    {
+        ++diagnostics.skipped;
         return;
+    }
+    ++diagnostics.submits;
     if (c == Topology || c == Environment)
     {
         prune(next);
         prepare(next, [this, label, c, key](std::shared_ptr<Scene> s) {
             undo.push(new EditorCommand(this, s->document, label, c, key, s));
         });
+        diagnostics.maxSubmitMs = std::max(diagnostics.maxSubmitMs, segmentClock.nsecsElapsed() / 1e6);
     }
     else
     {
         QString error;
-        if (!next.validate(error, false))
+        segmentClock.restart();
+        const bool valid = next.validate(error, false);
+        diagnostics.validateMs += segmentClock.nsecsElapsed() / 1e6;
+        if (!valid)
         {
             emit failed(error);
             return;
         }
+        segmentClock.restart();
         undo.push(new EditorCommand(this, next, label, c, key));
+        // 这一段只包含 undo.push（含其内部的 apply 与所有同步槽）。
+        diagnostics.pushMs += segmentClock.nsecsElapsed() / 1e6;
+        diagnostics.maxSubmitMs = std::max(diagnostics.maxSubmitMs, segmentClock.nsecsElapsed() / 1e6);
     }
+    // 整次 submit：文档比较 + 校验 + undo.push，是相机交互卡顿的直接来源。
+    const double totalMs = submitClock.nsecsElapsed() / 1e6;
+    diagnostics.submitMs += totalMs;
+    diagnostics.maxSubmitCallMs = std::max(diagnostics.maxSubmitCallMs, totalMs);
 }
 void EditorController::importFiles(const QStringList &paths, double scale)
 {

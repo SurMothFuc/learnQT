@@ -1,4 +1,5 @@
 #include "WorkbenchPanels.h"
+#include "UiDiagnostics.h"
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLineEdit>
@@ -77,7 +78,10 @@ LightInspector::LightInspector(EditorController *e, QWidget *p) : QWidget(p), ed
         d.root["lights"] = kept;
         editor->submit(d, tr("删除灯光"), EditorController::Lighting);
     });
-    connect(editor, &EditorController::changed, this, [this](int) { refresh(); });
+    connect(editor, &EditorController::changed, this, [this](int) {
+        UiSlotTimer timer(UiSlotLightInspector);
+        refresh();
+    });
     refresh();
 }
 void LightInspector::refresh()

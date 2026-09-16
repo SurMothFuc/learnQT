@@ -1,4 +1,5 @@
 #include "glwidget.h"
+#include "UiDiagnostics.h"
 #include <QCoreApplication>
 #include <QMouseEvent>
 #include <QOffscreenSurface>
@@ -68,6 +69,7 @@ void GLWidget::attachEditor(EditorController *e)
     e->document.restoreCamera(camera);
     connect(e, &EditorController::prepared, this, &GLWidget::submitPrepared);
     connect(e, &EditorController::changed, this, [this](int change) {
+        UiSlotTimer timer(UiSlotGlWidget);
         selectionDirty = true;
         if (change == EditorController::CameraChange)
             editor->document.restoreCamera(camera);
