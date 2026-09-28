@@ -46,6 +46,8 @@ public:
         bool rasterLocked = false;
         // 停手多久后从交互回退切回路径追踪。
         int interactionIdleMs = 250;
+        // Local application preference, deliberately excluded from scene applySnapshot().
+        bool computePathtrace = false;
 
         bool operator==(const Snapshot& other) const {
             return denoise == other.denoise &&
@@ -57,7 +59,8 @@ public:
                    maxBounces == other.maxBounces &&
                    maxRenderFrames == other.maxRenderFrames &&
                    rasterLocked == other.rasterLocked &&
-                   interactionIdleMs == other.interactionIdleMs;
+                   interactionIdleMs == other.interactionIdleMs &&
+                   computePathtrace == other.computePathtrace;
         }
 
         bool operator!=(const Snapshot& other) const {
@@ -77,6 +80,7 @@ public:
     RENDER_PARAMS_PARAM(MaxRenderFrames, maxRenderFrames, int, m_maxRenderFrames, 0)
     RENDER_PARAMS_PARAM(RasterLocked, rasterLocked, bool, m_rasterLocked, false)
     RENDER_PARAMS_PARAM(InteractionIdleMs, interactionIdleMs, int, m_interactionIdleMs, 250)
+    RENDER_PARAMS_PARAM(ComputePathtrace, computePathtrace, bool, m_computePathtrace, false)
 
 public:
     Snapshot snapshot() const;

@@ -39,6 +39,19 @@ float distanceSegment(QPointF p, QPointF a, QPointF b)
 } // namespace
 GLWidget::GLWidget(QWidget *p) : QOpenGLWidget(p)
 {
+    // Probe without creating a window; preserve a GL 3.3 path on older devices.
+    QSurfaceFormat requested = format();
+    requested.setVersion(4, 3);
+    requested.setProfile(QSurfaceFormat::CoreProfile);
+    QOpenGLContext probe;
+    probe.setFormat(requested);
+    if (probe.create() && probe.format().version() >= qMakePair(4, 3))
+        setFormat(probe.format());
+    else
+    {
+        requested.setVersion(3, 3);
+        setFormat(requested);
+    }
     setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
     setMinimumSize(160, 120);

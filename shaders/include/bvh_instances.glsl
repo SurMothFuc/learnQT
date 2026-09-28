@@ -1,3 +1,12 @@
+#ifndef BVH_STACK_CAPACITY
+#define BVH_STACK_CAPACITY 64
+#endif
+#ifdef COMPUTE_PATH
+int stack[BVH_STACK_CAPACITY];
+float topDistances[BVH_STACK_CAPACITY];
+int bs[BVH_STACK_CAPACITY];
+float blasDistances[BVH_STACK_CAPACITY];
+#endif
 Material ShadowMaterial(int surface)
 {
     Material m;
@@ -80,8 +89,12 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
     if (nTopNodes <= 1)
         return res;
     vec3 worldReciprocal = 1.0 / ray.direction;
-    int stack[64];
-    float topDistances[64];
+    #ifndef COMPUTE_PATH
+    int stack[BVH_STACK_CAPACITY];
+#endif
+    #ifndef COMPUTE_PATH
+    float topDistances[BVH_STACK_CAPACITY];
+#endif
     int sp = 0;
     BVHNode topRoot = TopNode(1);
     float topEntry = BoundsDistance(ray, worldReciprocal, topRoot.AA, topRoot.BB, INF);
@@ -101,7 +114,7 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
             BVHNode left = TopNode(top.left), right = TopNode(top.right);
             float dl = BoundsDistance(ray, worldReciprocal, left.AA, left.BB, res.hitDistance);
             float dr = BoundsDistance(ray, worldReciprocal, right.AA, right.BB, res.hitDistance);
-            if (sp < 62)
+            if (sp < BVH_STACK_CAPACITY - 2)
             {
                 if (dl >= 0 && dr >= 0)
                 {
@@ -152,8 +165,12 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
         // Do not normalize: the affine transform preserves the original ray parameter.
         local.direction = (inverse * vec4(ray.direction, 0)).xyz;
         vec3 localReciprocal = 1.0 / local.direction;
-        int bs[64];
-        float blasDistances[64];
+        #ifndef COMPUTE_PATH
+    int bs[BVH_STACK_CAPACITY];
+#endif
+        #ifndef COMPUTE_PATH
+    float blasDistances[BVH_STACK_CAPACITY];
+#endif
         int bp = 0;
         BVHNode blasRoot = getBVHNode(int(info.y));
         float blasEntry = BoundsDistance(local, localReciprocal, blasRoot.AA, blasRoot.BB, res.hitDistance);
@@ -173,7 +190,7 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
                 BVHNode left = getBVHNode(n.left), right = getBVHNode(n.right);
                 float dl = BoundsDistance(local, localReciprocal, left.AA, left.BB, res.hitDistance);
                 float dr = BoundsDistance(local, localReciprocal, right.AA, right.BB, res.hitDistance);
-                if (bp < 62)
+                if (bp < BVH_STACK_CAPACITY - 2)
                 {
                     if (dl >= 0 && dr >= 0)
                     {

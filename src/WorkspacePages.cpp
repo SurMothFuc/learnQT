@@ -534,8 +534,33 @@ void learnQT::setupWorkspace()
               "取消拖动 · Delete 删除\nCtrl+D 复制 · Ctrl+Z 撤销 · Ctrl+Shift+Z 重做\nCtrl+N 新建 · Ctrl+O "
               "打开 · Ctrl+S 保存 · 渲染页 F12 加入队列\n输入框保留文本编辑快捷键。"));
     prefSections << shortcuts;
-    prefSections << unavailable("性能", "使用当前 OpenGL 上下文设备；尚无设备切换或显存预算控制。",
-                                {"GPU 选择 / 缓存预算"});
+    auto performanceSettings = group("性能");
+    auto compute = new QCheckBox("使用计算着色器进行路径追踪（实验性）");
+    compute->setObjectName("computePathtracePreference");
+    compute->setChecked(settings.value("workspaceV4/computePathtrace", false).toBool());
+    RenderParams::instance().setComputePathtrace(compute->isChecked());
+    performanceSettings->layout()->addWidget(compute);
+    performanceSettings->layout()->addWidget(label(
+        "影响路径追踪预览及之后启动的正式任务。速度因显卡和场景而异，图像可能有微小数值差异。"
+        "不支持时自动使用兼容模式。"));
+    auto backend = label("返回场景视口后显示当前渲染方式。");
+    backend->setObjectName("pathtraceBackendStatus");
+    performanceSettings->layout()->addWidget(backend);
+    connect(compute, &QCheckBox::toggled, this, [this, backend](bool enabled) {
+        RenderParams::instance().setComputePathtrace(enabled);
+        QSettings s(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
+        s.setValue("workspaceV4/computePathtrace", enabled);
+        backend->setText("已保存；返回场景视口后应用，正在运行的正式任务保持原设置。");
+        if (viewport->renderThread())
+            viewport->renderThread()->markSceneDirty(toSceneDirtyFlags(SceneDirtyFlag::Display));
+    });
+    connect(viewport, &GLWidget::renderThreadReady, this, [this, backend] {
+        connect(viewport->renderThread(), &RenderThread::statsReady, backend,
+                [backend](const RenderStats &stats) {
+                    backend->setText("当前：" + stats.pathtraceBackend);
+                });
+    });
+    prefSections << performanceSettings;
     auto paths = group("路径");
     paths->layout()->addWidget(
         label("模型、纹理和 HDR 使用文件选择器导入；正式任务完成后自动写入下方目录。"));

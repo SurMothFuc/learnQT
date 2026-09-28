@@ -296,6 +296,7 @@ void RenderThread::run()
                         renderer.formal = true;
                         jobClock.start();
                         jobSnapshot = scene.document.settings();
+                        jobSnapshot.computePathtrace = RenderParams::instance().computePathtrace();
                         jobSnapshot.renderLow = false;
                         jobSnapshot.useTileRendering = true;
                         jobSnapshot.tileSize = settings.tileSize;

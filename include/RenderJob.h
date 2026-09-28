@@ -76,6 +76,8 @@ struct RenderStats
     RenderJobState state = RenderJobState::Idle;
     // 交互预览当前是否由光栅化提供，以及最近一帧光栅化耗时。
     bool rasterActive = false;
+    bool computePathtrace = false;
+    QString pathtraceBackend;
     double rasterMs = 0, rasterFps = 0;
     // GPU 拾取 pass 的最近耗时、本窗口重绘次数与累计 GPU 耗时，用于定位相机交互期间的额外整屏开销。
     double pickMs = 0;

@@ -35,8 +35,11 @@ struct MeshGeometry
     SceneBounds bounds;
     double buildMs = 0;
     double traversalCost = 1;
+    int maximumDepth = 0;
     void build();
 };
+
+int bvhMaximumDepth(const std::vector<BVHNode> &nodes);
 
 struct ImportedNode
 {

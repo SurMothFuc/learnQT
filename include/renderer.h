@@ -14,6 +14,7 @@
 #include <iostream>
 #include <memory>
 #include <unordered_map>
+#include <set>
 #include <vector>
 
 #include "OpenImageDenoise/oidn.hpp"
@@ -146,7 +147,8 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     void compositePreview(const RenderParams::Snapshot &snapshot, bool changed, bool force);
     void renderTile(int tileX, int tileY, int tileWidth, int tileHeight, int maxBounces); // 渲染单个块
     void renderFullImage(int maxBounces);                                                 // 渲染完整图像
-    void rebuildPathtraceProgram(const RenderParams::Snapshot &snapshot);
+    bool rebuildPathtraceProgram(const RenderParams::Snapshot &snapshot);
+    void syncPathtraceUniforms();
 
     /**
      * @brief 设置屏幕分辨率并更新缓冲
@@ -282,7 +284,9 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     int materialTextureLayerCount = 0;
 
     std::unique_ptr<QOpenGLShaderProgram> m_program = nullptr;
-    std::unique_ptr<QOpenGLShaderProgram> pathtrace_program = nullptr;
+    std::shared_ptr<QOpenGLShaderProgram> pathtrace_program;
+    std::unordered_map<std::string, std::shared_ptr<QOpenGLShaderProgram>> pathtracePrograms;
+    std::set<std::string> failedComputePrograms;
     std::unique_ptr<QOpenGLShaderProgram> historysave_program = nullptr;
     std::unique_ptr<QOpenGLShaderProgram> raster_program = nullptr;
     std::unique_ptr<QOpenGLShaderProgram> rasterBackgroundProgram = nullptr;

@@ -7,6 +7,8 @@
 #include <QFileInfo>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QOpenGLFunctions_4_3_Core>
+#include <mutex>
 
 #include <algorithm>
 #include <cstring>
@@ -32,6 +34,8 @@ bool isRenderFrameLimitReached(const RenderParams::Snapshot &snapshot, unsigned 
 
 std::string processIncludes(const std::string &source, const std::string &shaderPath)
 {
+    static std::recursive_mutex cacheMutex;
+    std::lock_guard<std::recursive_mutex> guard(cacheMutex);
     static std::unordered_map<std::string, std::string> includeCache;
     static std::unordered_map<std::string, bool> processing; // 防止循环包含
 
@@ -138,6 +142,23 @@ QOpenGLShaderProgram *Renderer::getShaderProgram(
 {
     auto shaderProgram = std::make_unique<QOpenGLShaderProgram>();
 
+    if (defines_Fragment.count("COMPUTE_PATH"))
+    {
+        QFile file(QString::fromStdString(fshader));
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+            throw std::runtime_error("Cannot read path tracing shader");
+        auto source = processIncludes(file.readAll().toStdString(), fshader);
+        const auto version = source.find("#version 330 core");
+        if (version == std::string::npos)
+            throw std::runtime_error("Missing path tracing shader version");
+        source.replace(version, std::string("#version 330 core").size(), "#version 430 core");
+        source = injectDefines(source, defines_Fragment);
+        if (!shaderProgram->addCacheableShaderFromSourceCode(QOpenGLShader::Compute, source.c_str()) ||
+            !shaderProgram->link())
+            throw std::runtime_error(shaderProgram->log().toStdString());
+        return shaderProgram.release();
+    }
+
     // 加载并处理顶点着色器
     QFile vFile(QString::fromStdString(vshader));
     if (!vFile.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -151,7 +172,7 @@ QOpenGLShaderProgram *Renderer::getShaderProgram(
     vSource = processIncludes(vSource, vshader);
     vSource = injectDefines(vSource, defines_Vertex);
 
-    bool success = shaderProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vSource.c_str());
+    bool success = shaderProgram->addCacheableShaderFromSourceCode(QOpenGLShader::Vertex, vSource.c_str());
     if (!success)
     {
         qDebug() << "Vertex shader compilation failed:\n" << shaderProgram->log();
@@ -172,7 +193,7 @@ QOpenGLShaderProgram *Renderer::getShaderProgram(
     fSource = processIncludes(fSource, fshader);
     fSource = injectDefines(fSource, defines_Fragment);
 
-    success = shaderProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fSource.c_str());
+    success = shaderProgram->addCacheableShaderFromSourceCode(QOpenGLShader::Fragment, fSource.c_str());
     if (!success)
     {
         qDebug() << "Fragment shader compilation failed:\n" << shaderProgram->log();
@@ -765,6 +786,22 @@ void Renderer::bindPathtraceInputs(int maxBounces)
 
 void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, int)
 {
+    if (stats.computePathtrace)
+    {
+        auto gl = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_4_3_Core>();
+        pathtrace_program->bind();
+        gl->glUniform2i(pathtrace_program->uniformLocation("traceTileOrigin"), tileX, tileY);
+        gl->glUniform2i(pathtrace_program->uniformLocation("traceTileSize"), tileWidth, tileHeight);
+        gl->glBindImageTexture(0, RenderColorTex, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+        gl->glBindImageTexture(1, normal_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+        gl->glBindImageTexture(2, baseColorTex, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+        // Includes image writes, following sampler reads/history blits, and target reuse.
+        gl->glMemoryBarrier(GL_ALL_BARRIER_BITS);
+        gl->glDispatchCompute((tileWidth + 7) / 8, (tileHeight + 7) / 8, 1);
+        gl->glMemoryBarrier(GL_ALL_BARRIER_BITS);
+        pathtrace_program->release();
+        return;
+    }
     glBindVertexArray(VAO);
     glDisable(GL_DEPTH_TEST);
     pathtrace_program->bind();
@@ -784,18 +821,77 @@ void Renderer::renderFullImage(int maxBounces)
     renderComplete = true;
 }
 
-void Renderer::rebuildPathtraceProgram(const RenderParams::Snapshot &snapshot)
+bool Renderer::rebuildPathtraceProgram(const RenderParams::Snapshot &snapshot)
 {
-    std::unordered_map<std::string, std::string> defines_Fragment = {};
-    defines_Fragment.insert({"INSTANCED_SCENE", "1"});
-    std::unordered_map<std::string, std::string> defines_Vertex = {};
-    defines_Fragment.insert({"MAX_BOUNCES_LIMIT", std::to_string(MAX_BOUNCES_LIMIT)});
-    if (snapshot.useEnvironmentMap)
+    int depth = bvhMaximumDepth(m_scene.tlas);
+    for (const auto &mesh : m_scene.meshes)
+        depth = std::max(depth, mesh->maximumDepth > 0 ? mesh->maximumDepth : bvhMaximumDepth(mesh->nodes));
+    // Round upwards to reduce variant churn; never truncate a deeper tree to 64.
+    const int capacity = std::max(16, ((depth + 2 + 3) / 4) * 4);
+    const bool media = std::any_of(m_scene.materials.begin(), m_scene.materials.end(),
+                                  [](const Material &m) { return m.mediumtype != 0; });
+    auto gl = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_4_3_Core>();
+    bool compute = snapshot.computePathtrace && gl && gl->initializeOpenGLFunctions();
+    QString fallback;
+    if (snapshot.computePathtrace && !compute)
+        fallback = tr("当前设备不支持计算着色器，使用兼容路径追踪");
+    const auto baseKey = std::to_string(capacity) + ":" + std::to_string(media) + ":" +
+                         std::to_string(snapshot.useEnvironmentMap);
+    if (compute && failedComputePrograms.count(baseKey))
     {
-        defines_Fragment.insert({"USEENVIRONMENTMAP", ""});
+        compute = false;
+        fallback = tr("计算着色器编译失败，使用兼容路径追踪");
     }
-    pathtrace_program.reset(getShaderProgram(getShaderPath("pathtrace.frag"), getShaderPath("triangle.vert"),
-                                             defines_Vertex, defines_Fragment));
+    std::unordered_map<std::string, std::string> defines{{"INSTANCED_SCENE", "1"},
+        {"MAX_BOUNCES_LIMIT", std::to_string(MAX_BOUNCES_LIMIT)},
+        {"BVH_STACK_CAPACITY", std::to_string(capacity)}};
+    if (!media) defines.emplace("NO_PARTICIPATING_MEDIA", "1");
+    if (snapshot.useEnvironmentMap) defines.emplace("USEENVIRONMENTMAP", "");
+    auto select = [&](bool useCompute) {
+        const auto key = baseKey + (useCompute ? ":compute" : ":fragment");
+        const auto found = pathtracePrograms.find(key);
+        if (found != pathtracePrograms.end()) return found->second;
+        if (useCompute) defines["COMPUTE_PATH"] = "1";
+        else defines.erase("COMPUTE_PATH");
+        std::shared_ptr<QOpenGLShaderProgram> program(getShaderProgram(
+            getShaderPath("pathtrace.frag"), getShaderPath("triangle.vert"), {}, defines));
+        if (pathtracePrograms.size() >= 8) pathtracePrograms.erase(pathtracePrograms.begin());
+        pathtracePrograms.emplace(key, program);
+        return program;
+    };
+    std::shared_ptr<QOpenGLShaderProgram> selected;
+    try { selected = select(compute); }
+    catch (const std::exception &error)
+    {
+        if (!compute) throw;
+        qWarning() << "Compute path tracing unavailable:" << error.what();
+        failedComputePrograms.insert(baseKey);
+        compute = false;
+        fallback = tr("计算着色器编译失败，使用兼容路径追踪");
+        selected = select(false);
+    }
+    const bool changed = selected != pathtrace_program;
+    pathtrace_program = std::move(selected);
+    stats.computePathtrace = compute;
+    stats.pathtraceBackend = !fallback.isEmpty() ? fallback :
+        (compute ? tr("计算着色器路径追踪") : tr("兼容路径追踪"));
+    return changed;
+}
+
+void Renderer::syncPathtraceUniforms()
+{
+    pathtrace_program->bind();
+    pathtrace_program->setUniformValue("nTriangles", static_cast<int>(m_scene.triangles.size()));
+    pathtrace_program->setUniformValue("nNodes", static_cast<int>(m_scene.nodes_encoded.size()));
+    pathtrace_program->setUniformValue("nLights", static_cast<int>(m_scene.lights_encoded.size()));
+    pathtrace_program->setUniformValue("nAnalyticLights", std::min(m_scene.document.root["lights"].toArray().size(),
+                                                               static_cast<int>(m_scene.lights_encoded.size())));
+    pathtrace_program->setUniformValue("width", render_width);
+    pathtrace_program->setUniformValue("height", render_height);
+    pathtrace_program->setUniformValue("hdrResolution", m_scene.hdrResolution);
+    pathtrace_program->setUniformValue("materialTextureCount", materialTextureLayerCount);
+    pathtrace_program->release();
+    syncCameraUniforms();
 }
 
 void Renderer::adjustScreenResolution(int width, int height, bool renderLow)
@@ -846,6 +942,12 @@ Renderer::RefreshActions Renderer::resolveRefreshActions(int width, int height,
         actions.refreshRasterProgram = true;
         actions.syncSceneBuffers = true;
         actions.syncCameraUniforms = true;
+        actions.resetAccumulation = true;
+    }
+
+    if (snapshot.computePathtrace != m_lastAppliedSnapshot.computePathtrace)
+    {
+        actions.rebuildShader = true;
         actions.resetAccumulation = true;
     }
 
@@ -901,10 +1003,8 @@ void Renderer::applyRefreshActions(int width, int height, const RenderParams::Sn
                                    const RefreshActions &actions)
 {
     // 这里只执行帧首已经决策好的刷新动作。
-    if (actions.rebuildShader)
-    {
-        rebuildPathtraceProgram(snapshot);
-    }
+    const bool programChanged = (actions.rebuildShader || actions.syncMaterialBuffer || actions.syncSceneBuffers)
+                                    && rebuildPathtraceProgram(snapshot);
 
     if (actions.refreshRasterProgram)
     {
@@ -936,6 +1036,8 @@ void Renderer::applyRefreshActions(int width, int height, const RenderParams::Sn
     {
         syncMaterialBuffer();
     }
+
+    if (programChanged) syncPathtraceUniforms();
 
     if (actions.syncCameraUniforms)
     {

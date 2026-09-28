@@ -110,6 +110,7 @@ void RenderQueueThread::run()
             job = std::move(pending);
             hasPending = false;
         }
+        const bool computePathtrace = RenderParams::instance().computePathtrace();
         QImage result;
         QString error;
         bool rendered = false;
@@ -124,6 +125,7 @@ void RenderQueueThread::run()
             if (cancel || !running)
                 throw std::runtime_error("Render stopped during preparation");
             auto snapshot = scene->document.settings();
+            snapshot.computePathtrace = computePathtrace;
             snapshot.renderLow = false;
             snapshot.useTileRendering = true;
             snapshot.tileSize = job.settings.tileSize;

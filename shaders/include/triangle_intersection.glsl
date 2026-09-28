@@ -1,3 +1,4 @@
+float AxisSelect(vec3 v, int i) { return i == 0 ? v.x : (i == 1 ? v.y : v.z); }
 // Ray-aligned projection gives shared vertices identical coordinates on both
 // triangles. Prepare the projection once per ray/instance, not per triangle.
 struct TriangleRay {
@@ -33,15 +34,15 @@ bool IntersectTriangle(TriangleRay ray, vec3 a, vec3 b, vec3 c,
                        out vec3 bary, out float distance) {
     vec3 pa = (a - ray.origin), pb = (b - ray.origin), pc = (c - ray.origin);
     int x = ray.axes.x, y = ray.axes.y, z = ray.axes.z;
-    vec2 aa = vec2(pa[x] - ray.shear.x * pa[z], pa[y] - ray.shear.y * pa[z]);
-    vec2 bb = vec2(pb[x] - ray.shear.x * pb[z], pb[y] - ray.shear.y * pb[z]);
-    vec2 cc = vec2(pc[x] - ray.shear.x * pc[z], pc[y] - ray.shear.y * pc[z]);
+    vec2 aa = vec2(AxisSelect(pa, x) - ray.shear.x * AxisSelect(pa, z), AxisSelect(pa, y) - ray.shear.y * AxisSelect(pa, z));
+    vec2 bb = vec2(AxisSelect(pb, x) - ray.shear.x * AxisSelect(pb, z), AxisSelect(pb, y) - ray.shear.y * AxisSelect(pb, z));
+    vec2 cc = vec2(AxisSelect(pc, x) - ray.shear.x * AxisSelect(pc, z), AxisSelect(pc, y) - ray.shear.y * AxisSelect(pc, z));
     vec3 edges = vec3(TriangleEdge(bb, cc), TriangleEdge(cc, aa), TriangleEdge(aa, bb));
     if (min(edges.x, min(edges.y, edges.z)) < 0.0 &&
         max(edges.x, max(edges.y, edges.z)) > 0.0) return false;
     float determinant = edges.x + edges.y + edges.z;
     if (determinant == 0.0) return false;
-    distance = dot(edges, vec3(pa[z], pb[z], pc[z]) * ray.shear.z) / determinant;
+    distance = dot(edges, vec3(AxisSelect(pa, z), AxisSelect(pb, z), AxisSelect(pc, z)) * ray.shear.z) / determinant;
     bary = edges / determinant;
     // Do not re-test bary.y+bary.z <= 1: rounding could reject an accepted edge.
     // No determinant epsilon or barycentric padding that could hide thin geometry
