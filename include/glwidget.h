@@ -43,6 +43,8 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
         emit toolChanged(int(tool));
     }
     void frameSelection();
+    void setCompositionMode(bool active, const Camera &draft = Camera(), QSize aspect = {});
+    void setCompositionAspect(QSize aspect);
     Camera camera;
     quint64 sceneVersion() const
     {
@@ -73,6 +75,7 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     void sceneEdited();
     void toolChanged(int tool);
     void renderThreadReady();
+    void compositionCameraChanged();
 
   protected:
     void initializeGL() override;
@@ -91,6 +94,9 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     GLuint vao = 0, vbo = 0, selectionBuffer = 0, selectionTexture = 0;
     std::unique_ptr<QOpenGLShaderProgram> program;
     QWidget *overlay = nullptr;
+    bool compositionMode = false;
+    QSize compositionAspect;
+    QRect compositionFrame() const;
     bool selectionDirty = true, orbit = false, pan = false;
     QPoint lastPos, dragStart;
     quint64 version = 1, pickSerial = 0;

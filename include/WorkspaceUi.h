@@ -21,6 +21,7 @@ struct WorkspaceUi
     bool welcome = true, tips = true, status = true;
     int recentLimit = 12;
     QStringList recent;
+    QString selectedCameraId;
     QMap<int, QByteArray> layouts;
     QMap<int, QAction *> navigation;
     QMap<int, QWidget *> leftPages, rightPages, bottomPages;

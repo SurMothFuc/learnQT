@@ -66,6 +66,7 @@ set(MOC_HEADERS
     include/RenderParams.h
     include/EditorController.h
     include/WorkbenchPanels.h
+    include/RenderQueueThread.h
 )
 qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 qt5_add_resources(RCC_SOURCES ${RCC_FILES})
@@ -187,7 +188,9 @@ if(BUILD_TESTING)
     target_sources(learnQT PRIVATE tests/SceneUiRegression.cpp tests/WorkbenchUiRegression.cpp tests/InteractionRegression.cpp tests/PreviewModeRegression.cpp tests/WorkspaceUiRegression.cpp tests/PreviewPanelRegression.cpp tests/RasterPreviewRegression.cpp)
     target_compile_definitions(learnQT PRIVATE SCENE_TESTING)
     add_test(NAME workspace_pages_regression COMMAND $<TARGET_FILE:learnQT> --workspace-regression ${CMAKE_CURRENT_BINARY_DIR}/workspace-regression)
+    add_test(NAME render_queue_regression COMMAND $<TARGET_FILE:learnQT> --render-queue-regression ${CMAKE_CURRENT_BINARY_DIR}/render-queue-regression)
     set_tests_properties(workspace_pages_regression PROPERTIES LABELS "scene;gpu;ui;workspace" TIMEOUT 120)
+    set_tests_properties(render_queue_regression PROPERTIES LABELS "scene;gpu;ui;queue" TIMEOUT 240)
     add_test(NAME scene_ui_switch_regression COMMAND $<TARGET_FILE:learnQT>
         --scene ${CMAKE_CURRENT_SOURCE_DIR}/resources/scenes/bedroom.scene.json
         --scene-switch-regression ${CMAKE_CURRENT_BINARY_DIR}/scene-ui-regression)
@@ -295,7 +298,7 @@ if(BUILD_TESTING)
     get_filename_component(QT_RUNTIME_DIRECTORY "${QT_CORE_RUNTIME}" DIRECTORY)
     set(SCENE_TEST_PATH "${QT_RUNTIME_DIRECTORY};$ENV{PATH}")
     string(REPLACE ";" "\\;" SCENE_TEST_PATH "${SCENE_TEST_PATH}")
-    set_tests_properties(workspace_pages_regression instanced_traversal_regression lighting_numerical_regression scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression workbench_ui_and_render_job preview_interaction_regression preview_mode_switch_regression preview_mis_mode_switch_regression display_buffer_handoff_regression renderer_batch_regression environment_sphere_regression
+    set_tests_properties(workspace_pages_regression render_queue_regression instanced_traversal_regression lighting_numerical_regression scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression workbench_ui_and_render_job preview_interaction_regression preview_mode_switch_regression preview_mis_mode_switch_regression display_buffer_handoff_regression renderer_batch_regression environment_sphere_regression
         import_fbx_embedded_texture import_gltf_tangent_sampler_transform preview_panel_regression raster_preview_regression
         PROPERTIES ENVIRONMENT "PATH=${SCENE_TEST_PATH}")
     if(WIN32)

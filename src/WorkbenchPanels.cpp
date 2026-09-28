@@ -753,7 +753,13 @@ ResultView::ResultView(QWidget *p) : QGraphicsView(p), canvas(this)
 void ResultView::setImage(const QImage &im)
 {
     if (im.isNull())
+    {
+        image = {};
+        pixmap->setPixmap({});
+        canvas.setSceneRect({});
+        viewport()->update();
         return;
+    }
     bool resized = image.size() != im.size();
     image = im;
     pixmap->setPixmap(QPixmap::fromImage(im));
@@ -792,6 +798,6 @@ void ResultView::drawForeground(QPainter *p, const QRectF &)
     p->resetTransform();
     p->setPen(QColor("#96acc6"));
     p->drawText(viewport()->rect().adjusted(24, 24, -24, -24), Qt::AlignCenter | Qt::TextWordWrap,
-                tr("尚无渲染结果\n\n在右侧配置输出参数，点击“开始渲染”。\n生成完整采样轮次后，结果将显示在这里。"));
+                tr("尚无渲染结果\n\n调整构图和输出后加入队列，再点击“运行队列”。\n结果会显示在这里。"));
     p->restore();
 }

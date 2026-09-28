@@ -76,7 +76,12 @@ void GLWidget::attachEditor(EditorController *e)
         if (change != EditorController::Topology && change != EditorController::Environment)
         {
             if (thread)
-                thread->submitDocument(editor->document, change, ++version);
+            {
+                auto updated = editor->document;
+                if (compositionMode)
+                    updated.captureCamera(camera);
+                thread->submitDocument(updated, change, ++version);
+            }
             else
             {
                 Scene::getInstance().document = editor->document;
@@ -93,6 +98,48 @@ void GLWidget::attachEditor(EditorController *e)
             thread->submitDocument(d, EditorController::Transform, ++version, final);
         updateEditorOverlay();
     });
+}
+QRect GLWidget::compositionFrame() const
+{
+    if (!compositionMode || compositionAspect.width() <= 0 || compositionAspect.height() <= 0)
+        return rect();
+    const double aspect = double(compositionAspect.width()) / compositionAspect.height();
+    QSize frame = size();
+    if (double(frame.width()) / std::max(1, frame.height()) > aspect)
+        frame.setWidth(std::max(1, int(std::round(frame.height() * aspect))));
+    else
+        frame.setHeight(std::max(1, int(std::round(frame.width() / aspect))));
+    return QRect(QPoint((width() - frame.width()) / 2, (height() - frame.height()) / 2), frame);
+}
+void GLWidget::setCompositionMode(bool active, const Camera &draft, QSize aspect)
+{
+    compositionMode = active;
+    compositionAspect = active ? aspect : QSize();
+    if (active)
+        camera = draft;
+    else if (editor)
+        editor->document.restoreCamera(camera);
+    if (thread)
+    {
+        thread->setPreviewAspect(compositionAspect);
+        if (editor)
+        {
+            auto updated = editor->document;
+            if (compositionMode)
+                updated.captureCamera(camera);
+            thread->submitDocument(updated, EditorController::CameraChange, ++version);
+        }
+    }
+    updateEditorOverlay();
+}
+void GLWidget::setCompositionAspect(QSize aspect)
+{
+    if (!compositionMode || compositionAspect == aspect)
+        return;
+    compositionAspect = aspect;
+    if (thread)
+        thread->setPreviewAspect(aspect);
+    updateEditorOverlay();
 }
 void GLWidget::submitPrepared(std::shared_ptr<Scene> s)
 {
@@ -192,6 +239,10 @@ void GLWidget::paintGL()
     glDisable(GL_DEPTH_TEST);
     glClearColor(.075, .085, .10, 1);
     glClear(GL_COLOR_BUFFER_BIT);
+    const QRect frame = compositionFrame();
+    glViewport(qRound(frame.x() * devicePixelRatioF()),
+               qRound((height() - frame.y() - frame.height()) * devicePixelRatioF()),
+               qRound(frame.width() * devicePixelRatioF()), qRound(frame.height() * devicePixelRatioF()));
     if (!program)
         return;
     if (selectionDirty)
@@ -260,7 +311,10 @@ void GLWidget::resizeGL(int w, int h)
         thread->setNewSize(qRound(w * devicePixelRatioF()), qRound(h * devicePixelRatioF()));
         if (editor && !editor->renderLocked && !thread->jobActive())
         {
-            thread->submitDocument(editor->document, EditorController::Organization, ++version);
+            auto updated = editor->document;
+            if (compositionMode)
+                updated.captureCamera(camera);
+            thread->submitDocument(updated, EditorController::Organization, ++version);
             minimumDisplayVersion = version;
         }
     }
@@ -268,7 +322,8 @@ void GLWidget::resizeGL(int w, int h)
 QPointF GLWidget::project(const QVector3D &p, bool *visible) const
 {
     QMatrix4x4 projection, view;
-    projection.perspective(camera.zoom, float(width()) / std::max(1, height()), .0001f, 1e9f);
+    const QRect frame = compositionFrame();
+    projection.perspective(camera.zoom, float(frame.width()) / std::max(1, frame.height()), .0001f, 1e9f);
     view.lookAt(camera.position, camera.target, camera.up);
     auto q = projection * view * QVector4D(p, 1);
     if (visible)
@@ -276,7 +331,8 @@ QPointF GLWidget::project(const QVector3D &p, bool *visible) const
     if (std::abs(q.w()) < 1e-8)
         return {};
     q /= q.w();
-    return {(q.x() + 1) * width() * .5, (1 - q.y()) * height() * .5};
+    return {frame.x() + (q.x() + 1) * frame.width() * .5,
+            frame.y() + (1 - q.y()) * frame.height() * .5};
 }
 SceneBounds GLWidget::selectedBounds() const
 {
@@ -310,6 +366,18 @@ QVector3D GLWidget::axis(int i) const
 }
 void GLWidget::drawOverlay(QPainter &p)
 {
+    if (compositionMode)
+    {
+        const QRect frame = compositionFrame();
+        p.fillRect(QRect(0, 0, width(), frame.y()), QColor(0, 0, 0, 175));
+        p.fillRect(QRect(0, frame.bottom() + 1, width(), height() - frame.bottom() - 1), QColor(0, 0, 0, 175));
+        p.fillRect(QRect(0, frame.y(), frame.x(), frame.height()), QColor(0, 0, 0, 175));
+        p.fillRect(QRect(frame.right() + 1, frame.y(), width() - frame.right() - 1, frame.height()),
+                   QColor(0, 0, 0, 175));
+        p.setPen(QPen(QColor("#71a9ff"), 2));
+        p.drawRect(frame.adjusted(0, 0, -1, -1));
+        return;
+    }
     if (!editor || editor->renderLocked)
         return;
     p.setRenderHint(QPainter::Antialiasing);
@@ -388,7 +456,16 @@ void GLWidget::cancelDrag()
 void GLWidget::publishCamera()
 {
     ++pickSerial;
-    if (editor)
+    if (compositionMode && editor)
+    {
+        auto updated = editor->document;
+        updated.captureCamera(camera);
+        if (thread)
+            thread->submitDocument(updated, EditorController::CameraChange, ++version);
+        emit compositionCameraChanged();
+        updateEditorOverlay();
+    }
+    else if (editor)
         editor->setCamera(camera);
     else
         markSceneDirty(SceneDirtyFlag::Camera);
@@ -412,6 +489,14 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 {
     if (editor && (editor->busy || editor->renderLocked))
         return;
+    if (compositionMode)
+    {
+        if (e->key() == Qt::Key_F)
+            frameSelection();
+        else
+            QOpenGLWidget::keyPressEvent(e);
+        return;
+    }
     switch (e->key())
     {
     case Qt::Key_Q:
@@ -459,6 +544,8 @@ void GLWidget::mousePressEvent(QMouseEvent *e)
         ++editor->cameraCommand;
         return;
     }
+    if (compositionMode)
+        return;
     if (e->button() != Qt::LeftButton)
         return;
     auto b = selectedBounds();

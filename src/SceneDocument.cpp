@@ -59,6 +59,32 @@ bool vectorValid(const QJsonValue &value, int size)
             return false;
     return true;
 }
+bool cameraValid(const QJsonObject &camera)
+{
+    return vectorValid(camera["position"], 3) && vectorValid(camera["target"], 3) &&
+           vectorValid(camera["up"], 3) &&
+           (sceneVector(camera["position"]) - sceneVector(camera["target"])).lengthSquared() >= 1e-10 &&
+           QVector3D::crossProduct(sceneVector(camera["target"]) - sceneVector(camera["position"]),
+                                   sceneVector(camera["up"]))
+                   .lengthSquared() >= 1e-10 &&
+           camera["fov"].isDouble() && camera["fov"].toDouble() > 0 &&
+           camera["fov"].toDouble() < 175;
+}
+void syncLegacyCamera(QJsonObject &root)
+{
+    const auto active = root["activeCameraId"].toString();
+    for (auto value : root["cameras"].toArray())
+    {
+        const auto camera = value.toObject();
+        if (camera["id"].toString() != active)
+            continue;
+        QJsonObject legacy;
+        for (auto key : {"position", "target", "up", "fov"})
+            legacy[key] = camera[key];
+        root["camera"] = legacy;
+        return;
+    }
+}
 } // namespace
 
 SceneDocument SceneDocument::model(const QString &path)
@@ -102,6 +128,7 @@ SceneDocument SceneDocument::empty()
         {"output", QJsonObject{{"width", 1920}, {"height", 1080}, {"samples", 256}, {"tileSize", 128}}}};
     Camera camera(QVector3D(4, 3, 6));
     d.captureCamera(camera);
+    d.migrate();
     d.captureSettings(RenderParams::Snapshot());
     return d;
 }
@@ -113,6 +140,14 @@ void SceneDocument::migrate()
         root["groups"] =
             QJsonArray{QJsonObject{{"id", "root"}, {"name", root["name"]}, {"parent", ""}, {"order", 0}}};
         root["objects"] = QJsonArray();
+    }
+    if (!root["cameras"].isArray())
+    {
+        auto camera = root["camera"].toObject();
+        camera["id"] = "camera-1";
+        camera["name"] = QString::fromUtf8("相机 1");
+        root["cameras"] = QJsonArray{camera};
+        root["activeCameraId"] = "camera-1";
     }
 }
 QString SceneDocument::packageRoot() const
@@ -284,12 +319,24 @@ bool SceneDocument::validate(QString &error, bool checkFiles) const
             return fail("Invalid texture magnification filter.");
     }
     auto c = root["camera"].toObject();
-    if (!vectorValid(c["position"], 3) || !vectorValid(c["target"], 3) || !vectorValid(c["up"], 3) ||
-        (sceneVector(c["position"]) - sceneVector(c["target"])).lengthSquared() < 1e-10 ||
-        QVector3D::crossProduct(sceneVector(c["target"]) - sceneVector(c["position"]), sceneVector(c["up"]))
-                .lengthSquared() < 1e-10 ||
-        c["fov"].toDouble() <= 0 || c["fov"].toDouble() >= 175)
+    if (!cameraValid(c))
         return fail("Invalid camera.");
+    if (root["cameras"].isArray())
+    {
+        const auto cameras = root["cameras"].toArray();
+        QSet<QString> cameraIds;
+        for (auto value : cameras)
+        {
+            const auto entry = value.toObject();
+            const auto id = entry["id"].toString();
+            if (id.isEmpty() || entry["name"].toString().trimmed().isEmpty() ||
+                cameraIds.contains(id) || !cameraValid(entry))
+                return fail("Invalid saved camera.");
+            cameraIds.insert(id);
+        }
+        if (cameras.isEmpty() || !cameraIds.contains(root["activeCameraId"].toString()))
+            return fail("Invalid active camera.");
+    }
     if (!root["render"].isObject())
         return fail("Missing render settings.");
     auto render = root["render"].toObject();
@@ -385,9 +432,11 @@ bool SceneDocument::loadScene(const QString &path, SceneDocument &result, QStrin
 }
 bool SceneDocument::saveScene(const QString &path, QString &error) const
 {
-    if (!validate(error))
+    SceneDocument normalized = *this;
+    syncLegacyCamera(normalized.root);
+    if (!normalized.validate(error))
         return false;
-    auto copy = root;
+    auto copy = normalized.root;
     const QDir base(QFileInfo(path).absolutePath());
     // Save As is a regular document; it may legitimately reference the old package.
     copy["portable"] = root["portable"].toBool() && QFileInfo(path).absoluteFilePath() == filePath;
@@ -404,7 +453,9 @@ bool SceneDocument::saveScene(const QString &path, QString &error) const
 }
 bool SceneDocument::exportScenePackage(const QString &directory, QString &error) const
 {
-    if (!validate(error))
+    SceneDocument normalized = *this;
+    syncLegacyCamera(normalized.root);
+    if (!normalized.validate(error))
         return false;
     const QFileInfo target(directory);
     const QDir targetDir(directory);
@@ -422,7 +473,7 @@ bool SceneDocument::exportScenePackage(const QString &directory, QString &error)
         error = "Cannot create export staging directory.";
         return false;
     }
-    auto copy = root;
+    auto copy = normalized.root;
     QMap<QString, QString> copied;
     bool ok = true;
     visitPaths(copy, [&](const QString &source) {
@@ -484,10 +535,27 @@ bool SceneDocument::exportScenePackage(const QString &directory, QString &error)
 }
 void SceneDocument::captureCamera(const Camera &c)
 {
-    root["camera"] = QJsonObject{{"position", jsonVector(c.position)},
-                                 {"target", jsonVector(c.target)},
-                                 {"up", jsonVector(c.worldUp)},
-                                 {"fov", c.zoom}};
+    QJsonObject camera{{"position", jsonVector(c.position)},
+                       {"target", jsonVector(c.target)},
+                       {"up", jsonVector(c.worldUp)},
+                       {"fov", c.zoom}};
+    root["camera"] = camera;
+    if (root["cameras"].isArray())
+    {
+        auto cameras = root["cameras"].toArray();
+        const auto activeId = root["activeCameraId"].toString();
+        for (int i = 0; i < cameras.size(); ++i)
+        {
+            auto entry = cameras[i].toObject();
+            if (entry["id"].toString() != activeId)
+                continue;
+            for (auto it = camera.begin(); it != camera.end(); ++it)
+                entry[it.key()] = it.value();
+            cameras[i] = entry;
+            root["cameras"] = cameras;
+            break;
+        }
+    }
 }
 void SceneDocument::restoreCamera(Camera &c) const
 {

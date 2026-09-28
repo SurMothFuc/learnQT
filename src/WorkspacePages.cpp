@@ -10,6 +10,7 @@
 #include <QGroupBox>
 #include <QHeaderView>
 #include <QImageReader>
+#include <QInputDialog>
 #include <QJsonDocument>
 #include <QListView>
 #include <QMenu>
@@ -24,6 +25,7 @@
 #include <QTabBar>
 #include <QTimer>
 #include <QToolButton>
+#include <QUuid>
 #include <QVBoxLayout>
 #include <cmath>
 
@@ -302,9 +304,94 @@ void learnQT::setupWorkspace()
     auto renderPanel = new QWidget;
     auto renderLayout = column(renderPanel);
     renderLayout->addWidget(label("路径追踪 · OpenGL 3.3\n当前上下文设备；最终降噪使用 CPU OIDN。"));
+    auto framing = group("构图相机与画幅");
+    auto framingForm = new QFormLayout;
+    m_renderCameraChoice = new QComboBox;
+    m_renderCameraChoice->setObjectName("renderCameraChoice");
+    framingForm->addRow("来源相机", m_renderCameraChoice);
+    m_aspectChoice = new QComboBox;
+    m_aspectChoice->setObjectName("renderAspectChoice");
+    m_aspectChoice->addItem("自定义", 0.0);
+    for (const QPair<QString, double> &aspect :
+         {QPair<QString, double>{"16:9", 16.0 / 9}, {"4:3", 4.0 / 3},
+          {"1:1", 1.0}, {"9:16", 9.0 / 16}})
+        m_aspectChoice->addItem(aspect.first, aspect.second);
+    m_aspectChoice->setCurrentIndex(1);
+    framingForm->addRow("画面比例", m_aspectChoice);
+    static_cast<QVBoxLayout *>(framing->layout())->addLayout(framingForm);
+    auto framingActions = new QHBoxLayout;
+    auto compositionButton = new QPushButton("调整构图");
+    auto resultButton = new QPushButton("查看结果");
+    auto saveCameraButton = new QPushButton("保存为新相机");
+    saveCameraButton->setObjectName("saveCompositionCamera");
+    for (auto button : {compositionButton, resultButton, saveCameraButton})
+        framingActions->addWidget(button);
+    static_cast<QVBoxLayout *>(framing->layout())->addLayout(framingActions);
+    renderLayout->addWidget(framing);
+    connect(m_renderCameraChoice, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            [this](int index) {
+                if (index < 0)
+                    return;
+                const auto id = m_renderCameraChoice->itemData(index).toString();
+                for (auto value : editor->document.root["cameras"].toArray())
+                    if (value.toObject()["id"].toString() == id)
+                    {
+                        m_draftSourceId = id;
+                        m_draftCamera = value.toObject();
+                        if (workspace && workspace->page == int(WorkspacePage::Render))
+                            setRenderPreviewMode(true);
+                        break;
+                    }
+            });
+    connect(m_aspectChoice, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            [this](int index) {
+                if (index <= 0)
+                    return;
+                const double aspect = m_aspectChoice->itemData(index).toDouble();
+                outputHeight->setValue(qMax(16, qRound(outputWidth->value() / aspect)));
+                commitOutputSettings();
+            });
+    connect(outputWidth, QOverload<int>::of(&QSpinBox::valueChanged), this, [this] {
+        const double aspect = m_aspectChoice->currentData().toDouble();
+        if (aspect > 0)
+            outputHeight->setValue(qMax(16, qRound(outputWidth->value() / aspect)));
+        viewport->setCompositionAspect(QSize(outputWidth->value(), outputHeight->value()));
+    });
+    connect(outputHeight, QOverload<int>::of(&QSpinBox::valueChanged), this, [this] {
+        const double aspect = m_aspectChoice->currentData().toDouble();
+        if (aspect > 0 &&
+            qAbs(outputHeight->value() - qRound(outputWidth->value() / aspect)) > 1)
+        {
+            const QSignalBlocker block(m_aspectChoice);
+            m_aspectChoice->setCurrentIndex(0);
+        }
+        viewport->setCompositionAspect(QSize(outputWidth->value(), outputHeight->value()));
+    });
+    connect(compositionButton, &QPushButton::clicked, this, [this] { setRenderPreviewMode(true); });
+    connect(resultButton, &QPushButton::clicked, this, [this] { setRenderPreviewMode(false); });
+    connect(saveCameraButton, &QPushButton::clicked, this, &learnQT::saveDraftCamera);
+    w.mutationWidgets << saveCameraButton << m_renderCameraChoice << m_aspectChoice;
+    connect(editor, &EditorController::changed, this, [this](int change) {
+        if (change == EditorController::CameraChange || change == EditorController::Topology ||
+            change == EditorController::Organization)
+        {
+            if (change == EditorController::CameraChange && workspace &&
+                workspace->page != int(WorkspacePage::Render) &&
+                m_draftSourceId == editor->document.root["activeCameraId"].toString())
+                m_draftCamera = {};
+            refreshRenderCameras();
+        }
+    });
+    refreshRenderCameras();
     // 交互预览设置已移出本页：入口在顶栏“预览设置”的弹出面板与详情弹窗。
     for (auto key : {"outputSection", "displaySection"})
         renderLayout->addWidget(settingsSection(key));
+    auto formatRow = new QHBoxLayout;
+    formatRow->addWidget(new QLabel("自动导出格式"));
+    m_renderFormat = new QComboBox;
+    m_renderFormat->addItems({"PNG", "JPEG"});
+    formatRow->addWidget(m_renderFormat, 1);
+    renderLayout->addLayout(formatRow);
     auto exports = new QPushButton("导出当前结果 · PNG / JPEG…");
     connect(exports, &QPushButton::clicked, this, &learnQT::saveGLImage);
     renderLayout->addWidget(exports);
@@ -348,7 +435,7 @@ void learnQT::setupWorkspace()
 
     auto cameraPanel = new QWidget;
     auto cameraLayout = column(cameraPanel);
-    auto basic = new QGroupBox("当前相机 · 针孔透视");
+    auto basic = new QGroupBox("当前编辑相机 · 针孔透视");
     auto cameraForm = new QFormLayout(basic);
     QVector<MixedSpin *> cameraValues;
     for (int i = 0; i < 7; ++i)
@@ -394,7 +481,7 @@ void learnQT::setupWorkspace()
     auto frame = new QPushButton("定位所选对象 · F");
     connect(frame, &QPushButton::clicked, viewport, &GLWidget::frameSelection);
     cameraLayout->addWidget(frame);
-    cameraLayout->addWidget(unavailable("镜头与构图", "只使用当前场景中的单相机，不保存演示相机。",
+    cameraLayout->addWidget(unavailable("镜头与构图", "可在左侧保存并切换多个相机视角。",
                                         {"焦距 / 传感器 / 景深", "运动 / 构图辅助"}));
     cameraLayout->addStretch();
     w.rightPages[4] = scrolling(cameraPanel);
@@ -445,13 +532,33 @@ void learnQT::setupWorkspace()
     shortcuts->layout()->addWidget(
         label("Q 选择 · W 移动 · E 旋转 · R 缩放\nAlt + 左键环绕 · 中键平移 · 滚轮缩放\nF 定位 · Esc "
               "取消拖动 · Delete 删除\nCtrl+D 复制 · Ctrl+Z 撤销 · Ctrl+Shift+Z 重做\nCtrl+N 新建 · Ctrl+O "
-              "打开 · Ctrl+S 保存 · F12 渲染\n输入框保留文本编辑快捷键。"));
+              "打开 · Ctrl+S 保存 · 渲染页 F12 加入队列\n输入框保留文本编辑快捷键。"));
     prefSections << shortcuts;
     prefSections << unavailable("性能", "使用当前 OpenGL 上下文设备；尚无设备切换或显存预算控制。",
                                 {"GPU 选择 / 缓存预算"});
     auto paths = group("路径");
     paths->layout()->addWidget(
-        label("模型、纹理和 HDR 使用文件选择器导入；场景保存及图片导出时选择目标位置。"));
+        label("模型、纹理和 HDR 使用文件选择器导入；正式任务完成后自动写入下方目录。"));
+    auto exportPath = new QLineEdit(settings.value("workspaceV4/autoExportPath").toString());
+    exportPath->setObjectName("autoExportPath");
+    exportPath->setPlaceholderText("选择自动导出目录");
+    auto browseExport = new QPushButton("选择目录…");
+    auto exportPathRow = new QHBoxLayout;
+    exportPathRow->addWidget(exportPath, 1);
+    exportPathRow->addWidget(browseExport);
+    static_cast<QVBoxLayout *>(paths->layout())->addLayout(exportPathRow);
+    connect(exportPath, &QLineEdit::editingFinished, this, [exportPath] {
+        QSettings s(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
+        s.setValue("workspaceV4/autoExportPath", exportPath->text().trimmed());
+    });
+    connect(browseExport, &QPushButton::clicked, this, [this, exportPath] {
+        const auto directory = QFileDialog::getExistingDirectory(this, tr("自动导出目录"), exportPath->text());
+        if (directory.isEmpty())
+            return;
+        exportPath->setText(directory);
+        QSettings s(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
+        s.setValue("workspaceV4/autoExportPath", directory);
+    });
     prefSections << paths;
     prefSections << unavailable("自动保存", "当前使用手动保存及未保存修改提示。",
                                 {"自动保存间隔 / 保留版本"});
@@ -596,12 +703,142 @@ void learnQT::setupWorkspace()
     w.leftPages[3] = lightListPanel;
     auto cameraList = new QWidget;
     auto cameraListLayout = column(cameraList);
-    cameraListLayout->addWidget(label("场景相机", "sectionHeading"));
+    auto cameraHeading = new QHBoxLayout;
+    cameraHeading->addWidget(label("场景相机", "sectionHeading"), 1);
+    auto clearCamera = new QToolButton;
+    clearCamera->setText("取消选择");
+    clearCamera->setObjectName("savedCameraClearSelection");
+    clearCamera->setToolTip("清除列表选择，保留当前编辑相机");
+    cameraHeading->addWidget(clearCamera);
+    cameraListLayout->addLayout(cameraHeading);
     auto currentCamera = new QListWidget;
-    addCard(currentCamera, "当前相机", "camera", "");
-    currentCamera->setCurrentRow(0);
+    currentCamera->setObjectName("savedCameraList");
     cameraListLayout->addWidget(currentCamera, 1);
-    cameraListLayout->addWidget(unavailable("多相机", "当前文档仅保存一台相机。", {"新建相机"}));
+    auto cameraButtons = new QHBoxLayout;
+    auto addCamera = new QPushButton("新建视角");
+    addCamera->setObjectName("savedCameraAdd");
+    addCamera->setToolTip("以当前画面创建一个新视角，不覆盖已有视角");
+    auto renameCamera = new QPushButton("重命名");
+    renameCamera->setObjectName("savedCameraRename");
+    auto deleteCamera = new QPushButton("删除");
+    deleteCamera->setObjectName("savedCameraDelete");
+    for (auto button : {addCamera, renameCamera, deleteCamera})
+        cameraButtons->addWidget(button);
+    cameraListLayout->addLayout(cameraButtons);
+    w.mutationWidgets << addCamera << renameCamera << deleteCamera;
+    auto refreshCameraList = [this, currentCamera, renameCamera, deleteCamera, clearCamera] {
+        QSignalBlocker block(currentCamera);
+        currentCamera->clear();
+        const auto cameras = editor->document.root["cameras"].toArray();
+        bool selectedFound = false;
+        for (int i = 0; i < cameras.size(); ++i)
+        {
+            auto camera = cameras[i].toObject();
+            auto item = new QListWidgetItem(WorkbenchStyle::icon("camera"), camera["name"].toString(), currentCamera);
+            item->setData(Qt::UserRole, camera["id"].toString());
+            if (!workspace->selectedCameraId.isEmpty() &&
+                camera["id"].toString() == workspace->selectedCameraId)
+            {
+                currentCamera->setCurrentRow(i);
+                selectedFound = true;
+            }
+        }
+        if (!selectedFound)
+            workspace->selectedCameraId.clear();
+        clearCamera->setEnabled(selectedFound);
+        renameCamera->setEnabled(selectedFound && !m_loading && !editor->renderLocked);
+        deleteCamera->setEnabled(selectedFound && cameras.size() > 1 &&
+                                 !m_loading && !editor->renderLocked);
+    };
+    w.refreshers.push_back(refreshCameraList);
+    refreshCameraList();
+    connect(editor, &EditorController::changed, currentCamera, [refreshCameraList](int change) {
+        if (change == EditorController::CameraChange)
+            refreshCameraList();
+    });
+    connect(clearCamera, &QToolButton::clicked, currentCamera, [currentCamera] {
+        currentCamera->clearSelection();
+        currentCamera->setCurrentRow(-1);
+    });
+    connect(currentCamera, &QListWidget::currentRowChanged, this,
+            [this, currentCamera, renameCamera, deleteCamera, clearCamera](int row) {
+        const auto cameras = editor->document.root["cameras"].toArray();
+        const bool selected = row >= 0 && row < cameras.size();
+        workspace->selectedCameraId = selected ? cameras[row].toObject()["id"].toString() : QString();
+        clearCamera->setEnabled(selected);
+        renameCamera->setEnabled(selected && !m_loading && !editor->renderLocked);
+        deleteCamera->setEnabled(selected && cameras.size() > 1 &&
+                                 !m_loading && !editor->renderLocked);
+        if (!selected || m_loading || editor->renderLocked)
+            return;
+        auto camera = cameras[row].toObject();
+        if (editor->document.root["activeCameraId"] == camera["id"])
+            return;
+        auto next = editor->document;
+        next.root["activeCameraId"] = camera["id"];
+        QJsonObject legacy;
+        for (auto key : {"position", "target", "up", "fov"})
+            legacy[key] = camera[key];
+        next.root["camera"] = legacy;
+        editor->submit(next, tr("切换相机"), EditorController::CameraChange);
+    });
+    connect(currentCamera, &QListWidget::itemSelectionChanged, this, [currentCamera] {
+        if (currentCamera->selectedItems().isEmpty() && currentCamera->currentRow() >= 0)
+            currentCamera->setCurrentRow(-1);
+    });
+    connect(addCamera, &QPushButton::clicked, this, [this, refreshCameraList] {
+        if (m_loading || editor->renderLocked)
+            return;
+        auto next = editor->document;
+        auto cameras = next.root["cameras"].toArray();
+        auto camera = next.root["camera"].toObject();
+        camera["id"] = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        camera["name"] = tr("相机 %1").arg(cameras.size() + 1);
+        cameras.append(camera);
+        next.root["cameras"] = cameras;
+        next.root["activeCameraId"] = camera["id"];
+        workspace->selectedCameraId = camera["id"].toString();
+        editor->submit(next, tr("新建相机视角"), EditorController::Organization);
+        refreshCameraList();
+    });
+    connect(renameCamera, &QPushButton::clicked, this, [this, currentCamera] {
+        const int row = currentCamera->currentRow();
+        if (row < 0 || m_loading || editor->renderLocked)
+            return;
+        auto next = editor->document;
+        auto cameras = next.root["cameras"].toArray();
+        auto camera = cameras[row].toObject();
+        bool ok = false;
+        const auto name = QInputDialog::getText(this, tr("重命名相机"), tr("名称"), QLineEdit::Normal,
+                                                camera["name"].toString(), &ok).trimmed();
+        if (!ok || name.isEmpty())
+            return;
+        camera["name"] = name;
+        cameras[row] = camera;
+        next.root["cameras"] = cameras;
+        editor->submit(next, tr("重命名相机"), EditorController::Organization);
+    });
+    connect(deleteCamera, &QPushButton::clicked, this, [this, currentCamera] {
+        auto next = editor->document;
+        auto cameras = next.root["cameras"].toArray();
+        const int row = currentCamera->currentRow();
+        if (row < 0 || cameras.size() <= 1 || m_loading || editor->renderLocked)
+            return;
+        const auto removedId = cameras[row].toObject()["id"].toString();
+        cameras.removeAt(row);
+        next.root["cameras"] = cameras;
+        workspace->selectedCameraId.clear();
+        if (next.root["activeCameraId"].toString() == removedId)
+        {
+            auto active = cameras[qMin(row, cameras.size() - 1)].toObject();
+            next.root["activeCameraId"] = active["id"];
+            QJsonObject legacy;
+            for (auto key : {"position", "target", "up", "fov"})
+                legacy[key] = active[key];
+            next.root["camera"] = legacy;
+        }
+        editor->submit(next, tr("删除相机"), EditorController::CameraChange);
+    });
     w.leftPages[4] = cameraList;
 
     auto activateResource = [this](const QModelIndex &i) {
@@ -671,14 +908,31 @@ void learnQT::setupWorkspace()
     for (auto a : {renderAction, pauseAction, stopAction})
     {
         auto button = new QToolButton;
+        if (a == renderAction)
+            button->setObjectName("renderPrimary");
         button->setDefaultAction(a);
         button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         taskControls->addWidget(button);
     }
+    auto runQueueButton = new QPushButton("运行队列");
+    runQueueButton->setObjectName("runRenderQueue");
+    taskControls->addWidget(runQueueButton);
+    connect(runQueueButton, &QPushButton::clicked, this, &learnQT::runRenderQueue);
+    auto stopQueueButton = new QPushButton("停止队列");
+    stopQueueButton->setObjectName("stopRenderQueue");
+    taskControls->addWidget(stopQueueButton);
+    connect(stopQueueButton, &QPushButton::clicked, this, [this] {
+        m_queueRunning = false;
+        if (m_queueWorker && m_activeQueueId)
+            m_queueWorker->stopCurrent();
+        refreshRenderQueue();
+    });
+    auto moveUp = new QPushButton("上移");
+    auto moveDown = new QPushButton("下移");
+    auto removeTask = new QPushButton("移除");
+    for (auto button : {moveUp, moveDown, removeTask})
+        taskControls->addWidget(button);
     taskControls->addStretch();
-    auto queue = new QPushButton("添加到队列 · 未开放");
-    queue->setEnabled(false);
-    taskControls->addWidget(queue);
     taskLayout->addLayout(taskControls);
     w.task = new QTableWidget(1, 5);
     w.task->setObjectName("currentRenderTask");
@@ -689,11 +943,53 @@ void learnQT::setupWorkspace()
     for (int i = 0; i < 5; ++i)
         w.task->setItem(0, i, new QTableWidgetItem(i == 0 ? "当前单张输出" : "—"));
     taskLayout->addWidget(w.task);
-    taskLayout->addWidget(label("当前单任务 · 上次完成结果可在结果工具栏查看；历史队列与前后对比未开放。"));
+    connect(w.task, &QTableWidget::cellClicked, this, [this](int, int) { showRenderTaskResult(); });
+    connect(w.task, &QTableWidget::itemSelectionChanged, this,
+            [this] { showRenderTaskResult(); });
+    connect(w.task, &QTableWidget::cellDoubleClicked, this, [this](int row, int) {
+        if (row < 0 || row >= m_renderQueue.size() || m_renderQueue[row].status != tr("等待中"))
+            return;
+        bool accepted = false;
+        const auto name = QInputDialog::getText(this, tr("重命名渲染任务"), tr("任务名称"),
+                                                QLineEdit::Normal, m_renderQueue[row].name,
+                                                &accepted).trimmed();
+        if (accepted && !name.isEmpty())
+        {
+            m_renderQueue[row].name = name;
+            refreshRenderQueue();
+        }
+    });
+    connect(moveUp, &QPushButton::clicked, this, [this] {
+        const int row = workspace->task->currentRow();
+        if (row <= 0 || row >= m_renderQueue.size() ||
+            m_renderQueue[row].status != tr("等待中") || m_renderQueue[row - 1].status != tr("等待中"))
+            return;
+        m_renderQueue.swapItemsAt(row, row - 1);
+        refreshRenderQueue();
+        workspace->task->selectRow(row - 1);
+    });
+    connect(moveDown, &QPushButton::clicked, this, [this] {
+        const int row = workspace->task->currentRow();
+        if (row < 0 || row + 1 >= m_renderQueue.size() ||
+            m_renderQueue[row].status != tr("等待中") || m_renderQueue[row + 1].status != tr("等待中"))
+            return;
+        m_renderQueue.swapItemsAt(row, row + 1);
+        refreshRenderQueue();
+        workspace->task->selectRow(row + 1);
+    });
+    connect(removeTask, &QPushButton::clicked, this, [this] {
+        const int row = workspace->task->currentRow();
+        if (row < 0 || row >= m_renderQueue.size() || m_renderQueue[row].status != tr("等待中"))
+            return;
+        m_renderQueue.removeAt(row);
+        refreshRenderQueue();
+    });
+    taskLayout->addWidget(label("任务按顺序运行；可继续编辑场景并加入下一张图片。"));
     w.bottomPages[6] = taskPanel;
     connect(viewport, &GLWidget::renderThreadReady, this, [this] {
         connect(viewport->renderThread(), &RenderThread::statsReady, this, [this](const RenderStats &s) {
-            if (!editor->renderLocked || s.target <= 0 || s.size != workspace->taskSize)
+            if (!m_renderQueue.isEmpty() || !editor->renderLocked || s.target <= 0 ||
+                s.size != workspace->taskSize)
                 return;
             auto t = workspace->task;
             workspace->taskSamples = s.samples;
@@ -703,6 +999,8 @@ void learnQT::setupWorkspace()
         });
         connect(viewport->renderThread(), &RenderThread::jobStateChanged, this,
                 [this](RenderJobState state, const QString &) {
+                    if (!m_renderQueue.isEmpty())
+                        return;
                     workspace->task->item(0, 3)->setText(renderJobText(state));
                     if (state == RenderJobState::Completed)
                     {
@@ -875,6 +1173,7 @@ void learnQT::navigateWorkspace(WorkspacePage page)
     w.navigating = true;
     if (w.page >= 0)
         w.layouts[w.page] = saveState(4);
+    const int previous = w.page;
     w.page = target;
     // Cancel incomplete manipulation before hiding its input surface.
     viewport->setTool(viewport->tool);
@@ -914,7 +1213,17 @@ void learnQT::navigateWorkspace(WorkspacePage page)
                                            : "资源浏览器");
     for (auto dock : {inspectorDock, w.left, w.bottom})
         setupDockTitle(dock, target == 6 ? "play" : "settings");
-    views->setCurrentIndex(target == 0 ? 2 : target == 7 ? 3 : target == 8 ? 4 : target == 6 ? 1 : 0);
+    views->setCurrentIndex(target == 0 ? 2 : target == 7 ? 3 : target == 8 ? 4
+                                                       : target == 6 ? (m_renderPreviewMode ? 0 : 1) : 0);
+    if (target == 6 && !m_draftCamera.isEmpty())
+    {
+        Camera draft;
+        draft.restoreState(sceneVector(m_draftCamera["position"]), sceneVector(m_draftCamera["target"]),
+                           sceneVector(m_draftCamera["up"]), m_draftCamera["fov"].toDouble());
+        viewport->setCompositionMode(true, draft, QSize(outputWidth->value(), outputHeight->value()));
+    }
+    else if (previous == 6)
+        viewport->setCompositionMode(false);
     resizeDocks({treeDock, inspectorDock, w.left}, {245, 360, 250}, Qt::Horizontal);
     resizeDocks({performanceDock, inspectorDock}, {280, 500}, Qt::Vertical);
     if (scene)
@@ -929,7 +1238,8 @@ void learnQT::navigateWorkspace(WorkspacePage page)
         w.bottom->hide();
     w.navigation[target]->setChecked(true);
     if (viewport->renderThread())
-        viewport->renderThread()->setPreviewVisible(target >= 1 && target <= 5);
+        viewport->renderThread()->setPreviewVisible((target >= 1 && target <= 5) ||
+                                                    (target == 6 && m_renderPreviewMode));
     w.navigating = false;
     w.refreshCamera();
     syncWorkspaceAvailability();
@@ -1079,8 +1389,20 @@ void learnQT::syncWorkspaceAvailability()
         return;
     bool editable = !m_loading && !editor->renderLocked;
     setProperty("workspaceEditable", editable);
+    for (auto action : editActions)
+        action->setEnabled(editable && workspace->page != int(WorkspacePage::Render));
     for (auto widget : workspace->mutationWidgets)
         widget->setEnabled(editable);
+    if (auto cameraList = findChild<QListWidget *>("savedCameraList"))
+    {
+        const bool selected = cameraList->currentRow() >= 0;
+        if (auto rename = findChild<QPushButton *>("savedCameraRename"))
+            rename->setEnabled(editable && selected);
+        if (auto remove = findChild<QPushButton *>("savedCameraDelete"))
+            remove->setEnabled(editable && selected && cameraList->count() > 1);
+        if (auto clear = findChild<QToolButton *>("savedCameraClearSelection"))
+            clear->setEnabled(selected);
+    }
     for (auto button : findChildren<QPushButton *>())
         if (button->property("resourceAction").toBool())
             button->setEnabled(button->property("resourceSelected").toBool() &&

@@ -114,6 +114,7 @@ learnQT::learnQT(QWidget *parent) : QMainWindow(parent)
     configurePreviewRegression();
     configurePreviewModeRegression();
     configureWorkspaceRegression();
+    configureRenderQueueRegression();
     configurePreviewPanelRegression();
     configureRasterRegression();
     // 回归入口可关闭交互回退，避免默认的光栅化回退改变既有预览用例的判断。
@@ -126,6 +127,11 @@ learnQT::learnQT(QWidget *parent) : QMainWindow(parent)
 }
 learnQT::~learnQT()
 {
+    if (m_queueWorker)
+    {
+        delete m_queueWorker;
+        m_queueWorker = nullptr;
+    }
     if (m_loadWorker)
     {
         m_loadWorker->wait();
@@ -214,6 +220,12 @@ void learnQT::setupWorkbench()
     connect(editor, &EditorController::busyChanged, empty,
             [empty](bool busy) { empty->setEnabled(!busy); });
     editorLayout->addWidget(canvas, 1);
+    connect(viewport, &GLWidget::compositionCameraChanged, this, [this] {
+        m_draftCamera["position"] = jsonVector(viewport->camera.position);
+        m_draftCamera["target"] = jsonVector(viewport->camera.target);
+        m_draftCamera["up"] = jsonVector(viewport->camera.worldUp);
+        m_draftCamera["fov"] = viewport->camera.zoom;
+    });
     auto navigationHint =
         new QLabel(tr("  Alt + 左键  环绕    ·    中键  平移    ·    滚轮  缩放    ·    F  定位所选"));
     navigationHint->setObjectName("muted");
@@ -228,10 +240,6 @@ void learnQT::setupWorkbench()
     resultTools->addAction(tr("适应窗口"), resultView, &ResultView::fit);
     resultTools->addAction(tr("1:1"), resultView, &ResultView::actualSize);
     resultTools->addAction(tr("导出图片…"), this, &learnQT::saveGLImage);
-    resultTools->addAction(tr("上次完成结果"), this, [this] {
-        if (!lastResult.isNull())
-            resultView->setImage(lastResult);
-    });
     resultLayout->addWidget(resultTools);
     resultLayout->addWidget(resultView);
     views->addTab(results, tr("渲染结果"));
@@ -333,14 +341,31 @@ void learnQT::setupWorkbench()
     connect(snapAction, &QAction::toggled, this, [this](bool enabled) { viewport->snap = enabled; });
     editActions.append(snapAction);
     toolbar->addSeparator();
-    renderAction = new QAction(WorkbenchStyle::icon("play"), tr("开始渲染"), this);
-    connect(renderAction, &QAction::triggered, this, &learnQT::startRender);
+    renderAction = new QAction(WorkbenchStyle::icon("play"), tr("加入队列"), this);
+    connect(renderAction, &QAction::triggered, this, [this] {
+        if (workspace && workspace->page == int(WorkspacePage::Render))
+            addRenderTask();
+    });
     renderAction->setShortcut(QKeySequence("F12"));
-    pauseAction = toolbar->addAction(tr("暂停"), this, [this] {
+    pauseAction = new QAction(tr("暂停"), this);
+    connect(pauseAction, &QAction::triggered, this, [this] {
+        if (m_activeQueueId && m_queueWorker)
+        {
+            const bool resume = pauseAction->text() == tr("继续");
+            m_queueWorker->pauseCurrent(!resume);
+            pauseAction->setText(resume ? tr("暂停") : tr("继续"));
+            return;
+        }
         if (viewport->renderThread())
             viewport->renderThread()->pauseJob(jobState != RenderJobState::Paused);
     });
-    stopAction = toolbar->addAction(tr("停止"), this, [this] {
+    stopAction = new QAction(tr("停止"), this);
+    connect(stopAction, &QAction::triggered, this, [this] {
+        if (m_activeQueueId && m_queueWorker)
+        {
+            m_queueWorker->stopCurrent();
+            return;
+        }
         if (viewport->renderThread())
             viewport->renderThread()->stopJob();
     });
@@ -373,27 +398,8 @@ void learnQT::setupWorkbench()
     previewButton->setMenu(previewMenu);
     auto previewWidgetActionForToolbar = new QWidgetAction(toolbar);
     previewWidgetActionForToolbar->setDefaultWidget(previewButton);
-    toolbar->insertAction(pauseAction, previewWidgetActionForToolbar);
+    toolbar->addAction(previewWidgetActionForToolbar);
     toolbar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    auto renderControls = new QWidget;
-    renderControls->setObjectName("renderControls");
-    auto renderControlLayout = new QHBoxLayout(renderControls);
-    renderControlLayout->setContentsMargins(6, 2, 6, 2);
-    renderControlLayout->setSpacing(4);
-    toolbar->removeAction(pauseAction);
-    toolbar->removeAction(stopAction);
-    for (auto action : {pauseAction, stopAction}) {
-        auto control = new QToolButton;
-        control->setDefaultAction(action);
-        control->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-        renderControlLayout->addWidget(control);
-    }
-    auto renderButton = new QToolButton;
-    renderButton->setObjectName("renderPrimary");
-    renderButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    renderButton->setDefaultAction(renderAction);
-    renderControlLayout->addWidget(renderButton);
-    menuBar()->setCornerWidget(renderControls, Qt::TopRightCorner);
     pauseAction->setEnabled(false);
     stopAction->setEnabled(false);
     setupTree();
@@ -441,8 +447,8 @@ void learnQT::setupWorkbench()
             tr("左键选择 · Ctrl 追加 / 切换 · 树中 Shift 范围选择\nAlt + 左键环绕 · 中键平移 · "
                "滚轮缩放\nQ "
                "选择 · W 移动 · E 旋转 · R 缩放 · F 定位\nEsc 取消变换 · Delete 删除 · Ctrl+D "
-               "复制\n\n组仅组织对象，换组不改变世界变换。\n正式渲染期间锁定编辑，完成后可导出 PNG / "
-               "JPEG。"));
+               "复制\n\n组仅组织对象，换组不改变世界变换。\n在渲染页加入并运行队列；运行时仍可编辑场景，"
+               "任务完成后自动导出 PNG / JPEG。"));
     });
     auto ready = new QLabel(tr("●"));
     ready->setStyleSheet("color:#59c99c;padding:0 7px;");
@@ -679,16 +685,7 @@ QWidget *learnQT::createSettings()
     outputDenoise = new QCheckBox(tr("正式出图降噪"));
     outputDenoise->setChecked(true);
     form->addRow(outputDenoise);
-    auto commitOutput = [this] {
-        if (m_restoring)
-            return;
-        auto d = editor->document;
-        d.root["output"] =
-            QJsonObject{{"width", outputWidth->value()},     {"height", outputHeight->value()},
-                        {"samples", outputSamples->value()}, {"tileSize", outputTile->value()},
-                        {"bounces", outputBounces->value()}, {"denoise", outputDenoise->isChecked()}};
-        editor->submit(d, tr("输出设置"), EditorController::Display);
-    };
+    auto commitOutput = [this] { commitOutputSettings(); };
     for (auto s : {outputWidth, outputHeight, outputSamples, outputTile, outputBounces})
         connect(s, &QSpinBox::editingFinished, this, commitOutput);
     connect(outputDenoise, &QCheckBox::toggled, this, [commitOutput] { commitOutput(); });
@@ -782,10 +779,121 @@ QWidget *learnQT::createSettings()
     scroll->setWidget(page);
     return scroll;
 }
+void learnQT::commitOutputSettings()
+{
+    if (m_restoring || m_loading)
+        return;
+    auto d = editor->document;
+    d.root["output"] =
+        QJsonObject{{"width", outputWidth->value()},     {"height", outputHeight->value()},
+                    {"samples", outputSamples->value()}, {"tileSize", outputTile->value()},
+                    {"bounces", outputBounces->value()}, {"denoise", outputDenoise->isChecked()}};
+    editor->submit(d, tr("输出设置"), EditorController::Display);
+}
 void learnQT::connectRenderThread()
 {
     auto thread = viewport->renderThread();
     thread->setPreviewVisible(views->currentIndex() == 0);
+    if (workspace && workspace->page == int(WorkspacePage::Render) && !m_draftCamera.isEmpty())
+    {
+        Camera draft;
+        draft.restoreState(sceneVector(m_draftCamera["position"]), sceneVector(m_draftCamera["target"]),
+                           sceneVector(m_draftCamera["up"]), m_draftCamera["fov"].toDouble());
+        viewport->setCompositionMode(true, draft, QSize(outputWidth->value(), outputHeight->value()));
+    }
+    if (!m_queueWorker)
+    {
+        m_queueWorker = new RenderQueueThread(viewport->context(), this);
+        connect(m_queueWorker, &RenderQueueThread::workerFailed, this,
+                [this](const QString &error) {
+                    m_queueRunning = false;
+                    if (m_activeQueueId)
+                        for (auto &item : m_renderQueue)
+                            if (item.request.id == m_activeQueueId)
+                            {
+                                item.status = tr("失败");
+                                item.error = error;
+                                break;
+                            }
+                    m_activeQueueId = 0;
+                    if (viewport->renderThread())
+                        viewport->renderThread()->setForceRaster(false);
+                    logMessage(error);
+                    taskLabel->setText(tr("渲染上下文创建失败"));
+                    refreshRenderQueue();
+                });
+        connect(m_queueWorker, &RenderQueueThread::jobState, this,
+                [this](quint64 id, RenderJobState state) {
+                    for (auto &item : m_renderQueue)
+                        if (item.request.id == id)
+                        {
+                            item.status = renderJobText(state);
+                            break;
+                        }
+                    pauseAction->setEnabled(state == RenderJobState::Rendering ||
+                                            state == RenderJobState::Paused);
+                    pauseAction->setText(state == RenderJobState::Paused ? tr("继续") : tr("暂停"));
+                    stopAction->setEnabled(true);
+                    taskLabel->setText(tr("任务 %1 · %2").arg(id).arg(renderJobText(state)));
+                    refreshRenderQueue();
+                });
+        connect(m_queueWorker, &RenderQueueThread::jobProgress, this,
+                [this](quint64 id, int samples, int target, double seconds, QImage image) {
+                    for (auto &item : m_renderQueue)
+                        if (item.request.id == id)
+                        {
+                            item.samples = samples;
+                            item.seconds = seconds;
+                            if (!image.isNull())
+                            {
+                                item.result = image;
+                                if (workspace->page == int(WorkspacePage::Render) &&
+                                    !m_renderPreviewMode && m_viewedTaskId == id)
+                                    resultView->setImage(image);
+                            }
+                            break;
+                        }
+                    statsLabel->setText(tr("正式输出 %1 / %2 spp").arg(samples).arg(target));
+                    progress->setValue(target > 0 ? int(100. * samples / target) : 0);
+                    refreshRenderQueue();
+                });
+        connect(m_queueWorker, &RenderQueueThread::jobFinished, this,
+                [this](quint64 id, bool rendered, bool stopped, QImage image,
+                       const QString &path, const QString &error) {
+                    for (auto &item : m_renderQueue)
+                        if (item.request.id == id)
+                        {
+                            if (!image.isNull())
+                            {
+                                item.result = image;
+                                if (m_viewedTaskId == id)
+                                    resultView->setImage(image);
+                            }
+                            item.samples = rendered ? item.request.settings.samples : item.samples;
+                            item.error = error;
+                            item.status = stopped ? tr("已停止")
+                                          : !rendered ? tr("失败")
+                                          : !error.isEmpty() ? tr("导出失败") : tr("完成");
+                            if (!error.isEmpty())
+                                logMessage(tr("任务 %1：%2").arg(id).arg(error));
+                            else if (rendered)
+                                logMessage(tr("任务 %1 已导出：%2").arg(id).arg(path));
+                            break;
+                        }
+                    m_activeQueueId = 0;
+                    taskLabel->setText(tr("任务 %1 · %2")
+                                           .arg(id)
+                                           .arg(stopped ? tr("已停止") : !rendered ? tr("失败")
+                                                : !error.isEmpty() ? tr("导出失败") : tr("完成")));
+                    pauseAction->setEnabled(false);
+                    stopAction->setEnabled(false);
+                    refreshRenderQueue();
+                    dispatchRenderTask();
+                });
+        m_queueWorker->start();
+        if (m_queueRunning)
+            QTimer::singleShot(0, this, [this] { dispatchRenderTask(); });
+    }
     if (workspace->pendingRender)
         QTimer::singleShot(0, this, [this] { workspace->pendingRender = false; startRender(); });
     connect(thread, &RenderThread::statsReady, this, [this](RenderStats s) {
@@ -793,6 +901,21 @@ void learnQT::connectRenderThread()
         if (previewBadge)
             previewBadge->setText(s.rasterActive ? tr("●  光栅化预览")
                                                  : tr("●  路径追踪预览"));
+        if (m_activeQueueId)
+            return;
+        if (!m_renderQueue.isEmpty() && workspace->page == int(WorkspacePage::Render) &&
+            !m_renderPreviewMode)
+        {
+            const int selected = workspace->task ? workspace->task->currentRow() : -1;
+            const auto &item = m_renderQueue[selected >= 0 && selected < m_renderQueue.size()
+                                                 ? selected : m_renderQueue.size() - 1];
+            statsLabel->setText(tr("任务 %1 · %2 / %3 spp")
+                                    .arg(item.request.id).arg(item.samples)
+                                    .arg(item.request.settings.samples));
+            progress->setValue(item.request.settings.samples > 0
+                                   ? int(100. * item.samples / item.request.settings.samples) : 0);
+            return;
+        }
         // 光栅化交互预览不累积采样，只显示帧耗时，避免把静态的 spp 当成卡住。
         statsLabel->setText(s.rasterActive
                                 ? tr("%1 × %2  |  光栅化 %3 ms  |  已选 %4")
@@ -876,6 +999,7 @@ void learnQT::startRender()
     workspace->task->item(0, 1)->setText(QString("%1 × %2").arg(settings.size.width()).arg(settings.size.height()));
     workspace->task->item(0, 2)->setText(QString("0 / %1 spp").arg(settings.samples));
     workspace->task->item(0, 4)->setText("0.0 秒");
+    m_renderPreviewMode = false;
     navigateWorkspace(WorkspacePage::Render);
     syncWorkspaceAvailability();
     viewport->renderThread()->startJob(settings);
@@ -920,6 +1044,10 @@ void learnQT::beginSceneLoad(const QString &path, bool model)
             refreshScenes();
             return;
         }
+        m_draftCamera = {};
+        m_draftSourceId.clear();
+        if (workspace)
+            workspace->selectedCameraId.clear();
         editor->install(**result);
         viewport->submitPrepared(*result);
         m_sceneDirty = false;
@@ -1100,7 +1228,7 @@ void learnQT::exportPackage()
 void learnQT::saveGLImage()
 {
     auto image = resultView->image;
-    if (image.isNull())
+    if (image.isNull() && m_renderQueue.isEmpty())
         image = lastResult;
     if (image.isNull())
     {

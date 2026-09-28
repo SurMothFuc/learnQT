@@ -3,6 +3,7 @@
 #include "RenderDiagnostics.h"
 #include "RenderRateTracker.h"
 #include <QElapsedTimer>
+#include <cmath>
 RenderThread::RenderThread(QSurface *s, QOpenGLContext *shared, QObject *p) : QThread(p), surface(s)
 {
     context = new QOpenGLContext;
@@ -26,6 +27,20 @@ void RenderThread::setNewSize(int w, int h)
     QMutexLocker lock(&mutex);
     viewport = {std::max(1, w), std::max(1, h)};
     ++controlRevision;
+}
+void RenderThread::setPreviewAspect(QSize aspect)
+{
+    {
+        QMutexLocker lock(&mutex);
+        if (previewAspect == aspect)
+            return;
+        previewAspect = aspect;
+        ++controlRevision;
+    }
+    if (m_jobActive)
+        m_previewRefreshPending = true;
+    else
+        markSceneDirty(toSceneDirtyFlags(SceneDirtyFlag::Camera));
 }
 void RenderThread::markSceneDirty(SceneDirtyFlags f)
 {
@@ -149,6 +164,8 @@ void RenderThread::run()
         double jobSeconds = 0;
         while (m_running)
         {
+            if (!job && !m_jobActive && m_previewRefreshPending.exchange(false))
+                markSceneDirty(kInitialSceneDirty);
             // Wait for the bounded tile burst before applying scene or output changes.
             // A bounded driver wait avoids adding a coarse OS sleep after each tile.
             QElapsedTimer boundaryClock;
@@ -206,6 +223,14 @@ void RenderThread::run()
                 QMutexLocker lock(&mutex);
                 batchRevision = controlRevision.load();
                 size = viewport;
+                if (!m_jobActive && previewAspect.width() > 0 && previewAspect.height() > 0)
+                {
+                    const double aspect = double(previewAspect.width()) / previewAspect.height();
+                    if (double(size.width()) / size.height() > aspect)
+                        size.setWidth(std::max(1, int(std::round(size.height() * aspect))));
+                    else
+                        size.setHeight(std::max(1, int(std::round(size.width() / aspect))));
+                }
                 dirty = pendingDirty;
                 pendingDirty = 0;
                 prepared = std::move(pendingScene);

@@ -2,6 +2,7 @@
 #include "SceneTreeModel.h"
 #include "WorkbenchPanels.h"
 #include "glwidget.h"
+#include "RenderQueueThread.h"
 #include <QCheckBox>
 #include <QCloseEvent>
 #include <QComboBox>
@@ -34,6 +35,7 @@ class learnQT : public QMainWindow
     void syncWorkspaceAvailability();
     void rememberScene(const QString &path);
     void configureWorkspaceRegression();
+    void configureRenderQueueRegression();
     void configurePreviewPanelRegression();
     void configureRasterRegression();
     EditorController *editor;
@@ -63,10 +65,38 @@ class learnQT : public QMainWindow
     QProgressBar *progress;
     QImage lastResult;
     RenderJobState jobState = RenderJobState::Idle;
+    struct QueueItem
+    {
+        RenderQueueRequest request;
+        QString name, cameraName, format = QStringLiteral("png"),
+                status = QStringLiteral("等待中"), error;
+        int samples = 0;
+        double seconds = 0;
+        QImage result;
+    };
+    QVector<QueueItem> m_renderQueue;
+    RenderQueueThread *m_queueWorker = nullptr;
+    quint64 m_nextQueueId = 1, m_activeQueueId = 0;
+    quint64 m_viewedTaskId = 0;
+    bool m_resultBrowsingPinned = false;
+    bool m_queueRunning = false, m_renderPreviewMode = true;
+    QString m_queueOutputDirectory;
+    QJsonObject m_draftCamera;
+    QString m_draftSourceId;
+    QComboBox *m_renderCameraChoice = nullptr, *m_renderFormat = nullptr, *m_aspectChoice = nullptr;
+    void refreshRenderCameras();
+    void addRenderTask();
+    void runRenderQueue();
+    void dispatchRenderTask();
+    void refreshRenderQueue();
+    void showRenderTaskResult();
+    void setRenderPreviewMode(bool preview);
+    void saveDraftCamera();
     void setupWorkbench();
     void setupTree();
     void setupDockTitle(QDockWidget *dock, const QString &icon);
     QWidget *createSettings();
+    void commitOutputSettings();
     void connectRenderThread();
     void startRender();
     void loadModel();

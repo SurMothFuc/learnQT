@@ -50,7 +50,7 @@ bool Renderer::updatePick(int w, int h, quint64 version)
     p->setUniformValue("picking", true);
     p->setUniformValue("width", w);
     p->setUniformValue("height", h);
-    auto &s = Scene::getInstance();
+    auto &s = m_scene;
     p->setUniformValue("eye", s.camera.position);
     p->setUniformValue("view", s.camera.getViewMatrix().inverted());
     p->setUniformValue("cameraFov", s.camera.zoom);

@@ -245,8 +245,9 @@ void Renderer::ensureDepthAttachment()
     rasterDepthSize = QSize(render_width, render_height);
 }
 
-Renderer::Renderer(int width, int height, const RenderParams::Snapshot &initialSnapshot, QObject *parent)
-    : QObject(parent)
+Renderer::Renderer(int width, int height, const RenderParams::Snapshot &initialSnapshot, QObject *parent,
+                   Scene *scene)
+    : QObject(parent), m_scene(scene ? *scene : Scene::getInstance())
 {
     init(width, height, initialSnapshot);
     glGenBuffers(3, pboIds);
@@ -975,7 +976,7 @@ void Renderer::resetAccumulation()
 {
     estimatedTileMs = 0;
     firstComposite = displayDirty = true;
-    const auto &instances = Scene::getInstance().instances;
+    const auto &instances = m_scene.instances;
     previewHasGeometry =
         std::any_of(instances.begin(), instances.end(), [](const SceneInstance &i) { return i.visible; });
     invalidatePreviewDenoise();
@@ -1010,8 +1011,8 @@ void Renderer::resetAccumulation()
 
 void Renderer::uploadTriangleBuffer(bool recreateResources)
 {
-    stats.geometryUploadBytes += Scene::getInstance().geometryData.size() * sizeof(QVector4D);
-    const auto &trianglesEncoded = Scene::getInstance().geometryData;
+    stats.geometryUploadBytes += m_scene.geometryData.size() * sizeof(QVector4D);
+    const auto &trianglesEncoded = m_scene.geometryData;
     const GLsizeiptr bufferSize = static_cast<GLsizeiptr>(trianglesEncoded.size() * sizeof(QVector4D));
     const void *data = trianglesEncoded.empty() ? nullptr : trianglesEncoded.data();
 
@@ -1043,7 +1044,7 @@ void Renderer::uploadTriangleBuffer(bool recreateResources)
 
 void Renderer::uploadNodeBuffer(bool recreateResources)
 {
-    const auto &nodesEncoded = Scene::getInstance().nodes_encoded;
+    const auto &nodesEncoded = m_scene.nodes_encoded;
     const GLsizeiptr bufferSize = static_cast<GLsizeiptr>(nodesEncoded.size() * sizeof(BVHNode_encoded));
     const void *data = nodesEncoded.empty() ? nullptr : nodesEncoded.data();
 
@@ -1075,7 +1076,7 @@ void Renderer::uploadNodeBuffer(bool recreateResources)
 
 void Renderer::uploadLightBuffer(bool recreateResources)
 {
-    const auto &lightsEncoded = Scene::getInstance().lights_encoded;
+    const auto &lightsEncoded = m_scene.lights_encoded;
     const GLsizeiptr bufferSize = static_cast<GLsizeiptr>(lightsEncoded.size() * sizeof(Light_encoded));
     const void *data = lightsEncoded.empty() ? nullptr : lightsEncoded.data();
 
@@ -1107,7 +1108,7 @@ void Renderer::uploadLightBuffer(bool recreateResources)
 
 void Renderer::uploadHdrTextures(bool recreateResources)
 {
-    const auto &scene = Scene::getInstance();
+    const auto &scene = m_scene;
     const QSize hdrSize(scene.hdrRes.width, scene.hdrRes.height);
     const QString hdrPath = scene.document.root["hdr"].toString();
     // Scene HDR pixels are immutable; transforms and environment toggles reuse them.
@@ -1139,18 +1140,18 @@ void Renderer::uploadHdrTextures(bool recreateResources)
             glBindTexture(GL_TEXTURE_2D, texture);
         }
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, Scene::getInstance().hdrRes.width,
-                     Scene::getInstance().hdrRes.height, 0, GL_RGB, GL_FLOAT, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, m_scene.hdrRes.width,
+                     m_scene.hdrRes.height, 0, GL_RGB, GL_FLOAT, data);
     };
 
-    uploadTexture(hdrMap, Scene::getInstance().hdrRes.cols);
-    uploadTexture(hdrCache, Scene::getInstance().cache);
+    uploadTexture(hdrMap, m_scene.hdrRes.cols);
+    uploadTexture(hdrCache, m_scene.cache);
 }
 
 void Renderer::uploadMaterialTextures(bool recreateResources)
 {
     constexpr int maxTextureDimension = 2048;
-    const auto &sourceTextures = Scene::getInstance().textures;
+    const auto &sourceTextures = m_scene.textures;
 
     GLint hardwareMaxSize = 1;
     GLint hardwareMaxLayers = 1;
@@ -1276,10 +1277,10 @@ void Renderer::syncCameraUniforms()
     float fov;
     {
         QMutexLocker lock(&param_mutex);
-        const QMatrix4x4 view = Scene::getInstance().camera.getViewMatrix();
+        const QMatrix4x4 view = m_scene.camera.getViewMatrix();
         inverseView = view.inverted();
-        eye = Scene::getInstance().camera.position;
-        fov = Scene::getInstance().camera.zoom;
+        eye = m_scene.camera.position;
+        fov = m_scene.camera.zoom;
     }
 
     pathtrace_program->bind();
@@ -1291,7 +1292,7 @@ void Renderer::syncCameraUniforms()
 
 void Renderer::uploadInstanceBuffers(bool topology)
 {
-    const auto &scene = Scene::getInstance();
+    const auto &scene = m_scene;
     auto upload = [&](int i, GLenum format, const void *data, size_t bytes) {
         if (!instanceBuffers[i])
             glGenBuffers(1, &instanceBuffers[i]);
@@ -1324,9 +1325,9 @@ void Renderer::bindInstanceBuffers(QOpenGLShaderProgram *program)
         glBindTexture(GL_TEXTURE_BUFFER, instanceTextures[i]);
         program->setUniformValue(names[i], 8 + i);
     }
-    program->setUniformValue("nTopNodes", int(Scene::getInstance().tlas.size()));
+    program->setUniformValue("nTopNodes", int(m_scene.tlas.size()));
     program->setUniformValue("picking", false);
-    auto env = Scene::getInstance().document.root["environment"].toObject();
+    auto env = m_scene.document.root["environment"].toObject();
     program->setUniformValue("environmentIntensity", float(env["intensity"].toDouble(1)));
     program->setUniformValue("environmentRotation", float(env["rotation"].toDouble() * PI / 180));
 }
@@ -1341,10 +1342,10 @@ void Renderer::syncMaterialBuffer()
     uploadLightBuffer(tboLights == 0 || lightsTextureBuffer == 0);
     pathtrace_program->bind();
     pathtrace_program->setUniformValue("nLights",
-                                       static_cast<int>(Scene::getInstance().lights_encoded.size()));
+                                       static_cast<int>(m_scene.lights_encoded.size()));
     pathtrace_program->setUniformValue(
-        "nAnalyticLights", std::min(Scene::getInstance().document.root["lights"].toArray().size(),
-                                    static_cast<int>(Scene::getInstance().lights_encoded.size())));
+        "nAnalyticLights", std::min(m_scene.document.root["lights"].toArray().size(),
+                                    static_cast<int>(m_scene.lights_encoded.size())));
     pathtrace_program->release();
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindBuffer(GL_TEXTURE_BUFFER, 0);
@@ -1358,7 +1359,7 @@ void Renderer::syncSceneBuffers()
 
     // 全量场景同步：triangles / nodes / HDR / 相关 uniform 一次性更新。
     QStringList meshKeys;
-    for (auto &mesh : Scene::getInstance().meshes)
+    for (auto &mesh : m_scene.meshes)
         meshKeys.append(mesh->key);
     if (meshKeys != uploadedMeshes || !tbo0)
     {
@@ -1375,16 +1376,16 @@ void Renderer::syncSceneBuffers()
     m_rasterInstancesUploaded = false;
 
     pathtrace_program->bind();
-    pathtrace_program->setUniformValue("nTriangles", static_cast<int>(Scene::getInstance().triangles.size()));
-    pathtrace_program->setUniformValue("nNodes", static_cast<int>(Scene::getInstance().nodes_encoded.size()));
+    pathtrace_program->setUniformValue("nTriangles", static_cast<int>(m_scene.triangles.size()));
+    pathtrace_program->setUniformValue("nNodes", static_cast<int>(m_scene.nodes_encoded.size()));
     pathtrace_program->setUniformValue("nLights",
-                                       static_cast<int>(Scene::getInstance().lights_encoded.size()));
+                                       static_cast<int>(m_scene.lights_encoded.size()));
     pathtrace_program->setUniformValue(
-        "nAnalyticLights", std::min(Scene::getInstance().document.root["lights"].toArray().size(),
-                                    static_cast<int>(Scene::getInstance().lights_encoded.size())));
+        "nAnalyticLights", std::min(m_scene.document.root["lights"].toArray().size(),
+                                    static_cast<int>(m_scene.lights_encoded.size())));
     pathtrace_program->setUniformValue("width", render_width);
     pathtrace_program->setUniformValue("height", render_height);
-    pathtrace_program->setUniformValue("hdrResolution", Scene::getInstance().hdrResolution);
+    pathtrace_program->setUniformValue("hdrResolution", m_scene.hdrResolution);
     pathtrace_program->setUniformValue("materialTextureCount", materialTextureLayerCount);
     pathtrace_program->release();
 
@@ -1640,7 +1641,7 @@ void Renderer::compositeToScreen(const RenderParams::Snapshot &snapshot)
             glBindTexture(GL_TEXTURE_2D, formal ? preRenderColorTex : RenderColorTex);
         }
         m_program->setUniformValue("texPass1", 5);
-        auto display = Scene::getInstance().document.root["display"].toObject();
+        auto display = m_scene.document.root["display"].toObject();
         m_program->setUniformValue("exposure", float(display["exposure"].toDouble()));
         m_program->setUniformValue("tonemap", display["tonemap"].toInt());
         glActiveTexture(GL_TEXTURE6);
@@ -1726,20 +1727,20 @@ bool Renderer::renderRasterPreview(const RenderParams::Snapshot &snapshot)
     rasterNeedsComposite = true;
 
     raster_program->bind();
-    const QMatrix4x4 view = Scene::getInstance().camera.getViewMatrix();
+    const QMatrix4x4 view = m_scene.camera.getViewMatrix();
     // 路径追踪把视场角烘进光线方向，光栅化必须自己做透视投影。
-    const float fov = float(qBound(1.0, double(Scene::getInstance().camera.zoom), 179.0));
+    const float fov = float(qBound(1.0, double(m_scene.camera.zoom), 179.0));
     const float aspect = render_height > 0 ? float(render_width) / float(render_height) : 1.0f;
     QMatrix4x4 projection;
     projection.perspective(fov, aspect, 0.01f, 1.0e6f);
     raster_program->setUniformValue("projection", projection);
     raster_program->setUniformValue("view", view);
-    raster_program->setUniformValue("eye", Scene::getInstance().camera.position);
-    raster_program->setUniformValue("nLights", int(Scene::getInstance().lights_encoded.size()));
+    raster_program->setUniformValue("eye", m_scene.camera.position);
+    raster_program->setUniformValue("nLights", int(m_scene.lights_encoded.size()));
     raster_program->setUniformValue(
         "nAnalyticLights",
-        std::min(Scene::getInstance().document.root["lights"].toArray().size(),
-                 int(Scene::getInstance().lights_encoded.size())));
+        std::min(m_scene.document.root["lights"].toArray().size(),
+                 int(m_scene.lights_encoded.size())));
 
     raster_program->setUniformValue("lights", 4);
     glActiveTexture(GL_TEXTURE4);
@@ -1759,11 +1760,11 @@ bool Renderer::renderRasterPreview(const RenderParams::Snapshot &snapshot)
     glBindTexture(GL_TEXTURE_BUFFER, instanceTextures[1]);
 
     // 环境背景与环境项：开关由 USEENVIRONMENTMAP 决定，强度/旋转跟随文档设置。
-    const auto environment = Scene::getInstance().document.root["environment"].toObject();
+    const auto environment = m_scene.document.root["environment"].toObject();
     raster_program->setUniformValue("environmentIntensity", float(environment["intensity"].toDouble(1)));
     raster_program->setUniformValue("environmentRotation",
                                     float(environment["rotation"].toDouble() * PI / 180));
-    raster_program->setUniformValue("hdrResolution", Scene::getInstance().hdrResolution);
+    raster_program->setUniformValue("hdrResolution", m_scene.hdrResolution);
     raster_program->setUniformValueArray("diffuseEnvironment", rasterEnvironment.data(), 9);
     raster_program->setUniformValue("hdrMap", 9);
     glActiveTexture(GL_TEXTURE9);
@@ -1830,7 +1831,7 @@ void Renderer::uploadRasterGeometry()
 {
     // 顶点按 mesh 展开，记录每个 mesh 的连续区间；绘制时同 mesh 的实例合并成一次实例化绘制。
     // 实例化绘制没有 baseVertex 重映射，所以这里必须按 mesh 展开，而不是共用一份索引缓冲。
-    const auto &scene = Scene::getInstance();
+    const auto &scene = m_scene;
     std::vector<float> vertices;
     size_t totalVertices = 0;
     for (const auto &mesh : scene.meshes)
@@ -1888,7 +1889,7 @@ void Renderer::uploadRasterGeometry()
 void Renderer::uploadRasterInstances()
 {
     // Each visible instance stores four matrix columns and one material vector, grouped by mesh.
-    const auto &scene = Scene::getInstance();
+    const auto &scene = m_scene;
     std::vector<QVector4D> data;
     rasterInstanceMesh.clear();
     std::vector<const SceneInstance *> sorted;
@@ -1989,7 +1990,7 @@ void Renderer::prepareJob(QSize size, const RenderParams::Snapshot &snapshot, Sc
 }
 quint64 Renderer::allocatedBytes() const
 {
-    const auto &s = Scene::getInstance();
+    const auto &s = m_scene;
     quint64 bytes = textureArrayBytes + quint64(m_width) * m_height * 16 +
                     quint64(render_width) * render_height * 5 * 16 +
                     quint64(denoisePboSize.width()) * denoisePboSize.height() * 3 * 12 +

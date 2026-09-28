@@ -12,6 +12,7 @@ class RenderThread : public QThread
     RenderThread(QSurface *surface, QOpenGLContext *context, QObject *parent = nullptr);
     ~RenderThread() override;
     void setNewSize(int width, int height);
+    void setPreviewAspect(QSize aspect);
     void markSceneDirty(SceneDirtyFlags flags);
     void replaceScene(Scene &scene);
     void submitScene(std::shared_ptr<Scene> scene, quint64 version);
@@ -29,7 +30,12 @@ class RenderThread : public QThread
         if (visible != wasVisible)
             ++controlRevision;
         if (visible && !wasVisible)
-            markSceneDirty(kInitialSceneDirty);
+        {
+            if (m_jobActive)
+                m_previewRefreshPending = true;
+            else
+                markSceneDirty(kInitialSceneDirty);
+        }
     }
     void pick(QPoint pixel, quint64 request, quint64 version);
   signals:
@@ -45,9 +51,11 @@ class RenderThread : public QThread
   private:
     std::atomic_bool m_running{true}, m_jobActive{false}, m_cancel{false}, m_paused{false};
     std::atomic_bool m_previewVisible{true};
+    std::atomic_bool m_previewRefreshPending{false};
     std::atomic<quint64> controlRevision{0};
     QMutex mutex;
     QSize viewport{100, 100};
+    QSize previewAspect;
     QSurface *surface;
     QOpenGLContext *context;
     std::shared_ptr<Scene> pendingScene;

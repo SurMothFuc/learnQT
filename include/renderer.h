@@ -31,7 +31,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     Q_OBJECT
   public:
     explicit Renderer(int width, int height, const RenderParams::Snapshot &initialSnapshot,
-                      QObject *parent = nullptr);
+                      QObject *parent = nullptr, Scene *scene = nullptr);
     ~Renderer() override;
 
     void render(int width, int height, const RenderParams::Snapshot &snapshot, SceneDirtyFlags dirtyFlags,
@@ -232,6 +232,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     Renderer &operator=(const Renderer &&) = delete;
 
   private:
+    Scene &m_scene;
     int m_width = 0;       // 屏幕宽度
     int m_height = 0;      // 屏幕高度
     int render_width = 0;  // 实际渲染宽度
