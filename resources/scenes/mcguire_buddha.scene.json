@@ -1,0 +1,175 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 45,
+    "position": [
+      4.300000190734863,
+      2.700000047683716,
+      5.699999809265137
+    ],
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 45,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        4.300000190734863,
+        2.700000047683716,
+        5.699999809265137
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [],
+      "asset": "Happy Buddha",
+      "author": "© 1996 Stanford University",
+      "license": "Stanford Scan",
+      "source": "https://casual-effects.com/g3d/data10/research/model/buddha/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "Happy Buddha",
+      "order": 0,
+      "parent": ""
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [],
+  "materials": [
+    {
+      "baseColor": [
+        0.58,
+        0.32,
+        0.075
+      ],
+      "id": "presentation-material",
+      "metallic": 0.7,
+      "roughness": 0.35
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {},
+      "expanded": true,
+      "id": "model-000",
+      "material": "presentation-material",
+      "materialBindings": {},
+      "name": "buddha",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/buddha/buddha.obj",
+      "transform": [
+        4,
+        0,
+        0,
+        -0.06687799999999999,
+        0,
+        4,
+        0,
+        -0.21621999999999997,
+        0,
+        0,
+        4,
+        0.07507799999999998,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · Happy Buddha",
+  "objects": [
+    {
+      "id": "model-000/object/0/0/0",
+      "locked": false,
+      "material": "presentation-material",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "root ",
+      "order": 0,
+      "parent": "root",
+      "transform": [
+        4,
+        0,
+        0,
+        -0.06687799841165543,
+        0,
+        4,
+        0,
+        -0.21622000634670258,
+        0,
+        0,
+        4,
+        0.07507800310850143,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [],
+  "version": 2
+}

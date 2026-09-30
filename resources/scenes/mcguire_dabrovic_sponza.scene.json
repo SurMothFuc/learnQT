@@ -1,0 +1,2543 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 62,
+    "position": [
+      1.600000023841858,
+      -0.38047099113464355,
+      0
+    ],
+    "target": [
+      -1.2000000476837158,
+      -0.09511774778366089,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 62,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        1.600000023841858,
+        -0.38047099113464355,
+        0
+      ],
+      "target": [
+        -1.2000000476837158,
+        -0.09511774778366089,
+        0
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [],
+      "asset": "Dabrovic Sponza",
+      "author": "© 2002 Marko Dabrovic",
+      "license": "CC BY-NC",
+      "source": "https://casual-effects.com/g3d/data10/research/model/dabrovic_sponza/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "Dabrovic Sponza",
+      "order": 0,
+      "parent": ""
+    },
+    {
+      "id": "model-000/group",
+      "name": "sponza",
+      "order": 0,
+      "parent": "root"
+    },
+    {
+      "id": "model-000/node/0",
+      "name": "sponza.obj",
+      "order": 0,
+      "parent": "model-000/group"
+    },
+    {
+      "id": "model-000/node/0/0",
+      "name": "arcs_floor",
+      "order": 1,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/1",
+      "name": "arcs_03",
+      "order": 2,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/2",
+      "name": "object32",
+      "order": 3,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/3",
+      "name": "object31",
+      "order": 4,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/4",
+      "name": "pillar_cor",
+      "order": 5,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/5",
+      "name": "pillar_flo",
+      "order": 6,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/6",
+      "name": "object28",
+      "order": 7,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/7",
+      "name": "object27",
+      "order": 8,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/8",
+      "name": "pillar_qua",
+      "order": 9,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/9",
+      "name": "pillar_rou",
+      "order": 10,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/10",
+      "name": "arcs_floo0",
+      "order": 11,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/11",
+      "name": "object23",
+      "order": 12,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/12",
+      "name": "object21",
+      "order": 13,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/13",
+      "name": "puillar_fl",
+      "order": 14,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/14",
+      "name": "object19",
+      "order": 15,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/15",
+      "name": "relief",
+      "order": 16,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/16",
+      "name": "arcs_small",
+      "order": 17,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/17",
+      "name": "holes",
+      "order": 18,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/18",
+      "name": "outside01",
+      "order": 19,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/19",
+      "name": "arcs_long",
+      "order": 20,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/20",
+      "name": "parapet",
+      "order": 21,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/21",
+      "name": "round_hole",
+      "order": 22,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/22",
+      "name": "ceiling",
+      "order": 23,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/23",
+      "name": "arcs_01",
+      "order": 24,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/24",
+      "name": "object6",
+      "order": 25,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/25",
+      "name": "object5",
+      "order": 26,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/26",
+      "name": "object4",
+      "order": 27,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/27",
+      "name": "object3",
+      "order": 28,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/28",
+      "name": "arcs_02",
+      "order": 29,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/29",
+      "name": "arcs_04",
+      "order": 30,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/30",
+      "name": "walls",
+      "order": 31,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/31",
+      "name": "windows",
+      "order": 32,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/32",
+      "name": "doors",
+      "order": 33,
+      "parent": "model-000/node/0"
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [],
+  "materials": [
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.7450979948043823,
+        0.7098039984703064,
+        0.6745100021362305
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/1",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.7137259840965271,
+        0.7058820128440857,
+        0.6588240265846252
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/2",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/1"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.784313976764679,
+        0.784313976764679,
+        0.784313976764679
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/3",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.7372549772262573,
+        0.7098039984703064,
+        0.6705880165100098
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/4",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/2"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.7372549772262573,
+        0.7098039984703064,
+        0.6705880165100098
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/5",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/2"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.800000011920929,
+        0.784313976764679,
+        0.749019980430603
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/6",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/3"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.7450979948043823,
+        0.7098039984703064,
+        0.6745100021362305
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/7",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/4"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.7372549772262573,
+        0.7098039984703064,
+        0.6705880165100098
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/8",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/2"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.8274509906768799,
+        0.800000011920929,
+        0.7686280012130737
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/9",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/5"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.7137259840965271,
+        0.7058820128440857,
+        0.6588240265846252
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/10",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/1"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.9411770105361938,
+        0.8666669726371765,
+        0.7372549772262573
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/11",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/6"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.5294119715690613,
+        0.49803900718688965,
+        0.49019598960876465
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/12",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/7"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.7450979948043823,
+        0.7098039984703064,
+        0.6745100021362305
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/13",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.6274510025978088,
+        0.5725489854812622,
+        0.5607839822769165
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/14",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/8"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.800000011920929,
+        0.784313976764679,
+        0.749019980430603
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/15",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/3"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.6274510025978088,
+        0.5725489854812622,
+        0.5607839822769165
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/16",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/8"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/17",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/9"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.784313976764679,
+        0.784313976764679,
+        0.784313976764679
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/18",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/10"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.6274510025978088,
+        0.5725489854812622,
+        0.5607839822769165
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/19",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/8"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.784313976764679,
+        0.784313976764679,
+        0.784313976764679
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/20",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/11"
+      },
+      "transmission": 0
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {
+        "00_skap.JPG": "../imported/mcguire/assets/dabrovic_sponza/00_skap.JPG",
+        "01_STUB-bump.jpg": "../imported/mcguire/assets/dabrovic_sponza/01_STUB-bump.jpg",
+        "01_STUB.JPG": "../imported/mcguire/assets/dabrovic_sponza/01_STUB.JPG",
+        "01_S_ba.JPG": "../imported/mcguire/assets/dabrovic_sponza/01_S_ba.JPG",
+        "01_St_kp-bump.jpg": "../imported/mcguire/assets/dabrovic_sponza/01_St_kp-bump.jpg",
+        "01_St_kp.JPG": "../imported/mcguire/assets/dabrovic_sponza/01_St_kp.JPG",
+        "KAMEN-bump.jpg": "../imported/mcguire/assets/dabrovic_sponza/KAMEN-bump.jpg",
+        "KAMEN-stup.JPG": "../imported/mcguire/assets/dabrovic_sponza/KAMEN-stup.JPG",
+        "KAMEN.JPG": "../imported/mcguire/assets/dabrovic_sponza/KAMEN.JPG",
+        "prozor1.JPG": "../imported/mcguire/assets/dabrovic_sponza/prozor1.JPG",
+        "reljef-bump.jpg": "../imported/mcguire/assets/dabrovic_sponza/reljef-bump.jpg",
+        "reljef.JPG": "../imported/mcguire/assets/dabrovic_sponza/reljef.JPG",
+        "sp_luk-bump.JPG": "../imported/mcguire/assets/dabrovic_sponza/sp_luk-bump.JPG",
+        "sp_luk.JPG": "../imported/mcguire/assets/dabrovic_sponza/sp_luk.JPG",
+        "sponza.mtl": "../imported/mcguire/derived/dabrovic_sponza/mtl/sponza.mtl",
+        "vrata_ko.JPG": "../imported/mcguire/assets/dabrovic_sponza/vrata_ko.JPG",
+        "vrata_kr.JPG": "../imported/mcguire/assets/dabrovic_sponza/vrata_kr.JPG",
+        "x01_st.JPG": "../imported/mcguire/assets/dabrovic_sponza/x01_st.JPG"
+      },
+      "expanded": true,
+      "id": "model-000",
+      "material": null,
+      "materialBindings": {
+        "1": "model-000/material/1",
+        "10": "model-000/material/10",
+        "11": "model-000/material/11",
+        "12": "model-000/material/12",
+        "13": "model-000/material/13",
+        "14": "model-000/material/14",
+        "15": "model-000/material/15",
+        "16": "model-000/material/16",
+        "17": "model-000/material/17",
+        "18": "model-000/material/18",
+        "19": "model-000/material/19",
+        "2": "model-000/material/2",
+        "20": "model-000/material/20",
+        "3": "model-000/material/3",
+        "4": "model-000/material/4",
+        "5": "model-000/material/5",
+        "6": "model-000/material/6",
+        "7": "model-000/material/7",
+        "8": "model-000/material/8",
+        "9": "model-000/material/9"
+      },
+      "name": "sponza",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/sponza.obj",
+      "transform": [
+        0.11487650775416428,
+        0,
+        0,
+        -0.0008317059161400883,
+        0,
+        0.11487650775416428,
+        0,
+        -0.8470202182653648,
+        0,
+        0,
+        0.11487650775416428,
+        -0.00017093624353821434,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · Dabrovic Sponza",
+  "objects": [
+    {
+      "id": "model-000/object/0/0/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "arcs_floor",
+      "order": 0,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 1,
+      "model": "model-000",
+      "name": "arcs_03",
+      "order": 0,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/2/0",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 2,
+      "model": "model-000",
+      "name": "object32",
+      "order": 0,
+      "parent": "model-000/node/0/2",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/3/0",
+      "locked": false,
+      "material": "model-000/material/3",
+      "mesh": 3,
+      "model": "model-000",
+      "name": "object31",
+      "order": 0,
+      "parent": "model-000/node/0/3",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/4/0",
+      "locked": false,
+      "material": "model-000/material/4",
+      "mesh": 4,
+      "model": "model-000",
+      "name": "pillar_cor",
+      "order": 0,
+      "parent": "model-000/node/0/4",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/5/0",
+      "locked": false,
+      "material": "model-000/material/5",
+      "mesh": 5,
+      "model": "model-000",
+      "name": "pillar_flo",
+      "order": 0,
+      "parent": "model-000/node/0/5",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/6/0",
+      "locked": false,
+      "material": "model-000/material/6",
+      "mesh": 6,
+      "model": "model-000",
+      "name": "object28",
+      "order": 0,
+      "parent": "model-000/node/0/6",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/7/0",
+      "locked": false,
+      "material": "model-000/material/7",
+      "mesh": 7,
+      "model": "model-000",
+      "name": "object27",
+      "order": 0,
+      "parent": "model-000/node/0/7",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/8/0",
+      "locked": false,
+      "material": "model-000/material/8",
+      "mesh": 8,
+      "model": "model-000",
+      "name": "pillar_qua",
+      "order": 0,
+      "parent": "model-000/node/0/8",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/9/0",
+      "locked": false,
+      "material": "model-000/material/9",
+      "mesh": 9,
+      "model": "model-000",
+      "name": "pillar_rou",
+      "order": 0,
+      "parent": "model-000/node/0/9",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/10/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 10,
+      "model": "model-000",
+      "name": "arcs_floo0",
+      "order": 0,
+      "parent": "model-000/node/0/10",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/11/0",
+      "locked": false,
+      "material": "model-000/material/10",
+      "mesh": 11,
+      "model": "model-000",
+      "name": "object23",
+      "order": 0,
+      "parent": "model-000/node/0/11",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/12/0",
+      "locked": false,
+      "material": "model-000/material/11",
+      "mesh": 12,
+      "model": "model-000",
+      "name": "object21",
+      "order": 0,
+      "parent": "model-000/node/0/12",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/13/0",
+      "locked": false,
+      "material": "model-000/material/5",
+      "mesh": 13,
+      "model": "model-000",
+      "name": "puillar_fl",
+      "order": 0,
+      "parent": "model-000/node/0/13",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/14/0",
+      "locked": false,
+      "material": "model-000/material/7",
+      "mesh": 14,
+      "model": "model-000",
+      "name": "object19",
+      "order": 0,
+      "parent": "model-000/node/0/14",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/15/0",
+      "locked": false,
+      "material": "model-000/material/12",
+      "mesh": 15,
+      "model": "model-000",
+      "name": "relief",
+      "order": 0,
+      "parent": "model-000/node/0/15",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/16/0",
+      "locked": false,
+      "material": "model-000/material/13",
+      "mesh": 16,
+      "model": "model-000",
+      "name": "arcs_small",
+      "order": 0,
+      "parent": "model-000/node/0/16",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/17/0",
+      "locked": false,
+      "material": "model-000/material/9",
+      "mesh": 17,
+      "model": "model-000",
+      "name": "holes",
+      "order": 0,
+      "parent": "model-000/node/0/17",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/18/0",
+      "locked": false,
+      "material": "model-000/material/14",
+      "mesh": 18,
+      "model": "model-000",
+      "name": "outside01",
+      "order": 0,
+      "parent": "model-000/node/0/18",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/19/0",
+      "locked": false,
+      "material": "model-000/material/13",
+      "mesh": 19,
+      "model": "model-000",
+      "name": "arcs_long",
+      "order": 0,
+      "parent": "model-000/node/0/19",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/20/0",
+      "locked": false,
+      "material": "model-000/material/13",
+      "mesh": 20,
+      "model": "model-000",
+      "name": "parapet",
+      "order": 0,
+      "parent": "model-000/node/0/20",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/21/0",
+      "locked": false,
+      "material": "model-000/material/13",
+      "mesh": 21,
+      "model": "model-000",
+      "name": "round_hole",
+      "order": 0,
+      "parent": "model-000/node/0/21",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/22/0",
+      "locked": false,
+      "material": "model-000/material/11",
+      "mesh": 22,
+      "model": "model-000",
+      "name": "ceiling",
+      "order": 0,
+      "parent": "model-000/node/0/22",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/23/0",
+      "locked": false,
+      "material": "model-000/material/13",
+      "mesh": 23,
+      "model": "model-000",
+      "name": "arcs_01",
+      "order": 0,
+      "parent": "model-000/node/0/23",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/24/0",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 24,
+      "model": "model-000",
+      "name": "object6",
+      "order": 0,
+      "parent": "model-000/node/0/24",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/25/0",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 25,
+      "model": "model-000",
+      "name": "object5",
+      "order": 0,
+      "parent": "model-000/node/0/25",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/26/0",
+      "locked": false,
+      "material": "model-000/material/7",
+      "mesh": 26,
+      "model": "model-000",
+      "name": "object4",
+      "order": 0,
+      "parent": "model-000/node/0/26",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/27/0",
+      "locked": false,
+      "material": "model-000/material/15",
+      "mesh": 27,
+      "model": "model-000",
+      "name": "object3",
+      "order": 0,
+      "parent": "model-000/node/0/27",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/28/0",
+      "locked": false,
+      "material": "model-000/material/13",
+      "mesh": 28,
+      "model": "model-000",
+      "name": "arcs_02",
+      "order": 0,
+      "parent": "model-000/node/0/28",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/29/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 29,
+      "model": "model-000",
+      "name": "arcs_04",
+      "order": 0,
+      "parent": "model-000/node/0/29",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/30/0",
+      "locked": false,
+      "material": "model-000/material/16",
+      "mesh": 30,
+      "model": "model-000",
+      "name": "walls",
+      "order": 0,
+      "parent": "model-000/node/0/30",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/30/1",
+      "locked": false,
+      "material": "model-000/material/17",
+      "mesh": 31,
+      "model": "model-000",
+      "name": "walls",
+      "order": 1,
+      "parent": "model-000/node/0/30",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/30/2",
+      "locked": false,
+      "material": "model-000/material/18",
+      "mesh": 32,
+      "model": "model-000",
+      "name": "walls",
+      "order": 2,
+      "parent": "model-000/node/0/30",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/30/3",
+      "locked": false,
+      "material": "model-000/material/16",
+      "mesh": 33,
+      "model": "model-000",
+      "name": "walls",
+      "order": 3,
+      "parent": "model-000/node/0/30",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/30/4",
+      "locked": false,
+      "material": "model-000/material/19",
+      "mesh": 34,
+      "model": "model-000",
+      "name": "walls",
+      "order": 4,
+      "parent": "model-000/node/0/30",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/31/0",
+      "locked": false,
+      "material": "model-000/material/17",
+      "mesh": 35,
+      "model": "model-000",
+      "name": "windows",
+      "order": 0,
+      "parent": "model-000/node/0/31",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/32/0",
+      "locked": false,
+      "material": "model-000/material/20",
+      "mesh": 36,
+      "model": "model-000",
+      "name": "doors",
+      "order": 0,
+      "parent": "model-000/node/0/32",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/32/1",
+      "locked": false,
+      "material": "model-000/material/18",
+      "mesh": 37,
+      "model": "model-000",
+      "name": "doors",
+      "order": 1,
+      "parent": "model-000/node/0/32",
+      "transform": [
+        0.11487650871276855,
+        0,
+        0,
+        -0.0008317059255205095,
+        0,
+        0.11487650871276855,
+        0,
+        -0.8470202088356018,
+        0,
+        0,
+        0.11487650871276855,
+        -0.00017093624046538025,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [
+    {
+      "dependencies": {},
+      "id": "model-000/texture/0",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/sp_luk.JPG",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/1",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/00_skap.JPG",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/2",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/01_STUB.JPG",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/3",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/01_S_ba.JPG",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/4",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/01_St_kp.JPG",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/5",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/x01_st.JPG",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/6",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/KAMEN-stup.JPG",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/7",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/reljef.JPG",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/8",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/KAMEN.JPG",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/9",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/prozor1.JPG",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/10",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/vrata_kr.JPG",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/11",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/dabrovic_sponza/vrata_ko.JPG",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    }
+  ],
+  "version": 2
+}

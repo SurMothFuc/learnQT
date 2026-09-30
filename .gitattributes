@@ -49,3 +49,9 @@
 resources/models/bedroom/Mesh019.obj filter=lfs diff=lfs merge=lfs -text
 resources/imported/glslpt/assets/bedroom/Mesh019.obj filter=lfs diff=lfs merge=lfs -text
 resources/imported/glslpt/assets/panther/panther.obj filter=lfs diff=lfs merge=lfs -text
+resources/imported/mcguire/**/*.stl filter=lfs diff=lfs merge=lfs -text
+resources/imported/mcguire/**/*.obj filter=lfs diff=lfs merge=lfs -text
+resources/imported/mcguire/**/*.zip filter=lfs diff=lfs merge=lfs -text
+resources/imported/mcguire/**/*.png filter=lfs diff=lfs merge=lfs -text
+resources/imported/mcguire/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+resources/imported/mcguire/**/*.psd filter=lfs diff=lfs merge=lfs -text

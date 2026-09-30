@@ -1,0 +1,341 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 45,
+    "position": [
+      4.300000190734863,
+      2.700000047683716,
+      5.699999809265137
+    ],
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 45,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        4.300000190734863,
+        2.700000047683716,
+        5.699999809265137
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [],
+      "asset": "Horse Chestnut Tree",
+      "author": "© 2015 Xfrog Inc.",
+      "license": "Royalty Free",
+      "source": "https://casual-effects.com/g3d/data10/research/model/horseChestnut/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "Horse Chestnut Tree · AL05y",
+      "order": 0,
+      "parent": ""
+    },
+    {
+      "id": "model-000/group",
+      "name": "AL05y",
+      "order": 0,
+      "parent": "root"
+    },
+    {
+      "id": "model-000/node/0",
+      "name": "AL05y.obj",
+      "order": 0,
+      "parent": "model-000/group"
+    },
+    {
+      "id": "model-000/node/0/0",
+      "name": "AL05y",
+      "order": 1,
+      "parent": "model-000/node/0"
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [],
+  "materials": [
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.3215689957141876,
+        0.2941179871559143,
+        0.2941179871559143
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/1",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        0.8745099902153015,
+        0.8588240146636963,
+        0.8745099902153015
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/2",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/1"
+      },
+      "transmission": 0
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {
+        "AL05aut.png": "../imported/mcguire/assets/horseChestnut/AL05aut.png",
+        "AL05brk.png": "../imported/mcguire/assets/horseChestnut/AL05brk.png",
+        "AL05brk_b.png": "../imported/mcguire/assets/horseChestnut/AL05brk_b.png",
+        "AL05y.mtl": "../imported/mcguire/derived/horseChestnut/mtl/AL05y.mtl"
+      },
+      "expanded": true,
+      "id": "model-000",
+      "material": null,
+      "materialBindings": {
+        "1": "model-000/material/1",
+        "2": "model-000/material/2"
+      },
+      "name": "AL05y",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/horseChestnut/AL05y.obj",
+      "transform": [
+        0.09331090033536918,
+        0,
+        0,
+        0.09933878449703398,
+        0,
+        0.09331090033536918,
+        0,
+        0.05403634238421233,
+        0,
+        0,
+        0.09331090033536918,
+        -1.996720476434633,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · Horse Chestnut Tree · AL05y",
+  "objects": [
+    {
+      "id": "model-000/object/0/0/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "AL05y",
+      "order": 0,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.0933109000325203,
+        0,
+        0,
+        0.09933878481388092,
+        0,
+        0.0933109000325203,
+        0,
+        0.05403634160757065,
+        0,
+        0,
+        0.0933109000325203,
+        -1.9967204332351685,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/1",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 1,
+      "model": "model-000",
+      "name": "AL05y",
+      "order": 1,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.0933109000325203,
+        0,
+        0,
+        0.09933878481388092,
+        0,
+        0.0933109000325203,
+        0,
+        0.05403634160757065,
+        0,
+        0,
+        0.0933109000325203,
+        -1.9967204332351685,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [
+    {
+      "dependencies": {},
+      "id": "model-000/texture/0",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/horseChestnut/AL05brk.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/1",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/horseChestnut/AL05aut.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    }
+  ],
+  "version": 2
+}

@@ -1,0 +1,609 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 42,
+    "position": [
+      0,
+      0,
+      6.800000190734863
+    ],
+    "target": [
+      0,
+      0,
+      -0.4000000059604645
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 42,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        0,
+        0,
+        6.800000190734863
+      ],
+      "target": [
+        0,
+        0,
+        -0.4000000059604645
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [
+        "Authored emissive ceiling retained; camera fitted toward the open front."
+      ],
+      "asset": "Cornell Box",
+      "author": "© 2009 Morgan McGuire",
+      "license": "CC BY 3.0",
+      "source": "https://casual-effects.com/g3d/data10/common/model/CornellBox/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "Cornell Box · CornellBox-Empty-CO",
+      "order": 0,
+      "parent": ""
+    },
+    {
+      "id": "model-000/group",
+      "name": "CornellBox-Empty-CO",
+      "order": 0,
+      "parent": "root"
+    },
+    {
+      "id": "model-000/node/0",
+      "name": "CornellBox-Empty-CO.obj",
+      "order": 0,
+      "parent": "model-000/group"
+    },
+    {
+      "id": "model-000/node/0/0",
+      "name": "floor",
+      "order": 1,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/1",
+      "name": "ceiling",
+      "order": 2,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/2",
+      "name": "backWall",
+      "order": 3,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/3",
+      "name": "rightWall",
+      "order": 4,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/4",
+      "name": "leftWall",
+      "order": 5,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/5",
+      "name": "light",
+      "order": 6,
+      "parent": "model-000/node/0"
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [],
+  "materials": [
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.7250000238418579,
+        0.7099999785423279,
+        0.6800000071525574
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/3",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.7250000238418579,
+        0.7099999785423279,
+        0.6800000071525574
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/4",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.7250000238418579,
+        0.7099999785423279,
+        0.6800000071525574
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/5",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.4860000014305115,
+        0.6309999823570251,
+        0.6629999876022339
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/2",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.953000009059906,
+        0.3569999933242798,
+        0.21199999749660492
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/1",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.7799999713897705,
+        0.7799999713897705,
+        0.7799999713897705
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        10,
+        10,
+        10
+      ],
+      "id": "model-000/material/6",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {
+        "CornellBox-Empty-CO.mtl": "../imported/mcguire/derived/CornellBox/mtl/CornellBox-Empty-CO.mtl"
+      },
+      "expanded": true,
+      "id": "model-000",
+      "material": null,
+      "materialBindings": {
+        "1": "model-000/material/1",
+        "2": "model-000/material/2",
+        "3": "model-000/material/3",
+        "4": "model-000/material/4",
+        "5": "model-000/material/5",
+        "6": "model-000/material/6"
+      },
+      "name": "CornellBox-Empty-CO",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/CornellBox/CornellBox-Empty-CO.obj",
+      "transform": [
+        1.9704433497536944,
+        0,
+        0,
+        0.01970443349753696,
+        0,
+        1.9704433497536944,
+        0,
+        -1.960591133004926,
+        0,
+        0,
+        1.9704433497536944,
+        0.0492610837438424,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · Cornell Box · CornellBox-Empty-CO",
+  "objects": [
+    {
+      "id": "model-000/object/0/0/0",
+      "locked": false,
+      "material": "model-000/material/3",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "floor",
+      "order": 0,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        1.9704433679580688,
+        0,
+        0,
+        0.019704433158040047,
+        0,
+        1.9704433679580688,
+        0,
+        -1.9605910778045654,
+        0,
+        0,
+        1.9704433679580688,
+        0.04926108196377754,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/0",
+      "locked": false,
+      "material": "model-000/material/4",
+      "mesh": 1,
+      "model": "model-000",
+      "name": "ceiling",
+      "order": 0,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        1.9704433679580688,
+        0,
+        0,
+        0.019704433158040047,
+        0,
+        1.9704433679580688,
+        0,
+        -1.9605910778045654,
+        0,
+        0,
+        1.9704433679580688,
+        0.04926108196377754,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/2/0",
+      "locked": false,
+      "material": "model-000/material/5",
+      "mesh": 2,
+      "model": "model-000",
+      "name": "backWall",
+      "order": 0,
+      "parent": "model-000/node/0/2",
+      "transform": [
+        1.9704433679580688,
+        0,
+        0,
+        0.019704433158040047,
+        0,
+        1.9704433679580688,
+        0,
+        -1.9605910778045654,
+        0,
+        0,
+        1.9704433679580688,
+        0.04926108196377754,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/3/0",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 3,
+      "model": "model-000",
+      "name": "rightWall",
+      "order": 0,
+      "parent": "model-000/node/0/3",
+      "transform": [
+        1.9704433679580688,
+        0,
+        0,
+        0.019704433158040047,
+        0,
+        1.9704433679580688,
+        0,
+        -1.9605910778045654,
+        0,
+        0,
+        1.9704433679580688,
+        0.04926108196377754,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/4/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 4,
+      "model": "model-000",
+      "name": "leftWall",
+      "order": 0,
+      "parent": "model-000/node/0/4",
+      "transform": [
+        1.9704433679580688,
+        0,
+        0,
+        0.019704433158040047,
+        0,
+        1.9704433679580688,
+        0,
+        -1.9605910778045654,
+        0,
+        0,
+        1.9704433679580688,
+        0.04926108196377754,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/5/0",
+      "locked": false,
+      "material": "model-000/material/6",
+      "mesh": 5,
+      "model": "model-000",
+      "name": "light",
+      "order": 0,
+      "parent": "model-000/node/0/5",
+      "transform": [
+        1.9704433679580688,
+        0,
+        0,
+        0.019704433158040047,
+        0,
+        1.9704433679580688,
+        0,
+        -1.9605910778045654,
+        0,
+        0,
+        1.9704433679580688,
+        0.04926108196377754,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [],
+  "version": 2
+}

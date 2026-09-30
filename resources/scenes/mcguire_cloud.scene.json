@@ -1,0 +1,413 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 48,
+    "position": [
+      9,
+      14.25,
+      15.75
+    ],
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 48,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        9,
+        14.25,
+        15.75
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [
+        "Five surface cloud meshes arranged as a gallery. These are opaque surfaces, not participating-volume clouds."
+      ],
+      "asset": "Clouds",
+      "author": "© 2016 Morgan McGuire and Michael Mara",
+      "license": "CC0",
+      "source": "https://casual-effects.com/g3d/data10/research/model/cloud/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "Clouds",
+      "order": 0,
+      "parent": ""
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [],
+  "materials": [
+    {
+      "baseColor": [
+        0.65,
+        0.69,
+        0.75
+      ],
+      "id": "presentation-material",
+      "metallic": 0,
+      "roughness": 0.65
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {},
+      "expanded": true,
+      "id": "model-000",
+      "material": "presentation-material",
+      "materialBindings": {},
+      "name": "altostratus00",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/cloud/altostratus00.obj",
+      "transform": [
+        0.029008874163230027,
+        0,
+        0,
+        -5.309291141450906,
+        0,
+        0.029008874163230027,
+        0,
+        0.16616045677379632,
+        0,
+        0,
+        0.029008874163230027,
+        -2.577561811120297,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "dependencies": {},
+      "expanded": true,
+      "id": "model-001",
+      "material": "presentation-material",
+      "materialBindings": {},
+      "name": "altostratus01",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/cloud/altostratus01.obj",
+      "transform": [
+        0.035066629626147934,
+        0,
+        0,
+        -0.2565667244847895,
+        0,
+        0.035066629626147934,
+        0,
+        0.05534628019186026,
+        0,
+        0,
+        0.035066629626147934,
+        -2.0354610295518527,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "dependencies": {},
+      "expanded": true,
+      "id": "model-002",
+      "material": "presentation-material",
+      "materialBindings": {},
+      "name": "cumulus00",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/cloud/cumulus00.obj",
+      "transform": [
+        0.029442894331397105,
+        0,
+        0,
+        5.725110680130702,
+        0,
+        0.029442894331397105,
+        0,
+        -0.018393385277485835,
+        0,
+        0,
+        0.029442894331397105,
+        -2.4511546758862903,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "dependencies": {},
+      "expanded": true,
+      "id": "model-003",
+      "material": "presentation-material",
+      "materialBindings": {},
+      "name": "cumulus01",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/cloud/cumulus01.obj",
+      "transform": [
+        0.0299090926464334,
+        0,
+        0,
+        -5.225362042079628,
+        0,
+        0.0299090926464334,
+        0,
+        -0.15244933008203082,
+        0,
+        0,
+        0.0299090926464334,
+        2.3453187604699197,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "dependencies": {},
+      "expanded": true,
+      "id": "model-004",
+      "material": "presentation-material",
+      "materialBindings": {},
+      "name": "cumulus02",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/cloud/cumulus02.obj",
+      "transform": [
+        0.024761746566295307,
+        0,
+        0,
+        -0.08893873887281033,
+        0,
+        0.024761746566295307,
+        0,
+        -0.18112019311865088,
+        0,
+        0,
+        0.024761746566295307,
+        3.1530184742773617,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · Clouds",
+  "objects": [
+    {
+      "id": "model-000/object/0/0/0",
+      "locked": false,
+      "material": "presentation-material",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "mesh_0",
+      "order": 0,
+      "parent": "root",
+      "transform": [
+        0.02900887466967106,
+        0,
+        0,
+        -5.309291362762451,
+        0,
+        0.02900887466967106,
+        0,
+        0.166160449385643,
+        0,
+        0,
+        0.02900887466967106,
+        -2.577561855316162,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-001/object/0/0/0",
+      "locked": false,
+      "material": "presentation-material",
+      "mesh": 0,
+      "model": "model-001",
+      "name": "mesh_0",
+      "order": 1,
+      "parent": "root",
+      "transform": [
+        0.0350666306912899,
+        0,
+        0,
+        -0.25656673312187195,
+        0,
+        0.0350666306912899,
+        0,
+        0.055346280336380005,
+        0,
+        0,
+        0.0350666306912899,
+        -2.035460948944092,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-002/object/0/0/0",
+      "locked": false,
+      "material": "presentation-material",
+      "mesh": 0,
+      "model": "model-002",
+      "name": "mesh_0",
+      "order": 2,
+      "parent": "root",
+      "transform": [
+        0.02944289520382881,
+        0,
+        0,
+        5.7251105308532715,
+        0,
+        0.02944289520382881,
+        0,
+        -0.018393386155366898,
+        0,
+        0,
+        0.02944289520382881,
+        -2.4511547088623047,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-003/object/0/0/0",
+      "locked": false,
+      "material": "presentation-material",
+      "mesh": 0,
+      "model": "model-003",
+      "name": "mesh_0",
+      "order": 3,
+      "parent": "root",
+      "transform": [
+        0.02990909293293953,
+        0,
+        0,
+        -5.2253618240356445,
+        0,
+        0.02990909293293953,
+        0,
+        -0.1524493247270584,
+        0,
+        0,
+        0.02990909293293953,
+        2.3453187942504883,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-004/object/0/0/0",
+      "locked": false,
+      "material": "presentation-material",
+      "mesh": 0,
+      "model": "model-004",
+      "name": "mesh_0",
+      "order": 4,
+      "parent": "root",
+      "transform": [
+        0.0247617457062006,
+        0,
+        0,
+        -0.08893873542547226,
+        0,
+        0.0247617457062006,
+        0,
+        -0.18112018704414368,
+        0,
+        0,
+        0.0247617457062006,
+        3.1530184745788574,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [],
+  "version": 2
+}

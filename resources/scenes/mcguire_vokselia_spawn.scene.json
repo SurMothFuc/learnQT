@@ -1,0 +1,7899 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 45,
+    "position": [
+      4.300000190734863,
+      2.700000047683716,
+      5.699999809265137
+    ],
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 45,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        4.300000190734863,
+        2.700000047683716,
+        5.699999809265137
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [],
+      "asset": "Vokselia Spawn",
+      "author": "© 2011 Vokselia",
+      "license": "CC BY 3.0",
+      "source": "https://casual-effects.com/g3d/data10/research/model/vokselia_spawn/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "Vokselia Spawn",
+      "order": 0,
+      "parent": ""
+    },
+    {
+      "id": "model-000/group",
+      "name": "vokselia_spawn",
+      "order": 0,
+      "parent": "root"
+    },
+    {
+      "id": "model-000/node/0",
+      "name": "vokselia_spawn.obj",
+      "order": 0,
+      "parent": "model-000/group"
+    },
+    {
+      "id": "model-000/node/0/0",
+      "name": "Voxelia_Dec_27__-330_62_-172_to_55_127_211",
+      "order": 1,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/1",
+      "name": "Stone",
+      "order": 2,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/2",
+      "name": "Grass",
+      "order": 3,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/3",
+      "name": "Dirt",
+      "order": 4,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/4",
+      "name": "Cobblestone",
+      "order": 5,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/5",
+      "name": "Wooden_Plank",
+      "order": 6,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/6",
+      "name": "Water",
+      "order": 7,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/7",
+      "name": "Stationary_Water",
+      "order": 8,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/8",
+      "name": "Lava",
+      "order": 9,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/9",
+      "name": "Stationary_Lava",
+      "order": 10,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/10",
+      "name": "Sand",
+      "order": 11,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/11",
+      "name": "Gravel",
+      "order": 12,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/12",
+      "name": "Gold_Ore",
+      "order": 13,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/13",
+      "name": "Iron_Ore",
+      "order": 14,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/14",
+      "name": "Coal_Ore",
+      "order": 15,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/15",
+      "name": "Log",
+      "order": 16,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/16",
+      "name": "Leaves",
+      "order": 17,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/17",
+      "name": "Glass",
+      "order": 18,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/18",
+      "name": "Dispenser",
+      "order": 19,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/19",
+      "name": "Sandstone",
+      "order": 20,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/20",
+      "name": "Bed",
+      "order": 21,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/21",
+      "name": "Powered_Rail",
+      "order": 22,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/22",
+      "name": "Detector_Rail",
+      "order": 23,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/23",
+      "name": "Sticky_Piston",
+      "order": 24,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/24",
+      "name": "Tall_Grass",
+      "order": 25,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/25",
+      "name": "Piston",
+      "order": 26,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/26",
+      "name": "Piston_Head",
+      "order": 27,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/27",
+      "name": "Dandelion",
+      "order": 28,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/28",
+      "name": "Rose",
+      "order": 29,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/29",
+      "name": "Brown_Mushroom",
+      "order": 30,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/30",
+      "name": "Red_Mushroom",
+      "order": 31,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/31",
+      "name": "Gold_Block",
+      "order": 32,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/32",
+      "name": "Iron_Block",
+      "order": 33,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/33",
+      "name": "Double_Slab",
+      "order": 34,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/34",
+      "name": "Stone_Slab",
+      "order": 35,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/35",
+      "name": "Brick",
+      "order": 36,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/36",
+      "name": "Bookshelf",
+      "order": 37,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/37",
+      "name": "Moss_Stone",
+      "order": 38,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/38",
+      "name": "Obsidian",
+      "order": 39,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/39",
+      "name": "Torch",
+      "order": 40,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/40",
+      "name": "Fire",
+      "order": 41,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/41",
+      "name": "Monster_Spawner",
+      "order": 42,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/42",
+      "name": "Wooden_Stairs",
+      "order": 43,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/43",
+      "name": "Chest",
+      "order": 44,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/44",
+      "name": "Redstone_Wire",
+      "order": 45,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/45",
+      "name": "Diamond_Block",
+      "order": 46,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/46",
+      "name": "Crafting_Table",
+      "order": 47,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/47",
+      "name": "Crops",
+      "order": 48,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/48",
+      "name": "Farmland",
+      "order": 49,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/49",
+      "name": "Furnace",
+      "order": 50,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/50",
+      "name": "Sign_Post",
+      "order": 51,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/51",
+      "name": "Wooden_Door",
+      "order": 52,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/52",
+      "name": "Ladder",
+      "order": 53,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/53",
+      "name": "Rail",
+      "order": 54,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/54",
+      "name": "Cobblestone_Stairs",
+      "order": 55,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/55",
+      "name": "Wall_Sign",
+      "order": 56,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/56",
+      "name": "Lever",
+      "order": 57,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/57",
+      "name": "Stone_Plate",
+      "order": 58,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/58",
+      "name": "Iron_Door",
+      "order": 59,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/59",
+      "name": "Wooden_Plate",
+      "order": 60,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/60",
+      "name": "Redstone_Torch_(off)",
+      "order": 61,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/61",
+      "name": "Redstone_Torch_(on)",
+      "order": 62,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/62",
+      "name": "Stone_Button",
+      "order": 63,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/63",
+      "name": "Snow_Block",
+      "order": 64,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/64",
+      "name": "Cactus",
+      "order": 65,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/65",
+      "name": "Clay",
+      "order": 66,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/66",
+      "name": "Sugar_Cane",
+      "order": 67,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/67",
+      "name": "Jukebox",
+      "order": 68,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/68",
+      "name": "Fence",
+      "order": 69,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/69",
+      "name": "Pumpkin",
+      "order": 70,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/70",
+      "name": "Netherrack",
+      "order": 71,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/71",
+      "name": "Soul_Sand",
+      "order": 72,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/72",
+      "name": "Glowstone",
+      "order": 73,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/73",
+      "name": "Portal",
+      "order": 74,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/74",
+      "name": "Jack-O-Lantern",
+      "order": 75,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/75",
+      "name": "Cake",
+      "order": 76,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/76",
+      "name": "Repeater_(off)",
+      "order": 77,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/77",
+      "name": "Repeater_(on)",
+      "order": 78,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/78",
+      "name": "Trapdoor",
+      "order": 79,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/79",
+      "name": "Glass_Pane",
+      "order": 80,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/80",
+      "name": "Melon",
+      "order": 81,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/81",
+      "name": "Pumpkin_Stem",
+      "order": 82,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/82",
+      "name": "Melon_Stem",
+      "order": 83,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/83",
+      "name": "Fence_Gate",
+      "order": 84,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/84",
+      "name": "Nether_Brick",
+      "order": 85,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/85",
+      "name": "Nether_Wart",
+      "order": 86,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/86",
+      "name": "White_Wool",
+      "order": 87,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/87",
+      "name": "Orange_Wool",
+      "order": 88,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/88",
+      "name": "Light_Blue_Wool",
+      "order": 89,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/89",
+      "name": "Yellow_Wool",
+      "order": 90,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/90",
+      "name": "Pink_Wool",
+      "order": 91,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/91",
+      "name": "Gray_Wool",
+      "order": 92,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/92",
+      "name": "Light_Gray_Wool",
+      "order": 93,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/93",
+      "name": "Cyan_Wool",
+      "order": 94,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/94",
+      "name": "Purple_Wool",
+      "order": 95,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/95",
+      "name": "Blue_Wool",
+      "order": 96,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/96",
+      "name": "Brown_Wool",
+      "order": 97,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/97",
+      "name": "Green_Wool",
+      "order": 98,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/98",
+      "name": "Red_Wool",
+      "order": 99,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/99",
+      "name": "Black_Wool",
+      "order": 100,
+      "parent": "model-000/node/0"
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [],
+  "materials": [
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/1",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/2",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/3",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/4",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/5",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/6",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/7",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        4,
+        2.5,
+        1
+      ],
+      "id": "model-000/material/8",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        4,
+        2.5,
+        1
+      ],
+      "id": "model-000/material/9",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/10",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/11",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/12",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/13",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/14",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/15",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/16",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/17",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/18",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/19",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/20",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/21",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/22",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/23",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/24",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/25",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/26",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/27",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/28",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/29",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/30",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/31",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/32",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/33",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/34",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/35",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/36",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/37",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/38",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        4,
+        2.5,
+        1
+      ],
+      "id": "model-000/material/39",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/40",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/41",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/42",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/43",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/44",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/45",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/46",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/47",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/48",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/49",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/50",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/51",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/52",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/53",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/54",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/55",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/56",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/57",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/58",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/59",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        4,
+        2.5,
+        1
+      ],
+      "id": "model-000/material/60",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        4,
+        2.5,
+        1
+      ],
+      "id": "model-000/material/61",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/62",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/63",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/64",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/65",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/66",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/67",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/68",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/69",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/70",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/71",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        4,
+        2.5,
+        1
+      ],
+      "id": "model-000/material/72",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/73",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/74",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/75",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/76",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/77",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/78",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/79",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/80",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/81",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/82",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/83",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/84",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/85",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/86",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/87",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/88",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/89",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/90",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/91",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/92",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/93",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/94",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/95",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/96",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/97",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/98",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/99",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.95,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {
+        "vokselia_spawn.mtl": "../imported/mcguire/derived/vokselia_spawn/mtl/vokselia_spawn.mtl",
+        "vokselia_spawn.png": "../imported/mcguire/assets/vokselia_spawn/vokselia_spawn.png"
+      },
+      "expanded": true,
+      "id": "model-000",
+      "material": null,
+      "materialBindings": {
+        "1": "model-000/material/1",
+        "10": "model-000/material/10",
+        "11": "model-000/material/11",
+        "12": "model-000/material/12",
+        "13": "model-000/material/13",
+        "14": "model-000/material/14",
+        "15": "model-000/material/15",
+        "16": "model-000/material/16",
+        "17": "model-000/material/17",
+        "18": "model-000/material/18",
+        "19": "model-000/material/19",
+        "2": "model-000/material/2",
+        "20": "model-000/material/20",
+        "21": "model-000/material/21",
+        "22": "model-000/material/22",
+        "23": "model-000/material/23",
+        "24": "model-000/material/24",
+        "25": "model-000/material/25",
+        "26": "model-000/material/26",
+        "27": "model-000/material/27",
+        "28": "model-000/material/28",
+        "29": "model-000/material/29",
+        "3": "model-000/material/3",
+        "30": "model-000/material/30",
+        "31": "model-000/material/31",
+        "32": "model-000/material/32",
+        "33": "model-000/material/33",
+        "34": "model-000/material/34",
+        "35": "model-000/material/35",
+        "36": "model-000/material/36",
+        "37": "model-000/material/37",
+        "38": "model-000/material/38",
+        "39": "model-000/material/39",
+        "4": "model-000/material/4",
+        "40": "model-000/material/40",
+        "41": "model-000/material/41",
+        "42": "model-000/material/42",
+        "43": "model-000/material/43",
+        "44": "model-000/material/44",
+        "45": "model-000/material/45",
+        "46": "model-000/material/46",
+        "47": "model-000/material/47",
+        "48": "model-000/material/48",
+        "49": "model-000/material/49",
+        "5": "model-000/material/5",
+        "50": "model-000/material/50",
+        "51": "model-000/material/51",
+        "52": "model-000/material/52",
+        "53": "model-000/material/53",
+        "54": "model-000/material/54",
+        "55": "model-000/material/55",
+        "56": "model-000/material/56",
+        "57": "model-000/material/57",
+        "58": "model-000/material/58",
+        "59": "model-000/material/59",
+        "6": "model-000/material/6",
+        "60": "model-000/material/60",
+        "61": "model-000/material/61",
+        "62": "model-000/material/62",
+        "63": "model-000/material/63",
+        "64": "model-000/material/64",
+        "65": "model-000/material/65",
+        "66": "model-000/material/66",
+        "67": "model-000/material/67",
+        "68": "model-000/material/68",
+        "69": "model-000/material/69",
+        "7": "model-000/material/7",
+        "70": "model-000/material/70",
+        "71": "model-000/material/71",
+        "72": "model-000/material/72",
+        "73": "model-000/material/73",
+        "74": "model-000/material/74",
+        "75": "model-000/material/75",
+        "76": "model-000/material/76",
+        "77": "model-000/material/77",
+        "78": "model-000/material/78",
+        "79": "model-000/material/79",
+        "8": "model-000/material/8",
+        "80": "model-000/material/80",
+        "81": "model-000/material/81",
+        "82": "model-000/material/82",
+        "83": "model-000/material/83",
+        "84": "model-000/material/84",
+        "85": "model-000/material/85",
+        "86": "model-000/material/86",
+        "87": "model-000/material/87",
+        "88": "model-000/material/88",
+        "89": "model-000/material/89",
+        "9": "model-000/material/9",
+        "90": "model-000/material/90",
+        "91": "model-000/material/91",
+        "92": "model-000/material/92",
+        "93": "model-000/material/93",
+        "94": "model-000/material/94",
+        "95": "model-000/material/95",
+        "96": "model-000/material/96",
+        "97": "model-000/material/97",
+        "98": "model-000/material/98",
+        "99": "model-000/material/99"
+      },
+      "name": "vokselia_spawn",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": false,
+      "source": "../imported/mcguire/assets/vokselia_spawn/vokselia_spawn.obj",
+      "transform": [
+        1.0362694300518136,
+        0,
+        0,
+        0,
+        0,
+        1.0362694300518136,
+        0,
+        -0.3419689119170985,
+        0,
+        0,
+        1.0362694300518136,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · Vokselia Spawn",
+  "objects": [
+    {
+      "id": "model-000/object/0/1/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "Stone",
+      "order": 0,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/2/0",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 1,
+      "model": "model-000",
+      "name": "Grass",
+      "order": 0,
+      "parent": "model-000/node/0/2",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/3/0",
+      "locked": false,
+      "material": "model-000/material/3",
+      "mesh": 2,
+      "model": "model-000",
+      "name": "Dirt",
+      "order": 0,
+      "parent": "model-000/node/0/3",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/4/0",
+      "locked": false,
+      "material": "model-000/material/4",
+      "mesh": 3,
+      "model": "model-000",
+      "name": "Cobblestone",
+      "order": 0,
+      "parent": "model-000/node/0/4",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/5/0",
+      "locked": false,
+      "material": "model-000/material/5",
+      "mesh": 4,
+      "model": "model-000",
+      "name": "Wooden_Plank",
+      "order": 0,
+      "parent": "model-000/node/0/5",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/6/0",
+      "locked": false,
+      "material": "model-000/material/6",
+      "mesh": 5,
+      "model": "model-000",
+      "name": "Water",
+      "order": 0,
+      "parent": "model-000/node/0/6",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/7/0",
+      "locked": false,
+      "material": "model-000/material/7",
+      "mesh": 6,
+      "model": "model-000",
+      "name": "Stationary_Water",
+      "order": 0,
+      "parent": "model-000/node/0/7",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/8/0",
+      "locked": false,
+      "material": "model-000/material/8",
+      "mesh": 7,
+      "model": "model-000",
+      "name": "Lava",
+      "order": 0,
+      "parent": "model-000/node/0/8",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/9/0",
+      "locked": false,
+      "material": "model-000/material/9",
+      "mesh": 8,
+      "model": "model-000",
+      "name": "Stationary_Lava",
+      "order": 0,
+      "parent": "model-000/node/0/9",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/10/0",
+      "locked": false,
+      "material": "model-000/material/10",
+      "mesh": 9,
+      "model": "model-000",
+      "name": "Sand",
+      "order": 0,
+      "parent": "model-000/node/0/10",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/11/0",
+      "locked": false,
+      "material": "model-000/material/11",
+      "mesh": 10,
+      "model": "model-000",
+      "name": "Gravel",
+      "order": 0,
+      "parent": "model-000/node/0/11",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/12/0",
+      "locked": false,
+      "material": "model-000/material/12",
+      "mesh": 11,
+      "model": "model-000",
+      "name": "Gold_Ore",
+      "order": 0,
+      "parent": "model-000/node/0/12",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/13/0",
+      "locked": false,
+      "material": "model-000/material/13",
+      "mesh": 12,
+      "model": "model-000",
+      "name": "Iron_Ore",
+      "order": 0,
+      "parent": "model-000/node/0/13",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/14/0",
+      "locked": false,
+      "material": "model-000/material/14",
+      "mesh": 13,
+      "model": "model-000",
+      "name": "Coal_Ore",
+      "order": 0,
+      "parent": "model-000/node/0/14",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/15/0",
+      "locked": false,
+      "material": "model-000/material/15",
+      "mesh": 14,
+      "model": "model-000",
+      "name": "Log",
+      "order": 0,
+      "parent": "model-000/node/0/15",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/16/0",
+      "locked": false,
+      "material": "model-000/material/16",
+      "mesh": 15,
+      "model": "model-000",
+      "name": "Leaves",
+      "order": 0,
+      "parent": "model-000/node/0/16",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/17/0",
+      "locked": false,
+      "material": "model-000/material/17",
+      "mesh": 16,
+      "model": "model-000",
+      "name": "Glass",
+      "order": 0,
+      "parent": "model-000/node/0/17",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/18/0",
+      "locked": false,
+      "material": "model-000/material/18",
+      "mesh": 17,
+      "model": "model-000",
+      "name": "Dispenser",
+      "order": 0,
+      "parent": "model-000/node/0/18",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/19/0",
+      "locked": false,
+      "material": "model-000/material/19",
+      "mesh": 18,
+      "model": "model-000",
+      "name": "Sandstone",
+      "order": 0,
+      "parent": "model-000/node/0/19",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/20/0",
+      "locked": false,
+      "material": "model-000/material/20",
+      "mesh": 19,
+      "model": "model-000",
+      "name": "Bed",
+      "order": 0,
+      "parent": "model-000/node/0/20",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/21/0",
+      "locked": false,
+      "material": "model-000/material/21",
+      "mesh": 20,
+      "model": "model-000",
+      "name": "Powered_Rail",
+      "order": 0,
+      "parent": "model-000/node/0/21",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/22/0",
+      "locked": false,
+      "material": "model-000/material/22",
+      "mesh": 21,
+      "model": "model-000",
+      "name": "Detector_Rail",
+      "order": 0,
+      "parent": "model-000/node/0/22",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/23/0",
+      "locked": false,
+      "material": "model-000/material/23",
+      "mesh": 22,
+      "model": "model-000",
+      "name": "Sticky_Piston",
+      "order": 0,
+      "parent": "model-000/node/0/23",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/24/0",
+      "locked": false,
+      "material": "model-000/material/24",
+      "mesh": 23,
+      "model": "model-000",
+      "name": "Tall_Grass",
+      "order": 0,
+      "parent": "model-000/node/0/24",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/25/0",
+      "locked": false,
+      "material": "model-000/material/25",
+      "mesh": 24,
+      "model": "model-000",
+      "name": "Piston",
+      "order": 0,
+      "parent": "model-000/node/0/25",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/26/0",
+      "locked": false,
+      "material": "model-000/material/26",
+      "mesh": 25,
+      "model": "model-000",
+      "name": "Piston_Head",
+      "order": 0,
+      "parent": "model-000/node/0/26",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/27/0",
+      "locked": false,
+      "material": "model-000/material/27",
+      "mesh": 26,
+      "model": "model-000",
+      "name": "Dandelion",
+      "order": 0,
+      "parent": "model-000/node/0/27",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/28/0",
+      "locked": false,
+      "material": "model-000/material/28",
+      "mesh": 27,
+      "model": "model-000",
+      "name": "Rose",
+      "order": 0,
+      "parent": "model-000/node/0/28",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/29/0",
+      "locked": false,
+      "material": "model-000/material/29",
+      "mesh": 28,
+      "model": "model-000",
+      "name": "Brown_Mushroom",
+      "order": 0,
+      "parent": "model-000/node/0/29",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/30/0",
+      "locked": false,
+      "material": "model-000/material/30",
+      "mesh": 29,
+      "model": "model-000",
+      "name": "Red_Mushroom",
+      "order": 0,
+      "parent": "model-000/node/0/30",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/31/0",
+      "locked": false,
+      "material": "model-000/material/31",
+      "mesh": 30,
+      "model": "model-000",
+      "name": "Gold_Block",
+      "order": 0,
+      "parent": "model-000/node/0/31",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/32/0",
+      "locked": false,
+      "material": "model-000/material/32",
+      "mesh": 31,
+      "model": "model-000",
+      "name": "Iron_Block",
+      "order": 0,
+      "parent": "model-000/node/0/32",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/33/0",
+      "locked": false,
+      "material": "model-000/material/33",
+      "mesh": 32,
+      "model": "model-000",
+      "name": "Double_Slab",
+      "order": 0,
+      "parent": "model-000/node/0/33",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/34/0",
+      "locked": false,
+      "material": "model-000/material/34",
+      "mesh": 33,
+      "model": "model-000",
+      "name": "Stone_Slab",
+      "order": 0,
+      "parent": "model-000/node/0/34",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/35/0",
+      "locked": false,
+      "material": "model-000/material/35",
+      "mesh": 34,
+      "model": "model-000",
+      "name": "Brick",
+      "order": 0,
+      "parent": "model-000/node/0/35",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/36/0",
+      "locked": false,
+      "material": "model-000/material/36",
+      "mesh": 35,
+      "model": "model-000",
+      "name": "Bookshelf",
+      "order": 0,
+      "parent": "model-000/node/0/36",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/37/0",
+      "locked": false,
+      "material": "model-000/material/37",
+      "mesh": 36,
+      "model": "model-000",
+      "name": "Moss_Stone",
+      "order": 0,
+      "parent": "model-000/node/0/37",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/38/0",
+      "locked": false,
+      "material": "model-000/material/38",
+      "mesh": 37,
+      "model": "model-000",
+      "name": "Obsidian",
+      "order": 0,
+      "parent": "model-000/node/0/38",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/39/0",
+      "locked": false,
+      "material": "model-000/material/39",
+      "mesh": 38,
+      "model": "model-000",
+      "name": "Torch",
+      "order": 0,
+      "parent": "model-000/node/0/39",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/40/0",
+      "locked": false,
+      "material": "model-000/material/40",
+      "mesh": 39,
+      "model": "model-000",
+      "name": "Fire",
+      "order": 0,
+      "parent": "model-000/node/0/40",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/41/0",
+      "locked": false,
+      "material": "model-000/material/41",
+      "mesh": 40,
+      "model": "model-000",
+      "name": "Monster_Spawner",
+      "order": 0,
+      "parent": "model-000/node/0/41",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/42/0",
+      "locked": false,
+      "material": "model-000/material/42",
+      "mesh": 41,
+      "model": "model-000",
+      "name": "Wooden_Stairs",
+      "order": 0,
+      "parent": "model-000/node/0/42",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/43/0",
+      "locked": false,
+      "material": "model-000/material/43",
+      "mesh": 42,
+      "model": "model-000",
+      "name": "Chest",
+      "order": 0,
+      "parent": "model-000/node/0/43",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/44/0",
+      "locked": false,
+      "material": "model-000/material/44",
+      "mesh": 43,
+      "model": "model-000",
+      "name": "Redstone_Wire",
+      "order": 0,
+      "parent": "model-000/node/0/44",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/45/0",
+      "locked": false,
+      "material": "model-000/material/45",
+      "mesh": 44,
+      "model": "model-000",
+      "name": "Diamond_Block",
+      "order": 0,
+      "parent": "model-000/node/0/45",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/46/0",
+      "locked": false,
+      "material": "model-000/material/46",
+      "mesh": 45,
+      "model": "model-000",
+      "name": "Crafting_Table",
+      "order": 0,
+      "parent": "model-000/node/0/46",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/47/0",
+      "locked": false,
+      "material": "model-000/material/47",
+      "mesh": 46,
+      "model": "model-000",
+      "name": "Crops",
+      "order": 0,
+      "parent": "model-000/node/0/47",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/48/0",
+      "locked": false,
+      "material": "model-000/material/48",
+      "mesh": 47,
+      "model": "model-000",
+      "name": "Farmland",
+      "order": 0,
+      "parent": "model-000/node/0/48",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/49/0",
+      "locked": false,
+      "material": "model-000/material/49",
+      "mesh": 48,
+      "model": "model-000",
+      "name": "Furnace",
+      "order": 0,
+      "parent": "model-000/node/0/49",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/50/0",
+      "locked": false,
+      "material": "model-000/material/50",
+      "mesh": 49,
+      "model": "model-000",
+      "name": "Sign_Post",
+      "order": 0,
+      "parent": "model-000/node/0/50",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/51/0",
+      "locked": false,
+      "material": "model-000/material/51",
+      "mesh": 50,
+      "model": "model-000",
+      "name": "Wooden_Door",
+      "order": 0,
+      "parent": "model-000/node/0/51",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/52/0",
+      "locked": false,
+      "material": "model-000/material/52",
+      "mesh": 51,
+      "model": "model-000",
+      "name": "Ladder",
+      "order": 0,
+      "parent": "model-000/node/0/52",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/53/0",
+      "locked": false,
+      "material": "model-000/material/53",
+      "mesh": 52,
+      "model": "model-000",
+      "name": "Rail",
+      "order": 0,
+      "parent": "model-000/node/0/53",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/54/0",
+      "locked": false,
+      "material": "model-000/material/54",
+      "mesh": 53,
+      "model": "model-000",
+      "name": "Cobblestone_Stairs",
+      "order": 0,
+      "parent": "model-000/node/0/54",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/55/0",
+      "locked": false,
+      "material": "model-000/material/55",
+      "mesh": 54,
+      "model": "model-000",
+      "name": "Wall_Sign",
+      "order": 0,
+      "parent": "model-000/node/0/55",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/56/0",
+      "locked": false,
+      "material": "model-000/material/56",
+      "mesh": 55,
+      "model": "model-000",
+      "name": "Lever",
+      "order": 0,
+      "parent": "model-000/node/0/56",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/57/0",
+      "locked": false,
+      "material": "model-000/material/57",
+      "mesh": 56,
+      "model": "model-000",
+      "name": "Stone_Plate",
+      "order": 0,
+      "parent": "model-000/node/0/57",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/58/0",
+      "locked": false,
+      "material": "model-000/material/58",
+      "mesh": 57,
+      "model": "model-000",
+      "name": "Iron_Door",
+      "order": 0,
+      "parent": "model-000/node/0/58",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/59/0",
+      "locked": false,
+      "material": "model-000/material/59",
+      "mesh": 58,
+      "model": "model-000",
+      "name": "Wooden_Plate",
+      "order": 0,
+      "parent": "model-000/node/0/59",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/60/0",
+      "locked": false,
+      "material": "model-000/material/60",
+      "mesh": 59,
+      "model": "model-000",
+      "name": "Redstone_Torch_(off)",
+      "order": 0,
+      "parent": "model-000/node/0/60",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/61/0",
+      "locked": false,
+      "material": "model-000/material/61",
+      "mesh": 60,
+      "model": "model-000",
+      "name": "Redstone_Torch_(on)",
+      "order": 0,
+      "parent": "model-000/node/0/61",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/62/0",
+      "locked": false,
+      "material": "model-000/material/62",
+      "mesh": 61,
+      "model": "model-000",
+      "name": "Stone_Button",
+      "order": 0,
+      "parent": "model-000/node/0/62",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/63/0",
+      "locked": false,
+      "material": "model-000/material/63",
+      "mesh": 62,
+      "model": "model-000",
+      "name": "Snow_Block",
+      "order": 0,
+      "parent": "model-000/node/0/63",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/64/0",
+      "locked": false,
+      "material": "model-000/material/64",
+      "mesh": 63,
+      "model": "model-000",
+      "name": "Cactus",
+      "order": 0,
+      "parent": "model-000/node/0/64",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/65/0",
+      "locked": false,
+      "material": "model-000/material/65",
+      "mesh": 64,
+      "model": "model-000",
+      "name": "Clay",
+      "order": 0,
+      "parent": "model-000/node/0/65",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/66/0",
+      "locked": false,
+      "material": "model-000/material/66",
+      "mesh": 65,
+      "model": "model-000",
+      "name": "Sugar_Cane",
+      "order": 0,
+      "parent": "model-000/node/0/66",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/67/0",
+      "locked": false,
+      "material": "model-000/material/67",
+      "mesh": 66,
+      "model": "model-000",
+      "name": "Jukebox",
+      "order": 0,
+      "parent": "model-000/node/0/67",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/68/0",
+      "locked": false,
+      "material": "model-000/material/68",
+      "mesh": 67,
+      "model": "model-000",
+      "name": "Fence",
+      "order": 0,
+      "parent": "model-000/node/0/68",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/69/0",
+      "locked": false,
+      "material": "model-000/material/69",
+      "mesh": 68,
+      "model": "model-000",
+      "name": "Pumpkin",
+      "order": 0,
+      "parent": "model-000/node/0/69",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/70/0",
+      "locked": false,
+      "material": "model-000/material/70",
+      "mesh": 69,
+      "model": "model-000",
+      "name": "Netherrack",
+      "order": 0,
+      "parent": "model-000/node/0/70",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/71/0",
+      "locked": false,
+      "material": "model-000/material/71",
+      "mesh": 70,
+      "model": "model-000",
+      "name": "Soul_Sand",
+      "order": 0,
+      "parent": "model-000/node/0/71",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/72/0",
+      "locked": false,
+      "material": "model-000/material/72",
+      "mesh": 71,
+      "model": "model-000",
+      "name": "Glowstone",
+      "order": 0,
+      "parent": "model-000/node/0/72",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/73/0",
+      "locked": false,
+      "material": "model-000/material/73",
+      "mesh": 72,
+      "model": "model-000",
+      "name": "Portal",
+      "order": 0,
+      "parent": "model-000/node/0/73",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/74/0",
+      "locked": false,
+      "material": "model-000/material/74",
+      "mesh": 73,
+      "model": "model-000",
+      "name": "Jack-O-Lantern",
+      "order": 0,
+      "parent": "model-000/node/0/74",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/75/0",
+      "locked": false,
+      "material": "model-000/material/75",
+      "mesh": 74,
+      "model": "model-000",
+      "name": "Cake",
+      "order": 0,
+      "parent": "model-000/node/0/75",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/76/0",
+      "locked": false,
+      "material": "model-000/material/76",
+      "mesh": 75,
+      "model": "model-000",
+      "name": "Repeater_(off)",
+      "order": 0,
+      "parent": "model-000/node/0/76",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/77/0",
+      "locked": false,
+      "material": "model-000/material/77",
+      "mesh": 76,
+      "model": "model-000",
+      "name": "Repeater_(on)",
+      "order": 0,
+      "parent": "model-000/node/0/77",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/78/0",
+      "locked": false,
+      "material": "model-000/material/78",
+      "mesh": 77,
+      "model": "model-000",
+      "name": "Trapdoor",
+      "order": 0,
+      "parent": "model-000/node/0/78",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/79/0",
+      "locked": false,
+      "material": "model-000/material/79",
+      "mesh": 78,
+      "model": "model-000",
+      "name": "Glass_Pane",
+      "order": 0,
+      "parent": "model-000/node/0/79",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/80/0",
+      "locked": false,
+      "material": "model-000/material/80",
+      "mesh": 79,
+      "model": "model-000",
+      "name": "Melon",
+      "order": 0,
+      "parent": "model-000/node/0/80",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/81/0",
+      "locked": false,
+      "material": "model-000/material/81",
+      "mesh": 80,
+      "model": "model-000",
+      "name": "Pumpkin_Stem",
+      "order": 0,
+      "parent": "model-000/node/0/81",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/82/0",
+      "locked": false,
+      "material": "model-000/material/82",
+      "mesh": 81,
+      "model": "model-000",
+      "name": "Melon_Stem",
+      "order": 0,
+      "parent": "model-000/node/0/82",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/83/0",
+      "locked": false,
+      "material": "model-000/material/83",
+      "mesh": 82,
+      "model": "model-000",
+      "name": "Fence_Gate",
+      "order": 0,
+      "parent": "model-000/node/0/83",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/84/0",
+      "locked": false,
+      "material": "model-000/material/84",
+      "mesh": 83,
+      "model": "model-000",
+      "name": "Nether_Brick",
+      "order": 0,
+      "parent": "model-000/node/0/84",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/85/0",
+      "locked": false,
+      "material": "model-000/material/85",
+      "mesh": 84,
+      "model": "model-000",
+      "name": "Nether_Wart",
+      "order": 0,
+      "parent": "model-000/node/0/85",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/86/0",
+      "locked": false,
+      "material": "model-000/material/86",
+      "mesh": 85,
+      "model": "model-000",
+      "name": "White_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/86",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/87/0",
+      "locked": false,
+      "material": "model-000/material/87",
+      "mesh": 86,
+      "model": "model-000",
+      "name": "Orange_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/87",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/88/0",
+      "locked": false,
+      "material": "model-000/material/88",
+      "mesh": 87,
+      "model": "model-000",
+      "name": "Light_Blue_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/88",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/89/0",
+      "locked": false,
+      "material": "model-000/material/89",
+      "mesh": 88,
+      "model": "model-000",
+      "name": "Yellow_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/89",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/90/0",
+      "locked": false,
+      "material": "model-000/material/90",
+      "mesh": 89,
+      "model": "model-000",
+      "name": "Pink_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/90",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/91/0",
+      "locked": false,
+      "material": "model-000/material/91",
+      "mesh": 90,
+      "model": "model-000",
+      "name": "Gray_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/91",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/92/0",
+      "locked": false,
+      "material": "model-000/material/92",
+      "mesh": 91,
+      "model": "model-000",
+      "name": "Light_Gray_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/92",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/93/0",
+      "locked": false,
+      "material": "model-000/material/93",
+      "mesh": 92,
+      "model": "model-000",
+      "name": "Cyan_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/93",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/94/0",
+      "locked": false,
+      "material": "model-000/material/94",
+      "mesh": 93,
+      "model": "model-000",
+      "name": "Purple_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/94",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/95/0",
+      "locked": false,
+      "material": "model-000/material/95",
+      "mesh": 94,
+      "model": "model-000",
+      "name": "Blue_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/95",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/96/0",
+      "locked": false,
+      "material": "model-000/material/96",
+      "mesh": 95,
+      "model": "model-000",
+      "name": "Brown_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/96",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/97/0",
+      "locked": false,
+      "material": "model-000/material/97",
+      "mesh": 96,
+      "model": "model-000",
+      "name": "Green_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/97",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/98/0",
+      "locked": false,
+      "material": "model-000/material/98",
+      "mesh": 97,
+      "model": "model-000",
+      "name": "Red_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/98",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/99/0",
+      "locked": false,
+      "material": "model-000/material/99",
+      "mesh": 98,
+      "model": "model-000",
+      "name": "Black_Wool",
+      "order": 0,
+      "parent": "model-000/node/0/99",
+      "transform": [
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        -0.34196892380714417,
+        0,
+        0,
+        1.0362694263458252,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [
+    {
+      "dependencies": {},
+      "id": "model-000/texture/0",
+      "magFilter": 9728,
+      "minFilter": 9728,
+      "source": "../imported/mcguire/assets/vokselia_spawn/vokselia_spawn.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    }
+  ],
+  "version": 2
+}

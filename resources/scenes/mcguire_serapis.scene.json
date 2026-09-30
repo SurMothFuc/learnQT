@@ -1,0 +1,177 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 45,
+    "position": [
+      -8,
+      1,
+      0
+    ],
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 45,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        -8,
+        1,
+        0
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [
+        "STL imported through Assimp; rotated from Z-up to Y-up for presentation."
+      ],
+      "asset": "Serapis Bust",
+      "author": "© 2012 MakerBot",
+      "license": "CC BY 2.0",
+      "source": "https://casual-effects.com/g3d/data10/research/model/serapis/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "Serapis Bust",
+      "order": 0,
+      "parent": ""
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [],
+  "materials": [
+    {
+      "baseColor": [
+        0.65,
+        0.69,
+        0.75
+      ],
+      "id": "presentation-material",
+      "metallic": 0,
+      "roughness": 0.65
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {},
+      "expanded": true,
+      "id": "model-000",
+      "material": "presentation-material",
+      "materialBindings": {},
+      "name": "serapis",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/serapis/serapis.stl",
+      "transform": [
+        0.05925925925925926,
+        0,
+        0,
+        -0.37893688888888893,
+        0,
+        0,
+        0.05925925925925926,
+        -2,
+        0,
+        -0.05925925925925926,
+        0,
+        0.22219466666666668,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · Serapis Bust",
+  "objects": [
+    {
+      "id": "model-000/object/0/0/0",
+      "locked": false,
+      "material": "presentation-material",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "Default",
+      "order": 0,
+      "parent": "root",
+      "transform": [
+        0.05925925821065903,
+        0,
+        0,
+        -0.37893688678741455,
+        0,
+        0,
+        0.05925925821065903,
+        -2,
+        0,
+        -0.05925925821065903,
+        0,
+        0.22219467163085938,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [],
+  "version": 2
+}

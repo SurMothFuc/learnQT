@@ -78,13 +78,16 @@
 - [ ] 按兼容性需求集成独立参考 MikkTSpace，并增加镜像 UV、硬边、退化 UV 与复杂 normal map 接缝对照；当前 authored tangent 与 Assimp fallback 已贯通。
 - [ ] 实现完整 minFilter/mipmap/LOD 采样。当前虽保存 sampler 参数并生成 mipmap，shader 仍显式读取 LOD 0，仅按 magFilter 区分 nearest/linear；需补足缩小过滤与射线 footprint/LOD 策略。
 - [ ] 支持多 UV 集与分层纹理。当前仅 UV0、每槽第 0 张；请求非零 UV 的槽会警告并跳过，不能误用 UV0。
-- [ ] 按实际模型需求补齐 AO、height/displacement、clearcoat/transmission/sheen 等扩展贴图；读取部分标量不等于完整 glTF 扩展支持。
+- [ ] 完善 OBJ/MTL 到 PBR 的材质映射：为 `map_Ks`/`Ns` 定义独立的 specular 颜色/强度与 roughness 转换策略，为 `map_Ka` 定义明确的兼容策略；不能把镜面贴图直接伪装成 metallic。补齐 AO、height/displacement、clearcoat/transmission/sheen 等扩展贴图；读取部分标量不等于完整 glTF 扩展支持。
+- [ ] 增加导入诊断与来源适配报告。明确列出未支持的 MTL/glTF 通道、缺失或替代贴图、自动降采样、UV 通道、退化三角形和纹理层预算，避免资源导入成功后静默丢失材质信息。
 - [ ] 扩充 FBX 和 glTF 兼容性样本。现有 FBX 内嵌 PNG 小夹具不代表所有 DCC 导出的 FBX 都已验证；需要复杂嵌入材质、动画静态姿态、镜像/非均匀节点变换等专项场景。
-- [ ] 改进纹理预算与诊断。当前数组单边上限 2048 且层数受硬件限制，超层数回退为常量；增加明确的 UI 资源预算/缺图反馈，并评估按需缩放或多数组方案。
+- [ ] 改进纹理预算与诊断。当前数组单边上限 2048 且层数受硬件限制，超层数回退为常量；针对 Gallery 的 16K 贴图以及 Bistro/San Miguel 的大批量贴图，增加按场景预算的自动缩放、流式加载、多数组方案和真实 mip/LOD 选择，并提供明确的 UI 资源预算/缺图反馈。
 - [ ] 统一模型法线处理策略：保留平滑法线、面法线、法线方向统一三个独立步骤，并明确硬边模型如何拆点或按面保持法线。
+- [ ] 导入可用的外部相机、灯光和场景元数据；OBJ/MTL 没有统一的场景描述时，允许使用可追溯的 sidecar 文件，减少当前依赖手工相机、HDR 和补光的适配。
 - [ ] 扩充 Blend、旧 Transparent、折射玻璃与介质交互的组合回归。基础 alpha 发光面和闭合均匀介质透射率已有数值验证，尚未覆盖复杂叠层与玻璃内照明；当前直线 NEE 阴影穿过旧 Transparent 边界，但不会忽略玻璃折射而直接穿过其 BSDF 表面。
 - [ ] 扩展均匀介质边界与初始化。当前 type/density/color/anisotropy 和 8 层 LIFO 体积栈已实现；相机位于单个吸收体内有回归，但初始多层介质栈仍未完整构建，任意相交/裁剪/非闭合体积不受支持。补充栈容量、复杂嵌套和介质中放置实体物体的专项验证；非均匀体积另按需求规划。
 - [ ] 支持相邻非真空介质的折射率比。当前体积栈记录消光/散射参数，表面折射仍按 `1 / material.IOR` 或 `material.IOR` 计算；它不等同于折射率栈，多层不同 IOR 的接触边界需补充介质两侧 IOR 及回归。
+- [ ] 若引入真实云雾或体积云资源，支持异质介质密度场/3D 纹理、体积缓存和相应的采样与降噪回归；当前 McGuire `cloud` 仅是表面网格，不能把它当作体积渲染已完成。
 - [ ] 规划 BSSRDF / subsurface 的真实落地方式，先区分 Disney subsurface 近似、随机游走 BSSRDF 和体积散射三条路径，避免只留一个无法验证的参数。
 
 ## P3 性能与架构
