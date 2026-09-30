@@ -269,14 +269,29 @@ def adapt(doc,key,source_dir):
      im=im.convert('RGBA' if alpha else 'RGB');im.thumbnail((cap,cap),Image.Resampling.LANCZOS);im.save(out)
    t['source']=rel(out,source_dir)
   if key in BLOCK:t.update(magFilter=9728,minFilter=9728)
+ # Mineways exports map_d as a separate copy of map_Kd's alpha. Multiplying
+ # both makes water's 136/255 coverage fall below the Mask cutoff.
+ names={o['material']:o.get('name','') for o in doc['objects']}
+ duplicate_alpha={}
  for m in doc['materials']:
   slots=m.get('textures',{});base=slots.get('baseColor')
+  opacity=slots.get('opacity')
+  if key in BLOCK and tex_alpha.get(base,False) and opacity:
+   pair=(base,opacity)
+   if pair not in duplicate_alpha:
+    with Image.open(source_by_id[base]) as color, Image.open(source_by_id[opacity]) as mask:
+     a=np.asarray(color.convert('RGBA').getchannel('A'))
+     b=np.asarray(mask.convert('RGB').getchannel('R'))
+     duplicate_alpha[pair]=a.shape==b.shape and np.array_equal(a,b)
+   if duplicate_alpha[pair]:
+    del slots['opacity']
   if m.get('IOR',1.5)<=0:m['IOR']=1.5
   if base and max(m.get('baseColor',[1,1,1]))<.01:m['baseColor']=[1,1,1]
   if m.get('opacity',1)>=.999 and (tex_alpha.get(base,False) or slots.get('opacity')):m.update(alphaMode=2,alphaCutoff=.5,opacity=1)
   if key in BLOCK:m.update(baseColor=[1,1,1],roughness=.95,metallic=0,transmission=0,IOR=1.5,alphaMode=2,alphaCutoff=.5,opacity=1)
+  if key in BLOCK and 'water' in names.get(m['id'],'').lower():
+   m['alphaMode']=3 # Partial atlas alpha is coverage, not a cutout hole.
  # Mineways emitters are otherwise just ordinary diffuse blocks.
- names={o['material']:o.get('name','') for o in doc['objects']}
  for m in doc['materials']:
   name=names.get(m['id'],'').lower()
   if key in BLOCK and any(x in name for x in ('torch','glowstone','lava')):m['emissive']=[4,2.5,1]

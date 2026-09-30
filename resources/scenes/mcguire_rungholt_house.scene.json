@@ -790,8 +790,7 @@
       "specularTint": 0,
       "subsurface": 0,
       "textures": {
-        "baseColor": "model-000/texture/1",
-        "opacity": "model-000/texture/2"
+        "baseColor": "model-000/texture/1"
       },
       "transmission": 0
     },
@@ -875,8 +874,7 @@
       "specularTint": 0,
       "subsurface": 0,
       "textures": {
-        "baseColor": "model-000/texture/1",
-        "opacity": "model-000/texture/2"
+        "baseColor": "model-000/texture/1"
       },
       "transmission": 0
     },
@@ -918,8 +916,7 @@
       "specularTint": 0,
       "subsurface": 0,
       "textures": {
-        "baseColor": "model-000/texture/1",
-        "opacity": "model-000/texture/2"
+        "baseColor": "model-000/texture/1"
       },
       "transmission": 0
     },
@@ -961,8 +958,7 @@
       "specularTint": 0,
       "subsurface": 0,
       "textures": {
-        "baseColor": "model-000/texture/1",
-        "opacity": "model-000/texture/2"
+        "baseColor": "model-000/texture/1"
       },
       "transmission": 0
     },
@@ -1004,8 +1000,7 @@
       "specularTint": 0,
       "subsurface": 0,
       "textures": {
-        "baseColor": "model-000/texture/1",
-        "opacity": "model-000/texture/2"
+        "baseColor": "model-000/texture/1"
       },
       "transmission": 0
     },
@@ -1215,8 +1210,7 @@
       "specularTint": 0,
       "subsurface": 0,
       "textures": {
-        "baseColor": "model-000/texture/1",
-        "opacity": "model-000/texture/2"
+        "baseColor": "model-000/texture/1"
       },
       "transmission": 0
     },
@@ -1342,8 +1336,7 @@
       "specularTint": 0,
       "subsurface": 0,
       "textures": {
-        "baseColor": "model-000/texture/1",
-        "opacity": "model-000/texture/2"
+        "baseColor": "model-000/texture/1"
       },
       "transmission": 0
     },
@@ -1553,8 +1546,7 @@
       "specularTint": 0,
       "subsurface": 0,
       "textures": {
-        "baseColor": "model-000/texture/1",
-        "opacity": "model-000/texture/2"
+        "baseColor": "model-000/texture/1"
       },
       "transmission": 0
     },
@@ -1638,8 +1630,7 @@
       "specularTint": 0,
       "subsurface": 0,
       "textures": {
-        "baseColor": "model-000/texture/1",
-        "opacity": "model-000/texture/2"
+        "baseColor": "model-000/texture/1"
       },
       "transmission": 0
     },
@@ -1849,8 +1840,7 @@
       "specularTint": 0,
       "subsurface": 0,
       "textures": {
-        "baseColor": "model-000/texture/1",
-        "opacity": "model-000/texture/2"
+        "baseColor": "model-000/texture/1"
       },
       "transmission": 0
     },
@@ -1892,8 +1882,7 @@
       "specularTint": 0,
       "subsurface": 0,
       "textures": {
-        "baseColor": "model-000/texture/1",
-        "opacity": "model-000/texture/2"
+        "baseColor": "model-000/texture/1"
       },
       "transmission": 0
     },
