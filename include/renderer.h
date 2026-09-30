@@ -1,4 +1,4 @@
-﻿#ifndef RENDERER_H
+#ifndef RENDERER_H
 #define RENDERER_H
 
 #include <QElapsedTimer>
@@ -14,6 +14,7 @@
 #include <iostream>
 #include <memory>
 #include <unordered_map>
+#include <set>
 #include <vector>
 
 #include "OpenImageDenoise/oidn.hpp"
@@ -23,6 +24,7 @@
 #include "RenderParams.h"
 #include "Scene.h"
 #include "SceneDirty.h"
+#include "RasterEnvironment.h"
 #include <atomic>
 
 class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
@@ -30,11 +32,17 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     Q_OBJECT
   public:
     explicit Renderer(int width, int height, const RenderParams::Snapshot &initialSnapshot,
-                      QObject *parent = nullptr);
+                      QObject *parent = nullptr, Scene *scene = nullptr);
     ~Renderer() override;
 
     void render(int width, int height, const RenderParams::Snapshot &snapshot, SceneDirtyFlags dirtyFlags,
                 int maxTiles = 1, const std::function<bool()> &interrupted = {});
+    // 交互回退：由渲染线程决定本帧是否用光栅化交互预览。
+    void setRasterActive(bool active);
+    bool rasterActive() const
+    {
+        return m_rasterActive;
+    }
     QSize renderSize() const
     {
         return {render_width, render_height};
@@ -72,7 +80,29 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     void submitGpuBoundary();
     void pollGpuTimers();
     quint64 allocatedBytes() const;
-    void updatePick(int width, int height, quint64 version);
+    // 返回本次调用是否真的重绘了拾取缓冲；只有版本或尺寸变化才会重绘。
+    bool updatePick(int width, int height, quint64 version);
+    // 最近一次拾取 pass 的 GPU 执行耗时，用于区分拾取与光栅化预览的开销。
+    double pickGpuMs() const
+    {
+        return stats.pickMs;
+    }
+    // 取走自上次调用以来新完成的拾取耗时；没有新结果时返回 0，避免重复累计同一帧。
+    double takePickGpuMs()
+    {
+        const double completed = pickCompletedMs;
+        pickCompletedMs = 0;
+        return completed;
+    }
+    int pickPasses() const
+    {
+        return stats.pickPasses;
+    }
+    // 拾取缓冲当前对应的版本；与某一帧版本相同才说明该帧的 ID 图是新鲜的。
+    quint64 pickBufferVersion() const
+    {
+        return pickVersion;
+    }
     void requestPick(QPoint pixel, quint64 request);
     bool pollPick(quint64 &request, unsigned &id, quint64 &version);
     GLuint pickFramebuffer() const
@@ -94,6 +124,8 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     struct RefreshActions
     {
         bool rebuildShader = false;
+        // 环境贴图开关变化时，光栅化预览程序也要跟着重建（USEENVIRONMENTMAP define）。
+        bool refreshRasterProgram = false;
         bool resizeTargets = false;
         bool syncCameraUniforms = false;
         bool syncMaterialBuffer = false;
@@ -115,7 +147,8 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     void compositePreview(const RenderParams::Snapshot &snapshot, bool changed, bool force);
     void renderTile(int tileX, int tileY, int tileWidth, int tileHeight, int maxBounces); // 渲染单个块
     void renderFullImage(int maxBounces);                                                 // 渲染完整图像
-    void rebuildPathtraceProgram(const RenderParams::Snapshot &snapshot);
+    bool rebuildPathtraceProgram(const RenderParams::Snapshot &snapshot);
+    void syncPathtraceUniforms();
 
     /**
      * @brief 设置屏幕分辨率并更新缓冲
@@ -151,6 +184,14 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     QStringList uploadedMeshes;
     void uploadHdrTextures(bool recreateResources);
     void uploadMaterialTextures(bool recreateResources);
+
+    // 光栅化交互预览：几何按 mesh 分组上传，实例参数按实例步进的属性缓冲提供。
+    bool renderRasterPreview(const RenderParams::Snapshot &snapshot);
+    void rebuildRasterProgram(const RenderParams::Snapshot &snapshot);
+    void ensureDepthAttachment();
+    void uploadRasterGeometry();
+    void uploadRasterInstances();
+    void releaseRasterResources();
 
     /**
      * @brief 显示渲染统计信息
@@ -193,6 +234,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     Renderer &operator=(const Renderer &&) = delete;
 
   private:
+    Scene &m_scene;
     int m_width = 0;       // 屏幕宽度
     int m_height = 0;      // 屏幕高度
     int render_width = 0;  // 实际渲染宽度
@@ -242,8 +284,35 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     int materialTextureLayerCount = 0;
 
     std::unique_ptr<QOpenGLShaderProgram> m_program = nullptr;
-    std::unique_ptr<QOpenGLShaderProgram> pathtrace_program = nullptr;
+    std::shared_ptr<QOpenGLShaderProgram> pathtrace_program;
+    std::unordered_map<std::string, std::shared_ptr<QOpenGLShaderProgram>> pathtracePrograms;
+    std::set<std::string> failedComputePrograms;
     std::unique_ptr<QOpenGLShaderProgram> historysave_program = nullptr;
+    std::unique_ptr<QOpenGLShaderProgram> raster_program = nullptr;
+    std::unique_ptr<QOpenGLShaderProgram> rasterBackgroundProgram = nullptr;
+
+    // 光栅化交互预览资源。区间按 mesh 分组，绘制时同 mesh 的实例合并为一次实例化绘制。
+    struct RasterDrawRange
+    {
+        GLint first = 0;
+        GLsizei count = 0;
+    };
+    GLuint rasterVao = 0, rasterVertexBuffer = 0, rasterInstanceBuffer = 0;
+    // 光栅化预览专用 FBO：颜色靶复用 RenderColorTex，另带自己的深度附件。
+    GLuint rasterFbo = 0;
+    GLuint depthRenderbuffer = 0;
+    QSize rasterDepthSize;
+    std::vector<RasterDrawRange> rasterRanges;      // 下标与 Scene::meshes 对齐
+    std::vector<int> rasterInstanceMesh;            // 每条实例属性对应的 mesh 下标
+    GLsizei rasterInstanceCount = 0;
+    size_t rasterVertexCount = 0;
+    bool m_rasterActive = false, m_rasterRequested = false;
+    bool m_rasterCapable = false;
+    std::array<QVector3D, 9> rasterEnvironment{};
+    const float *rasterEnvironmentSource = nullptr;
+    QSize rasterEnvironmentSize;
+    QString rasterEnvironmentPath;
+    bool m_rasterGeometryUploaded = false, m_rasterInstancesUploaded = false;
 
     std::vector<unsigned> batchTextureSettings;
 
@@ -275,9 +344,19 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     GLuint timerQueries[12] = {};
     bool timerPending[12] = {};
     quint64 timerEpoch[12] = {};
+    // 光栅化交互预览的 GPU 计时查询，单独一个槽位，不参与路径追踪的三段计时。
+    GLuint rasterTimerQuery = 0;
+    bool rasterTimerPending = false;
+    // GPU 拾取 pass 的计时查询，同样独立于路径追踪与光栅化的计时槽位。
+    GLuint pickTimerQuery = 0;
+    bool pickTimerPending = false;
+    // 最近一次查询完成时结算的耗时，由渲染线程取走后清零。
+    double pickCompletedMs = 0;
     double estimatedTileMs = 0;
     QElapsedTimer compositeClock;
     bool displayDirty = true, firstComposite = true;
+    // 光栅化预览每帧都需要重新合成到显示纹理，与路径追踪的 displayDirty 语义分开。
+    bool rasterNeedsComposite = false;
     int timerCursor = 0;
     quint64 textureArrayBytes = 0;
     GLuint pickFbo = 0, pickTextures[2] = {}, pickPbo = 0;

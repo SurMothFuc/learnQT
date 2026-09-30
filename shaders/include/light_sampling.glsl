@@ -23,16 +23,16 @@ struct LightSample {
 
 LightSample InvalidLightSample()
 {
-    LightSample sample;
-    sample.lightIndex = -1;
-    sample.valid = false;
-    sample.delta = false;
-    sample.direction = vec3(0.0, 1.0, 0.0);
-    sample.distance = INF;
-    sample.radiance = vec3(0.0);
-    sample.pdf = 0.0;
-    sample.triangleIndex = -1;
-    return sample;
+    LightSample lightSample;
+    lightSample.lightIndex = -1;
+    lightSample.valid = false;
+    lightSample.delta = false;
+    lightSample.direction = vec3(0.0, 1.0, 0.0);
+    lightSample.distance = INF;
+    lightSample.radiance = vec3(0.0);
+    lightSample.pdf = 0.0;
+    lightSample.triangleIndex = -1;
+    return lightSample;
 }
 
 EncodedLight GetEncodedLight(int index)
@@ -128,35 +128,35 @@ EncodedLight SelectFiniteLight(float xi)
 
 LightSample SampleEnvironmentLight(float xi1, float xi2, float envPdf)
 {
-    LightSample sample = InvalidLightSample();
+    LightSample lightSample = InvalidLightSample();
     float directionPdf;
     vec3 L = SampleHdr(xi1, xi2, directionPdf);
     float pdf = envPdf * directionPdf;
     if (pdf <= 0.0) {
-        return sample;
+        return lightSample;
     }
 
-    sample.valid = true;
-    sample.delta = false;
-    sample.direction = L;
-    sample.distance = INF;
-    sample.radiance = hdrColor(L);
-    sample.pdf = pdf;
-    return sample;
+    lightSample.valid = true;
+    lightSample.delta = false;
+    lightSample.direction = L;
+    lightSample.distance = INF;
+    lightSample.radiance = hdrColor(L);
+    lightSample.pdf = pdf;
+    return lightSample;
 }
 
 LightSample SampleTriangleLight(EncodedLight light, vec3 origin, float xi1, float xi2, float finitePdf)
 {
-    LightSample sample = InvalidLightSample();
+    LightSample lightSample = InvalidLightSample();
     Triangle triangle = GetTriangleLightGeometry(light.triangleIndex);
     float area = TriangleArea(triangle);
-    if (area <= 0.0) return sample;
+    if (area <= 0.0) return lightSample;
     vec3 bary = SampleTriangleBarycentric(xi1, xi2);
     vec3 lightPoint = bary.x * triangle.p1 + bary.y * triangle.p2 + bary.z * triangle.p3;
     vec3 toLight = lightPoint - origin;
     float dist2 = dot(toLight, toLight);
     if (dist2 <= EPS) {
-        return sample;
+        return lightSample;
     }
 
     float distance = sqrt(dist2);
@@ -164,14 +164,14 @@ LightSample SampleTriangleLight(EncodedLight light, vec3 origin, float xi1, floa
     vec3 lightNormal = TriangleFaceNormal(triangle);
     float cosLight = abs(dot(lightNormal, -L));
     if (cosLight <= EPS) {
-        return sample;
+        return lightSample;
     }
 
     float areaPdf = 1.0 / area;
-    sample.valid = true;
-    sample.delta = false;
-    sample.direction = L;
-    sample.distance = distance;
+    lightSample.valid = true;
+    lightSample.delta = false;
+    lightSample.direction = L;
+    lightSample.distance = distance;
     vec2 lightUV = bary.x * triangle.uv1 + bary.y * triangle.uv2 + bary.z * triangle.uv3;
     materialEvaluationUV = lightUV;
     Material lightMaterial = getMaterial(light.triangleIndex);
@@ -181,20 +181,20 @@ LightSample SampleTriangleLight(EncodedLight light, vec3 origin, float xi1, floa
         coverage = lightMaterial.opacity >= lightMaterial.alphaCutoff ? 1.0 : 0.0;
     else if (lightMaterial.alphaMode == ALPHA_MODE_BLEND)
         coverage = lightMaterial.opacity;
-    sample.lightIndex = light.index;
-    sample.radiance = lightMaterial.emissive * coverage;
-    sample.pdf = finitePdf * light.selectPdf * areaPdf * dist2 / cosLight;
-    sample.triangleIndex = light.triangleIndex;
-    return sample;
+    lightSample.lightIndex = light.index;
+    lightSample.radiance = lightMaterial.emissive * coverage;
+    lightSample.pdf = finitePdf * light.selectPdf * areaPdf * dist2 / cosLight;
+    lightSample.triangleIndex = light.triangleIndex;
+    return lightSample;
 }
 
 LightSample SampleSunDiskLight(EncodedLight light, float xi1, float xi2, float finitePdf)
 {
-    LightSample sample = InvalidLightSample();
+    LightSample lightSample = InvalidLightSample();
     float oneMinusCosMax = 2.0 * pow(sin(0.5 * light.radius), 2.0);
     float solidAngle = TWO_PI * oneMinusCosMax;
     if (solidAngle <= 0.0) {
-        return sample;
+        return lightSample;
     }
 
     vec3 axis = normalize(-light.positionOrDirection);
@@ -207,14 +207,14 @@ LightSample SampleSunDiskLight(EncodedLight light, float xi1, float xi2, float f
     float phi = TWO_PI * xi2;
     vec3 L = normalize(T * (cos(phi) * sinTheta) + B * (sin(phi) * sinTheta) + axis * cosTheta);
 
-    sample.valid = true;
-    sample.delta = false;
-    sample.direction = L;
-    sample.distance = INF;
-    sample.lightIndex = light.index;
-    sample.radiance = light.color;
-    sample.pdf = finitePdf * light.selectPdf / solidAngle;
-    return sample;
+    lightSample.valid = true;
+    lightSample.delta = false;
+    lightSample.direction = L;
+    lightSample.distance = INF;
+    lightSample.lightIndex = light.index;
+    lightSample.radiance = light.color;
+    lightSample.pdf = finitePdf * light.selectPdf / solidAngle;
+    return lightSample;
 }
 
 float SphereIntersection(EncodedLight light, vec3 origin, vec3 direction)
@@ -248,8 +248,8 @@ float SphereLightPdf(EncodedLight light, vec3 origin, vec3 direction)
 
 LightSample SampleSphereLight(EncodedLight light, vec3 origin, float xi1, float xi2, float finitePdf)
 {
-    LightSample sample = InvalidLightSample();
-    if (distance(origin, light.positionOrDirection) <= light.radius) return sample;
+    LightSample lightSample = InvalidLightSample();
+    if (distance(origin, light.positionOrDirection) <= light.radius) return lightSample;
     vec3 axis = normalize(light.positionOrDirection - origin);
     vec3 T, B;
     Onb(axis, T, B);
@@ -257,14 +257,14 @@ LightSample SampleSphereLight(EncodedLight light, vec3 origin, float xi1, float 
     float sinTheta = sqrt(max(0.0, oneMinusCos * (2.0 - oneMinusCos)));
     float phi = TWO_PI * xi2;
     vec3 L = normalize(axis * (1.0-oneMinusCos) + sinTheta * (cos(phi)*T + sin(phi)*B));
-    sample.distance = SphereIntersection(light, origin, L);
-    if (sample.distance >= INF) return sample;
-    sample.valid = true;
-    sample.direction = L;
-    sample.lightIndex = light.index;
-    sample.radiance = light.color;
-    sample.pdf = finitePdf * light.selectPdf / (TWO_PI * SphereConeWidth(light, origin));
-    return sample;
+    lightSample.distance = SphereIntersection(light, origin, L);
+    if (lightSample.distance >= INF) return lightSample;
+    lightSample.valid = true;
+    lightSample.direction = L;
+    lightSample.lightIndex = light.index;
+    lightSample.radiance = light.color;
+    lightSample.pdf = finitePdf * light.selectPdf / (TWO_PI * SphereConeWidth(light, origin));
+    return lightSample;
 }
 
 float SunSolidAngle(EncodedLight light)

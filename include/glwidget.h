@@ -43,16 +43,39 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
         emit toolChanged(int(tool));
     }
     void frameSelection();
+    void setCompositionMode(bool active, const Camera &draft = Camera(), QSize aspect = {});
+    void setCompositionAspect(QSize aspect);
     Camera camera;
     quint64 sceneVersion() const
     {
         return version;
     }
+    // 描边绘制统计：只有 outstandingStaleIdsFrames() 是可观测的缺陷信号——它是「槽明明是最新版本、
+    // 但 ID 图还是上一次拾取重绘的结果」却把描边放行的次数。相机拖动中允许出现
+    // staleHiddenFrames()（描边被隐藏），但绝不允许前者。
+    quint64 staleHiddenFrames() const
+    {
+        return staleHiddenCount;
+    }
+    quint64 overlayDrawnFrames() const
+    {
+        return overlayDrawnCount;
+    }
+    quint64 outstandingStaleIdsFrames() const
+    {
+        return outstandingStaleCount;
+    }
+    void resetOverlayCounters()
+    {
+        staleHiddenCount = overlayDrawnCount = outstandingStaleCount = 0;
+    }
   signals:
     void framePresented();
+    void freshFramePresented();
     void sceneEdited();
     void toolChanged(int tool);
     void renderThreadReady();
+    void compositionCameraChanged();
 
   protected:
     void initializeGL() override;
@@ -71,9 +94,15 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     GLuint vao = 0, vbo = 0, selectionBuffer = 0, selectionTexture = 0;
     std::unique_ptr<QOpenGLShaderProgram> program;
     QWidget *overlay = nullptr;
+    bool compositionMode = false;
+    QSize compositionAspect;
+    QRect compositionFrame() const;
     bool selectionDirty = true, orbit = false, pan = false;
     QPoint lastPos, dragStart;
     quint64 version = 1, pickSerial = 0;
+    // Completed interactive images may lag edits, but never cross scene/size replacement.
+    quint64 minimumDisplayVersion = 1;
+    quint64 lastPresentationSerial = 0;
     bool pickCtrl = false;
     int dragAxis = -1;
     QVector3D dragCenter, dragDirection;
@@ -87,5 +116,6 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     void cancelDrag();
     void publishCamera();
     bool hasSelection = false;
+    quint64 staleHiddenCount = 0, overlayDrawnCount = 0, outstandingStaleCount = 0;
     void updateEditorOverlay();
 };

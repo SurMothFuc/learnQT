@@ -419,7 +419,9 @@ void learnQT::configureWorkbenchRegression()
         {
             if (jobState != RenderJobState::Paused)
                 return;
-            if (!editor->renderLocked || inspectorDock->isEnabled())
+            // Result metadata stays readable while all document mutation controls are locked.
+            if (!editor->renderLocked || outputWidth->isEnabled() ||
+                inspector->findChild<MixedSpin *>("roughness")->isEnabled())
             {
                 fail("Paused job unlocked scene");
                 return;

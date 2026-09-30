@@ -6,6 +6,7 @@
 #include <functional>
 #include <limits>
 #include <numeric>
+#include <stdexcept>
 
 namespace
 {
@@ -71,6 +72,29 @@ SceneBounds SceneBounds::transformed(const QMatrix4x4 &matrix) const
                                                 mask & 4 ? maximum.z() : minimum.z())));
     return result;
 }
+int bvhMaximumDepth(const std::vector<BVHNode> &nodes)
+{
+    if (nodes.size() <= 1) return 0;
+    std::vector<std::pair<int, int>> pending{{1, 1}};
+    size_t visited = 0;
+    int maximum = 0;
+    while (!pending.empty())
+    {
+        const auto item = pending.back();
+        pending.pop_back();
+        if (item.first <= 0 || size_t(item.first) >= nodes.size() || ++visited >= nodes.size())
+            throw std::runtime_error("Invalid BVH tree while selecting traversal capacity");
+        maximum = std::max(maximum, item.second);
+        const auto &node = nodes[size_t(item.first)];
+        if (node.n == 0)
+        {
+            pending.emplace_back(node.left, item.second + 1);
+            pending.emplace_back(node.right, item.second + 1);
+        }
+    }
+    return maximum;
+}
+
 void MeshGeometry::build()
 {
     QElapsedTimer timer;
@@ -85,6 +109,7 @@ void MeshGeometry::build()
     nodes.assign(1, BVHNode());
     int depth = 0;
     BuildBVH::buildBVHwithSAH(triangles, nodes, 0, int(triangles.size()) - 1, 8, 0, depth);
+    maximumDepth = bvhMaximumDepth(nodes);
     double cost = 0;
     for (size_t i = 1; i < nodes.size(); ++i)
         cost += surfaceArea(nodes[i].AA, nodes[i].BB) * (nodes[i].n ? nodes[i].n : 1);

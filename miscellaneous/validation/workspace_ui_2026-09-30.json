@@ -1,0 +1,125 @@
+{
+  "date": "2026-09-30",
+  "build": "Release / build/workspace-v5/Release/learnQT.exe",
+  "buildCommand": "cmake --build build/workspace-v5 --config Release --parallel 2 -- /clp:ErrorsOnly /p:CL_MPCount=2",
+  "fullSuite": {
+    "passed": 23,
+    "total": 23,
+    "seconds": 244.75,
+    "log": "build\\workspace-v5\\full-ctest-passed.log",
+    "scope": "结果页即时状态刷新补丁之前的全量测试"
+  },
+  "finalApplicationRegression": {
+    "passed": 5,
+    "total": 5,
+    "seconds": 69.64,
+    "log": "build\\workspace-v5\\final-ui-ctest.log",
+    "tests": [
+      "workspace_pages_regression",
+      "render_queue_regression",
+      "workbench_ui_and_render_job",
+      "preview_panel_regression",
+      "background_ui_regression"
+    ],
+    "scope": "结果页即时状态刷新补丁及断言加入后"
+  },
+  "dpiWorkspaceRegression": [
+    {
+      "scale": 1.5,
+      "passed": true,
+      "report": "build\\workspace-v5\\dpi150\\report.json"
+    },
+    {
+      "scale": 2,
+      "passed": true,
+      "report": "build\\workspace-v5\\dpi200-global\\report.json",
+      "environment": "QT_SCALE_FACTOR=2; QT_SCREEN_SCALE_FACTORS=1; QT_AUTO_SCREEN_SCALE_FACTOR=0"
+    }
+  ],
+  "captures": [
+    {
+      "tag": "dpi100",
+      "report": "build\\workspace-v5\\captures\\dpi100\\capture-report.json",
+      "dimensions": [
+        [
+          1600,
+          900
+        ]
+      ],
+      "pageCount": 9,
+      "audit": [
+        "Background audit: inputDesktopWindows=0 privateWindowsPeak=5 checks=169 exitCode=0"
+      ],
+      "visualInspection": "主要操作、布局、文字与 framebuffer 视口图像已检查"
+    },
+    {
+      "tag": "dpi150",
+      "report": "build\\workspace-v5\\captures\\dpi150\\capture-report.json",
+      "dimensions": [
+        [
+          2049,
+          1152
+        ]
+      ],
+      "pageCount": 9,
+      "audit": [
+        "Background audit: inputDesktopWindows=0 privateWindowsPeak=5 checks=179 exitCode=0"
+      ],
+      "visualInspection": "主要操作、布局、文字与 framebuffer 视口图像已检查"
+    },
+    {
+      "tag": "dpi200",
+      "report": "build\\workspace-v5\\captures\\dpi200\\capture-report.json",
+      "dimensions": [
+        [
+          2732,
+          1536
+        ]
+      ],
+      "pageCount": 9,
+      "audit": [
+        "Background audit: inputDesktopWindows=0 privateWindowsPeak=5 checks=193 exitCode=0"
+      ],
+      "visualInspection": "主要操作、布局、文字与 framebuffer 视口图像已检查"
+    }
+  ],
+  "environmentCorrections": [
+    "冷启动回归允许 GL 已同步初始化或待初始化两种有效状态；仅修改测试断言，随后 Release 重建和高 DPI 回归通过。",
+    "第一次 200% 交互回归采用单屏倍率，多屏窗口迁移使 DPI/尺寸变化；改用全局倍率后通过。原日志保存在 dpi200.log。"
+  ],
+  "limitations": [
+    "未操作用户活动桌面；未验证该桌面的真实遮挡或系统焦点路由。",
+    "不是渲染性能基准测试。"
+  ],
+  "unchangedScope": [
+    "项目文档、待办、README 未修改",
+    "未暂存、提交或推送"
+  ],
+  "codeCommit": "eb5f5cd",
+  "finalToolbarRemoval": {
+    "passed": 2,
+    "total": 2,
+    "seconds": 66.67,
+    "tests": [
+      "workspace_pages_regression",
+      "render_queue_regression"
+    ],
+    "build": "Release successful",
+    "log": "build/workspace-v5/toolbar-removal-ctest.log",
+    "visual": "workspace-regression/loaded-6.png inspected after removal"
+  },
+  "sourceSha256": {
+    "include/WorkbenchPanels.h": "b9fea9b7f45da451814f9277d17abac466d05fe0b583d649335ecfb7a4bcb36a",
+    "include/WorkspaceUi.h": "2340cad87dcc399bbf27cd484c415e76f25fea52ffcb10b83360fd7908ded9e6",
+    "include/learnQT.h": "41fbc4018de3a868d879418c9ce20b38c1936c1fa2ecd45ad44be0b6c9616987",
+    "src/RenderQueueUi.cpp": "e02eaa98ccdf2bfe1df9f70f17c9b79b94faa1d15f9462f5bc875577c5a31a0f",
+    "src/UiCapture.cpp": "a5ea222e59ed526cd254fc04337bdea89133d834ed3aebff3ea5d72e88b5d1f3",
+    "src/WorkbenchPanels.cpp": "2854b660e68d939c3a3dac5cd5e19cf7a720ae238bcc9238718a480c729a0c5a",
+    "src/WorkspacePages.cpp": "f97e8053c78649d6b7b091fefc9fac8596ba37c0afa3e1a482deac81a11d925b",
+    "src/learnQT.cpp": "24ec0c881de7df743102dc542fb9b177da820908b8fa1be6f1b1334ffb1c1922",
+    "tests/PreviewPanelRegression.cpp": "d2cea669d7d37f0c2ac4d02763329553fa8aface383a81c2196c5eaeac128b5d",
+    "tests/WorkbenchUiRegression.cpp": "b14a70698ade25a81f1bcf182c60d843cc575f7d554a6a14b3a5d860bc3d3e0e",
+    "tests/WorkspaceUiRegression.cpp": "614cb77bee5d6e44ee186fa5d9d895dfd086a79af8762a7657ea3461a6f8460a"
+  },
+  "captureTiming": "Dedicated DPI captures precede final toolbar removal; latest workspace and queue regressions follow removal."
+}

@@ -1,0 +1,1017 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 65,
+    "position": [
+      1.0800000429153442,
+      -0.11557409167289734,
+      0.8423615097999573
+    ],
+    "target": [
+      -0.47999998927116394,
+      -0.18780790269374847,
+      -0.8423615097999573
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 65,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        1.0800000429153442,
+        -0.11557409167289734,
+        0.8423615097999573
+      ],
+      "target": [
+        -0.47999998927116394,
+        -0.18780790269374847,
+        -0.8423615097999573
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "asset": "Holodeck",
+      "author": "© 2016 John William Telford",
+      "license": "CC BY 3.0",
+      "source": "https://casual-effects.com/g3d/data10/common/model/holodeck/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "Holodeck",
+      "order": 0,
+      "parent": ""
+    },
+    {
+      "id": "model-000/group",
+      "name": "holodeck",
+      "order": 0,
+      "parent": "root"
+    },
+    {
+      "id": "model-000/node/0",
+      "name": "holodeck.obj",
+      "order": 0,
+      "parent": "model-000/group"
+    },
+    {
+      "id": "model-000/node/0/0",
+      "name": "holodeckroom",
+      "order": 1,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/1",
+      "name": "holodeck_door",
+      "order": 2,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/2",
+      "name": "holodeckdoorrecess",
+      "order": 3,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/3",
+      "name": "screens",
+      "order": 4,
+      "parent": "model-000/node/0"
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [
+    {
+      "id": "interior-fill",
+      "position": [
+        0,
+        0.3178287582883844,
+        0
+      ],
+      "radiance": [
+        65,
+        60,
+        52
+      ],
+      "radius": 0.050563666091333885,
+      "type": "sphere"
+    }
+  ],
+  "materials": [
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10000000149011612
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/1",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.5647000074386597,
+        0.3059000074863434,
+        0.0940999984741211
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/3",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        0.0940999984741211,
+        0
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/2",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.9136999845504761,
+        0.9136999845504761,
+        0.9136999845504761
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/4",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.5879999995231628,
+        0.5879999995231628,
+        0.5879999995231628
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/5",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.8313999772071838,
+        0.847100019454956,
+        0.5608000159263611
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        1,
+        1,
+        1
+      ],
+      "id": "model-000/material/6",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0,
+        0,
+        0
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        1,
+        1,
+        1
+      ],
+      "id": "model-000/material/7",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "emissive": "model-000/texture/1"
+      },
+      "transmission": 0
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {
+        "holodeck.mtl": "../imported/mcguire/derived/holodeck/mtl/holodeck.mtl",
+        "screen.png": "../imported/mcguire/assets/holodeck/screen.png",
+        "wall-gloss.png": "../imported/mcguire/assets/holodeck/wall-gloss.png",
+        "wall.png": "../imported/mcguire/assets/holodeck/wall.png"
+      },
+      "expanded": true,
+      "id": "model-000",
+      "material": null,
+      "materialBindings": {
+        "1": "model-000/material/1",
+        "2": "model-000/material/2",
+        "3": "model-000/material/3",
+        "4": "model-000/material/4",
+        "5": "model-000/material/5",
+        "6": "model-000/material/6",
+        "7": "model-000/material/7"
+      },
+      "name": "holodeck",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/holodeck/holodeck.obj",
+      "transform": [
+        0.004813493377174631,
+        0,
+        0,
+        -1.6101209955796485,
+        0,
+        0.004813493377174631,
+        0,
+        -0.7217118515306848,
+        0,
+        0,
+        0.004813493377174631,
+        2.406746688667211e-07,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · Holodeck",
+  "objects": [
+    {
+      "id": "model-000/object/0/0/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "holodeckroom",
+      "order": 0,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/0",
+      "locked": false,
+      "material": "model-000/material/3",
+      "mesh": 1,
+      "model": "model-000",
+      "name": "holodeck_door",
+      "order": 0,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/1",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 2,
+      "model": "model-000",
+      "name": "holodeck_door",
+      "order": 1,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/2",
+      "locked": false,
+      "material": "model-000/material/3",
+      "mesh": 3,
+      "model": "model-000",
+      "name": "holodeck_door",
+      "order": 2,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/3",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 4,
+      "model": "model-000",
+      "name": "holodeck_door",
+      "order": 3,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/4",
+      "locked": false,
+      "material": "model-000/material/3",
+      "mesh": 5,
+      "model": "model-000",
+      "name": "holodeck_door",
+      "order": 4,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/5",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 6,
+      "model": "model-000",
+      "name": "holodeck_door",
+      "order": 5,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/6",
+      "locked": false,
+      "material": "model-000/material/3",
+      "mesh": 7,
+      "model": "model-000",
+      "name": "holodeck_door",
+      "order": 6,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/7",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 8,
+      "model": "model-000",
+      "name": "holodeck_door",
+      "order": 7,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/8",
+      "locked": false,
+      "material": "model-000/material/4",
+      "mesh": 9,
+      "model": "model-000",
+      "name": "holodeck_door",
+      "order": 8,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/9",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 10,
+      "model": "model-000",
+      "name": "holodeck_door",
+      "order": 9,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/10",
+      "locked": false,
+      "material": "model-000/material/4",
+      "mesh": 11,
+      "model": "model-000",
+      "name": "holodeck_door",
+      "order": 10,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/1/11",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 12,
+      "model": "model-000",
+      "name": "holodeck_door",
+      "order": 11,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/2/0",
+      "locked": false,
+      "material": "model-000/material/5",
+      "mesh": 13,
+      "model": "model-000",
+      "name": "holodeckdoorrecess",
+      "order": 0,
+      "parent": "model-000/node/0/2",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/2/1",
+      "locked": false,
+      "material": "model-000/material/6",
+      "mesh": 14,
+      "model": "model-000",
+      "name": "holodeckdoorrecess",
+      "order": 1,
+      "parent": "model-000/node/0/2",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/2/2",
+      "locked": false,
+      "material": "model-000/material/5",
+      "mesh": 15,
+      "model": "model-000",
+      "name": "holodeckdoorrecess",
+      "order": 2,
+      "parent": "model-000/node/0/2",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/3/0",
+      "locked": false,
+      "material": "model-000/material/7",
+      "mesh": 16,
+      "model": "model-000",
+      "name": "screens",
+      "order": 0,
+      "parent": "model-000/node/0/3",
+      "transform": [
+        0.004813493229448795,
+        0,
+        0,
+        -1.6101210117340088,
+        0,
+        0.004813493229448795,
+        0,
+        -0.7217118740081787,
+        0,
+        0,
+        0.004813493229448795,
+        2.4067466597443854e-07,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [
+    {
+      "dependencies": {},
+      "id": "model-000/texture/0",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/holodeck/wall.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/1",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/holodeck/screen.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    }
+  ],
+  "version": 2
+}

@@ -1,5 +1,6 @@
 #include "common.h"
 #include "MaterialTextureImage.h"
+#include "RasterEnvironment.h"
 #include <QGuiApplication>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
@@ -321,8 +322,27 @@ static void alphaDeltaTests(Audit& a) {
     auto tir=a.mean(R"(
 void main(){Material m=getMaterial(0);vec3 V=normalize(vec3(.9,0,.43589));
 BsdfSample s=SampleDisneyBSDF(V,vec3(0,0,1),m,1.5,vec3(rand(),rand(),rand()));
-outputColor=vec4(s.weight.r,float(s.delta),dot(s.direction,reflect(-V,vec3(0,0,1))),s.pdf);})");
-    checkNear(tir[0],1,1e-6,"total internal reflection weight");checkNear(tir[1],1,0,"TIR is delta");checkNear(tir[2],1,1e-5,"TIR direction");checkNear(tir[3],0,0,"delta has no solid-angle density");
+outputColor=vec4(s.weight.r,float(s.delta),0,s.pdf);})");
+    // Read actual directions and compare against a CPU double-precision oracle.
+    // A GPU dot(normalize(...), normalize(...)) also tests driver constant folding,
+    // and produced 0.999869 on Intel even when the returned direction was correct.
+    auto tirDirections=a.run(R"(
+void main(){Material m=getMaterial(0);float x=.76+.23*gl_FragCoord.x/float(width);
+vec3 V=vec3(x,0,sqrt(1.0-x*x));
+BsdfSample s=SampleDisneyBSDF(V,vec3(0,0,1),m,1.5,vec3(rand(),rand(),rand()));
+outputColor=vec4(s.direction,float(s.delta));})");
+    double maxDirectionError=0;
+    for(int y=0;y<Audit::resolution;++y) for(int x=0;x<Audit::resolution;++x) {
+        const double vx=.76+.23*(x+.5)/Audit::resolution;
+        const double expected[]={-vx,0,std::sqrt(1-vx*vx)};
+        const size_t pixel=4*(y*Audit::resolution+x);
+        for(int c=0;c<3;++c)
+            maxDirectionError=std::max(maxDirectionError,std::abs(tirDirections[pixel+c]-expected[c]));
+        check(tirDirections[pixel+3]==1,"TIR direction sweep remains delta");
+    }
+    checkNear(tir[0],1,1e-6,"total internal reflection weight");checkNear(tir[1],1,0,"TIR is delta");
+    checkNear(maxDirectionError,0,1e-5,"TIR maximum direction error (CPU reference)");
+    checkNear(tir[3],0,0,"delta has no solid-angle density");
     glass[37]=1;glass[45]=.5f;a.setGeometry(glass);
     checkNear(a.mean(surfacePath)[0],1,.001,"index-matched rough transmission is straight-through delta");
     auto mixed=triangle(0);mixed[37]=1.5f;mixed[45]=0;a.setGeometry(mixed);
@@ -379,9 +399,94 @@ float p=PhaseHG(dot(-incoming,d),.6);outputColor=vec4(d.z,1.0/p,0,1);})");
 }
 
 
+static void rasterEnvironmentTests(Audit &a)
+{
+    constexpr int w = 64, h = 32;
+    std::vector<float> rgb(w*h*3, 1.f);
+    auto sh = rasterDiffuseEnvironment(rgb.data(), w, h);
+    checkNear(sh[0].x() * .2820947918, 1., 1e-6, "constant HDR diffuse energy");
+    for (int i = 1; i < 9; ++i)
+        checkNear(sh[i].length(), 0., .003, "constant HDR higher bands");
+    const float onePixel[] = {1, 1, 1};
+    const auto single = rasterDiffuseEnvironment(onePixel, 1, 1);
+    checkNear(single[0].x() * .2820947918, 1., 1e-6, "1x1 HDR diffuse energy");
+    for (int i = 1; i < 9; ++i)
+        checkNear(single[i].length(), 0., 1e-6, "1x1 HDR has no directional detail");
+    for (int y = 0; y < h; ++y) for (int x = 0; x < w; ++x)
+    {
+        const double theta = 3.141592653589793 * (y + .5) / h;
+        const double phi = 6.283185307179586 * ((x + .5) / w - .5);
+        rgb[(y*w+x)*3] = float(1 + .8 * std::sin(theta) * std::cos(phi));
+        rgb[(y*w+x)*3+1] = float(.3 + .2 * std::cos(theta));
+        rgb[(y*w+x)*3+2] = float(.2 + .15 * std::sin(theta) * std::sin(phi));
+    }
+    a.environment(w, h, rgb);
+    sh = rasterDiffuseEnvironment(rgb.data(), w, h);
+    QOpenGLShaderProgram program;
+    check(program.addShaderFromSourceCode(QOpenGLShader::Vertex, R"(
+#version 330 core
+out vec3 worldPosition; out vec3 worldNormal; out vec2 uv0; flat out int materialIndex;
+void main() {
+    vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2)*2.0-1.0;
+    gl_Position=vec4(p,0,1); worldPosition=vec3(p,0);
+    worldNormal=vec3(0,0,1); uv0=p; materialIndex=0;
+})"), "raster test vertex shader");
+    QString fragment = read(QString::fromStdString(getShaderPath("raster.frag")));
+    fragment.replace("#version 330 core", "#version 330 core\n#define INSTANCED_SCENE 1\n#define USEENVIRONMENTMAP\n");
+    check(program.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment), program.log().toStdString());
+    check(program.link(), program.log().toStdString());
+    GLuint buffer = 0, texture = 0;
+    std::vector<float> material(40, 0);
+    material[4] = material[5] = material[6] = .5f;
+    material[21] = .5f;
+    for (int i = 26; i <= 31; ++i) material[i] = -1;
+    a.buffer(buffer, texture, 8, GL_RGBA32F, material);
+    auto render = [&](QVector3D eye, float intensity, float rotation) {
+        program.bind();
+        program.setUniformValue("eye", eye);
+        program.setUniformValue("nLights", 0); program.setUniformValue("nAnalyticLights", 0);
+        program.setUniformValue("lights", 4);
+        program.setUniformValue("materialTable", 8);
+        program.setUniformValue("materialTextures", 5); program.setUniformValue("materialTextureInfo", 6);
+        program.setUniformValue("materialTextureCount", 0);
+        program.setUniformValue("hdrMap", 0); program.setUniformValue("hdrCache", 1);
+        program.setUniformValue("environmentIntensity", intensity);
+        program.setUniformValue("environmentRotation", rotation);
+        program.setUniformValueArray("diffuseEnvironment", sh.data(), int(sh.size()));
+        a.target->bind(); a.glViewport(0,0,Audit::resolution,Audit::resolution);
+        a.glBindVertexArray(a.vao); a.glDrawArrays(GL_TRIANGLES,0,3);
+        std::vector<float> pixels(Audit::resolution*Audit::resolution*4);
+        a.glReadPixels(0,0,Audit::resolution,Audit::resolution,GL_RGBA,GL_FLOAT,pixels.data());
+        check(a.glGetError() == GL_NO_ERROR, "raster environment GL error");
+        return pixels;
+    };
+    for (const auto eye : {QVector3D(0,0,2), QVector3D(1,1,2)})
+    {
+        const auto dark = render(eye, 0, 0);
+        for (int test = 0; test < 3; ++test)
+        {
+            const float intensity = test == 1 ? .25f : 1.f;
+            const auto lit = render(eye, intensity, test == 2 ? 1.57079632679f : 0.f);
+            const double expected[] = {test == 2 ? .5*(1+.8*2/3) : .5,
+                                       .15, test == 2 ? .1 : .15};
+            double maximumError = 0;
+            for (size_t i = 0; i < lit.size(); ++i)
+            {
+                check(std::isfinite(lit[i]), "finite raster surface color");
+                if (i%4 == 3) { check(lit[i] == 1, "raster surface remains opaque"); continue; }
+                maximumError = std::max(maximumError,
+                    std::abs(lit[i] - dark[i] - expected[i%4] * intensity));
+            }
+            checkNear(maximumError, 0., .003, "flat surface diffuse lighting independent of camera/pixel");
+        }
+    }
+    program.release(); a.target->release();
+    a.glDeleteTextures(1, &texture); a.glDeleteBuffers(1, &buffer);
+}
+
 int main(int argc,char** argv) {
     QGuiApplication app(argc,argv);
-    try { Audit audit; materialTextureUploadTests(audit); hdrTests(audit); analyticTests(audit); alphaDeltaTests(audit); mediumTests(audit); std::cout<<"Lighting numerical tests passed\n"; }
+    try { Audit audit; materialTextureUploadTests(audit); hdrTests(audit); analyticTests(audit); alphaDeltaTests(audit); mediumTests(audit); rasterEnvironmentTests(audit); std::cout<<"Lighting numerical tests passed\n"; }
     catch(const std::exception& error) { std::cerr<<error.what()<<"\n"; return 1; }
     return 0;
 }

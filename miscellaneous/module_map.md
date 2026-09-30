@@ -6,12 +6,13 @@
 | --- | --- | --- |
 | 启动 / CLI | [main.cpp](../src/main.cpp)、[RegressionCapture.cpp](../src/RegressionCapture.cpp) | 空文档/欢迎页、互斥入口、保存/导出、固定 spp 截图、回归偏好隔离。 |
 | 主窗口 | [learnQT.cpp](../src/learnQT.cpp)、[learnQT.h](../include/learnQT.h) | 固定分区、菜单/快捷键、导入、dirty、冷启动渲染请求及任务展示冻结。 |
-| 工作区 / 样式 | [WorkspacePages.cpp](../src/WorkspacePages.cpp)、[WorkspaceUi.h](../include/WorkspaceUi.h)、[WorkbenchStyle.h](../include/WorkbenchStyle.h) | 九页路由、共享视口、资源目录、最近文件、QSettings、占位、布局恢复和窄窗口。 |
+| 工作区 / 样式 | [WorkspacePages.cpp](../src/WorkspacePages.cpp)、[WorkspaceUi.h](../include/WorkspaceUi.h)、[WorkbenchStyle.h](../include/WorkbenchStyle.h) | 八页描述表路由、照明标签、渲染两模式、共享视口、资源目录、最近文件、QSettings V5 布局／V4 偏好、功能边界说明、布局恢复和窄窗口。 |
 | 编辑命令 | [EditorController.cpp](../src/EditorController.cpp)、[EditorController.h](../include/EditorController.h) | 选择去重、材质隔离、undo、缓存和后台导入。 |
 | 对象树 | [SceneTreeModel.cpp](../src/SceneTreeModel.cpp) | 根限制、父子循环、拖动/顺序、可见/锁定、搜索代理。 |
 | 属性与图表 | [WorkbenchPanels.cpp](../src/WorkbenchPanels.cpp)、[LightInspector.cpp](../src/LightInspector.cpp) | 多选混合值、材质页只读浏览、基础/纹理/高级分组、灯光、结果空状态和性能绘制缓存。 |
 | 视口 / 相机 | [glwidget.cpp](../src/glwidget.cpp)、[Camera.cpp](../src/Camera.cpp) | 选择叠加、操纵器、多选中心、旋转方向、滚轮近限值、高 DPI。 |
 | 控制与任务 | [renderthread.cpp](../src/renderthread.cpp)、[RenderJob.h](../include/RenderJob.h)、[RenderRateTracker.h](../include/RenderRateTracker.h) | 版本队列、批次安全边界、暂停/停止、完整快照、真实完成速率。 |
+| 队列 / 构图 | [RenderQueueUi.cpp](../src/RenderQueueUi.cpp)、[RenderQueueThread.cpp](../src/RenderQueueThread.cpp)、[RenderQueueThread.h](../include/RenderQueueThread.h) | 来源相机／草稿／请求快照、独立运行时、串行控制、结果固定浏览、冻结元数据及自动导出。 |
 | 渲染调度 | [renderer.cpp](../src/renderer.cpp)、[renderer.h](../include/renderer.h) | 1–16 tile 批次、GPU 预算、每批绑定、按频率合成、资源上传。 |
 | GPU 拾取 | [RendererPick.cpp](../src/RendererPick.cpp)、[pick.frag](../shaders/pick.frag) | 整数 ID/depth、PBO/fence、alpha 阈值和过期结果拒绝。 |
 | 预览降噪 | [RendererPreview.cpp](../src/RendererPreview.cpp)、[PreviewDenoiser.cpp](../src/PreviewDenoiser.cpp) | 三路完整快照、PBO 延迟映射、取消和版本/尺寸匹配。 |
@@ -35,10 +36,12 @@
 | [LightingTests.cpp](../tests/LightingTests.cpp) | HDR、球/太阳盘、MIS 方差、delta、alpha 发光、均匀介质数值对照。 |
 | [SceneUiRegression.cpp](../tests/SceneUiRegression.cpp) | 实际 UI 场景切换、保存/放弃/取消、失败恢复及预设发现。 |
 | [WorkbenchUiRegression.cpp](../tests/WorkbenchUiRegression.cpp) | 树/视口选择、变换与撤销、零 BLAS 重建/几何上传、正式任务和 PNG/JPEG。 |
-| [WorkspaceUiRegression.cpp](../tests/WorkspaceUiRegression.cpp) | 九页导航、文档/undo 不变、单一视口/线程、相机/灯光/HDR、只读材质、布局与搜索保留、跨页任务、输出元数据冻结、本地偏好、实际 1366×768 和冷启动。 |
+| [WorkspaceUiRegression.cpp](../tests/WorkspaceUiRegression.cpp) | 八页导航、旧灯光／环境兼容、渲染模式、文档/undo 不变、单一视口/线程、多相机/灯光/HDR、只读材质、构图不覆盖来源、任务快照隔离、等待任务管理与结果固定浏览、布局与搜索保留、跨页任务、输出元数据冻结、本地偏好、实际 1366×768 和冷启动。 |
+| [PreviewPanelRegression.cpp](../tests/PreviewPanelRegression.cpp) | 视口预览入口、即时设置、正式预算隔离。 |
+| [test_background_ui.py](../tests/test_background_ui.py)、[BackgroundTestSession.cpp](../src/BackgroundTestSession.cpp) | 私有桌面审计、真实 GL 图像及超时清理。 |
 | [InteractionRegression.cpp](../tests/InteractionRegression.cpp) | 空场景、连续滚轮、后台 OIDN、版本/尺寸失效、UI 延迟诊断。 |
 | [PreviewModeRegression.cpp](../tests/PreviewModeRegression.cpp)、[PresentationTests.cpp](../tests/PresentationTests.cpp) | 整图/分块来回切换、test_mis 黑屏回归、延迟消费和明确源 FBO。 |
 | [RendererBatchTests.cpp](../tests/RendererBatchTests.cpp) | 批次上限/中断、完整快照、同 spp 像素一致、预算失效、停止采样后的显示刷新；另提供可复现的离屏 benchmark CLI。 |
 | [CMakeLists.txt](../CMakeLists.txt)、[tests](../tests) | CTest 注册、Python 导入/转换契约、Qt 运行时路径。 |
 
-性能原始数据和截图位于未版本化 `build/`；可追溯的汇总与实际命令见 [工作台专题](./scene_workbench_v2.md) 和 [九页工作区验收](./workspace_ui.md)。旧 benchmark 副本不自动反映主代码，不把试验副本的结果当作正式版本验收。
+性能原始数据和截图位于未版本化 `build/`；可追溯的汇总与实际命令见 [工作台专题](./scene_workbench_v2.md) 和 [八页工作区验收](./workspace_ui.md)。旧 benchmark 副本不自动反映主代码，不把试验副本的结果当作正式版本验收。

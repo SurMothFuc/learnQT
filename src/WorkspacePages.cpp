@@ -1,4 +1,5 @@
 #include "WorkbenchStyle.h"
+#include "UiDiagnostics.h"
 #include "WorkspaceUi.h"
 #include "learnQT.h"
 #include <QActionGroup>
@@ -9,6 +10,7 @@
 #include <QGroupBox>
 #include <QHeaderView>
 #include <QImageReader>
+#include <QInputDialog>
 #include <QJsonDocument>
 #include <QListView>
 #include <QMenu>
@@ -23,6 +25,7 @@
 #include <QTabBar>
 #include <QTimer>
 #include <QToolButton>
+#include <QUuid>
 #include <QVBoxLayout>
 #include <cmath>
 
@@ -32,16 +35,9 @@ enum ResourceRole
 {
     KindRole = Qt::UserRole + 1,
     SourceRole,
-    IdRole
+    IdRole,
+    ReferencesRole
 };
-QStringList pageNames()
-{
-    return {"首页", "场景", "材质", "灯光", "相机", "环境", "渲染", "资源", "设置"};
-}
-QStringList pageIcons()
-{
-    return {"home", "scene", "material", "light", "camera", "environment", "play", "assets", "settings"};
-}
 QVBoxLayout *column(QWidget *widget)
 {
     auto layout = new QVBoxLayout(widget);
@@ -72,16 +68,23 @@ QGroupBox *group(const QString &title)
 }
 QWidget *unavailable(const QString &title, const QString &description, const QStringList &controls = {})
 {
-    auto box = group(title + " · 未开放");
+    auto box = new QWidget;
+    auto layout = column(box);
+    layout->setContentsMargins(0, 4, 0, 4);
     box->setProperty("unavailable", true);
-    box->layout()->addWidget(label(description));
-    for (const auto &text : controls)
-    {
-        auto b = new QPushButton(text);
-        b->setEnabled(false);
-        b->setToolTip("此功能尚未接入，当前操作不会改变场景。");
-        box->layout()->addWidget(b);
-    }
+    auto toggle = new QToolButton;
+    toggle->setText("功能边界 · " + title);
+    toggle->setCheckable(true);
+    toggle->setArrowType(Qt::RightArrow);
+    toggle->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    auto content = label(description + (controls.isEmpty() ? "" : "\n尚未开放：" + controls.join("、")));
+    content->hide();
+    layout->addWidget(toggle);
+    layout->addWidget(content);
+    QObject::connect(toggle, &QToolButton::toggled, box, [toggle, content](bool open) {
+        content->setVisible(open);
+        toggle->setArrowType(open ? Qt::DownArrow : Qt::RightArrow);
+    });
     return box;
 }
 QListWidget *cards(const QString &name, int size = 86)
@@ -114,55 +117,6 @@ class ResourceFilter : public QSortFilterProxyModel
         invalidateFilter();
     }
 };
-class MaterialGraphPlaceholder : public QWidget
-{
-  public:
-    explicit MaterialGraphPlaceholder(QWidget *parent = nullptr) : QWidget(parent)
-    {
-        setMinimumSize(280, 120);
-    }
-    void paintEvent(QPaintEvent *) override
-    {
-        QPainter p(this);
-        p.setRenderHint(QPainter::Antialiasing);
-        p.fillRect(rect(), QColor("#111c26"));
-        p.setPen(QColor("#1c2a38"));
-        for (int x = 0; x < width(); x += 20)
-            p.drawLine(x, 0, x, height());
-        for (int y = 0; y < height(); y += 20)
-            p.drawLine(0, y, width(), y);
-        qreal cardWidth = qMin(160., width() * .24), y = height() * .5 - 36;
-        QVector<QRectF> cards;
-        for (int i = 0; i < 3; ++i)
-            cards << QRectF(14 + i * (width() - cardWidth - 28) / 2., y, cardWidth, 74);
-        p.setPen(QPen(QColor("#91a3b7"), 1.4));
-        for (int i = 0; i < 2; ++i)
-        {
-            QPointF a(cards[i].right(), y + 47), b(cards[i + 1].left(), y + 47);
-            QPainterPath path(a);
-            path.cubicTo(a + QPointF(32, 0), b - QPointF(32, 0), b);
-            p.drawPath(path);
-        }
-        for (int i = 0; i < 3; ++i)
-        {
-            p.setPen(QColor("#53677b"));
-            p.setBrush(QColor("#223141"));
-            p.drawRoundedRect(cards[i], 5, 5);
-            p.setPen(QColor("#dbe6f2"));
-            p.drawText(cards[i].adjusted(10, 5, -5, -40), Qt::AlignVCenter,
-                       QStringList{"纹理贴图", "PBR 材质", "材质输出"}[i]);
-            p.setPen(QColor("#94a6ba"));
-            p.drawText(cards[i].adjusted(10, 34, -5, -5), Qt::AlignVCenter,
-                       QStringList{"颜色 / 法线", "基础色 / 粗糙度", "表面"}[i]);
-            p.setBrush(QColor("#69abf6"));
-            p.setPen(Qt::NoPen);
-            if (i < 2)
-                p.drawEllipse(QPointF(cards[i].right(), y + 47), 3, 3);
-            if (i > 0)
-                p.drawEllipse(QPointF(cards[i].left(), y + 47), 3, 3);
-        }
-    }
-};
 QWidget *resourceBrowser(QStandardItemModel *model, const QString &initialKind,
                          std::function<void(QModelIndex)> activate, const QString &name, bool compact = false)
 {
@@ -179,9 +133,18 @@ QWidget *resourceBrowser(QStandardItemModel *model, const QString &initialKind,
     search->setObjectName(name + "Search");
     search->setPlaceholderText("搜索资源名称或路径…");
     search->setClearButtonEnabled(true);
-    row->addWidget(kind);
-    row->addWidget(search, 1);
-    layout->addLayout(row);
+    auto filters = new QWidget;
+    auto filterLayout = new QVBoxLayout(filters);
+    filterLayout->setContentsMargins(0, 0, 0, 0);
+    filterLayout->addWidget(kind);
+    filterLayout->addWidget(search);
+    if (compact) {
+        row->addWidget(kind);
+        row->addWidget(search, 1);
+        layout->addLayout(row);
+        delete filters;
+        if (initialKind == "HDR") kind->hide();
+    }
     auto proxy = new ResourceFilter(panel);
     proxy->setSourceModel(model);
     proxy->kind = initialKind;
@@ -195,8 +158,8 @@ QWidget *resourceBrowser(QStandardItemModel *model, const QString &initialKind,
     list->setGridSize(QSize(compact ? 125 : 170, compact ? 92 : 132));
     list->setWordWrap(true);
     list->setSpacing(4);
-    layout->addWidget(list, 1);
     auto detail = label("选择资源查看来源；双击执行对应操作。");
+    detail->setTextFormat(Qt::PlainText);
     detail->setTextInteractionFlags(Qt::TextSelectableByMouse);
     auto action = new QPushButton("选择资源");
     action->setProperty("resourceAction", true);
@@ -207,10 +170,28 @@ QWidget *resourceBrowser(QStandardItemModel *model, const QString &initialKind,
         detail->hide();
         footer->addStretch();
     }
-    else
-        footer->addWidget(detail, 1);
     footer->addWidget(action);
-    layout->addLayout(footer);
+    if (compact) {
+        layout->addWidget(list, 1);
+        layout->addLayout(footer);
+    } else {
+        filters->setMaximumWidth(220);
+        filterLayout->addStretch();
+        auto splitter = new QSplitter;
+        auto information = new QWidget;
+        information->setMaximumWidth(300);
+        auto infoLayout = column(information);
+        infoLayout->addWidget(label("资源来源与引用", "sectionHeading"));
+        infoLayout->addWidget(detail);
+        infoLayout->addLayout(footer);
+        infoLayout->addStretch();
+        splitter->addWidget(filters);
+        splitter->addWidget(list);
+        splitter->addWidget(information);
+        splitter->setStretchFactor(1, 1);
+        splitter->setSizes({200, 700, 260});
+        layout->addWidget(splitter, 1);
+    }
     QObject::connect(kind, QOverload<int>::of(&QComboBox::currentIndexChanged), panel, [proxy, kind] {
         proxy->kind = kind->currentData().toString();
         proxy->refresh();
@@ -223,7 +204,9 @@ QWidget *resourceBrowser(QStandardItemModel *model, const QString &initialKind,
         list->selectionModel(), &QItemSelectionModel::currentChanged, panel,
         [detail, action, panel](const QModelIndex &i) {
             QString kind = i.data(KindRole).toString();
-            detail->setText(i.isValid() ? i.data().toString() + "\n" + i.data(SourceRole).toString()
+            detail->setText(i.isValid() ? kind + " · " + i.data().toString() + "\n\n来源路径：\n" +
+                                        (i.data(SourceRole).toString().isEmpty() ? "场景文档内定义" : i.data(SourceRole).toString()) +
+                                        "\n\n引用：\n" + i.data(ReferencesRole).toString()
                                         : "没有选中的资源");
             bool mutates = kind == "场景" || kind == "模型" || kind == "HDR";
             action->setProperty("requiresEditing", mutates);
@@ -231,9 +214,9 @@ QWidget *resourceBrowser(QStandardItemModel *model, const QString &initialKind,
             action->setEnabled(i.isValid() &&
                                (!mutates || panel->window()->property("workspaceEditable").toBool()));
             action->setText(kind == "场景"   ? "打开场景"
-                            : kind == "模型" ? "导入模型"
+                            : kind == "模型" ? "追加导入"
                             : kind == "HDR"  ? "应用环境"
-                                             : "定位引用");
+                                             : "定位使用者");
         });
     QObject::connect(action, &QPushButton::clicked, panel,
                      [activate, list] { activate(list->currentIndex()); });
@@ -258,12 +241,13 @@ void learnQT::setupWorkspace()
     w.status = settings.value("workspaceV4/status", true).toBool();
     w.recentLimit = qBound(1, settings.value("workspaceV4/recentLimit", 12).toInt(), 50);
     w.recent = settings.value("workspaceV4/recent").toStringList().mid(0, w.recentLimit);
-    for (int i = 0; i < 9; ++i)
-    {
-        auto state = settings.value(QString("workspaceV4/layout/%1").arg(i)).toByteArray();
-        if (!state.isEmpty())
-            w.layouts[i] = state;
-    }
+    m_renderPreviewMode = settings.value("workspaceV5/renderComposition", true).toBool();
+    for (const auto &page : workspacePages())
+        for (bool composition : {true, false}) {
+            const auto key = workspaceLayoutKey(page.id, composition);
+            const auto state = settings.value("workspaceV5/layout/" + key).toByteArray();
+            if (!state.isEmpty()) w.layouts[key] = state;
+        }
     qApp->installEventFilter(this);
     statusBar()->setVisible(w.status);
     views->tabBar()->hide();
@@ -297,21 +281,145 @@ void learnQT::setupWorkspace()
     lightScroll->setParent(w.rightStack);
     w.rightStack->addWidget(lightScroll);
     w.rightPages[3] = lightScroll;
+    w.lightProperties = lightScroll;
 
     auto renderPanel = new QWidget;
     auto renderLayout = column(renderPanel);
     renderLayout->addWidget(label("路径追踪 · OpenGL 3.3\n当前上下文设备；最终降噪使用 CPU OIDN。"));
-    for (auto key : {"outputSection", "previewSection", "displaySection"})
+    auto framing = group("构图相机与画幅");
+    auto framingForm = new QFormLayout;
+    m_renderCameraChoice = new QComboBox;
+    m_renderCameraChoice->setObjectName("renderCameraChoice");
+    framingForm->addRow("来源相机", m_renderCameraChoice);
+    m_aspectChoice = new QComboBox;
+    m_aspectChoice->setObjectName("renderAspectChoice");
+    m_aspectChoice->addItem("自定义", 0.0);
+    for (const QPair<QString, double> &aspect :
+         {QPair<QString, double>{"16:9", 16.0 / 9}, {"4:3", 4.0 / 3},
+          {"1:1", 1.0}, {"9:16", 9.0 / 16}})
+        m_aspectChoice->addItem(aspect.first, aspect.second);
+    m_aspectChoice->setCurrentIndex(1);
+    framingForm->addRow("画面比例", m_aspectChoice);
+    static_cast<QVBoxLayout *>(framing->layout())->addLayout(framingForm);
+    auto framingActions = new QHBoxLayout;
+    auto compositionButton = new QPushButton("调整构图");
+    auto resultButton = new QPushButton("查看结果");
+    w.compositionMode = compositionButton;
+    w.resultsMode = resultButton;
+    auto saveCameraButton = new QPushButton("保存为新相机");
+    saveCameraButton->setObjectName("saveCompositionCamera");
+    for (auto button : {saveCameraButton})
+        framingActions->addWidget(button);
+    static_cast<QVBoxLayout *>(framing->layout())->addWidget(
+        label("来源相机用于建立临时构图草稿；草稿不覆盖来源相机。加入队列后使用提交时的快照。"));
+    static_cast<QVBoxLayout *>(framing->layout())->addLayout(framingActions);
+    renderLayout->addWidget(framing);
+    connect(m_renderCameraChoice, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            [this](int index) {
+                if (index < 0)
+                    return;
+                const auto id = m_renderCameraChoice->itemData(index).toString();
+                for (auto value : editor->document.root["cameras"].toArray())
+                    if (value.toObject()["id"].toString() == id)
+                    {
+                        m_draftSourceId = id;
+                        m_draftCamera = value.toObject();
+                        if (workspace && workspace->page == int(WorkspacePage::Render))
+                            setRenderPreviewMode(true);
+                        break;
+                    }
+            });
+    connect(m_aspectChoice, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            [this](int index) {
+                if (index <= 0)
+                    return;
+                const double aspect = m_aspectChoice->itemData(index).toDouble();
+                outputHeight->setValue(qMax(16, qRound(outputWidth->value() / aspect)));
+                commitOutputSettings();
+            });
+    connect(outputWidth, QOverload<int>::of(&QSpinBox::valueChanged), this, [this] {
+        const double aspect = m_aspectChoice->currentData().toDouble();
+        if (aspect > 0)
+            outputHeight->setValue(qMax(16, qRound(outputWidth->value() / aspect)));
+        viewport->setCompositionAspect(QSize(outputWidth->value(), outputHeight->value()));
+    });
+    connect(outputHeight, QOverload<int>::of(&QSpinBox::valueChanged), this, [this] {
+        const double aspect = m_aspectChoice->currentData().toDouble();
+        if (aspect > 0 &&
+            qAbs(outputHeight->value() - qRound(outputWidth->value() / aspect)) > 1)
+        {
+            const QSignalBlocker block(m_aspectChoice);
+            m_aspectChoice->setCurrentIndex(0);
+        }
+        viewport->setCompositionAspect(QSize(outputWidth->value(), outputHeight->value()));
+    });
+    connect(compositionButton, &QPushButton::clicked, this, [this] { setRenderPreviewMode(true); });
+    connect(resultButton, &QPushButton::clicked, this, [this] { setRenderPreviewMode(false); });
+    connect(saveCameraButton, &QPushButton::clicked, this, &learnQT::saveDraftCamera);
+    w.mutationWidgets << saveCameraButton << m_renderCameraChoice << m_aspectChoice;
+    connect(editor, &EditorController::changed, this, [this](int change) {
+        if (change == EditorController::CameraChange || change == EditorController::Topology ||
+            change == EditorController::Organization)
+        {
+            if (change == EditorController::CameraChange && workspace &&
+                workspace->page != int(WorkspacePage::Render) &&
+                m_draftSourceId == editor->document.root["activeCameraId"].toString())
+                m_draftCamera = {};
+            refreshRenderCameras();
+        }
+    });
+    refreshRenderCameras();
+    // 交互预览设置已移出本页：入口在顶栏“预览设置”的弹出面板与详情弹窗。
+    for (auto key : {"outputSection", "displaySection"})
         renderLayout->addWidget(settingsSection(key));
-    auto exports = new QPushButton("导出当前结果 · PNG / JPEG…");
-    connect(exports, &QPushButton::clicked, this, &learnQT::saveGLImage);
-    renderLayout->addWidget(exports);
+    auto formatRow = new QHBoxLayout;
+    formatRow->addWidget(new QLabel("自动导出格式"));
+    m_renderFormat = new QComboBox;
+    m_renderFormat->addItems({"PNG", "JPEG"});
+    formatRow->addWidget(m_renderFormat, 1);
+    renderLayout->addLayout(formatRow);
+    auto submit = new QToolButton;
+    submit->setObjectName("renderPrimary");
+    submit->setDefaultAction(renderAction);
+    submit->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    renderLayout->addWidget(submit);
+    auto outputDirectory = label("");
+    outputDirectory->setObjectName("renderOutputDirectory");
+    renderLayout->addWidget(outputDirectory);
+    w.refreshers << [outputDirectory] {
+        QSettings s(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
+        const auto path = s.value("workspaceV4/autoExportPath").toString();
+        outputDirectory->setText("自动导出目录：\n" + (path.isEmpty() ? "尚未设置" : path));
+    };
+    auto configureDirectory = new QPushButton("设置默认导出目录…");
+    renderLayout->addWidget(configureDirectory);
+    connect(configureDirectory, &QPushButton::clicked, this, [this] {
+        navigateWorkspace(WorkspacePage::Settings);
+        findChild<QListWidget *>("preferenceCategories")->setCurrentRow(4);
+    });
     renderLayout->addWidget(unavailable("渲染扩展", "当前支持单张、不透明的 PNG / JPEG 输出。",
                                         {"AOV / EXR / 动画", "自适应采样 / 渲染器切换"}));
     renderLayout->addStretch();
     w.rightPages[6] = scrolling(renderPanel);
     w.rightStack->addWidget(w.rightPages[6]);
+    w.outputProperties = w.rightPages[6];
+    auto resultProperties = new QWidget;
+    auto propertiesLayout = column(resultProperties);
+    propertiesLayout->addWidget(label("任务快照 · 只读", "sectionHeading"));
+    w.taskProperties = label("选择任务查看输出信息。");
+    w.taskProperties->setObjectName("renderTaskProperties");
+    w.taskProperties->setTextFormat(Qt::PlainText);
+    w.taskProperties->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    propertiesLayout->addWidget(w.taskProperties);
+    propertiesLayout->addStretch();
+    w.resultProperties = scrolling(resultProperties);
+    w.rightStack->addWidget(w.resultProperties);
     w.mutationWidgets << renderPanel;
+    // 视口顶部 chrome 条的预览弹层也是场景变更入口，正式任务期间与右栏一起禁用。
+    if (previewChromePanel)
+        w.mutationWidgets << previewChromePanel;
+    if (previewDetailPanel)
+        w.mutationWidgets << previewDetailPanel;
 
     auto environment = new QWidget;
     auto envLayout = column(environment);
@@ -337,11 +445,14 @@ void learnQT::setupWorkspace()
     envLayout->addStretch();
     w.rightPages[5] = scrolling(environment);
     w.rightStack->addWidget(w.rightPages[5]);
+    w.environmentProperties = w.rightPages.take(5);
     w.mutationWidgets << environment;
 
     auto cameraPanel = new QWidget;
     auto cameraLayout = column(cameraPanel);
-    auto basic = new QGroupBox("当前相机 · 针孔透视");
+    w.cameraName = label("当前编辑相机", "sectionHeading");
+    cameraLayout->addWidget(w.cameraName);
+    auto basic = new QGroupBox("当前编辑相机 · 针孔透视");
     auto cameraForm = new QFormLayout(basic);
     QVector<MixedSpin *> cameraValues;
     for (int i = 0; i < 7; ++i)
@@ -355,6 +466,12 @@ void learnQT::setupWorkspace()
         cameraValues << spin;
     }
     w.refreshCamera = [this, cameraValues] {
+        const auto active = editor->document.root["activeCameraId"].toString();
+        for (const auto value : editor->document.root["cameras"].toArray()) {
+            const auto camera = value.toObject();
+            if (camera["id"].toString() == active)
+                workspace->cameraName->setText("当前编辑相机 · " + camera["name"].toString());
+        }
         for (int i = 0; i < 7; ++i)
             cameraValues[i]->showValue(i < 3   ? viewport->camera.position[i]
                                        : i < 6 ? viewport->camera.target[i - 3]
@@ -387,7 +504,7 @@ void learnQT::setupWorkspace()
     auto frame = new QPushButton("定位所选对象 · F");
     connect(frame, &QPushButton::clicked, viewport, &GLWidget::frameSelection);
     cameraLayout->addWidget(frame);
-    cameraLayout->addWidget(unavailable("镜头与构图", "只使用当前场景中的单相机，不保存演示相机。",
+    cameraLayout->addWidget(unavailable("镜头与构图", "可在左侧保存并切换多个相机视角。",
                                         {"焦距 / 传感器 / 景深", "运动 / 构图辅助"}));
     cameraLayout->addStretch();
     w.rightPages[4] = scrolling(cameraPanel);
@@ -438,13 +555,58 @@ void learnQT::setupWorkspace()
     shortcuts->layout()->addWidget(
         label("Q 选择 · W 移动 · E 旋转 · R 缩放\nAlt + 左键环绕 · 中键平移 · 滚轮缩放\nF 定位 · Esc "
               "取消拖动 · Delete 删除\nCtrl+D 复制 · Ctrl+Z 撤销 · Ctrl+Shift+Z 重做\nCtrl+N 新建 · Ctrl+O "
-              "打开 · Ctrl+S 保存 · F12 渲染\n输入框保留文本编辑快捷键。"));
+              "打开 · Ctrl+S 保存 · 渲染页 F12 加入队列\n输入框保留文本编辑快捷键。"));
     prefSections << shortcuts;
-    prefSections << unavailable("性能", "使用当前 OpenGL 上下文设备；尚无设备切换或显存预算控制。",
-                                {"GPU 选择 / 缓存预算"});
+    auto performanceSettings = group("性能");
+    auto compute = new QCheckBox("使用计算着色器进行路径追踪（实验性）");
+    compute->setObjectName("computePathtracePreference");
+    compute->setChecked(settings.value("workspaceV4/computePathtrace", false).toBool());
+    RenderParams::instance().setComputePathtrace(compute->isChecked());
+    performanceSettings->layout()->addWidget(compute);
+    performanceSettings->layout()->addWidget(label(
+        "影响路径追踪预览及之后启动的正式任务。速度因显卡和场景而异，图像可能有微小数值差异。"
+        "不支持时自动使用兼容模式。"));
+    auto backend = label("返回场景视口后显示当前渲染方式。");
+    backend->setObjectName("pathtraceBackendStatus");
+    performanceSettings->layout()->addWidget(backend);
+    connect(compute, &QCheckBox::toggled, this, [this, backend](bool enabled) {
+        RenderParams::instance().setComputePathtrace(enabled);
+        QSettings s(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
+        s.setValue("workspaceV4/computePathtrace", enabled);
+        backend->setText("已保存；返回场景视口后应用，正在运行的正式任务保持原设置。");
+        if (viewport->renderThread())
+            viewport->renderThread()->markSceneDirty(toSceneDirtyFlags(SceneDirtyFlag::Display));
+    });
+    connect(viewport, &GLWidget::renderThreadReady, this, [this, backend] {
+        connect(viewport->renderThread(), &RenderThread::statsReady, backend,
+                [backend](const RenderStats &stats) {
+                    backend->setText("当前：" + stats.pathtraceBackend);
+                });
+    });
+    prefSections << performanceSettings;
     auto paths = group("路径");
     paths->layout()->addWidget(
-        label("模型、纹理和 HDR 使用文件选择器导入；场景保存及图片导出时选择目标位置。"));
+        label("模型、纹理和 HDR 使用文件选择器导入；正式任务完成后自动写入下方目录。"));
+    auto exportPath = new QLineEdit(settings.value("workspaceV4/autoExportPath").toString());
+    exportPath->setObjectName("autoExportPath");
+    exportPath->setPlaceholderText("选择自动导出目录");
+    auto browseExport = new QPushButton("选择目录…");
+    auto exportPathRow = new QHBoxLayout;
+    exportPathRow->addWidget(exportPath, 1);
+    exportPathRow->addWidget(browseExport);
+    static_cast<QVBoxLayout *>(paths->layout())->addLayout(exportPathRow);
+    connect(exportPath, &QLineEdit::editingFinished, this, [exportPath] {
+        QSettings s(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
+        s.setValue("workspaceV4/autoExportPath", exportPath->text().trimmed());
+    });
+    connect(browseExport, &QPushButton::clicked, this, [this, exportPath] {
+        const auto directory = QFileDialog::getExistingDirectory(this, tr("自动导出目录"), exportPath->text());
+        if (directory.isEmpty())
+            return;
+        exportPath->setText(directory);
+        QSettings s(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
+        s.setValue("workspaceV4/autoExportPath", directory);
+    });
     prefSections << paths;
     prefSections << unavailable("自动保存", "当前使用手动保存及未保存修改提示。",
                                 {"自动保存间隔 / 保留版本"});
@@ -489,7 +651,8 @@ void learnQT::setupWorkspace()
     connect(reset, &QPushButton::clicked, this, [this] {
         workspace->layouts.clear();
         QSettings s(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
-        s.remove("workspaceV4/layout");
+        s.remove("workspaceV5/layout");
+        workspace->activeLayoutKey.clear();
         workspace->page = -1;
         navigateWorkspace(WorkspacePage::Settings);
     });
@@ -553,15 +716,6 @@ void learnQT::setupWorkspace()
         if (!workspace->refreshing && workspace->page == 2)
             inspector->browseMaterial(item ? item->data(Qt::UserRole).toString() : QString());
     });
-    auto nodes = new QWidget;
-    auto nodeLayout = column(nodes);
-    nodeLayout->addWidget(label("结构示意 · 未开放，不参与渲染。独立材质球预览尚未接入。"));
-    nodeLayout->addWidget(new MaterialGraphPlaceholder, 1);
-    auto addNode = new QPushButton("添加节点 · 未开放");
-    addNode->setEnabled(false);
-    nodeLayout->addWidget(addNode);
-    w.bottomPages[2] = nodes;
-
     auto lightListPanel = new QWidget;
     auto lightListLayout = column(lightListPanel);
     lightListLayout->addWidget(label("场景灯光", "sectionHeading"));
@@ -570,6 +724,9 @@ void learnQT::setupWorkspace()
     lightListLayout->addWidget(w.lights, 1);
     lightListLayout->addWidget(label("在右侧添加太阳盘或球形光，并调整真实辐亮度。"));
     auto oldLightList = lightContent->findChild<QComboBox *>();
+    oldLightList->hide();
+    if (auto form = lightContent->findChild<QFormLayout *>())
+        if (auto caption = form->labelForField(oldLightList)) caption->hide();
     connect(w.lights, &QListWidget::currentItemChanged, this, [this, oldLightList](QListWidgetItem *item) {
         if (!item || workspace->refreshing)
             return;
@@ -580,21 +737,154 @@ void learnQT::setupWorkspace()
             QMetaObject::invokeMethod(oldLightList, "activated", Q_ARG(int, i));
         }
     });
-    connect(oldLightList, QOverload<int>::of(&QComboBox::activated), this, [this, oldLightList](int) {
+    connect(oldLightList, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this, oldLightList](int) {
         QSignalBlocker b(workspace->lights);
         for (int i = 0; i < workspace->lights->count(); ++i)
             if (workspace->lights->item(i)->data(Qt::UserRole) == oldLightList->currentData())
                 workspace->lights->setCurrentRow(i);
     });
-    w.leftPages[3] = lightListPanel;
+    w.lightingTabs = new QTabWidget;
+    w.lightingTabs->setObjectName("lightingTabs");
+    w.lightingTabs->addTab(lightListPanel, "场景灯光");
+    w.leftPages[3] = w.lightingTabs;
     auto cameraList = new QWidget;
     auto cameraListLayout = column(cameraList);
-    cameraListLayout->addWidget(label("场景相机", "sectionHeading"));
+    auto cameraHeading = new QHBoxLayout;
+    cameraHeading->addWidget(label("场景相机", "sectionHeading"), 1);
+    auto clearCamera = new QToolButton;
+    clearCamera->setText("取消选择");
+    clearCamera->setObjectName("savedCameraClearSelection");
+    clearCamera->setToolTip("清除列表选择，保留当前编辑相机");
+    cameraHeading->addWidget(clearCamera);
+    cameraListLayout->addLayout(cameraHeading);
     auto currentCamera = new QListWidget;
-    addCard(currentCamera, "当前相机", "camera", "");
-    currentCamera->setCurrentRow(0);
+    currentCamera->setObjectName("savedCameraList");
     cameraListLayout->addWidget(currentCamera, 1);
-    cameraListLayout->addWidget(unavailable("多相机", "当前文档仅保存一台相机。", {"新建相机"}));
+    auto cameraButtons = new QHBoxLayout;
+    auto addCamera = new QPushButton("新建视角");
+    addCamera->setObjectName("savedCameraAdd");
+    addCamera->setToolTip("以当前画面创建一个新视角，不覆盖已有视角");
+    auto renameCamera = new QPushButton("重命名");
+    renameCamera->setObjectName("savedCameraRename");
+    auto deleteCamera = new QPushButton("删除");
+    deleteCamera->setObjectName("savedCameraDelete");
+    for (auto button : {addCamera, renameCamera, deleteCamera})
+        cameraButtons->addWidget(button);
+    cameraListLayout->addLayout(cameraButtons);
+    w.mutationWidgets << addCamera << renameCamera << deleteCamera;
+    auto refreshCameraList = [this, currentCamera, renameCamera, deleteCamera, clearCamera] {
+        QSignalBlocker block(currentCamera);
+        currentCamera->clear();
+        const auto cameras = editor->document.root["cameras"].toArray();
+        bool selectedFound = false;
+        for (int i = 0; i < cameras.size(); ++i)
+        {
+            auto camera = cameras[i].toObject();
+            auto item = new QListWidgetItem(WorkbenchStyle::icon("camera"), camera["name"].toString(), currentCamera);
+            item->setData(Qt::UserRole, camera["id"].toString());
+            if (!workspace->selectedCameraId.isEmpty() &&
+                camera["id"].toString() == workspace->selectedCameraId)
+            {
+                currentCamera->setCurrentRow(i);
+                selectedFound = true;
+            }
+        }
+        if (!selectedFound)
+            workspace->selectedCameraId.clear();
+        clearCamera->setEnabled(selectedFound);
+        renameCamera->setEnabled(selectedFound && !m_loading && !editor->renderLocked);
+        deleteCamera->setEnabled(selectedFound && cameras.size() > 1 &&
+                                 !m_loading && !editor->renderLocked);
+    };
+    w.refreshers.push_back(refreshCameraList);
+    refreshCameraList();
+    connect(editor, &EditorController::changed, currentCamera, [refreshCameraList](int change) {
+        if (change == EditorController::CameraChange)
+            refreshCameraList();
+    });
+    connect(clearCamera, &QToolButton::clicked, currentCamera, [currentCamera] {
+        currentCamera->clearSelection();
+        currentCamera->setCurrentRow(-1);
+    });
+    connect(currentCamera, &QListWidget::currentRowChanged, this,
+            [this, currentCamera, renameCamera, deleteCamera, clearCamera](int row) {
+        const auto cameras = editor->document.root["cameras"].toArray();
+        const bool selected = row >= 0 && row < cameras.size();
+        workspace->selectedCameraId = selected ? cameras[row].toObject()["id"].toString() : QString();
+        clearCamera->setEnabled(selected);
+        renameCamera->setEnabled(selected && !m_loading && !editor->renderLocked);
+        deleteCamera->setEnabled(selected && cameras.size() > 1 &&
+                                 !m_loading && !editor->renderLocked);
+        if (!selected || m_loading || editor->renderLocked)
+            return;
+        auto camera = cameras[row].toObject();
+        if (editor->document.root["activeCameraId"] == camera["id"])
+            return;
+        auto next = editor->document;
+        next.root["activeCameraId"] = camera["id"];
+        QJsonObject legacy;
+        for (auto key : {"position", "target", "up", "fov"})
+            legacy[key] = camera[key];
+        next.root["camera"] = legacy;
+        editor->submit(next, tr("切换相机"), EditorController::CameraChange);
+    });
+    connect(currentCamera, &QListWidget::itemSelectionChanged, this, [currentCamera] {
+        if (currentCamera->selectedItems().isEmpty() && currentCamera->currentRow() >= 0)
+            currentCamera->setCurrentRow(-1);
+    });
+    connect(addCamera, &QPushButton::clicked, this, [this, refreshCameraList] {
+        if (m_loading || editor->renderLocked)
+            return;
+        auto next = editor->document;
+        auto cameras = next.root["cameras"].toArray();
+        auto camera = next.root["camera"].toObject();
+        camera["id"] = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        camera["name"] = tr("相机 %1").arg(cameras.size() + 1);
+        cameras.append(camera);
+        next.root["cameras"] = cameras;
+        next.root["activeCameraId"] = camera["id"];
+        workspace->selectedCameraId = camera["id"].toString();
+        editor->submit(next, tr("新建相机视角"), EditorController::Organization);
+        refreshCameraList();
+    });
+    connect(renameCamera, &QPushButton::clicked, this, [this, currentCamera] {
+        const int row = currentCamera->currentRow();
+        if (row < 0 || m_loading || editor->renderLocked)
+            return;
+        auto next = editor->document;
+        auto cameras = next.root["cameras"].toArray();
+        auto camera = cameras[row].toObject();
+        bool ok = false;
+        const auto name = QInputDialog::getText(this, tr("重命名相机"), tr("名称"), QLineEdit::Normal,
+                                                camera["name"].toString(), &ok).trimmed();
+        if (!ok || name.isEmpty())
+            return;
+        camera["name"] = name;
+        cameras[row] = camera;
+        next.root["cameras"] = cameras;
+        editor->submit(next, tr("重命名相机"), EditorController::Organization);
+    });
+    connect(deleteCamera, &QPushButton::clicked, this, [this, currentCamera] {
+        auto next = editor->document;
+        auto cameras = next.root["cameras"].toArray();
+        const int row = currentCamera->currentRow();
+        if (row < 0 || cameras.size() <= 1 || m_loading || editor->renderLocked)
+            return;
+        const auto removedId = cameras[row].toObject()["id"].toString();
+        cameras.removeAt(row);
+        next.root["cameras"] = cameras;
+        workspace->selectedCameraId.clear();
+        if (next.root["activeCameraId"].toString() == removedId)
+        {
+            auto active = cameras[qMin(row, cameras.size() - 1)].toObject();
+            next.root["activeCameraId"] = active["id"];
+            QJsonObject legacy;
+            for (auto key : {"position", "target", "up", "fov"})
+                legacy[key] = active[key];
+            next.root["camera"] = legacy;
+        }
+        editor->submit(next, tr("删除相机"), EditorController::CameraChange);
+    });
     w.leftPages[4] = cameraList;
 
     auto activateResource = [this](const QModelIndex &i) {
@@ -648,8 +938,18 @@ void learnQT::setupWorkspace()
         }
     };
     w.bottomPages[1] = resourceBrowser(w.catalog, "", activateResource, "sceneResources", true);
-    w.bottomPages[5] = resourceBrowser(w.catalog, "HDR", activateResource, "environmentResources", true);
-    w.leftPages[5] = resourceBrowser(w.catalog, "HDR", activateResource, "environmentLibrary", true);
+    w.lightingTabs->addTab(resourceBrowser(w.catalog, "HDR", activateResource, "environmentLibrary", true), "HDR 环境");
+    connect(w.lightingTabs, &QTabWidget::currentChanged, this, [this](int index) {
+        QSettings s(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
+        s.setValue("workspaceV5/lightingTab", index);
+        workspace->rightPages[int(WorkspacePage::Lighting)] = index == 0
+            ? workspace->lightProperties : workspace->environmentProperties;
+        if (workspace->page == int(WorkspacePage::Lighting)) {
+            workspace->rightStack->setCurrentWidget(workspace->rightPages[workspace->page]);
+            inspectorDock->setWindowTitle(index == 0 ? "灯光属性" : "环境属性");
+        }
+    });
+    w.lightingTabs->setCurrentIndex(qBound(0, settings.value("workspaceV5/lightingTab", 0).toInt(), 1));
     auto resources = new QWidget;
     auto resourceLayout = column(resources);
     resourceLayout->addWidget(label("资源浏览器", "pageHeading"));
@@ -661,17 +961,37 @@ void learnQT::setupWorkspace()
     auto taskPanel = new QWidget;
     auto taskLayout = column(taskPanel);
     auto taskControls = new QHBoxLayout;
-    for (auto a : {renderAction, pauseAction, stopAction})
+    for (auto a : {pauseAction, stopAction})
     {
         auto button = new QToolButton;
         button->setDefaultAction(a);
         button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         taskControls->addWidget(button);
     }
+    auto runQueueButton = new QPushButton("运行队列");
+    runQueueButton->setObjectName("runRenderQueue");
+    taskControls->addWidget(runQueueButton);
+    connect(runQueueButton, &QPushButton::clicked, this, &learnQT::runRenderQueue);
+    w.runQueue = new QAction("运行队列", this);
+    connect(w.runQueue, &QAction::triggered, this, &learnQT::runRenderQueue);
+    auto stopQueueButton = new QPushButton("停止队列");
+    stopQueueButton->setObjectName("stopRenderQueue");
+    taskControls->addWidget(stopQueueButton);
+    w.stopQueue = new QAction("停止队列", this);
+    connect(w.stopQueue, &QAction::triggered, this, [this] {
+        m_queueRunning = false;
+        if (m_queueWorker && m_activeQueueId)
+            m_queueWorker->stopCurrent();
+        refreshRenderQueue();
+    });
+    connect(stopQueueButton, &QPushButton::clicked, w.stopQueue, &QAction::trigger);
+    w.stopQueue->setEnabled(false);
+    auto moveUp = new QPushButton("上移");
+    auto moveDown = new QPushButton("下移");
+    auto removeTask = new QPushButton("移除");
+    for (auto button : {moveUp, moveDown, removeTask})
+        taskControls->addWidget(button);
     taskControls->addStretch();
-    auto queue = new QPushButton("添加到队列 · 未开放");
-    queue->setEnabled(false);
-    taskControls->addWidget(queue);
     taskLayout->addLayout(taskControls);
     w.task = new QTableWidget(1, 5);
     w.task->setObjectName("currentRenderTask");
@@ -682,11 +1002,53 @@ void learnQT::setupWorkspace()
     for (int i = 0; i < 5; ++i)
         w.task->setItem(0, i, new QTableWidgetItem(i == 0 ? "当前单张输出" : "—"));
     taskLayout->addWidget(w.task);
-    taskLayout->addWidget(label("当前单任务 · 上次完成结果可在结果工具栏查看；历史队列与前后对比未开放。"));
+    connect(w.task, &QTableWidget::cellClicked, this, [this](int, int) { showRenderTaskResult(); });
+    connect(w.task, &QTableWidget::itemSelectionChanged, this,
+            [this] { showRenderTaskResult(); });
+    connect(w.task, &QTableWidget::cellDoubleClicked, this, [this](int row, int) {
+        if (row < 0 || row >= m_renderQueue.size() || m_renderQueue[row].status != tr("等待中"))
+            return;
+        bool accepted = false;
+        const auto name = QInputDialog::getText(this, tr("重命名渲染任务"), tr("任务名称"),
+                                                QLineEdit::Normal, m_renderQueue[row].name,
+                                                &accepted).trimmed();
+        if (accepted && !name.isEmpty())
+        {
+            m_renderQueue[row].name = name;
+            refreshRenderQueue();
+        }
+    });
+    connect(moveUp, &QPushButton::clicked, this, [this] {
+        const int row = workspace->task->currentRow();
+        if (row <= 0 || row >= m_renderQueue.size() ||
+            m_renderQueue[row].status != tr("等待中") || m_renderQueue[row - 1].status != tr("等待中"))
+            return;
+        m_renderQueue.swapItemsAt(row, row - 1);
+        refreshRenderQueue();
+        workspace->task->selectRow(row - 1);
+    });
+    connect(moveDown, &QPushButton::clicked, this, [this] {
+        const int row = workspace->task->currentRow();
+        if (row < 0 || row + 1 >= m_renderQueue.size() ||
+            m_renderQueue[row].status != tr("等待中") || m_renderQueue[row + 1].status != tr("等待中"))
+            return;
+        m_renderQueue.swapItemsAt(row, row + 1);
+        refreshRenderQueue();
+        workspace->task->selectRow(row + 1);
+    });
+    connect(removeTask, &QPushButton::clicked, this, [this] {
+        const int row = workspace->task->currentRow();
+        if (row < 0 || row >= m_renderQueue.size() || m_renderQueue[row].status != tr("等待中"))
+            return;
+        m_renderQueue.removeAt(row);
+        refreshRenderQueue();
+    });
+    taskLayout->addWidget(label("任务按顺序运行；可继续编辑场景并加入下一张图片。"));
     w.bottomPages[6] = taskPanel;
     connect(viewport, &GLWidget::renderThreadReady, this, [this] {
         connect(viewport->renderThread(), &RenderThread::statsReady, this, [this](const RenderStats &s) {
-            if (!editor->renderLocked || s.target <= 0 || s.size != workspace->taskSize)
+            if (!m_renderQueue.isEmpty() || !editor->renderLocked || s.target <= 0 ||
+                s.size != workspace->taskSize)
                 return;
             auto t = workspace->task;
             workspace->taskSamples = s.samples;
@@ -696,6 +1058,8 @@ void learnQT::setupWorkspace()
         });
         connect(viewport->renderThread(), &RenderThread::jobStateChanged, this,
                 [this](RenderJobState state, const QString &) {
+                    if (!m_renderQueue.isEmpty())
+                        return;
                     workspace->task->item(0, 3)->setText(renderJobText(state));
                     if (state == RenderJobState::Completed)
                     {
@@ -722,7 +1086,7 @@ void learnQT::setupWorkspace()
     heroLayout->addWidget(label("从模型到光影，在一个工作台中完成场景编辑与图像输出。", "heroSubtitle"));
     homeLayout->addWidget(hero);
     auto actions = new QHBoxLayout;
-    const QStringList titles{"新建场景", "打开项目", "从预设创建"};
+    const QStringList titles{"新建场景", "打开项目", "浏览场景预设"};
     const QStringList descriptions{"从空场景开始创作", "继续编辑本地场景文件", "浏览内置场景与渲染示例"};
     for (int i = 0; i < 3; ++i)
     {
@@ -779,6 +1143,47 @@ void learnQT::setupWorkspace()
     views->addTab(w.home, "首页");
     views->addTab(w.resources, "资源");
     views->addTab(w.preferences, "设置");
+    auto central = new QWidget;
+    auto centralLayout = new QVBoxLayout(central);
+    centralLayout->setContentsMargins(0, 0, 0, 0);
+    centralLayout->setSpacing(0);
+    w.renderModes = new QWidget;
+    w.renderModes->setObjectName("renderModeBar");
+    auto modeLayout = new QHBoxLayout(w.renderModes);
+    modeLayout->setContentsMargins(8, 4, 8, 4);
+    compositionButton->setText("构图与提交");
+    resultButton->setText("结果与队列");
+    compositionButton->setObjectName("renderCompositionMode");
+    resultButton->setObjectName("renderResultsMode");
+    compositionButton->setCheckable(true);
+    resultButton->setCheckable(true);
+    compositionButton->setAutoExclusive(true);
+    resultButton->setAutoExclusive(true);
+    modeLayout->addWidget(compositionButton);
+    modeLayout->addWidget(resultButton);
+    modeLayout->addWidget(submit);
+    modeLayout->addStretch();
+    w.queueBadge = label("等待 0 · 共 0 个任务");
+    w.queueBadge->setObjectName("renderQueueBadge");
+    modeLayout->addWidget(w.queueBadge);
+    auto toggleQueue = new QToolButton;
+    toggleQueue->setText("队列面板");
+    toggleQueue->setObjectName("toggleRenderQueue");
+    modeLayout->addWidget(toggleQueue);
+    connect(toggleQueue, &QToolButton::clicked, this, [this] {
+        workspace->bottom->setVisible(!workspace->bottom->isVisible());
+    });
+    centralLayout->addWidget(w.renderModes);
+    centralLayout->addWidget(views, 1);
+    setCentralWidget(central);
+    w.renderModes->hide();
+    inspector->openMaterialPage = [this] { navigateWorkspace(WorkspacePage::Material); };
+    auto renderMenu = menuBar()->addMenu("渲染");
+    renderMenu->addAction(renderAction);
+    renderMenu->addAction(w.runQueue);
+    renderMenu->addAction(pauseAction);
+    renderMenu->addAction(stopAction);
+    renderMenu->addAction(w.stopQueue);
 
     for (auto p : w.leftPages)
         w.leftStack->addWidget(p);
@@ -792,15 +1197,16 @@ void learnQT::setupWorkspace()
     addToolBar(Qt::LeftToolBarArea, w.rail);
     auto navigationGroup = new QActionGroup(this);
     auto navigationMenu = menuBar()->addMenu("工作区");
-    for (int i = 0; i < 9; ++i)
+    for (const auto &page : workspacePages())
     {
-        if (i == 8)
+        const int i = page.id;
+        if (i == int(WorkspacePage::Settings))
         {
             auto spacer = new QWidget;
             spacer->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
             w.rail->addWidget(spacer);
         }
-        auto a = w.rail->addAction(WorkbenchStyle::icon(pageIcons()[i]), pageNames()[i]);
+        auto a = w.rail->addAction(WorkbenchStyle::icon(page.icon), QString::fromUtf8(page.title));
         a->setObjectName(QString("navigate%1").arg(i));
         a->setCheckable(true);
         navigationGroup->addAction(a);
@@ -811,10 +1217,10 @@ void learnQT::setupWorkspace()
     for (auto dock : {treeDock, inspectorDock, performanceDock, logDock, w.left, w.bottom})
     {
         dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
-        dock->setMinimumWidth(dock == inspectorDock || dock == performanceDock ? 340 : 205);
+        dock->setMinimumWidth(dock == inspectorDock ? 320 : dock == performanceDock ? 280 : 205);
         setupDockTitle(dock, dock == w.bottom ? "assets" : "settings");
     }
-    performance->setMinimumHeight(280);
+    performance->setMinimumHeight(230);
     w.bottom->setMinimumHeight(140);
     w.left->setMaximumWidth(420);
     auto panelMenu = menuBar()->addMenu("面板");
@@ -824,15 +1230,16 @@ void learnQT::setupWorkspace()
         panelMenu->addAction(action);
         connect(panelMenu, &QMenu::aboutToShow, this, [this, dock, action] {
             int page = workspace->page;
-            action->setEnabled(dock == logDock ||
-                               (dock == treeDock || dock == performanceDock ? page == 1
+            action->setEnabled(dock == logDock || dock == performanceDock ||
+                               (dock == treeDock ? page == int(WorkspacePage::Scene)
                                 : dock == workspace->left   ? workspace->leftPages.contains(page)
                                 : dock == workspace->bottom ? workspace->bottomPages.contains(page)
                                                             : workspace->rightPages.contains(page)));
         });
     }
-    w.baseline = saveState(4);
+    w.baseline = saveState(5);
     connect(editor, &EditorController::changed, this, [this](int change) {
+        UiSlotTimer timer(UiSlotWorkspacePages);
         if (change == EditorController::CameraChange)
         {
             workspace->refreshCamera();
@@ -858,72 +1265,80 @@ void learnQT::setupWorkspace()
 
 void learnQT::navigateWorkspace(WorkspacePage page)
 {
-    if (!workspace || workspace->navigating)
-        return;
+    if (!workspace || workspace->navigating) return;
+    if (page == WorkspacePage::Lights || page == WorkspacePage::Environment) {
+        workspace->lightingTabs->setCurrentIndex(page == WorkspacePage::Environment ? 1 : 0);
+        page = WorkspacePage::Lighting;
+    }
+    const int target = int(page);
+    if (workspace->page == target) return;
+    workspace->page = target;
+    applyWorkspaceLayout();
+}
+
+void learnQT::applyWorkspaceLayout()
+{
     auto &w = *workspace;
-    int target = int(page);
-    if (w.page == target)
-        return;
     w.navigating = true;
-    if (w.page >= 0)
-        w.layouts[w.page] = saveState(4);
-    w.page = target;
-    // Cancel incomplete manipulation before hiding its input surface.
+    if (!w.activeLayoutKey.isEmpty())
+        w.layouts[w.activeLayoutKey] = saveState(5);
+    const auto &description = workspaceDescription(w.page);
+    const bool render = w.page == int(WorkspacePage::Render);
+    const bool scene = w.page == int(WorkspacePage::Scene);
+    const auto key = workspaceLayoutKey(w.page, m_renderPreviewMode);
     viewport->setTool(viewport->tool);
-    restoreState(w.baseline, 4);
+    restoreState(w.baseline, 5);
     for (auto dock : {treeDock, inspectorDock, performanceDock, logDock, w.left, w.bottom})
         dock->hide();
-    bool scene = target == 1;
-    if (w.rightPages.contains(target))
-    {
-        w.rightStack->setCurrentWidget(w.rightPages[target]);
+    if (w.rightPages.contains(w.page)) {
+        w.rightStack->setCurrentWidget(render
+            ? (m_renderPreviewMode ? w.outputProperties : w.resultProperties) : w.rightPages[w.page]);
         inspectorDock->show();
     }
-    if (w.leftPages.contains(target))
-    {
-        w.leftStack->setCurrentWidget(w.leftPages[target]);
+    if (w.leftPages.contains(w.page)) {
+        w.leftStack->setCurrentWidget(w.leftPages[w.page]);
         w.left->show();
     }
-    if (w.bottomPages.contains(target))
-    {
-        w.bottomStack->setCurrentWidget(w.bottomPages[target]);
-        w.bottom->show();
+    if (w.bottomPages.contains(w.page)) {
+        w.bottomStack->setCurrentWidget(w.bottomPages[w.page]);
+        w.bottom->setVisible(render && !m_renderPreviewMode);
     }
     treeDock->setVisible(scene);
-    performanceDock->setVisible(scene);
-    inspector->setMaterialPage(target == 2);
-    if (target == 2)
+    inspector->setMaterialPage(w.page == int(WorkspacePage::Material));
+    if (w.page == int(WorkspacePage::Material))
         inspector->browseMaterial(w.materials->currentItem()
-                                      ? w.materials->currentItem()->data(Qt::UserRole).toString()
-                                      : QString());
-    inspectorDock->setWindowTitle(pageNames()[target] + "属性");
-    w.left->setWindowTitle(target == 2   ? "场景材质"
-                           : target == 3 ? "灯光列表"
-                           : target == 4 ? "相机列表"
-                                         : "环境资源");
-    w.bottom->setWindowTitle(target == 2   ? "材质节点编辑器 · 未开放"
-                             : target == 6 ? "当前渲染任务"
-                                           : "资源浏览器");
-    for (auto dock : {inspectorDock, w.left, w.bottom})
-        setupDockTitle(dock, target == 6 ? "play" : "settings");
-    views->setCurrentIndex(target == 0 ? 2 : target == 7 ? 3 : target == 8 ? 4 : target == 6 ? 1 : 0);
-    resizeDocks({treeDock, inspectorDock, w.left}, {245, 360, 250}, Qt::Horizontal);
-    resizeDocks({performanceDock, inspectorDock}, {280, 500}, Qt::Vertical);
-    if (scene)
-    {
-        w.bottom->show();
-        resizeDocks({w.bottom}, {185}, Qt::Vertical);
+            ? w.materials->currentItem()->data(Qt::UserRole).toString() : QString());
+    inspectorDock->setWindowTitle(render ? (m_renderPreviewMode ? "正式输出与构图" : "任务快照")
+        : w.page == int(WorkspacePage::Lighting) ? (w.lightingTabs->currentIndex() == 0 ? "灯光属性" : "环境属性")
+        : QString::fromUtf8(description.title) + "属性");
+    w.left->setWindowTitle(w.page == int(WorkspacePage::Material) ? "场景材质"
+        : w.page == int(WorkspacePage::Lighting) ? "照明内容" : "场景相机");
+    w.bottom->setWindowTitle(render ? "渲染队列" : "资源浏览器");
+    w.renderModes->setVisible(render);
+    w.compositionMode->setChecked(m_renderPreviewMode);
+    w.resultsMode->setChecked(!m_renderPreviewMode);
+    findChild<QToolButton *>("renderPrimary")->setVisible(render && m_renderPreviewMode);
+    views->setCurrentIndex(render ? (m_renderPreviewMode ? 0 : 1) : description.view);
+    if (render && !m_draftCamera.isEmpty()) {
+        Camera draft;
+        draft.restoreState(sceneVector(m_draftCamera["position"]), sceneVector(m_draftCamera["target"]),
+                           sceneVector(m_draftCamera["up"]), m_draftCamera["fov"].toDouble());
+        viewport->setCompositionMode(true, draft, QSize(outputWidth->value(), outputHeight->value()));
+    } else {
+        viewport->setCompositionMode(false);
     }
-    resizeDocks({w.bottom}, {target == 2 ? 200 : 185}, Qt::Vertical);
-    if (w.layouts.contains(target))
-        restoreState(w.layouts[target], 4);
-    if (width() < 1450 && target != 6)
-        w.bottom->hide();
-    w.navigation[target]->setChecked(true);
+    resizeDocks({treeDock, inspectorDock, w.left},
+        {width() < 1450 ? 220 : 240, width() < 1450 ? 320 : 340, width() < 1450 ? 220 : 240}, Qt::Horizontal);
+    resizeDocks({w.bottom}, {200}, Qt::Vertical);
+    if (w.layouts.contains(key)) restoreState(w.layouts[key], 5);
+    w.activeLayoutKey = key;
+    w.navigation[w.page]->setChecked(true);
     if (viewport->renderThread())
-        viewport->renderThread()->setPreviewVisible(target >= 1 && target <= 5);
+        viewport->renderThread()->setPreviewVisible(description.preview || (render && m_renderPreviewMode));
     w.navigating = false;
+    for (const auto &refresh : w.refreshers) refresh();
     w.refreshCamera();
+    refreshTaskProperties();
     syncWorkspaceAvailability();
 }
 
@@ -976,7 +1391,8 @@ void learnQT::refreshWorkspace()
         inspector->browseMaterial(w.materials->currentItem()
                                       ? w.materials->currentItem()->data(Qt::UserRole).toString()
                                       : QString());
-    auto light = w.lights->currentItem() ? w.lights->currentItem()->data(Qt::UserRole).toString() : QString();
+    auto light = w.lights->currentItem() ? w.lights->currentItem()->data(Qt::UserRole).toString()
+        : w.lightProperties->findChild<QComboBox *>()->currentData().toString();
     w.lights->clear();
     for (auto v : editor->document.root["lights"].toArray())
     {
@@ -1007,13 +1423,19 @@ void learnQT::refreshWorkspace()
             signatureParts.append(QJsonArray{key, o["id"], o["name"], o["source"]});
         }
     signatureParts.append(editor->document.root["hdr"]);
+    for (const auto value : editor->document.root["objects"].toArray()) {
+        const auto object = value.toObject();
+        signatureParts.append(QJsonArray{object["id"], object["model"], object["material"]});
+    }
+    for (const auto value : editor->document.root["materials"].toArray())
+        signatureParts.append(value.toObject()["textures"]);
     auto signature = QJsonDocument(signatureParts).toJson(QJsonDocument::Compact);
     if (w.catalogSignature != signature)
     {
         w.catalogSignature = signature;
         w.presets->clear();
         w.catalog->clear();
-        auto add = [&w](const QString &kind, const QString &title, const QString &source, const QString &id,
+        auto add = [this, &w](const QString &kind, const QString &title, const QString &source, const QString &id,
                         const QString &icon) {
             auto item = new QStandardItem(WorkbenchStyle::icon(icon), title);
             if (kind == "纹理" && !source.isEmpty())
@@ -1028,6 +1450,23 @@ void learnQT::refreshWorkspace()
             item->setData(kind, KindRole);
             item->setData(source, SourceRole);
             item->setData(id, IdRole);
+            int references = 0;
+            if (kind == "模型" || kind == "材质") {
+                for (const auto value : editor->document.root["objects"].toArray())
+                    if (value.toObject()[kind == "模型" ? "model" : "material"].toString() == id) ++references;
+                item->setData(tr("%1 个对象").arg(references), ReferencesRole);
+            } else if (kind == "纹理") {
+                for (const auto value : editor->document.root["materials"].toArray()) {
+                    const auto textures = value.toObject()["textures"].toObject();
+                    for (auto it = textures.begin(); it != textures.end(); ++it)
+                        if (it.value().toString() == id) ++references;
+                }
+                item->setData(tr("%1 个材质贴图槽").arg(references), ReferencesRole);
+            } else if (kind == "HDR") {
+                item->setData(editor->document.root["hdr"].toString() == source ? "当前环境" : "本地资源", ReferencesRole);
+            } else {
+                item->setData("内置场景预设", ReferencesRole);
+            }
             item->setToolTip(kind + " · " + title + "\n" + source);
             w.catalog->appendRow(item);
         };
@@ -1071,13 +1510,28 @@ void learnQT::syncWorkspaceAvailability()
         return;
     bool editable = !m_loading && !editor->renderLocked;
     setProperty("workspaceEditable", editable);
+    for (auto action : editActions)
+        action->setEnabled(editable && (!action->property("viewportEdit").toBool() ||
+            (workspaceDescription(workspace->page).preview && workspace->page != int(WorkspacePage::Render))));
     for (auto widget : workspace->mutationWidgets)
         widget->setEnabled(editable);
+    findChild<QComboBox *>("viewportAxes")->setEnabled(editable &&
+        workspaceDescription(workspace->page).preview);
+    if (auto cameraList = findChild<QListWidget *>("savedCameraList"))
+    {
+        const bool selected = cameraList->currentRow() >= 0;
+        if (auto rename = findChild<QPushButton *>("savedCameraRename"))
+            rename->setEnabled(editable && selected);
+        if (auto remove = findChild<QPushButton *>("savedCameraDelete"))
+            remove->setEnabled(editable && selected && cameraList->count() > 1);
+        if (auto clear = findChild<QToolButton *>("savedCameraClearSelection"))
+            clear->setEnabled(selected);
+    }
     for (auto button : findChildren<QPushButton *>())
         if (button->property("resourceAction").toBool())
             button->setEnabled(button->property("resourceSelected").toBool() &&
                                (!button->property("requiresEditing").toBool() || editable));
-    inspectorDock->setEnabled(editable);
+    inspectorDock->setEnabled(editable || (workspace->page == int(WorkspacePage::Render) && !m_renderPreviewMode));
     // Lists remain browsable while mutations are guarded at their command entry.
     viewport->setEnabled(editable);
     inspector->refresh();
@@ -1088,8 +1542,6 @@ void learnQT::resizeEvent(QResizeEvent *event)
     QMainWindow::resizeEvent(event);
     if (!workspace)
         return;
-    if (!workspace->navigating && width() < 1450 && workspace->page != 6)
-        workspace->bottom->hide();
     workspace->rail->setIconSize(QSize(height() < 800 ? 18 : 22, height() < 800 ? 18 : 22));
 }
 bool learnQT::eventFilter(QObject *object, QEvent *event)

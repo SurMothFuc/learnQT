@@ -1,0 +1,1295 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 65,
+    "position": [
+      0.8016107082366943,
+      -0.23483207821846008,
+      1.399999976158142
+    ],
+    "target": [
+      -0.3562714457511902,
+      -0.38160213828086853,
+      -1.399999976158142
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 65,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        0.8016107082366943,
+        -0.23483207821846008,
+        1.399999976158142
+      ],
+      "target": [
+        -0.3562714457511902,
+        -0.38160213828086853,
+        -1.399999976158142
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "asset": "Salle de Bain",
+      "author": "© Nacimus Ait Cherif",
+      "license": "CC BY 3.0",
+      "source": "https://casual-effects.com/g3d/data10/research/model/salle_de_bain/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "Salle de Bain",
+      "order": 0,
+      "parent": ""
+    },
+    {
+      "id": "model-000/group",
+      "name": "salle_de_bain",
+      "order": 0,
+      "parent": "root"
+    },
+    {
+      "id": "model-000/node/0",
+      "name": "salle_de_bain.obj",
+      "order": 0,
+      "parent": "model-000/group"
+    },
+    {
+      "id": "model-000/node/0/0",
+      "name": "Bin",
+      "order": 1,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/1",
+      "name": "Default",
+      "order": 2,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/2",
+      "name": "Plastic",
+      "order": 3,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/3",
+      "name": "DarkBorder",
+      "order": 4,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/4",
+      "name": "Ceramic",
+      "order": 5,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/5",
+      "name": "Trims",
+      "order": 6,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/6",
+      "name": "Wood",
+      "order": 7,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/7",
+      "name": "Mirror",
+      "order": 8,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/8",
+      "name": "DarkPlastic",
+      "order": 9,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/9",
+      "name": "Wall",
+      "order": 10,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/10",
+      "name": "Towel",
+      "order": 11,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/11",
+      "name": "StainlessRough",
+      "order": 12,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/12",
+      "name": "BlackWoodLacquer",
+      "order": 13,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/13",
+      "name": "WoodFloor",
+      "order": 14,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/14",
+      "name": "Label",
+      "order": 15,
+      "parent": "model-000/node/0"
+    },
+    {
+      "id": "model-000/node/0/15",
+      "name": "Light",
+      "order": 16,
+      "parent": "model-000/node/0"
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [
+    {
+      "id": "interior-fill",
+      "position": [
+        0,
+        0.6457882321049513,
+        0
+      ],
+      "radiance": [
+        65,
+        60,
+        52
+      ],
+      "radius": 0.10273903692578772,
+      "type": "sphere"
+    }
+  ],
+  "materials": [
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0,
+        0,
+        0
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/1",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/9",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/4",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.949999988079071,
+        0.949999988079071,
+        0.949999988079071
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/3",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/11",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.47999998927116394,
+        0.47999998927116394,
+        0.47999998927116394
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/13",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/1"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0,
+        0,
+        0
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/8",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10000000149011612
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/5",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.9800000190734863,
+        0.9800000190734863,
+        0.9800000190734863
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/12",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/10",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.07848100364208221,
+        0.07848100364208221,
+        0.07848100364208221
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/2",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/6",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        10,
+        10,
+        10
+      ],
+      "id": "model-000/material/7",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {
+        "salle_de_bain.mtl": "../imported/mcguire/derived/salle_de_bain/mtl/salle_de_bain.mtl",
+        "textures/Label_BaseColor.png": "../imported/mcguire/assets/salle_de_bain/textures/Label_BaseColor.png",
+        "textures/WoodFloor_BaseColor.jpg": "../imported/mcguire/assets/salle_de_bain/textures/WoodFloor_BaseColor.jpg",
+        "textures/Wood_BaseColor.jpg": "../imported/mcguire/assets/salle_de_bain/textures/Wood_BaseColor.jpg"
+      },
+      "expanded": true,
+      "id": "model-000",
+      "material": null,
+      "materialBindings": {
+        "1": "model-000/material/1",
+        "10": "model-000/material/10",
+        "11": "model-000/material/11",
+        "12": "model-000/material/12",
+        "13": "model-000/material/13",
+        "2": "model-000/material/2",
+        "3": "model-000/material/3",
+        "4": "model-000/material/4",
+        "5": "model-000/material/5",
+        "6": "model-000/material/6",
+        "7": "model-000/material/7",
+        "8": "model-000/material/8",
+        "9": "model-000/material/9"
+      },
+      "name": "salle_de_bain",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/salle_de_bain/salle_de_bain.obj",
+      "transform": [
+        0.08744488239756379,
+        0,
+        0,
+        0.006698277991653464,
+        0,
+        0.08744488239756379,
+        0,
+        -1.4706049218352057,
+        0,
+        0,
+        0.08744488239756379,
+        0.03372311889662048,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · Salle de Bain",
+  "objects": [
+    {
+      "id": "model-000/object/0/1/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "Default",
+      "order": 0,
+      "parent": "model-000/node/0/1",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/2/0",
+      "locked": false,
+      "material": "model-000/material/9",
+      "mesh": 1,
+      "model": "model-000",
+      "name": "Plastic",
+      "order": 0,
+      "parent": "model-000/node/0/2",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/3/0",
+      "locked": false,
+      "material": "model-000/material/4",
+      "mesh": 2,
+      "model": "model-000",
+      "name": "DarkBorder",
+      "order": 0,
+      "parent": "model-000/node/0/3",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/4/0",
+      "locked": false,
+      "material": "model-000/material/3",
+      "mesh": 3,
+      "model": "model-000",
+      "name": "Ceramic",
+      "order": 0,
+      "parent": "model-000/node/0/4",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/5/0",
+      "locked": false,
+      "material": "model-000/material/11",
+      "mesh": 4,
+      "model": "model-000",
+      "name": "Trims",
+      "order": 0,
+      "parent": "model-000/node/0/5",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/6/0",
+      "locked": false,
+      "material": "model-000/material/13",
+      "mesh": 5,
+      "model": "model-000",
+      "name": "Wood",
+      "order": 0,
+      "parent": "model-000/node/0/6",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/7/0",
+      "locked": false,
+      "material": "model-000/material/8",
+      "mesh": 6,
+      "model": "model-000",
+      "name": "Mirror",
+      "order": 0,
+      "parent": "model-000/node/0/7",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/8/0",
+      "locked": false,
+      "material": "model-000/material/5",
+      "mesh": 7,
+      "model": "model-000",
+      "name": "DarkPlastic",
+      "order": 0,
+      "parent": "model-000/node/0/8",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/9/0",
+      "locked": false,
+      "material": "model-000/material/12",
+      "mesh": 8,
+      "model": "model-000",
+      "name": "Wall",
+      "order": 0,
+      "parent": "model-000/node/0/9",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/10/0",
+      "locked": false,
+      "material": "model-000/material/10",
+      "mesh": 9,
+      "model": "model-000",
+      "name": "Towel",
+      "order": 0,
+      "parent": "model-000/node/0/10",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/11/0",
+      "locked": false,
+      "material": "model-000/material/8",
+      "mesh": 10,
+      "model": "model-000",
+      "name": "StainlessRough",
+      "order": 0,
+      "parent": "model-000/node/0/11",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/12/0",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 11,
+      "model": "model-000",
+      "name": "BlackWoodLacquer",
+      "order": 0,
+      "parent": "model-000/node/0/12",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/13/0",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 12,
+      "model": "model-000",
+      "name": "WoodFloor",
+      "order": 0,
+      "parent": "model-000/node/0/13",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/14/0",
+      "locked": false,
+      "material": "model-000/material/6",
+      "mesh": 13,
+      "model": "model-000",
+      "name": "Label",
+      "order": 0,
+      "parent": "model-000/node/0/14",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/15/0",
+      "locked": false,
+      "material": "model-000/material/7",
+      "mesh": 14,
+      "model": "model-000",
+      "name": "Light",
+      "order": 0,
+      "parent": "model-000/node/0/15",
+      "transform": [
+        0.08744487911462784,
+        0,
+        0,
+        0.0066982777789235115,
+        0,
+        0.08744487911462784,
+        0,
+        -1.4706048965454102,
+        0,
+        0,
+        0.08744487911462784,
+        0.033723119646310806,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [
+    {
+      "dependencies": {},
+      "id": "model-000/texture/0",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/salle_de_bain/textures/Label_BaseColor.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/1",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/salle_de_bain/textures/66fcc975f69b.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/2",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/salle_de_bain/textures/WoodFloor_BaseColor.jpg",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    }
+  ],
+  "version": 2
+}

@@ -1,4 +1,5 @@
 #include "SceneTreeModel.h"
+#include "UiDiagnostics.h"
 #include "WorkbenchStyle.h"
 #include <QApplication>
 #include <QJsonDocument>
@@ -9,13 +10,21 @@ SceneTreeModel::SceneTreeModel(EditorController *e, QObject *p) : QAbstractItemM
 {
     refresh();
     connect(e, &EditorController::changed, this, [this](int c) {
+        UiSlotTimer timer(UiSlotSceneTree);
         if (c == EditorController::Topology || c == EditorController::Organization)
-            refresh();
-        else
         {
-            for (auto item : items)
-                emit dataChanged(from(item), from(item, 2));
+            refresh();
+            return;
         }
+        // 相机/光照等变更不改动树中显示的名称、可见与锁定列，视图无需重新取数。
+        if (c == EditorController::CameraChange || c == EditorController::Lighting ||
+            c == EditorController::Display)
+            return;
+        // 其余变更（变换/材质）可能改动可见与锁定列，用一次覆盖根行的 dataChanged 通知视图。
+        // 关键是不能再逐个条目发送：那会让 QSortFilterProxyModel（递归过滤）重复全量查询
+        // （实测每次相机提交约 4.3 万次 data()），是交互卡顿的直接来源。
+        if (root)
+            emit dataChanged(createIndex(0, 0, root.get()), createIndex(0, 2, root.get()));
     });
 }
 void SceneTreeModel::refresh()
@@ -39,6 +48,7 @@ void SceneTreeModel::refresh()
             std::unique_ptr<Item> item(new Item);
             item->id = o["id"].toString();
             item->parent = parent;
+            item->row = int(parent->children.size());
             items[item->id] = item.get();
             if (editor->isGroup(item->id))
                 build(item.get());
@@ -52,13 +62,26 @@ QModelIndex SceneTreeModel::from(Item *item, int c) const
 {
     if (!item)
         return {};
-    if (!item->parent)
+    // 根节点固定在第 0 行，不参与父链计算。
+    if (!item->parent || item == root.get())
         return createIndex(0, c, item);
-    auto &a = item->parent->children;
-    for (int i = 0; i < int(a.size()); ++i)
-        if (a[i].get() == item)
-            return createIndex(i, c, item);
-    return {};
+    int row = item->row;
+    if (row < 0 || row >= int(item->parent->children.size()) ||
+        item->parent->children[size_t(row)].get() != item)
+    {
+        // 行号与实际位置不一致时回退到一次扫描，保证索引永远正确。
+        auto &siblings = item->parent->children;
+        row = -1;
+        for (int i = 0; i < int(siblings.size()); ++i)
+            if (siblings[size_t(i)].get() == item)
+            {
+                row = i;
+                break;
+            }
+        if (row < 0)
+            return {};
+    }
+    return createIndex(row, c, item);
 }
 QModelIndex SceneTreeModel::index(int r, int c, const QModelIndex &p) const
 {
@@ -95,6 +118,7 @@ QVariant SceneTreeModel::data(const QModelIndex &i, int role) const
 {
     if (!i.isValid())
         return {};
+    ++dataCalls;
     auto key = id(i);
     auto o = editor->node(key);
     bool group = editor->isGroup(key);

@@ -1,0 +1,2905 @@
+{
+  "source": "https://casual-effects.com/data/",
+  "scenes": {
+    "cube": {
+      "entry": "cube",
+      "title": "Cube",
+      "scene": "resources/scenes/mcguire_cube.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\cube.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\cube.imported.json"
+        ],
+        "seconds": 0.24,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/cube.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Source default.png has a CRC mismatch. Derived neutral checker replaces this unreadable image; archive unchanged."
+      ],
+      "objects": 1,
+      "textures": 1,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/cube/cube.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_cube.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.17,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/cube.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "67de8b22b6b7241c0432dcbfb4b7bdbf3c5276c664a857e486010cf256d02c71"
+    },
+    "white_oak": {
+      "entry": "white_oak",
+      "title": "White Oak Tree",
+      "scene": "resources/scenes/mcguire_white_oak.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\white_oak.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\white_oak.imported.json"
+        ],
+        "seconds": 1.03,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/white_oak.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Missing leaf opacity texture derived from the original diffuse PNG alpha channel."
+      ],
+      "objects": 4,
+      "textures": 5,
+      "materials": 4,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/white_oak/white_oak.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_white_oak.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 1.06,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/white_oak.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "862f4b3351cd412da4caef913300e2b6e9d2a54e89beba646b6a64899ff02eb0"
+    },
+    "bistro_exterior": {
+      "entry": "bistro",
+      "title": "Amazon Lumberyard Bistro · exterior",
+      "scene": "resources/scenes/mcguire_bistro_exterior.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\bistro_exterior.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\bistro_exterior.imported.json"
+        ],
+        "seconds": 37.27,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/bistro_exterior.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Missing ceiling-fan emissive map omitted in derived MTL. Other emissive maps retained.",
+        "512px texture derivatives used to limit the shared texture-array allocation. Original full-resolution images retained.",
+        "OBJ object/group boundaries consolidated by material for practical loading; positions, UVs, normals and faces retained."
+      ],
+      "objects": 132,
+      "textures": 127,
+      "materials": 132,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/bistro/Exterior/exterior.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_bistro_exterior.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 33.89,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/bistro_exterior.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "a09721b675f8b15bd8fe9a336e3e871af775aed79ab652914b63844753ab651a",
+      "capture": {
+        "run": {
+          "command": [
+            "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+            "--background-test",
+            "--background-timeout-ms",
+            "600000",
+            "--scene",
+            "D:\\program\\learnQT\\resources\\scenes\\mcguire_bistro_exterior.scene.json",
+            "--capture-ui",
+            "D:\\program\\learnQT\\build\\mcguire-conversion\\captures\\bistro_exterior",
+            "--capture-pages",
+            "scene",
+            "--capture-raster",
+            "--capture-width",
+            "1280",
+            "--capture-height",
+            "800",
+            "--capture-warmup",
+            "1000"
+          ],
+          "seconds": 48.4,
+          "exitCode": 0,
+          "log": "build/mcguire-conversion/captures/bistro_exterior/session.log",
+          "inputDesktopWindows": 0
+        },
+        "report": "build/mcguire-conversion/captures/bistro_exterior/capture-report.json",
+        "visuallyReviewed": false
+      }
+    },
+    "bistro_interior": {
+      "entry": "bistro",
+      "title": "Amazon Lumberyard Bistro · interior",
+      "scene": "resources/scenes/mcguire_bistro_interior.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\bistro_interior.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\bistro_interior.imported.json"
+        ],
+        "seconds": 10.42,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/bistro_interior.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Missing ceiling-fan emissive map omitted in derived MTL. Other emissive maps retained.",
+        "512px texture derivatives used to limit the shared texture-array allocation. Original full-resolution images retained.",
+        "OBJ object/group boundaries consolidated by material for practical loading; positions, UVs, normals and faces retained.",
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "objects": 66,
+      "textures": 59,
+      "materials": 66,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/bistro/Interior/interior.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_bistro_interior.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 9.84,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/bistro_interior.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "496c966a5787e37e42ff0473dc631fb96bdefbc15b55d30e765833df5d62f122",
+      "capture": {
+        "run": {
+          "command": [
+            "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+            "--background-test",
+            "--background-timeout-ms",
+            "600000",
+            "--scene",
+            "D:\\program\\learnQT\\resources\\scenes\\mcguire_bistro_interior.scene.json",
+            "--capture-ui",
+            "D:\\program\\learnQT\\build\\mcguire-conversion\\captures\\bistro_interior",
+            "--capture-pages",
+            "scene",
+            "--capture-raster",
+            "--capture-width",
+            "1280",
+            "--capture-height",
+            "800",
+            "--capture-warmup",
+            "1000"
+          ],
+          "seconds": 19.21,
+          "exitCode": 0,
+          "log": "build/mcguire-conversion/captures/bistro_interior/session.log",
+          "inputDesktopWindows": 0
+        },
+        "report": "build/mcguire-conversion/captures/bistro_interior/capture-report.json",
+        "visuallyReviewed": false
+      }
+    },
+    "bedroom": {
+      "entry": "bedroom",
+      "title": "Bedroom",
+      "scene": "resources/scenes/mcguire_bedroom.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\bedroom.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\bedroom.imported.json"
+        ],
+        "seconds": 9.83,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/bedroom.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 7,
+      "textures": 7,
+      "materials": 7,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/bedroom/iscv2.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_bedroom.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 8.28,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/bedroom.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "c0c29bb84c732f321c40e468ac62e6be8b74bedf29e69a7cd2e4fa98c6ccc0cb"
+    },
+    "bmw": {
+      "entry": "bmw",
+      "title": "BMW",
+      "scene": "resources/scenes/mcguire_bmw.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\bmw.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\bmw.imported.json"
+        ],
+        "seconds": 3.18,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/bmw.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 78,
+      "textures": 0,
+      "materials": 23,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/bmw/bmw.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_bmw.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 3.1,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/bmw.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "c5e27a96cb95d9c3b050f234e07857c12f0dfb4af3fa3e396ccb6fbf1a395927"
+    },
+    "breakfast_room": {
+      "entry": "breakfast_room",
+      "title": "Breakfast Room",
+      "scene": "resources/scenes/mcguire_breakfast_room.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\breakfast_room.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\breakfast_room.imported.json"
+        ],
+        "seconds": 2.73,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/breakfast_room.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "objects": 21,
+      "textures": 2,
+      "materials": 15,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/breakfast_room/breakfast_room.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_breakfast_room.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 2.81,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/breakfast_room.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "b1eb70e7f8f1ded22c8c53766e38f21e13a1a17c3e65d2f6796cd7d66bdb7f3b"
+    },
+    "buddha": {
+      "entry": "buddha",
+      "title": "Happy Buddha",
+      "scene": "resources/scenes/mcguire_buddha.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\buddha.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\buddha.imported.json"
+        ],
+        "seconds": 14.94,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/buddha.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 1,
+      "textures": 0,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/buddha/buddha.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_buddha.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 13.69,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/buddha.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "14f633b68d051c5f2fc00e0b41cae37bcd3348db6c82855630c45570d7809d8c"
+    },
+    "bunny": {
+      "entry": "bunny",
+      "title": "Stanford Bunny",
+      "scene": "resources/scenes/mcguire_bunny.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\bunny.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\bunny.imported.json"
+        ],
+        "seconds": 2.11,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/bunny.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 1,
+      "textures": 0,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/bunny/bunny.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_bunny.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 1.7,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/bunny.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "420814247c168ecebe1f5348d2310de19675362208d7286383c3bf5f892cf789"
+    },
+    "CornellBox_cornellbox_empty_co": {
+      "entry": "CornellBox",
+      "title": "Cornell Box · CornellBox-Empty-CO",
+      "scene": "resources/scenes/mcguire_CornellBox_cornellbox_empty_co.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_empty_co.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_empty_co.imported.json"
+        ],
+        "seconds": 0.2,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_empty_co.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Authored emissive ceiling retained; camera fitted toward the open front."
+      ],
+      "objects": 6,
+      "textures": 0,
+      "materials": 6,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/CornellBox/CornellBox-Empty-CO.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_CornellBox_cornellbox_empty_co.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.13,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_empty_co.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "7c0369592cd5b8ea5b45af4f6ef84d426fc16f1c40394f518a83112dd1a3045c"
+    },
+    "CornellBox_cornellbox_empty_rg": {
+      "entry": "CornellBox",
+      "title": "Cornell Box · CornellBox-Empty-RG",
+      "scene": "resources/scenes/mcguire_CornellBox_cornellbox_empty_rg.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_empty_rg.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_empty_rg.imported.json"
+        ],
+        "seconds": 0.24,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_empty_rg.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Authored emissive ceiling retained; camera fitted toward the open front."
+      ],
+      "objects": 6,
+      "textures": 0,
+      "materials": 6,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/CornellBox/CornellBox-Empty-RG.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_CornellBox_cornellbox_empty_rg.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.16,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_empty_rg.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "63085ebd1eb3bf04afc0785c5dc0078f4346f15b4b26a8626aef88f98938c107"
+    },
+    "CornellBox_cornellbox_empty_squashed": {
+      "entry": "CornellBox",
+      "title": "Cornell Box · CornellBox-Empty-Squashed",
+      "scene": "resources/scenes/mcguire_CornellBox_cornellbox_empty_squashed.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_empty_squashed.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_empty_squashed.imported.json"
+        ],
+        "seconds": 0.24,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_empty_squashed.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Authored emissive ceiling retained; camera fitted toward the open front."
+      ],
+      "objects": 6,
+      "textures": 0,
+      "materials": 6,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/CornellBox/CornellBox-Empty-Squashed.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_CornellBox_cornellbox_empty_squashed.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.14,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_empty_squashed.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "a4726fdeaa91dc722e1b5f230d0f1cf7a9425ec339f626792ad8d452506f3127"
+    },
+    "CornellBox_cornellbox_empty_white": {
+      "entry": "CornellBox",
+      "title": "Cornell Box · CornellBox-Empty-White",
+      "scene": "resources/scenes/mcguire_CornellBox_cornellbox_empty_white.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_empty_white.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_empty_white.imported.json"
+        ],
+        "seconds": 0.21,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_empty_white.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Authored emissive ceiling retained; camera fitted toward the open front."
+      ],
+      "objects": 6,
+      "textures": 0,
+      "materials": 6,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/CornellBox/CornellBox-Empty-White.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_CornellBox_cornellbox_empty_white.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.14,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_empty_white.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "5ad4d52009e8d88270605137391be1b964aea439b54c5a63ffb74ae59ae06abc"
+    },
+    "CornellBox_cornellbox_glossy_floor": {
+      "entry": "CornellBox",
+      "title": "Cornell Box · CornellBox-Glossy-Floor",
+      "scene": "resources/scenes/mcguire_CornellBox_cornellbox_glossy_floor.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_glossy_floor.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_glossy_floor.imported.json"
+        ],
+        "seconds": 0.18,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_glossy_floor.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Authored emissive ceiling retained; camera fitted toward the open front."
+      ],
+      "objects": 8,
+      "textures": 0,
+      "materials": 8,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/CornellBox/CornellBox-Glossy-Floor.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_CornellBox_cornellbox_glossy_floor.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.16,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_glossy_floor.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "4ef871f7e6772da3607b6546aaf86174c9517ceb4b0a6d0bdb004ad78352c389"
+    },
+    "CornellBox_cornellbox_glossy": {
+      "entry": "CornellBox",
+      "title": "Cornell Box · CornellBox-Glossy",
+      "scene": "resources/scenes/mcguire_CornellBox_cornellbox_glossy.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_glossy.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_glossy.imported.json"
+        ],
+        "seconds": 0.2,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_glossy.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Authored emissive ceiling retained; camera fitted toward the open front."
+      ],
+      "objects": 8,
+      "textures": 0,
+      "materials": 8,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/CornellBox/CornellBox-Glossy.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_CornellBox_cornellbox_glossy.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.14,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_glossy.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "a6aedd2b8eb97341227f7e89e542a4339947b7dc6cac8ec659bc4c146f6e1331"
+    },
+    "CornellBox_cornellbox_mirror": {
+      "entry": "CornellBox",
+      "title": "Cornell Box · CornellBox-Mirror",
+      "scene": "resources/scenes/mcguire_CornellBox_cornellbox_mirror.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_mirror.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_mirror.imported.json"
+        ],
+        "seconds": 0.19,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_mirror.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Authored emissive ceiling retained; camera fitted toward the open front."
+      ],
+      "objects": 8,
+      "textures": 0,
+      "materials": 8,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/CornellBox/CornellBox-Mirror.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_CornellBox_cornellbox_mirror.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.13,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_mirror.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "6c1b96e4cf9f4dca5650ca66a6c3c47e0ad737209286271fba8988d77b70ab58"
+    },
+    "CornellBox_cornellbox_original": {
+      "entry": "CornellBox",
+      "title": "Cornell Box · CornellBox-Original",
+      "scene": "resources/scenes/mcguire_CornellBox_cornellbox_original.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_original.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_original.imported.json"
+        ],
+        "seconds": 0.24,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_original.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Authored emissive ceiling retained; camera fitted toward the open front."
+      ],
+      "objects": 8,
+      "textures": 0,
+      "materials": 8,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/CornellBox/CornellBox-Original.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_CornellBox_cornellbox_original.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.14,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_original.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "c521bcf51383e8679e055b9d8fc50af7d4ace2a828aa5b0795bb793ebd665141",
+      "capture": {
+        "run": {
+          "command": [
+            "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+            "--background-test",
+            "--background-timeout-ms",
+            "600000",
+            "--scene",
+            "D:\\program\\learnQT\\resources\\scenes\\mcguire_CornellBox_cornellbox_original.scene.json",
+            "--capture-ui",
+            "D:\\program\\learnQT\\build\\mcguire-conversion\\captures\\CornellBox_cornellbox_original",
+            "--capture-pages",
+            "scene",
+            "--capture-raster",
+            "--capture-width",
+            "1280",
+            "--capture-height",
+            "800",
+            "--capture-warmup",
+            "1000"
+          ],
+          "seconds": 6.4,
+          "exitCode": 0,
+          "log": "build/mcguire-conversion/captures/CornellBox_cornellbox_original/session.log",
+          "inputDesktopWindows": 0
+        },
+        "report": "build/mcguire-conversion/captures/CornellBox_cornellbox_original/capture-report.json",
+        "visuallyReviewed": false
+      }
+    },
+    "CornellBox_cornellbox_sphere": {
+      "entry": "CornellBox",
+      "title": "Cornell Box · CornellBox-Sphere",
+      "scene": "resources/scenes/mcguire_CornellBox_cornellbox_sphere.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_sphere.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_sphere.imported.json"
+        ],
+        "seconds": 0.24,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_sphere.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Authored emissive ceiling retained; camera fitted toward the open front."
+      ],
+      "objects": 8,
+      "textures": 0,
+      "materials": 8,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/CornellBox/CornellBox-Sphere.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_CornellBox_cornellbox_sphere.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.15,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_sphere.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "f122dd156673254544c3433de4bbe2846c93e985b2983a39b80d8bd8f3f8550f"
+    },
+    "CornellBox_cornellbox_water": {
+      "entry": "CornellBox",
+      "title": "Cornell Box · CornellBox-Water",
+      "scene": "resources/scenes/mcguire_CornellBox_cornellbox_water.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_water.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\CornellBox_cornellbox_water.imported.json"
+        ],
+        "seconds": 0.28,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_water.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Authored emissive ceiling retained; camera fitted toward the open front."
+      ],
+      "objects": 9,
+      "textures": 0,
+      "materials": 9,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/CornellBox/CornellBox-Water.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_CornellBox_cornellbox_water.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.2,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/CornellBox_cornellbox_water.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "43f749ded7fbab5ba4a831c6db8e27089ef9b1120770cdd515ad244acf0b8c6a"
+    },
+    "cloud": {
+      "entry": "cloud",
+      "title": "Clouds",
+      "scene": "resources/scenes/mcguire_cloud.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\cloud.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\cloud.imported.json"
+        ],
+        "seconds": 0.92,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/cloud.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Five surface cloud meshes arranged as a gallery. These are opaque surfaces, not participating-volume clouds."
+      ],
+      "objects": 5,
+      "textures": 0,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/cloud/altostratus00.obj",
+        "resources/imported/mcguire/assets/cloud/altostratus01.obj",
+        "resources/imported/mcguire/assets/cloud/cumulus00.obj",
+        "resources/imported/mcguire/assets/cloud/cumulus01.obj",
+        "resources/imported/mcguire/assets/cloud/cumulus02.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_cloud.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.6,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/cloud.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "f7d03f8887083f53ac3303d82f082743e0306f93b0193d95d4a8e43224940e2b"
+    },
+    "conference": {
+      "entry": "conference",
+      "title": "Conference Room",
+      "scene": "resources/scenes/mcguire_conference.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\conference.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\conference.imported.json"
+        ],
+        "seconds": 1.54,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/conference.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "objects": 36,
+      "textures": 0,
+      "materials": 33,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/conference/conference.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_conference.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 1.23,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/conference.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "0f6525ffb8f84cf47ce94e377219240b7062b471b6a73a895841a17a453c6a42"
+    },
+    "crytek_sponza": {
+      "entry": "crytek_sponza",
+      "title": "Crytek Sponza",
+      "scene": "resources/scenes/mcguire_crytek_sponza.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\crytek_sponza.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\crytek_sponza.imported.json"
+        ],
+        "seconds": 3.18,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/crytek_sponza.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 393,
+      "textures": 27,
+      "materials": 25,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/crytek_sponza/sponza.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_crytek_sponza.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 2.87,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/crytek_sponza.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "9db8f1b26af7c997f17691bfed3a708d23bf450caea61ef132e54874bd16be70",
+      "capture": {
+        "run": {
+          "command": [
+            "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+            "--background-test",
+            "--background-timeout-ms",
+            "600000",
+            "--scene",
+            "D:\\program\\learnQT\\resources\\scenes\\mcguire_crytek_sponza.scene.json",
+            "--capture-ui",
+            "D:\\program\\learnQT\\build\\mcguire-conversion\\captures\\crytek_sponza",
+            "--capture-pages",
+            "scene",
+            "--capture-raster",
+            "--capture-width",
+            "1280",
+            "--capture-height",
+            "800",
+            "--capture-warmup",
+            "1000"
+          ],
+          "seconds": 10.55,
+          "exitCode": 0,
+          "log": "build/mcguire-conversion/captures/crytek_sponza/session.log",
+          "inputDesktopWindows": 0
+        },
+        "report": "build/mcguire-conversion/captures/crytek_sponza/capture-report.json",
+        "visuallyReviewed": false
+      }
+    },
+    "dabrovic_sponza": {
+      "entry": "dabrovic_sponza",
+      "title": "Dabrovic Sponza",
+      "scene": "resources/scenes/mcguire_dabrovic_sponza.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\dabrovic_sponza.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\dabrovic_sponza.imported.json"
+        ],
+        "seconds": 1.26,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/dabrovic_sponza.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 38,
+      "textures": 12,
+      "materials": 20,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/dabrovic_sponza/sponza.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_dabrovic_sponza.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.63,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/dabrovic_sponza.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "cec671c059c684117dd82bf9874856e67e1da6b979cd6124c23f631e64985594"
+    },
+    "dragon": {
+      "entry": "dragon",
+      "title": "Chinese Dragon",
+      "scene": "resources/scenes/mcguire_dragon.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\dragon.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\dragon.imported.json"
+        ],
+        "seconds": 11.76,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/dragon.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 1,
+      "textures": 0,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/dragon/dragon.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_dragon.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 10.34,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/dragon.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "9db1e304276df6b5c11393fae421d6157a8bec250ebe834f4ced01bf2cab2da7"
+    },
+    "erato": {
+      "entry": "erato",
+      "title": "Erato",
+      "scene": "resources/scenes/mcguire_erato.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\erato.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\erato.imported.json"
+        ],
+        "seconds": 7.52,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/erato.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 1,
+      "textures": 1,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/erato/erato.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_erato.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 7.12,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/erato.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "3ec44b53bc12da60a44b984ef2f54e1fee28b25ab9d345f380dbc60a6386db9a"
+    },
+    "fireplace_room": {
+      "entry": "fireplace_room",
+      "title": "Fireplace Room",
+      "scene": "resources/scenes/mcguire_fireplace_room.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\fireplace_room.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\fireplace_room.imported.json"
+        ],
+        "seconds": 2.36,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/fireplace_room.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "objects": 51,
+      "textures": 4,
+      "materials": 22,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/fireplace_room/fireplace_room.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_fireplace_room.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 1.75,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/fireplace_room.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "c00826c012c667f082eff97b0e2df2630a1a2af51d8d666c97ed06987f77c658"
+    },
+    "gallery": {
+      "entry": "gallery",
+      "title": "Gallery",
+      "scene": "resources/scenes/mcguire_gallery.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\gallery.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\gallery.imported.json"
+        ],
+        "seconds": 16.09,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/gallery.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "2048px texture derivatives used to avoid loading the original 16384px scan texture into the editor. Original full-resolution image retained.",
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "objects": 1,
+      "textures": 1,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/gallery/gallery.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_gallery.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 15.68,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/gallery.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "aeef3e9fbff9b1e93ead2e42179a5364bb0cd1b5811c6059c6a1f79b94cfe9e3",
+      "capture": {
+        "run": {
+          "command": [
+            "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+            "--background-test",
+            "--background-timeout-ms",
+            "600000",
+            "--scene",
+            "D:\\program\\learnQT\\resources\\scenes\\mcguire_gallery.scene.json",
+            "--capture-ui",
+            "D:\\program\\learnQT\\build\\mcguire-conversion\\captures\\gallery",
+            "--capture-pages",
+            "scene",
+            "--capture-raster",
+            "--capture-width",
+            "1280",
+            "--capture-height",
+            "800",
+            "--capture-warmup",
+            "1000"
+          ],
+          "seconds": 22.49,
+          "exitCode": 0,
+          "log": "build/mcguire-conversion/captures/gallery/session.log",
+          "inputDesktopWindows": 0
+        },
+        "report": "build/mcguire-conversion/captures/gallery/capture-report.json",
+        "visuallyReviewed": false
+      }
+    },
+    "geodesic": {
+      "entry": "geodesic",
+      "title": "Geodesics",
+      "scene": "resources/scenes/mcguire_geodesic.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\geodesic.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\geodesic.imported.json"
+        ],
+        "seconds": 57.7,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/geodesic.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "All 86 source geodesic meshes arranged as an individually editable gallery."
+      ],
+      "objects": 86,
+      "textures": 0,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/geodesic/geodesic_classI_10.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classI_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classI_20.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classI_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classI_4.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classI_5.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classI_7.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classII_10_10.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classII_1_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classII_20_20.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classII_2_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classII_3_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classII_4_4.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classII_5_5.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classII_7_7.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classII_dual_1_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classII_dual_5_5.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_10_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_10_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_10_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_10_4.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_10_5.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_10_7.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_20_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_20_10.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_20_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_20_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_20_4.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_20_5.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_20_7.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_2_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_3_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_3_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_4_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_4_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_4_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_5_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_5_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_5_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_5_4.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_7_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_7_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_7_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_7_4.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_classIII_7_5.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classI_10.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classI_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classI_20.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classI_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classI_4.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classI_5.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classI_7.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classII_10_10.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classII_20_20.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classII_2_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classII_3_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classII_4_4.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classII_5_5.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classII_7_7.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_10_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_10_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_10_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_10_4.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_10_5.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_10_7.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_20_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_20_10.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_20_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_20_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_20_4.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_20_5.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_20_7.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_2_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_3_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_3_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_4_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_4_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_4_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_5_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_5_2.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_5_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_5_4.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_7_1.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_7_3.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_7_4.obj",
+        "resources/imported/mcguire/assets/geodesic/geodesic_dual_classIII_7_5.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_geodesic.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 63.48,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/geodesic.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "4da9402d2a0c912ecb63de221cdd7a0aa6572811b8e2cba40d394e68d1f43320"
+    },
+    "hairball": {
+      "entry": "hairball",
+      "title": "Hairball",
+      "scene": "resources/scenes/mcguire_hairball.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\hairball.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\hairball.imported.json"
+        ],
+        "seconds": 46.01,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/hairball.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 1,
+      "textures": 0,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/hairball/hairball.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_hairball.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 44.19,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/hairball.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "e6655cb1a6a7f1deb9edb8c130b5cb2cb489bbd5b9173b48a0053badd4907c1c"
+    },
+    "holodeck": {
+      "entry": "holodeck",
+      "title": "Holodeck",
+      "scene": "resources/scenes/mcguire_holodeck.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\holodeck.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\holodeck.imported.json"
+        ],
+        "seconds": 0.91,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/holodeck.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "objects": 17,
+      "textures": 2,
+      "materials": 7,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/holodeck/holodeck.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_holodeck.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.23,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/holodeck.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "0052d7dc1bfeaf315ca3c0ed7795b441c4c7348b1a179ad6200b87cbd6f11931"
+    },
+    "horseChestnut_al05a": {
+      "entry": "horseChestnut",
+      "title": "Horse Chestnut Tree · AL05a",
+      "scene": "resources/scenes/mcguire_horseChestnut_al05a.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\horseChestnut_al05a.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\horseChestnut_al05a.imported.json"
+        ],
+        "seconds": 3.87,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/horseChestnut_al05a.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 5,
+      "textures": 2,
+      "materials": 4,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/horseChestnut/AL05a.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_horseChestnut_al05a.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 3.76,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/horseChestnut_al05a.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "8358863fa95080d096dea7b68fed94024559a9f8f79bf3db4f85ee0ddc0ddfd4"
+    },
+    "horseChestnut_al05m": {
+      "entry": "horseChestnut",
+      "title": "Horse Chestnut Tree · AL05m",
+      "scene": "resources/scenes/mcguire_horseChestnut_al05m.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\horseChestnut_al05m.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\horseChestnut_al05m.imported.json"
+        ],
+        "seconds": 2.28,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/horseChestnut_al05m.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 4,
+      "textures": 3,
+      "materials": 3,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/horseChestnut/AL05m.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_horseChestnut_al05m.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 1.88,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/horseChestnut_al05m.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "faa62059de425db7f5f62f4c9c85c0f5a20e8177739cbacb5cefb282b852c756"
+    },
+    "horseChestnut_al05y": {
+      "entry": "horseChestnut",
+      "title": "Horse Chestnut Tree · AL05y",
+      "scene": "resources/scenes/mcguire_horseChestnut_al05y.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\horseChestnut_al05y.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\horseChestnut_al05y.imported.json"
+        ],
+        "seconds": 0.99,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/horseChestnut_al05y.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 2,
+      "textures": 2,
+      "materials": 2,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/horseChestnut/AL05y.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_horseChestnut_al05y.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.54,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/horseChestnut_al05y.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "aa413f3364292da4be42e269e924e9f0a2c1f69e9e1087394d2cd53b95a15a61"
+    },
+    "indonesian": {
+      "entry": "indonesian",
+      "title": "Indonesian Statue",
+      "scene": "resources/scenes/mcguire_indonesian.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\indonesian.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\indonesian.imported.json"
+        ],
+        "seconds": 6.24,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/indonesian.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "STL imported through Assimp; rotated from Z-up to Y-up for presentation."
+      ],
+      "objects": 1,
+      "textures": 0,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/indonesian/Indonesian_statue.stl"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_indonesian.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 6.15,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/indonesian.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "ed71a838e7f61cbfff490797cd862ef3ccd46d4d008221693705ad9202e1a565",
+      "capture": {
+        "run": {
+          "command": [
+            "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+            "--background-test",
+            "--background-timeout-ms",
+            "600000",
+            "--scene",
+            "D:\\program\\learnQT\\resources\\scenes\\mcguire_indonesian.scene.json",
+            "--capture-ui",
+            "D:\\program\\learnQT\\build\\mcguire-conversion\\captures\\indonesian",
+            "--capture-pages",
+            "scene",
+            "--capture-raster",
+            "--capture-width",
+            "1280",
+            "--capture-height",
+            "800",
+            "--capture-warmup",
+            "1000"
+          ],
+          "seconds": 13.28,
+          "exitCode": 0,
+          "log": "build/mcguire-conversion/captures/indonesian/session.log",
+          "inputDesktopWindows": 0
+        },
+        "report": "build/mcguire-conversion/captures/indonesian/capture-report.json",
+        "visuallyReviewed": false
+      }
+    },
+    "lost_empire": {
+      "entry": "lost_empire",
+      "title": "Lost Empire",
+      "scene": "resources/scenes/mcguire_lost_empire.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\lost_empire.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\lost_empire.imported.json"
+        ],
+        "seconds": 19.52,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/lost_empire.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "objects": 45,
+      "textures": 3,
+      "materials": 45,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/lost_empire/lost_empire.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_lost_empire.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 17.82,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/lost_empire.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "5cedddbde8934bf4f42c82f6d2c179ab276145fe35cf7076e5681116e993bf7e"
+    },
+    "living_room": {
+      "entry": "living_room",
+      "title": "Living Room",
+      "scene": "resources/scenes/mcguire_living_room.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\living_room.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\living_room.imported.json"
+        ],
+        "seconds": 5.96,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/living_room.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "objects": 128,
+      "textures": 16,
+      "materials": 41,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/living_room/living_room.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_living_room.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 5.62,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/living_room.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "105ba88ca114e395abb5fcde0580dc2bce157dd066dad7c8f8114c6aec8c277b"
+    },
+    "lpshead": {
+      "entry": "lpshead",
+      "title": "LPS Head",
+      "scene": "resources/scenes/mcguire_lpshead.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\lpshead.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\lpshead.imported.json"
+        ],
+        "seconds": 0.84,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/lpshead.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 296,
+      "textures": 1,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/lpshead/head.OBJ"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_lpshead.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.53,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/lpshead.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "0f7f0ee5b78faf31040d9ec6c1ad8f5900b28c8fa22da9260889c2970e0a8891"
+    },
+    "mori_knob": {
+      "entry": "mori_knob",
+      "title": "Mori Knob",
+      "scene": "resources/scenes/mcguire_mori_knob.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\mori_knob.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\mori_knob.imported.json"
+        ],
+        "seconds": 0.36,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/mori_knob.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 5,
+      "textures": 0,
+      "materials": 5,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/mori_knob/testObj.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_mori_knob.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.23,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/mori_knob.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "d8ed07845a0ad4c4401bf673756b05bca4e0018d129165d2cd381d6f45691b26"
+    },
+    "mitsuba_knob_mitsuba_sphere": {
+      "entry": "mitsuba_knob",
+      "title": "Mitsuba Knob · mitsuba-sphere",
+      "scene": "resources/scenes/mcguire_mitsuba_knob_mitsuba_sphere.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\mitsuba_knob_mitsuba_sphere.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\mitsuba_knob_mitsuba_sphere.imported.json"
+        ],
+        "seconds": 0.86,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/mitsuba_knob_mitsuba_sphere.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 2,
+      "textures": 1,
+      "materials": 2,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/mitsuba_knob/mitsuba-sphere.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_mitsuba_knob_mitsuba_sphere.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.87,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/mitsuba_knob_mitsuba_sphere.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "c28122f6a8955bf41910d6012e9f4a988769db6b8a570ab256d4e738e3ffc843"
+    },
+    "mitsuba_knob_mitsuba": {
+      "entry": "mitsuba_knob",
+      "title": "Mitsuba Knob · mitsuba",
+      "scene": "resources/scenes/mcguire_mitsuba_knob_mitsuba.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\mitsuba_knob_mitsuba.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\mitsuba_knob_mitsuba.imported.json"
+        ],
+        "seconds": 0.92,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/mitsuba_knob_mitsuba.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 3,
+      "textures": 1,
+      "materials": 3,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/mitsuba_knob/mitsuba.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_mitsuba_knob_mitsuba.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.83,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/mitsuba_knob_mitsuba.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "abe3fc4ee00aff82ae06219690df3124b076a122b458ca9e8e60cbffd8c375ce"
+    },
+    "powerplant": {
+      "entry": "powerplant",
+      "title": "Power Plant",
+      "scene": "resources/scenes/mcguire_powerplant.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\powerplant.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\powerplant.imported.json"
+        ],
+        "seconds": 139.68,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/powerplant.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 57,
+      "textures": 0,
+      "materials": 56,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/powerplant/powerplant.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_powerplant.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 139.05,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/powerplant.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "b84ce96651a1ef27bfd9a2f1e8db8de7e70448367c182e95b5802069b90547b0"
+    },
+    "roadBike": {
+      "entry": "roadBike",
+      "title": "Road Bike",
+      "scene": "resources/scenes/mcguire_roadBike.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\roadBike.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\roadBike.imported.json"
+        ],
+        "seconds": 21.47,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/roadBike.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 87,
+      "textures": 0,
+      "materials": 10,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/roadBike/roadBike.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_roadBike.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 20.63,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/roadBike.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "6da87461fd15287d3b8566063cf9de3eb0dcb8493dd060cfacca87fa1648dedf"
+    },
+    "rungholt_house": {
+      "entry": "rungholt",
+      "title": "Rungholt · house",
+      "scene": "resources/scenes/mcguire_rungholt_house.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\rungholt_house.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\rungholt_house.imported.json"
+        ],
+        "seconds": 1.62,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/rungholt_house.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 40,
+      "textures": 3,
+      "materials": 40,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/rungholt/house.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_rungholt_house.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.94,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/rungholt_house.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "1d29eff6b73c18cfee9b574f5ab7a214686592a34b4e8d17252ab614cb29b0b0"
+    },
+    "rungholt_rungholt": {
+      "entry": "rungholt",
+      "title": "Rungholt · rungholt",
+      "scene": "resources/scenes/mcguire_rungholt_rungholt.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\rungholt_rungholt.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\rungholt_rungholt.imported.json"
+        ],
+        "seconds": 59.72,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/rungholt_rungholt.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 84,
+      "textures": 3,
+      "materials": 84,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/rungholt/rungholt.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_rungholt_rungholt.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 60.87,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/rungholt_rungholt.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "abbe5554178ec7cb44f6c3686b17152db41127d48d8679ae0206fbc333c296b7"
+    },
+    "salle_de_bain": {
+      "entry": "salle_de_bain",
+      "title": "Salle de Bain",
+      "scene": "resources/scenes/mcguire_salle_de_bain.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\salle_de_bain.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\salle_de_bain.imported.json"
+        ],
+        "seconds": 14.24,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/salle_de_bain.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "objects": 15,
+      "textures": 3,
+      "materials": 13,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/salle_de_bain/salle_de_bain.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_salle_de_bain.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 14.55,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/salle_de_bain.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "557448a82d55659741b060a5a207b497ada1fd0a39a6017870a036ff07d5f131"
+    },
+    "San_Miguel_san_miguel_low_poly": {
+      "entry": "San_Miguel",
+      "title": "San Miguel 2.0 · san-miguel-low-poly",
+      "scene": "resources/scenes/mcguire_San_Miguel_san_miguel_low_poly.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\San_Miguel_san_miguel_low_poly.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\San_Miguel_san_miguel_low_poly.imported.json"
+        ],
+        "seconds": 60.06,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/San_Miguel_san_miguel_low_poly.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Both full and low-poly source models are provided as separate scenes. 512px texture derivatives used to limit memory."
+      ],
+      "objects": 1602,
+      "textures": 219,
+      "materials": 281,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/San_Miguel/san-miguel-low-poly.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_San_Miguel_san_miguel_low_poly.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 59.72,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/San_Miguel_san_miguel_low_poly.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "499c500de3ce62e2b301e34334c38f20b1c33728bc39fe4ae61051214aac5d56",
+      "capture": {
+        "run": {
+          "command": [
+            "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+            "--background-test",
+            "--background-timeout-ms",
+            "600000",
+            "--scene",
+            "D:\\program\\learnQT\\resources\\scenes\\mcguire_San_Miguel_san_miguel_low_poly.scene.json",
+            "--capture-ui",
+            "D:\\program\\learnQT\\build\\mcguire-conversion\\captures\\San_Miguel_san_miguel_low_poly",
+            "--capture-pages",
+            "scene",
+            "--capture-raster",
+            "--capture-width",
+            "1280",
+            "--capture-height",
+            "800",
+            "--capture-warmup",
+            "1000"
+          ],
+          "seconds": 74.12,
+          "exitCode": 0,
+          "log": "build/mcguire-conversion/captures/San_Miguel_san_miguel_low_poly/session.log",
+          "inputDesktopWindows": 0
+        },
+        "report": "build/mcguire-conversion/captures/San_Miguel_san_miguel_low_poly/capture-report.json",
+        "visuallyReviewed": false
+      }
+    },
+    "San_Miguel_san_miguel": {
+      "entry": "San_Miguel",
+      "title": "San Miguel 2.0 · san-miguel",
+      "scene": "resources/scenes/mcguire_San_Miguel_san_miguel.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\San_Miguel_san_miguel.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\San_Miguel_san_miguel.imported.json"
+        ],
+        "seconds": 89.3,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/San_Miguel_san_miguel.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Both full and low-poly source models are provided as separate scenes. 512px texture derivatives used to limit memory."
+      ],
+      "objects": 2135,
+      "textures": 219,
+      "materials": 287,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/San_Miguel/san-miguel.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_San_Miguel_san_miguel.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 85.94,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/San_Miguel_san_miguel.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "a0ef16ae0a978373cca02fcd769b44408d0b278829c1bf5035e3648e6feb3355"
+    },
+    "scrubPine": {
+      "entry": "scrubPine",
+      "title": "Scrub Pine Tree",
+      "scene": "resources/scenes/mcguire_scrubPine.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\scrubPine.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\scrubPine.imported.json"
+        ],
+        "seconds": 0.32,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/scrubPine.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 7,
+      "textures": 2,
+      "materials": 2,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/scrubPine/scrubPine.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_scrubPine.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.24,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/scrubPine.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "828c248d837323b732bc96847530ebff02bc2a58958bff44740a27c6bc7136d7"
+    },
+    "serapis": {
+      "entry": "serapis",
+      "title": "Serapis Bust",
+      "scene": "resources/scenes/mcguire_serapis.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\serapis.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\serapis.imported.json"
+        ],
+        "seconds": 0.88,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/serapis.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "STL imported through Assimp; rotated from Z-up to Y-up for presentation."
+      ],
+      "objects": 1,
+      "textures": 0,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/serapis/serapis.stl"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_serapis.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.84,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/serapis.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "af1e913830a0e4056eb3c4edba50d7a40a72c38ddd5c8ae1cdc20c429165421b",
+      "capture": {
+        "run": {
+          "command": [
+            "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+            "--background-test",
+            "--background-timeout-ms",
+            "600000",
+            "--scene",
+            "D:\\program\\learnQT\\resources\\scenes\\mcguire_serapis.scene.json",
+            "--capture-ui",
+            "D:\\program\\learnQT\\build\\mcguire-conversion\\captures\\serapis",
+            "--capture-pages",
+            "scene",
+            "--capture-raster",
+            "--capture-width",
+            "1280",
+            "--capture-height",
+            "800",
+            "--capture-warmup",
+            "1000"
+          ],
+          "seconds": 6.65,
+          "exitCode": 0,
+          "log": "build/mcguire-conversion/captures/serapis/session.log",
+          "inputDesktopWindows": 0
+        },
+        "report": "build/mcguire-conversion/captures/serapis/capture-report.json",
+        "visuallyReviewed": false
+      }
+    },
+    "sibenik": {
+      "entry": "sibenik",
+      "title": "Sibenik Cathedral",
+      "scene": "resources/scenes/mcguire_sibenik.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\sibenik.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\sibenik.imported.json"
+        ],
+        "seconds": 0.78,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/sibenik.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "objects": 1087,
+      "textures": 3,
+      "materials": 15,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/sibenik/sibenik.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_sibenik.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.63,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/sibenik.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "1221f6e395c58a43b7c3c6b0a19e3a5654714c1c0206442a396e7518c2315490"
+    },
+    "sphere_sphere_cubecoords": {
+      "entry": "sphere",
+      "title": "Lat-Long Sphere · sphere-cubecoords",
+      "scene": "resources/scenes/mcguire_sphere_sphere_cubecoords.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\sphere_sphere_cubecoords.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\sphere_sphere_cubecoords.imported.json"
+        ],
+        "seconds": 0.29,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/sphere_sphere_cubecoords.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 1,
+      "textures": 1,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/sphere/sphere-cubecoords.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_sphere_sphere_cubecoords.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.15,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/sphere_sphere_cubecoords.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "2db531896a5f22711d22cdea0af450b3063b4c56cb43f8aadcbed513c768a848"
+    },
+    "sphere_sphere_cylcoords_16k": {
+      "entry": "sphere",
+      "title": "Lat-Long Sphere · sphere-cylcoords-16k",
+      "scene": "resources/scenes/mcguire_sphere_sphere_cylcoords_16k.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\sphere_sphere_cylcoords_16k.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\sphere_sphere_cylcoords_16k.imported.json"
+        ],
+        "seconds": 0.68,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/sphere_sphere_cylcoords_16k.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 1,
+      "textures": 1,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/sphere/sphere-cylcoords-16k.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_sphere_sphere_cylcoords_16k.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.24,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/sphere_sphere_cylcoords_16k.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "e38e40658048ac083a264e0778052e28b450510ddec2b2afe0c1b958455c5498"
+    },
+    "sphere_sphere_cylcoords_1k": {
+      "entry": "sphere",
+      "title": "Lat-Long Sphere · sphere-cylcoords-1k",
+      "scene": "resources/scenes/mcguire_sphere_sphere_cylcoords_1k.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\sphere_sphere_cylcoords_1k.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\sphere_sphere_cylcoords_1k.imported.json"
+        ],
+        "seconds": 0.23,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/sphere_sphere_cylcoords_1k.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 1,
+      "textures": 1,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/sphere/sphere-cylcoords-1k.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_sphere_sphere_cylcoords_1k.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.15,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/sphere_sphere_cylcoords_1k.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "04136ce19eb12cfe5d9500daf61daf89a8dc7ebc53b647a6fe8b02a371968c92"
+    },
+    "sphere_sphere_cylcoords_4k": {
+      "entry": "sphere",
+      "title": "Lat-Long Sphere · sphere-cylcoords-4k",
+      "scene": "resources/scenes/mcguire_sphere_sphere_cylcoords_4k.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\sphere_sphere_cylcoords_4k.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\sphere_sphere_cylcoords_4k.imported.json"
+        ],
+        "seconds": 0.26,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/sphere_sphere_cylcoords_4k.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 1,
+      "textures": 1,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/sphere/sphere-cylcoords-4k.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_sphere_sphere_cylcoords_4k.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.21,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/sphere_sphere_cylcoords_4k.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "9f9feb6b87cb9147250de38489e5a9b9b8bc470ec4972ee18ebc1b1dd247f190"
+    },
+    "sportsCar": {
+      "entry": "sportsCar",
+      "title": "Sports Car",
+      "scene": "resources/scenes/mcguire_sportsCar.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\sportsCar.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\sportsCar.imported.json"
+        ],
+        "seconds": 2.05,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/sportsCar.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 1075,
+      "textures": 0,
+      "materials": 38,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/sportsCar/sportsCar.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_sportsCar.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 1.86,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/sportsCar.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "5e393a4c9dd3abbfff9cfc7639afa1ac74e3dd571ccbce4486d4c1aabe2097f6"
+    },
+    "teapot": {
+      "entry": "teapot",
+      "title": "Teapot",
+      "scene": "resources/scenes/mcguire_teapot.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\teapot.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\teapot.imported.json"
+        ],
+        "seconds": 0.64,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/teapot.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [],
+      "objects": 2,
+      "textures": 1,
+      "materials": 1,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/teapot/teapot.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_teapot.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 0.27,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/teapot.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "1c8d6748200b5c54b60bf8ca05157011d1f8ce55f53f88be94b499491d0619c0"
+    },
+    "vokselia_spawn": {
+      "entry": "vokselia_spawn",
+      "title": "Vokselia Spawn",
+      "scene": "resources/scenes/mcguire_vokselia_spawn.scene.json",
+      "conversion": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\vokselia_spawn.input.json",
+          "--save-scene",
+          "D:\\program\\learnQT\\build\\mcguire-conversion\\vokselia_spawn.imported.json"
+        ],
+        "seconds": 17.79,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/vokselia_spawn.import.log",
+        "inputDesktopWindows": 0
+      },
+      "notes": [
+        "The earlier minecraft_vokselia preset is preserved separately."
+      ],
+      "objects": 99,
+      "textures": 1,
+      "materials": 99,
+      "sourceModels": [
+        "resources/imported/mcguire/assets/vokselia_spawn/vokselia_spawn.obj"
+      ],
+      "validation": {
+        "command": [
+          "D:\\program\\learnQT\\build\\mcguire-build\\Release\\learnQT.exe",
+          "--background-test",
+          "--background-timeout-ms",
+          "600000",
+          "--scene",
+          "D:\\program\\learnQT\\resources\\scenes\\mcguire_vokselia_spawn.scene.json",
+          "--validate-scene"
+        ],
+        "seconds": 16.96,
+        "exitCode": 0,
+        "log": "build/mcguire-conversion/vokselia_spawn.validate.log",
+        "inputDesktopWindows": 0
+      },
+      "sceneSha256": "29d326f062e76044219ba12e3e255c8fbd7fc59d3a99d9580dba3dbe52d4c9a1"
+    }
+  },
+  "notes": [
+    "Original archives and extracted assets preserved.",
+    "Only UV0 and supported PBR slots are imported; OBJ height/specular maps are not a complete PBR translation.",
+    "Camera/light setup is an adaptation, not a reference-render reproduction."
+  ]
+}

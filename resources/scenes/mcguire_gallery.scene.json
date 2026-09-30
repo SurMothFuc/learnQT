@@ -1,0 +1,251 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 65,
+    "position": [
+      0.4758356809616089,
+      -0.0780736580491066,
+      1.399999976158142
+    ],
+    "target": [
+      -0.21148252487182617,
+      -0.12686969339847565,
+      -1.399999976158142
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 65,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        0.4758356809616089,
+        -0.0780736580491066,
+        1.399999976158142
+      ],
+      "target": [
+        -0.21148252487182617,
+        -0.12686969339847565,
+        -1.399999976158142
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [
+        "2048px texture derivatives used to avoid loading the original 16384px scan texture into the editor. Original full-resolution image retained.",
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "asset": "Gallery",
+      "author": "© 2017 The Hallwyl Museum",
+      "license": "CC BY-SA 4.0",
+      "source": "https://casual-effects.com/g3d/data10/research/model/gallery/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "Gallery",
+      "order": 0,
+      "parent": ""
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [
+    {
+      "id": "interior-fill",
+      "position": [
+        0,
+        0.21470254957507084,
+        0
+      ],
+      "radiance": [
+        65,
+        60,
+        52
+      ],
+      "radius": 0.034157223796034,
+      "type": "sphere"
+    }
+  ],
+  "materials": [
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/1",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0",
+        "emissive": "model-000/texture/0"
+      },
+      "transmission": 0
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {
+        "../../derived/gallery/textures/13abad041698.png": "../imported/mcguire/derived/gallery/textures/13abad041698.png",
+        "gallery.mtl": "../imported/mcguire/derived/gallery/mtl/gallery.mtl"
+      },
+      "expanded": true,
+      "id": "model-000",
+      "material": null,
+      "materialBindings": {
+        "1": "model-000/material/1"
+      },
+      "name": "gallery",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/gallery/gallery.obj",
+      "transform": [
+        0.15738117721120554,
+        0,
+        0,
+        0.09442870632672333,
+        0,
+        0.15738117721120554,
+        0,
+        -0.4970884482215927,
+        0,
+        0,
+        0.15738117721120554,
+        0.20884482215926975,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · Gallery",
+  "objects": [
+    {
+      "id": "model-000/object/0/1/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "default",
+      "order": 0,
+      "parent": "root",
+      "transform": [
+        0.15738117694854736,
+        0,
+        0,
+        0.09442870318889618,
+        0,
+        0.15738117694854736,
+        0,
+        -0.4970884621143341,
+        0,
+        0,
+        0.15738117694854736,
+        0.20884482562541962,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [
+    {
+      "dependencies": {},
+      "id": "model-000/texture/0",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/gallery/textures/13abad041698.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    }
+  ],
+  "version": 2
+}

@@ -1,0 +1,231 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 45,
+    "position": [
+      4.300000190734863,
+      2.700000047683716,
+      5.699999809265137
+    ],
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 45,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        4.300000190734863,
+        2.700000047683716,
+        5.699999809265137
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [],
+      "asset": "Erato",
+      "author": "© 2016 Geoffrey Marchal",
+      "license": "CC BY 4.0",
+      "source": "https://casual-effects.com/g3d/data10/research/model/erato/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "Erato",
+      "order": 0,
+      "parent": ""
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [],
+  "materials": [
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/1",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {
+        "erato-101.jpg": "../imported/mcguire/assets/erato/erato-101.jpg",
+        "erato.mtl": "../imported/mcguire/derived/erato/mtl/erato.mtl"
+      },
+      "expanded": true,
+      "id": "model-000",
+      "material": null,
+      "materialBindings": {
+        "1": "model-000/material/1"
+      },
+      "name": "erato",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/erato/erato.obj",
+      "transform": [
+        0.10627367794149799,
+        0,
+        0,
+        -0.24994782626623557,
+        0,
+        0.10627367794149799,
+        0,
+        -1.8645634432735416,
+        0,
+        0,
+        0.10627367794149799,
+        0.008799141712522138,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · Erato",
+  "objects": [
+    {
+      "id": "model-000/object/0/0/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "defaultobject",
+      "order": 0,
+      "parent": "root",
+      "transform": [
+        0.10627368092536926,
+        0,
+        0,
+        -0.24994783103466034,
+        0,
+        0.10627368092536926,
+        0,
+        -1.8645634651184082,
+        0,
+        0,
+        0.10627368092536926,
+        0.008799141272902489,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [
+    {
+      "dependencies": {},
+      "id": "model-000/texture/0",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/erato/textures/0a16f72fac2b.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    }
+  ],
+  "version": 2
+}

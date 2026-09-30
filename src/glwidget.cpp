@@ -1,4 +1,5 @@
 #include "glwidget.h"
+#include "UiDiagnostics.h"
 #include <QCoreApplication>
 #include <QMouseEvent>
 #include <QOffscreenSurface>
@@ -38,6 +39,19 @@ float distanceSegment(QPointF p, QPointF a, QPointF b)
 } // namespace
 GLWidget::GLWidget(QWidget *p) : QOpenGLWidget(p)
 {
+    // Probe without creating a window; preserve a GL 3.3 path on older devices.
+    QSurfaceFormat requested = format();
+    requested.setVersion(4, 3);
+    requested.setProfile(QSurfaceFormat::CoreProfile);
+    QOpenGLContext probe;
+    probe.setFormat(requested);
+    if (probe.create() && probe.format().version() >= qMakePair(4, 3))
+        setFormat(probe.format());
+    else
+    {
+        requested.setVersion(3, 3);
+        setFormat(requested);
+    }
     setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
     setMinimumSize(160, 120);
@@ -68,13 +82,19 @@ void GLWidget::attachEditor(EditorController *e)
     e->document.restoreCamera(camera);
     connect(e, &EditorController::prepared, this, &GLWidget::submitPrepared);
     connect(e, &EditorController::changed, this, [this](int change) {
+        UiSlotTimer timer(UiSlotGlWidget);
         selectionDirty = true;
         if (change == EditorController::CameraChange)
             editor->document.restoreCamera(camera);
         if (change != EditorController::Topology && change != EditorController::Environment)
         {
             if (thread)
-                thread->submitDocument(editor->document, change, ++version);
+            {
+                auto updated = editor->document;
+                if (compositionMode)
+                    updated.captureCamera(camera);
+                thread->submitDocument(updated, change, ++version);
+            }
             else
             {
                 Scene::getInstance().document = editor->document;
@@ -92,12 +112,57 @@ void GLWidget::attachEditor(EditorController *e)
         updateEditorOverlay();
     });
 }
+QRect GLWidget::compositionFrame() const
+{
+    if (!compositionMode || compositionAspect.width() <= 0 || compositionAspect.height() <= 0)
+        return rect();
+    const double aspect = double(compositionAspect.width()) / compositionAspect.height();
+    QSize frame = size();
+    if (double(frame.width()) / std::max(1, frame.height()) > aspect)
+        frame.setWidth(std::max(1, int(std::round(frame.height() * aspect))));
+    else
+        frame.setHeight(std::max(1, int(std::round(frame.width() / aspect))));
+    return QRect(QPoint((width() - frame.width()) / 2, (height() - frame.height()) / 2), frame);
+}
+void GLWidget::setCompositionMode(bool active, const Camera &draft, QSize aspect)
+{
+    compositionMode = active;
+    compositionAspect = active ? aspect : QSize();
+    if (active)
+        camera = draft;
+    else if (editor)
+        editor->document.restoreCamera(camera);
+    if (thread)
+    {
+        thread->setPreviewAspect(compositionAspect);
+        if (editor)
+        {
+            auto updated = editor->document;
+            if (compositionMode)
+                updated.captureCamera(camera);
+            thread->submitDocument(updated, EditorController::CameraChange, ++version);
+        }
+    }
+    updateEditorOverlay();
+}
+void GLWidget::setCompositionAspect(QSize aspect)
+{
+    if (!compositionMode || compositionAspect == aspect)
+        return;
+    compositionAspect = aspect;
+    if (thread)
+        thread->setPreviewAspect(aspect);
+    updateEditorOverlay();
+}
 void GLWidget::submitPrepared(std::shared_ptr<Scene> s)
 {
     cancelDrag();
     s->document.restoreCamera(camera);
     if (thread)
+    {
         thread->submitScene(s, ++version);
+        minimumDisplayVersion = version;
+    }
     else
         Scene::getInstance().adoptPrepared(*s);
     selectionDirty = true;
@@ -187,6 +252,10 @@ void GLWidget::paintGL()
     glDisable(GL_DEPTH_TEST);
     glClearColor(.075, .085, .10, 1);
     glClear(GL_COLOR_BUFFER_BIT);
+    const QRect frame = compositionFrame();
+    glViewport(qRound(frame.x() * devicePixelRatioF()),
+               qRound((height() - frame.y() - frame.height()) * devicePixelRatioF()),
+               qRound(frame.width() * devicePixelRatioF()), qRound(frame.height() * devicePixelRatioF()));
     if (!program)
         return;
     if (selectionDirty)
@@ -212,14 +281,37 @@ void GLWidget::paintGL()
     program->setUniformValue("ids", 1);
     program->setUniformValue("selection", 2);
     program->setUniformValue("count", editor ? editor->document.root["objects"].toArray().size() + 1 : 1);
-    program->setUniformValue("overlays", hasSelection && editor && !editor->renderLocked);
+    // ID 图是延迟补绘的：只有「槽是当前版本」且「这版 ID 图就是这个版本画的」才允许画选中描边。
+    // 两个条件缺一：版本匹配只能说明画面新，不能说明拾取已经跟上。
+    program->setUniformValue("overlays", false);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_BUFFER, selectionTexture);
     glBindVertexArray(vao);
     if (TextureBuffer::instance()->ready())
     {
-        if (TextureBuffer::instance()->drawTexture(context(), 6, version))
+        bool fresh = false;
+        if (TextureBuffer::instance()->drawTexture(context(), 6, version, minimumDisplayVersion,
+                [&](bool current, bool pickFresh, quint64 serial) {
+                    fresh = serial != lastPresentationSerial;
+                    lastPresentationSerial = serial;
+                    // 版本已是最新、但 ID 图还是上一次拾取重绘的结果：这说明延迟补绘与发布
+                    // 之间出现了空档，此时若把描边放行就会画在旧位置上。
+                    if (current && !pickFresh)
+                    {
+                        ++staleHiddenCount;
+                        if (hasSelection && editor && !editor->renderLocked)
+                            ++outstandingStaleCount;
+                    }
+                    if (current && pickFresh && hasSelection && editor && !editor->renderLocked)
+                        ++overlayDrawnCount;
+                    program->setUniformValue("overlays", current && pickFresh && hasSelection && editor &&
+                                                        !editor->renderLocked);
+                }))
+        {
             emit framePresented();
+            if (fresh)
+                emit freshFramePresented();
+        }
     }
     glBindVertexArray(0);
     program->release();
@@ -231,13 +323,20 @@ void GLWidget::resizeGL(int w, int h)
     {
         thread->setNewSize(qRound(w * devicePixelRatioF()), qRound(h * devicePixelRatioF()));
         if (editor && !editor->renderLocked && !thread->jobActive())
-            thread->submitDocument(editor->document, EditorController::Organization, ++version);
+        {
+            auto updated = editor->document;
+            if (compositionMode)
+                updated.captureCamera(camera);
+            thread->submitDocument(updated, EditorController::Organization, ++version);
+            minimumDisplayVersion = version;
+        }
     }
 }
 QPointF GLWidget::project(const QVector3D &p, bool *visible) const
 {
     QMatrix4x4 projection, view;
-    projection.perspective(camera.zoom, float(width()) / std::max(1, height()), .0001f, 1e9f);
+    const QRect frame = compositionFrame();
+    projection.perspective(camera.zoom, float(frame.width()) / std::max(1, frame.height()), .0001f, 1e9f);
     view.lookAt(camera.position, camera.target, camera.up);
     auto q = projection * view * QVector4D(p, 1);
     if (visible)
@@ -245,7 +344,8 @@ QPointF GLWidget::project(const QVector3D &p, bool *visible) const
     if (std::abs(q.w()) < 1e-8)
         return {};
     q /= q.w();
-    return {(q.x() + 1) * width() * .5, (1 - q.y()) * height() * .5};
+    return {frame.x() + (q.x() + 1) * frame.width() * .5,
+            frame.y() + (1 - q.y()) * frame.height() * .5};
 }
 SceneBounds GLWidget::selectedBounds() const
 {
@@ -279,6 +379,18 @@ QVector3D GLWidget::axis(int i) const
 }
 void GLWidget::drawOverlay(QPainter &p)
 {
+    if (compositionMode)
+    {
+        const QRect frame = compositionFrame();
+        p.fillRect(QRect(0, 0, width(), frame.y()), QColor(0, 0, 0, 175));
+        p.fillRect(QRect(0, frame.bottom() + 1, width(), height() - frame.bottom() - 1), QColor(0, 0, 0, 175));
+        p.fillRect(QRect(0, frame.y(), frame.x(), frame.height()), QColor(0, 0, 0, 175));
+        p.fillRect(QRect(frame.right() + 1, frame.y(), width() - frame.right() - 1, frame.height()),
+                   QColor(0, 0, 0, 175));
+        p.setPen(QPen(QColor("#71a9ff"), 2));
+        p.drawRect(frame.adjusted(0, 0, -1, -1));
+        return;
+    }
     if (!editor || editor->renderLocked)
         return;
     p.setRenderHint(QPainter::Antialiasing);
@@ -357,7 +469,16 @@ void GLWidget::cancelDrag()
 void GLWidget::publishCamera()
 {
     ++pickSerial;
-    if (editor)
+    if (compositionMode && editor)
+    {
+        auto updated = editor->document;
+        updated.captureCamera(camera);
+        if (thread)
+            thread->submitDocument(updated, EditorController::CameraChange, ++version);
+        emit compositionCameraChanged();
+        updateEditorOverlay();
+    }
+    else if (editor)
         editor->setCamera(camera);
     else
         markSceneDirty(SceneDirtyFlag::Camera);
@@ -381,6 +502,14 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 {
     if (editor && (editor->busy || editor->renderLocked))
         return;
+    if (compositionMode)
+    {
+        if (e->key() == Qt::Key_F)
+            frameSelection();
+        else
+            QOpenGLWidget::keyPressEvent(e);
+        return;
+    }
     switch (e->key())
     {
     case Qt::Key_Q:
@@ -428,6 +557,8 @@ void GLWidget::mousePressEvent(QMouseEvent *e)
         ++editor->cameraCommand;
         return;
     }
+    if (compositionMode)
+        return;
     if (e->button() != Qt::LeftButton)
         return;
     auto b = selectedBounds();

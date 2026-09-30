@@ -1,11 +1,14 @@
+#ifndef TRACE_PIXEL_COORD
+#define TRACE_PIXEL_COORD gl_FragCoord
+#endif
 // 返回 vec3 中最大的分量（r/g/b 中的最大值）
 float maxComponent(vec3 v) {
     return max(max(v.r, v.g), v.b);
 }
 
 uint seed = uint(
-    uint(gl_FragCoord.x) * uint(1973) +
-    uint(gl_FragCoord.y) * uint(9277) +
+    uint(TRACE_PIXEL_COORD.x) * uint(1973) +
+    uint(TRACE_PIXEL_COORD.y) * uint(9277) +
     uint(frameCounter) * uint(26699)) | uint(1);
 uint wang_hash(inout uint seed) {
     seed = (seed ^ uint(61)) ^ (seed >> uint(16));
@@ -21,8 +24,8 @@ float rand() {
 
 vec2 CranleyPattersonRotation(vec2 p) {
     uint pseed = uint(
-        uint(gl_FragCoord.x) * uint(1973) +
-        uint(gl_FragCoord.y) * uint(9277) +
+        uint(TRACE_PIXEL_COORD.x) * uint(1973) +
+        uint(TRACE_PIXEL_COORD.y) * uint(9277) +
         uint(114514/1919) * uint(26699)) | uint(1);
     
     float u = float(wang_hash(pseed)) / 4294967296.0;

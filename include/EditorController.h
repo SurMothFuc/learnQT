@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene.h"
+#include <QHash>
 #include <QObject>
 #include <QSet>
 #include <QThread>
@@ -70,4 +71,10 @@ class EditorController : public QObject
     void apply(const SceneDocument &next, Change change, std::shared_ptr<Scene> ready = {});
     void prepare(SceneDocument next, std::function<void(std::shared_ptr<Scene>)> completed);
     void refreshBounds(const Scene &scene);
+    // node()/isGroup() 由树视图和检查器高频调用，按 id 建索引避免每次全量扫描文档。
+    void invalidateNodeCache() const;
+    void rebuildNodeCache() const;
+    mutable QHash<QString, QJsonObject> nodeCache;
+    mutable QSet<QString> groupCache;
+    mutable bool nodeCacheValid = false;
 };

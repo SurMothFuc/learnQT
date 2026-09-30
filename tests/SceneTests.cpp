@@ -98,6 +98,14 @@ int main(int argc, char **argv)
         check(bool(scene), error);
         ground(*scene);
         const auto original = scene->document;
+        for (int mode : {-1, 3})
+        {
+            auto invalid = original;
+            auto render = invalid.root["render"].toObject();
+            render["interactionMode"] = mode;
+            invalid.root["render"] = render;
+            check(!invalid.validate(error, false), "Unknown interaction mode was accepted");
+        }
         auto settings = original.settings();
         settings.denoise = false;
         settings.useTileRendering = false;
@@ -106,6 +114,9 @@ int main(int argc, char **argv)
         settings.maxBounces = 7;
         settings.maxRenderFrames = 19;
         settings.renderLow = true;
+        settings.interactionMode = RenderParams::InteractionLowResolution;
+        settings.interactionIdleMs = 333;
+        settings.rasterLocked = true;
         RenderParams::instance().applySnapshot(settings);
         scene->camera.restoreState(QVector3D(3, 2, 5), QVector3D(1, .5f, -.2f), QVector3D(0, 1, 0), 61);
         scene->camera.processMouseMovement(0, 0);
@@ -126,6 +137,37 @@ int main(int argc, char **argv)
         check(bool(loaded), error);
         check(loaded->snapshotDocument().root == expected.root,
               "Roundtrip changed models/materials/textures/lights/camera/settings");
+        {
+            SceneDocument legacy = expected;
+            legacy.root.remove("cameras");
+            legacy.root.remove("activeCameraId");
+            const QString path = base + "/legacy-camera.scene.json";
+            check(legacy.saveScene(path, error), error);
+            SceneDocument migrated;
+            check(SceneDocument::loadScene(path, migrated, error), error);
+            const auto cameras = migrated.root["cameras"].toArray();
+            check(cameras.size() == 1 && migrated.root["activeCameraId"].toString() == "camera-1" &&
+                      cameras.first().toObject()["position"] == legacy.root["camera"].toObject()["position"],
+                  "Legacy camera did not migrate to a saved camera");
+            auto second = cameras.first().toObject();
+            second["id"] = "camera-2";
+            second["name"] = "Side view";
+            second["position"] = QJsonArray{2.0, 1.0, 5.0};
+            migrated.root["cameras"] = QJsonArray{cameras.first(), second};
+            migrated.root["activeCameraId"] = "camera-2";
+            QJsonObject legacySecond;
+            for (auto key : {"position", "target", "up", "fov"})
+                legacySecond[key] = second[key];
+            migrated.root["camera"] = legacy.root["camera"];
+            const QString multi = base + "/multi-camera.scene.json";
+            check(migrated.saveScene(multi, error), error);
+            SceneDocument reloaded;
+            check(SceneDocument::loadScene(multi, reloaded, error), error);
+            check(reloaded.root["cameras"] == migrated.root["cameras"] &&
+                      reloaded.root["activeCameraId"] == "camera-2" &&
+                      reloaded.root["camera"] == legacySecond,
+                  "Saved camera list or legacy camera did not survive a roundtrip");
+        }
         check(loaded->document.settings() == settings, "Render settings roundtrip");
         const QString other = temporary.path() + "/另存为";
         QDir().mkpath(other);

@@ -1,4 +1,5 @@
 #include "learnQT.h"
+#include "UiDiagnostics.h"
 #include "WorkbenchStyle.h"
 #include "WorkspaceUi.h"
 #include <QActionGroup>
@@ -28,6 +29,7 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QWidgetAction>
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #endif
@@ -75,6 +77,7 @@ learnQT::learnQT(QWidget *parent) : QMainWindow(parent)
     }
 #endif
     connect(editor, &EditorController::changed, this, [this](int) {
+        UiSlotTimer timer(UiSlotWindow);
         m_sceneDirty = !editor->undo.isClean();
         restoreSceneControls();
         updateTitle();
@@ -103,6 +106,7 @@ learnQT::learnQT(QWidget *parent) : QMainWindow(parent)
     else
         navigateWorkspace(WorkspacePage::Scene);
     configureRegressionCapture();
+    configureUiCapture();
 #ifdef SCENE_TESTING
     configureSceneRegression();
     configureWorkbenchRegression();
@@ -110,10 +114,24 @@ learnQT::learnQT(QWidget *parent) : QMainWindow(parent)
     configurePreviewRegression();
     configurePreviewModeRegression();
     configureWorkspaceRegression();
+    configureRenderQueueRegression();
+    configurePreviewPanelRegression();
+    configureRasterRegression();
+    // 回归入口可关闭交互回退，避免默认的光栅化回退改变既有预览用例的判断。
+    if (QCoreApplication::arguments().contains(QStringLiteral("--no-interaction-fallback")))
+        connect(viewport, &GLWidget::renderThreadReady, this, [this] {
+            if (viewport->renderThread())
+                viewport->renderThread()->setInteractionFallbackDisabled(true);
+        });
 #endif
 }
 learnQT::~learnQT()
 {
+    if (m_queueWorker)
+    {
+        delete m_queueWorker;
+        m_queueWorker = nullptr;
+    }
     if (m_loadWorker)
     {
         m_loadWorker->wait();
@@ -136,7 +154,7 @@ void learnQT::setupWorkbench()
     auto chromeLayout = new QHBoxLayout(chrome);
     chromeLayout->setContentsMargins(8, 4, 8, 4);
     chromeLayout->addWidget(new QLabel(tr("透视")));
-    auto previewBadge = new QLabel(tr("●  路径追踪预览"));
+    previewBadge = new QLabel(tr("●  路径追踪预览"));
     previewBadge->setObjectName("muted");
     chromeLayout->addWidget(previewBadge);
     chromeLayout->addStretch();
@@ -195,10 +213,19 @@ void learnQT::setupWorkbench()
                                  editor->document.root["hdr"].toString().isEmpty());
     };
     refreshEmpty();
-    connect(editor, &EditorController::changed, this, [refreshEmpty](int) { refreshEmpty(); });
+    connect(editor, &EditorController::changed, this, [refreshEmpty](int) {
+        UiSlotTimer timer(UiSlotEmptySurface);
+        refreshEmpty();
+    });
     connect(editor, &EditorController::busyChanged, empty,
             [empty](bool busy) { empty->setEnabled(!busy); });
     editorLayout->addWidget(canvas, 1);
+    connect(viewport, &GLWidget::compositionCameraChanged, this, [this] {
+        m_draftCamera["position"] = jsonVector(viewport->camera.position);
+        m_draftCamera["target"] = jsonVector(viewport->camera.target);
+        m_draftCamera["up"] = jsonVector(viewport->camera.worldUp);
+        m_draftCamera["fov"] = viewport->camera.zoom;
+    });
     auto navigationHint =
         new QLabel(tr("  Alt + 左键  环绕    ·    中键  平移    ·    滚轮  缩放    ·    F  定位所选"));
     navigationHint->setObjectName("muted");
@@ -213,10 +240,6 @@ void learnQT::setupWorkbench()
     resultTools->addAction(tr("适应窗口"), resultView, &ResultView::fit);
     resultTools->addAction(tr("1:1"), resultView, &ResultView::actualSize);
     resultTools->addAction(tr("导出图片…"), this, &learnQT::saveGLImage);
-    resultTools->addAction(tr("上次完成结果"), this, [this] {
-        if (!lastResult.isNull())
-            resultView->setImage(lastResult);
-    });
     resultLayout->addWidget(resultTools);
     resultLayout->addWidget(resultView);
     views->addTab(results, tr("渲染结果"));
@@ -289,15 +312,22 @@ void learnQT::setupWorkbench()
     editMenu->addAction(redoAction);
     auto duplicate = editMenu->addAction(tr("复制模型"), editor, &EditorController::duplicate);
     duplicate->setShortcut(QKeySequence("Ctrl+D"));
+    duplicate->setProperty("viewportEdit", true);
     editActions.append(duplicate);
-    toolbar->addSeparator();
+    auto viewportTools = new QToolBar(tr("视口工具"), editorPage);
+    viewportTools->setObjectName("viewportToolbar");
+    viewportTools->setMovable(false);
+    viewportTools->setIconSize(QSize(18, 18));
+    viewportTools->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    editorLayout->insertWidget(1, viewportTools);
     auto tools = new QActionGroup(this);
     QStringList labels = {tr("选择 Q"), tr("移动 W"), tr("旋转 E"), tr("缩放 R")};
     for (int i = 0; i < 4; ++i)
     {
-        auto a = toolbar->addAction(
+        auto a = viewportTools->addAction(
             WorkbenchStyle::icon(QStringList{"select", "move", "rotate", "scale"}[i]), labels[i]);
         a->setCheckable(true);
+        a->setProperty("viewportEdit", true);
         tools->addAction(a);
         a->setChecked(i == 0);
         connect(a, &QAction::triggered, this, [this, i] {
@@ -308,50 +338,82 @@ void learnQT::setupWorkbench()
         editActions.append(a);
     }
     auto space = new QComboBox;
+    space->setObjectName("viewportAxes");
     space->addItems({tr("世界轴"), tr("局部轴")});
     space->setMaximumWidth(92);
-    toolbar->addWidget(space);
+    viewportTools->addWidget(space);
     connect(space, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             [this](int i) { viewport->setLocalAxes(i == 1); });
-    auto snapAction = toolbar->addAction(WorkbenchStyle::icon("snap"), tr("吸附"));
+    auto snapAction = viewportTools->addAction(WorkbenchStyle::icon("snap"), tr("吸附"));
     snapAction->setCheckable(true);
+    snapAction->setProperty("viewportEdit", true);
     connect(snapAction, &QAction::toggled, this, [this](bool enabled) { viewport->snap = enabled; });
     editActions.append(snapAction);
-    toolbar->addSeparator();
-    renderAction = new QAction(WorkbenchStyle::icon("play"), tr("开始渲染"), this);
-    connect(renderAction, &QAction::triggered, this, &learnQT::startRender);
+    renderAction = new QAction(WorkbenchStyle::icon("play"), tr("加入队列"), this);
+    connect(renderAction, &QAction::triggered, this, [this] {
+        if (workspace && workspace->page == int(WorkspacePage::Render))
+            addRenderTask();
+        else {
+            setRenderPreviewMode(true);
+            navigateWorkspace(WorkspacePage::Render);
+        }
+    });
     renderAction->setShortcut(QKeySequence("F12"));
-    pauseAction = toolbar->addAction(tr("暂停"), this, [this] {
+    addAction(renderAction);
+    pauseAction = new QAction(tr("暂停"), this);
+    connect(pauseAction, &QAction::triggered, this, [this] {
+        if (m_activeQueueId && m_queueWorker)
+        {
+            const bool resume = pauseAction->text() == tr("继续");
+            m_queueWorker->pauseCurrent(!resume);
+            pauseAction->setText(resume ? tr("暂停") : tr("继续"));
+            return;
+        }
         if (viewport->renderThread())
             viewport->renderThread()->pauseJob(jobState != RenderJobState::Paused);
     });
-    stopAction = toolbar->addAction(tr("停止"), this, [this] {
+    stopAction = new QAction(tr("停止"), this);
+    connect(stopAction, &QAction::triggered, this, [this] {
+        if (m_activeQueueId && m_queueWorker)
+        {
+            m_queueWorker->stopCurrent();
+            return;
+        }
         if (viewport->renderThread())
             viewport->renderThread()->stopJob();
     });
     pauseAction->setIcon(WorkbenchStyle::icon("pause"));
     stopAction->setIcon(WorkbenchStyle::icon("stop"));
-    auto settingsAction = toolbar->addAction(WorkbenchStyle::icon("settings"), tr("渲染设置"));
+    stopAction->setText(tr("停止当前任务"));
+    // 顶栏的预览设置入口取代原“渲染设置”按钮：弹出面板里直接改常用项，更多设置走不跳页的弹窗。
+    previewChromePanel = new PreviewSettingsPanel;
+    previewDetailPanel = new PreviewSettingsPanel(this);
+    previewDetailPanel->hide();
+    connect(previewChromePanel, &PreviewSettingsPanel::changed, this,
+            [this](const RenderParams::Snapshot &settings) { commitPreviewSettings(settings); });
+    connect(previewDetailPanel, &PreviewSettingsPanel::changed, this,
+            [this](const RenderParams::Snapshot &settings) { commitPreviewSettings(settings); });
+    auto previewButton = new QToolButton(viewportTools);
+    previewButton->setObjectName("previewSettingsButton");
+    previewButton->setText(tr("预览设置"));
+    previewButton->setIcon(WorkbenchStyle::icon("settings"));
+    previewButton->setToolTip(tr("交互预览的采样上限、反弹数、块大小与降噪"));
+    previewButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    previewButton->setPopupMode(QToolButton::InstantPopup);
+    auto previewMenu = new QMenu(previewButton);
+    auto previewWidgetAction = new QWidgetAction(previewMenu);
+    previewWidgetAction->setDefaultWidget(previewChromePanel);
+    previewMenu->addAction(previewWidgetAction);
+    previewMenu->addSeparator();
+    previewMenu->addAction(tr("更多预览设置…"), this, [this] { showPreviewSettingsDialog(); });
+    connect(previewMenu, &QMenu::aboutToShow, this, [this] {
+        previewChromePanel->setValues(editor->document.settings());
+    });
+    previewButton->setMenu(previewMenu);
+    auto previewWidgetActionForToolbar = new QWidgetAction(viewportTools);
+    previewWidgetActionForToolbar->setDefaultWidget(previewButton);
+    viewportTools->addAction(previewWidgetActionForToolbar);
     toolbar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    auto renderControls = new QWidget;
-    renderControls->setObjectName("renderControls");
-    auto renderControlLayout = new QHBoxLayout(renderControls);
-    renderControlLayout->setContentsMargins(6, 2, 6, 2);
-    renderControlLayout->setSpacing(4);
-    toolbar->removeAction(pauseAction);
-    toolbar->removeAction(stopAction);
-    for (auto action : {pauseAction, stopAction}) {
-        auto control = new QToolButton;
-        control->setDefaultAction(action);
-        control->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-        renderControlLayout->addWidget(control);
-    }
-    auto renderButton = new QToolButton;
-    renderButton->setObjectName("renderPrimary");
-    renderButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    renderButton->setDefaultAction(renderAction);
-    renderControlLayout->addWidget(renderButton);
-    menuBar()->setCornerWidget(renderControls, Qt::TopRightCorner);
     pauseAction->setEnabled(false);
     stopAction->setEnabled(false);
     setupTree();
@@ -373,15 +435,12 @@ void learnQT::setupWorkbench()
     tabs->addTab(lightsScroll, tr("灯光"));
     inspectorDock->setWidget(tabs);
     addDockWidget(Qt::RightDockWidgetArea, inspectorDock);
-    splitDockWidget(treeDock, inspectorDock, Qt::Horizontal);
     performanceDock = new QDockWidget(tr("性能"), this);
     performanceDock->setObjectName("performanceDock");
     performance = new PerformancePanel;
     performanceDock->setWidget(performance);
-    addDockWidget(Qt::RightDockWidgetArea, performanceDock);
-    splitDockWidget(inspectorDock, performanceDock, Qt::Vertical);
-    // Put telemetry above the inspector, beside the full-height scene tree.
-    splitDockWidget(performanceDock, inspectorDock, Qt::Vertical);
+    addDockWidget(Qt::BottomDockWidgetArea, performanceDock);
+    performanceDock->hide();
     logDock = new QDockWidget(tr("任务日志"), this);
     logDock->setObjectName("logDock");
     log = new QPlainTextEdit;
@@ -399,8 +458,8 @@ void learnQT::setupWorkbench()
             tr("左键选择 · Ctrl 追加 / 切换 · 树中 Shift 范围选择\nAlt + 左键环绕 · 中键平移 · "
                "滚轮缩放\nQ "
                "选择 · W 移动 · E 旋转 · R 缩放 · F 定位\nEsc 取消变换 · Delete 删除 · Ctrl+D "
-               "复制\n\n组仅组织对象，换组不改变世界变换。\n正式渲染期间锁定编辑，完成后可导出 PNG / "
-               "JPEG。"));
+               "复制\n\n组仅组织对象，换组不改变世界变换。\n在渲染页加入并运行队列；运行时仍可编辑场景，"
+               "任务完成后自动导出 PNG / JPEG。"));
     });
     auto ready = new QLabel(tr("●"));
     ready->setStyleSheet("color:#59c99c;padding:0 7px;");
@@ -415,25 +474,31 @@ void learnQT::setupWorkbench()
     statusBar()->addWidget(taskLabel, 1);
     statusBar()->addPermanentWidget(statsLabel);
     statusBar()->addPermanentWidget(progress);
+    auto diagnostics = new QPushButton(tr("性能"));
+    diagnostics->setObjectName("togglePerformance");
+    diagnostics->setFlat(true);
+    connect(diagnostics, &QPushButton::clicked, this, [this] {
+        performanceDock->setVisible(!performanceDock->isVisible());
+    });
+    statusBar()->addPermanentWidget(diagnostics);
     auto logs = new QPushButton(tr("日志"));
     logs->setFlat(true);
     connect(logs, &QPushButton::clicked, this, [this] { logDock->setVisible(!logDock->isVisible()); });
     statusBar()->addPermanentWidget(logs);
     treeDock->setMinimumWidth(220);
-    inspectorDock->setMinimumWidth(340);
-    performanceDock->setMinimumWidth(340);
+    inspectorDock->setMinimumWidth(320);
+    performanceDock->setMinimumWidth(280);
     resizeDocks({treeDock, inspectorDock}, {240, 350}, Qt::Horizontal);
-    resizeDocks({performanceDock, inspectorDock}, {250, 500}, Qt::Vertical);
     setupDockTitle(treeDock, "scene");
     setupDockTitle(inspectorDock, "settings");
     setupDockTitle(performanceDock, "chart");
     setupDockTitle(logDock, "log");
-    connect(settingsAction, &QAction::triggered, this, [this] { navigateWorkspace(WorkspacePage::Render); });
     setupWorkspace();
     auto resetLayout = viewMenu->addAction(tr("恢复当前页面布局"), this, [this] {
         int page = workspace->page;
         workspace->page = -1;
-        workspace->layouts.remove(page);
+        workspace->layouts.remove(workspaceLayoutKey(page, m_renderPreviewMode));
+        workspace->activeLayoutKey.clear();
         navigateWorkspace(WorkspacePage(page));
     });
     resetLayout->setObjectName("resetWorkspaceLayout");
@@ -449,7 +514,9 @@ void learnQT::setupDockTitle(QDockWidget *dock, const QString &icon)
     auto symbol = new QLabel;
     symbol->setPixmap(WorkbenchStyle::icon(icon).pixmap(18, 18));
     row->addWidget(symbol);
-    row->addWidget(new QLabel(dock->windowTitle()), 1);
+    auto caption = new QLabel(dock->windowTitle());
+    row->addWidget(caption, 1);
+    connect(dock, &QDockWidget::windowTitleChanged, caption, &QLabel::setText);
     auto close = new QToolButton;
     close->setIcon(WorkbenchStyle::icon("close"));
     close->setIconSize(QSize(15, 15));
@@ -465,11 +532,12 @@ void learnQT::setupTree()
     auto widget = new QWidget;
     auto layout = new QVBoxLayout(widget);
     layout->setContentsMargins(8, 8, 8, 8);
-    m_sceneList = new QComboBox;
+    // Legacy scene-discovery regression adapter; presets are presented in Resources/Home.
+    m_sceneList = new QComboBox(this);
     m_sceneList->setObjectName("sceneList");
     m_sceneList->setMinimumContentsLength(12);
     m_sceneList->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-    layout->addWidget(m_sceneList);
+    m_sceneList->hide();
     connect(m_sceneList, QOverload<int>::of(&QComboBox::activated), this, [this](int i) {
         auto path = m_sceneList->itemData(i).toString();
         if (path.isEmpty())
@@ -514,7 +582,7 @@ void learnQT::setupTree()
     }
     layout->addWidget(tree);
     treeDock->setWidget(widget);
-    addDockWidget(Qt::RightDockWidgetArea, treeDock);
+    addDockWidget(Qt::LeftDockWidgetArea, treeDock);
     tree->expandAll();
     connect(tree->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this] {
         if (syncingSelection)
@@ -638,55 +706,10 @@ QWidget *learnQT::createSettings()
     outputDenoise = new QCheckBox(tr("正式出图降噪"));
     outputDenoise->setChecked(true);
     form->addRow(outputDenoise);
-    auto commitOutput = [this] {
-        if (m_restoring)
-            return;
-        auto d = editor->document;
-        d.root["output"] =
-            QJsonObject{{"width", outputWidth->value()},     {"height", outputHeight->value()},
-                        {"samples", outputSamples->value()}, {"tileSize", outputTile->value()},
-                        {"bounces", outputBounces->value()}, {"denoise", outputDenoise->isChecked()}};
-        editor->submit(d, tr("输出设置"), EditorController::Display);
-    };
+    auto commitOutput = [this] { commitOutputSettings(); };
     for (auto s : {outputWidth, outputHeight, outputSamples, outputTile, outputBounces})
         connect(s, &QSpinBox::editingFinished, this, commitOutput);
     connect(outputDenoise, &QCheckBox::toggled, this, [commitOutput] { commitOutput(); });
-    form = section(tr("交互预览"), "previewSection");
-    m_denoise = new QCheckBox(tr("预览降噪"));
-    form->addRow(m_denoise);
-    connect(m_denoise, &QCheckBox::toggled, this, [this](bool b) {
-        if (m_restoring)
-            return;
-        auto d = editor->document;
-        auto settings = d.root["render"].toObject();
-        settings["denoise"] = b;
-        d.root["render"] = settings;
-        editor->submit(d, tr("预览降噪"), EditorController::Display);
-    });
-    previewSamples = spin(tr("预览 spp（0 无限）"), 0, 1000000, 0);
-    previewBounces = spin(tr("预览反弹数"), 1, 64, 4);
-    previewTile = spin(tr("预览块大小"), 16, 1024, 128);
-    previewTiled = new QCheckBox(tr("分块预览"));
-    previewLow = new QCheckBox(tr("降低预览分辨率"));
-    form->addRow(previewTiled);
-    form->addRow(previewLow);
-    auto commitPreview = [this] {
-        if (m_restoring)
-            return;
-        auto d = editor->document;
-        auto settings = d.settings();
-        settings.maxRenderFrames = previewSamples->value();
-        settings.maxBounces = previewBounces->value();
-        settings.tileSize = previewTile->value();
-        settings.useTileRendering = previewTiled->isChecked();
-        settings.renderLow = previewLow->isChecked();
-        d.captureSettings(settings);
-        editor->submit(d, tr("预览设置"), EditorController::Display);
-    };
-    for (auto s : {previewSamples, previewBounces, previewTile})
-        connect(s, &QSpinBox::editingFinished, this, commitPreview);
-    for (auto s : {previewTiled, previewLow})
-        connect(s, &QCheckBox::toggled, this, [commitPreview] { commitPreview(); });
     form = section(tr("色彩管理"), "displaySection");
     auto exposure = new MixedSpin;
     exposure->setRange(-16, 16);
@@ -750,8 +773,10 @@ QWidget *learnQT::createSettings()
         m_restoring = false;
     };
     restoreEnvironment();
-    connect(editor, &EditorController::changed, this,
-            [restoreEnvironment](int) { restoreEnvironment(); });
+    connect(editor, &EditorController::changed, this, [restoreEnvironment](int) {
+        UiSlotTimer timer(UiSlotEnvironment);
+        restoreEnvironment();
+    });
     form = section(tr("变换吸附"), "snapSection");
     auto snapMove = new MixedSpin;
     snapMove->setRange(.0001, 1e6);
@@ -775,20 +800,156 @@ QWidget *learnQT::createSettings()
     scroll->setWidget(page);
     return scroll;
 }
+void learnQT::commitOutputSettings()
+{
+    if (m_restoring || m_loading)
+        return;
+    auto d = editor->document;
+    d.root["output"] =
+        QJsonObject{{"width", outputWidth->value()},     {"height", outputHeight->value()},
+                    {"samples", outputSamples->value()}, {"tileSize", outputTile->value()},
+                    {"bounces", outputBounces->value()}, {"denoise", outputDenoise->isChecked()}};
+    editor->submit(d, tr("输出设置"), EditorController::Display);
+}
 void learnQT::connectRenderThread()
 {
     auto thread = viewport->renderThread();
     thread->setPreviewVisible(views->currentIndex() == 0);
+    if (workspace && workspace->page == int(WorkspacePage::Render) && !m_draftCamera.isEmpty())
+    {
+        Camera draft;
+        draft.restoreState(sceneVector(m_draftCamera["position"]), sceneVector(m_draftCamera["target"]),
+                           sceneVector(m_draftCamera["up"]), m_draftCamera["fov"].toDouble());
+        viewport->setCompositionMode(true, draft, QSize(outputWidth->value(), outputHeight->value()));
+    }
+    if (!m_queueWorker)
+    {
+        m_queueWorker = new RenderQueueThread(viewport->context(), this);
+        connect(m_queueWorker, &RenderQueueThread::workerFailed, this,
+                [this](const QString &error) {
+                    m_queueRunning = false;
+                    if (m_activeQueueId)
+                        for (auto &item : m_renderQueue)
+                            if (item.request.id == m_activeQueueId)
+                            {
+                                item.status = tr("失败");
+                                item.error = error;
+                                break;
+                            }
+                    m_activeQueueId = 0;
+                    if (viewport->renderThread())
+                        viewport->renderThread()->setForceRaster(false);
+                    logMessage(error);
+                    taskLabel->setText(tr("渲染上下文创建失败"));
+                    refreshRenderQueue();
+                });
+        connect(m_queueWorker, &RenderQueueThread::jobState, this,
+                [this](quint64 id, RenderJobState state) {
+                    for (auto &item : m_renderQueue)
+                        if (item.request.id == id)
+                        {
+                            item.status = renderJobText(state);
+                            break;
+                        }
+                    pauseAction->setEnabled(state == RenderJobState::Rendering ||
+                                            state == RenderJobState::Paused);
+                    pauseAction->setText(state == RenderJobState::Paused ? tr("继续") : tr("暂停"));
+                    stopAction->setEnabled(true);
+                    taskLabel->setText(tr("任务 %1 · %2").arg(id).arg(renderJobText(state)));
+                    refreshRenderQueue();
+                });
+        connect(m_queueWorker, &RenderQueueThread::jobProgress, this,
+                [this](quint64 id, int samples, int target, double seconds, QImage image) {
+                    for (auto &item : m_renderQueue)
+                        if (item.request.id == id)
+                        {
+                            item.samples = samples;
+                            item.seconds = seconds;
+                            if (!image.isNull())
+                            {
+                                item.result = image;
+                                if (workspace->page == int(WorkspacePage::Render) &&
+                                    !m_renderPreviewMode && m_viewedTaskId == id)
+                                    resultView->setImage(image);
+                            }
+                            break;
+                        }
+                    statsLabel->setText(tr("正式输出 %1 / %2 spp").arg(samples).arg(target));
+                    progress->setValue(target > 0 ? int(100. * samples / target) : 0);
+                    refreshRenderQueue();
+                });
+        connect(m_queueWorker, &RenderQueueThread::jobFinished, this,
+                [this](quint64 id, bool rendered, bool stopped, QImage image,
+                       const QString &path, const QString &error) {
+                    for (auto &item : m_renderQueue)
+                        if (item.request.id == id)
+                        {
+                            if (!image.isNull())
+                            {
+                                item.result = image;
+                                if (m_viewedTaskId == id)
+                                    resultView->setImage(image);
+                            }
+                            item.samples = rendered ? item.request.settings.samples : item.samples;
+                            item.error = error;
+                            item.status = stopped ? tr("已停止")
+                                          : !rendered ? tr("失败")
+                                          : !error.isEmpty() ? tr("导出失败") : tr("完成");
+                            if (!error.isEmpty())
+                                logMessage(tr("任务 %1：%2").arg(id).arg(error));
+                            else if (rendered)
+                                logMessage(tr("任务 %1 已导出：%2").arg(id).arg(path));
+                            break;
+                        }
+                    m_activeQueueId = 0;
+                    taskLabel->setText(tr("任务 %1 · %2")
+                                           .arg(id)
+                                           .arg(stopped ? tr("已停止") : !rendered ? tr("失败")
+                                                : !error.isEmpty() ? tr("导出失败") : tr("完成")));
+                    pauseAction->setEnabled(false);
+                    stopAction->setEnabled(false);
+                    refreshRenderQueue();
+                    dispatchRenderTask();
+                });
+        m_queueWorker->start();
+        if (m_queueRunning)
+            QTimer::singleShot(0, this, [this] { dispatchRenderTask(); });
+    }
     if (workspace->pendingRender)
         QTimer::singleShot(0, this, [this] { workspace->pendingRender = false; startRender(); });
     connect(thread, &RenderThread::statsReady, this, [this](RenderStats s) {
         performance->append(s);
-        statsLabel->setText(tr("%1 × %2  |  %3 spp  |  已选 %4")
-                                .arg(s.size.width())
-                                .arg(s.size.height())
-                                .arg(s.samples)
-                                .arg(editor->selectedModels().size()) +
-                            tr("  |  %1 秒").arg(s.jobSeconds, 0, 'f', 1));
+        if (previewBadge)
+            previewBadge->setText(s.rasterActive ? tr("●  光栅化预览")
+                                                 : tr("●  路径追踪预览"));
+        if (m_activeQueueId)
+            return;
+        if (!m_renderQueue.isEmpty() && workspace->page == int(WorkspacePage::Render) &&
+            !m_renderPreviewMode)
+        {
+            const int selected = workspace->task ? workspace->task->currentRow() : -1;
+            const auto &item = m_renderQueue[selected >= 0 && selected < m_renderQueue.size()
+                                                 ? selected : m_renderQueue.size() - 1];
+            statsLabel->setText(tr("任务 %1 · %2 / %3 spp")
+                                    .arg(item.request.id).arg(item.samples)
+                                    .arg(item.request.settings.samples));
+            progress->setValue(item.request.settings.samples > 0
+                                   ? int(100. * item.samples / item.request.settings.samples) : 0);
+            return;
+        }
+        // 光栅化交互预览不累积采样，只显示帧耗时，避免把静态的 spp 当成卡住。
+        statsLabel->setText(s.rasterActive
+                                ? tr("%1 × %2  |  光栅化 %3 ms  |  已选 %4")
+                                      .arg(s.size.width())
+                                      .arg(s.size.height())
+                                      .arg(s.rasterMs, 0, 'f', 1)
+                                      .arg(editor->selectedModels().size())
+                                : tr("%1 × %2  |  %3 spp  |  已选 %4")
+                                          .arg(s.size.width())
+                                          .arg(s.size.height())
+                                          .arg(s.samples)
+                                          .arg(editor->selectedModels().size()) +
+                                      tr("  |  %1 秒").arg(s.jobSeconds, 0, 'f', 1));
         progress->setValue(s.target > 0 ? std::min(100, int(100. * s.samples / s.target)) : 0);
         if (workspace->page == int(WorkspacePage::Render) && workspace->taskTarget > 0) {
             statsLabel->setText(tr("输出 %1 × %2  |  %3 / %4 spp")
@@ -859,6 +1020,7 @@ void learnQT::startRender()
     workspace->task->item(0, 1)->setText(QString("%1 × %2").arg(settings.size.width()).arg(settings.size.height()));
     workspace->task->item(0, 2)->setText(QString("0 / %1 spp").arg(settings.samples));
     workspace->task->item(0, 4)->setText("0.0 秒");
+    setRenderPreviewMode(false);
     navigateWorkspace(WorkspacePage::Render);
     syncWorkspaceAvailability();
     viewport->renderThread()->startJob(settings);
@@ -903,6 +1065,10 @@ void learnQT::beginSceneLoad(const QString &path, bool model)
             refreshScenes();
             return;
         }
+        m_draftCamera = {};
+        m_draftSourceId.clear();
+        if (workspace)
+            workspace->selectedCameraId.clear();
         editor->install(**result);
         viewport->submitPrepared(*result);
         m_sceneDirty = false;
@@ -964,8 +1130,46 @@ void learnQT::refreshScenes()
     int current = m_sceneList->findData(editor->document.filePath);
     m_sceneList->setCurrentIndex(std::max(0, current));
 }
+void learnQT::commitPreviewSettings(const RenderParams::Snapshot &settings)
+{
+    if (m_restoring || editor->busy || editor->renderLocked)
+        return;
+    auto d = editor->document;
+    d.captureSettings(settings);
+    editor->submit(d, tr("预览设置"), EditorController::Display);
+    syncPreviewControls(editor->document.settings());
+}
+// 文档设置变化后把顶栏弹出面板与详情弹窗对齐。控件信号在写入期间被屏蔽，不会回灌成新的提交。
+void learnQT::syncPreviewControls(const RenderParams::Snapshot &settings)
+{
+    if (previewChromePanel)
+        previewChromePanel->setValues(settings);
+    if (previewDetailPanel)
+        previewDetailPanel->setValues(settings);
+}
+// 不跳页的预览设置弹窗：非模态，改动即时提交，视口实时跟着变。
+void learnQT::showPreviewSettingsDialog()
+{
+    if (!previewDialog)
+    {
+        previewDialog = new QDialog(this);
+        previewDialog->setObjectName("previewSettingsDialog");
+        previewDialog->setWindowTitle(tr("预览设置"));
+        previewDialog->setModal(false);
+        auto layout = new QVBoxLayout(previewDialog);
+        layout->addWidget(new QLabel(tr("交互预览显示在场景页视口；改动即时生效，不会启动正式任务。")));
+        layout->addWidget(previewDetailPanel);
+        previewDetailPanel->show();
+        layout->addStretch();
+    }
+    previewDetailPanel->setValues(editor->document.settings());
+    previewDialog->show();
+    previewDialog->raise();
+    previewDialog->activateWindow();
+}
 void learnQT::restoreSceneControls()
 {
+    auto settings = editor->document.settings();
     m_restoring = true;
     auto output = RenderJobSettings::fromJson(editor->document.root["output"].toObject());
     outputWidth->setValue(output.size.width());
@@ -974,14 +1178,8 @@ void learnQT::restoreSceneControls()
     outputTile->setValue(output.tileSize);
     outputBounces->setValue(output.bounces);
     outputDenoise->setChecked(output.denoise);
-    m_denoise->setChecked(editor->document.settings().denoise);
-    auto preview = editor->document.settings();
-    previewSamples->setValue(preview.maxRenderFrames);
-    previewBounces->setValue(preview.maxBounces);
-    previewTile->setValue(preview.tileSize);
-    previewTiled->setChecked(preview.useTileRendering);
-    previewLow->setChecked(preview.renderLow);
     m_restoring = false;
+    syncPreviewControls(settings);
     inspector->refresh();
 }
 bool learnQT::confirmDiscard()
@@ -1051,7 +1249,7 @@ void learnQT::exportPackage()
 void learnQT::saveGLImage()
 {
     auto image = resultView->image;
-    if (image.isNull())
+    if (image.isNull() && m_renderQueue.isEmpty())
         image = lastResult;
     if (image.isNull())
     {
@@ -1086,9 +1284,9 @@ void learnQT::closeEvent(QCloseEvent *e)
     }
     QSettings settings(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
     settings.setValue("geometry", saveGeometry());
-    workspace->layouts[workspace->page] = saveState(4);
+    workspace->layouts[workspace->activeLayoutKey] = saveState(5);
     for (auto it = workspace->layouts.begin(); it != workspace->layouts.end(); ++it)
-        settings.setValue(QString("workspaceV4/layout/%1").arg(it.key()), it.value());
+        settings.setValue("workspaceV5/layout/" + it.key(), it.value());
     e->accept();
 }
 void learnQT::keyPressEvent(QKeyEvent *e)

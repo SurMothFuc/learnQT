@@ -24,11 +24,18 @@ Medium MaterialMedium(Material material) {
     return m;
 }
 Medium CurrentMedium(MediumStack stack) {
+#ifdef NO_PARTICIPATING_MEDIA
+    return Vacuum();
+#else
     return stack.size > 0 ? stack.entries[stack.size-1] : Vacuum();
+#endif
 }
 // Closed, consistently wound, properly nested boundaries use a bounded LIFO stack.
 // An overflowing stack terminates the path instead of reading undefined memory.
 bool CrossMediumBoundary(inout MediumStack stack, HitResult hit, vec3 outgoing) {
+#ifdef NO_PARTICIPATING_MEDIA
+    return true;
+#else
     if (hit.material.mediumtype == MEDIUM_NONE) return true;
     bool intoObject = dot(outgoing, hit.geometricNormal) < 0.0;
     if (!hit.isInside && intoObject) {
@@ -38,6 +45,7 @@ bool CrossMediumBoundary(inout MediumStack stack, HitResult hit, vec3 outgoing) 
         --stack.size;
     }
     return true;
+#endif
 }
 vec3 MediumTransmittance(Medium medium, float distance) {
     vec3 sigma = vec3(0.0);

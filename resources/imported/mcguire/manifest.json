@@ -1,0 +1,874 @@
+{
+  "source": "https://casual-effects.com/g3d/data10/",
+  "downloadDate": "2026-09-29",
+  "entries": [
+    {
+      "id": "bedroom",
+      "title": "Bedroom",
+      "source": "https://casual-effects.com/g3d/data10/research/model/bedroom/info.js",
+      "advertisedSize": "35.0 MB",
+      "copyright": "© 2017 fhernand",
+      "license": "CC BY-SA 4.0",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by-sa/4.0/legalcode'>CC BY-SA 4.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/bedroom/bedroom.zip",
+          "path": "archives/bedroom/bedroom.zip",
+          "status": "verified",
+          "bytes": 34180493,
+          "sha256": "90834c4336ec1b6f8331175b5600e5f7ce2b863ea7b345ef1b9545f209c4ef94",
+          "zipEntries": 10,
+          "uncompressedBytes": 64565388,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "bmw",
+      "title": "BMW",
+      "source": "https://casual-effects.com/g3d/data10/research/model/bmw/info.js",
+      "advertisedSize": "6.7 MB",
+      "copyright": "Mike Pan and Morgan McGuire",
+      "license": "CC0/Public Domain",
+      "licenseHtml": "CC0/Public Domain",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/bmw/bmw.zip",
+          "path": "archives/bmw/bmw.zip",
+          "status": "verified",
+          "bytes": 6935956,
+          "sha256": "644d48ad8381c4e1e96be34a9900574b4df08d348e35a3394870e23c3baeffa6",
+          "zipEntries": 2,
+          "uncompressedBytes": 31266213,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "breakfast_room",
+      "title": "Breakfast Room",
+      "source": "https://casual-effects.com/g3d/data10/research/model/breakfast_room/info.js",
+      "advertisedSize": "16.6 MB",
+      "copyright": "© Wig42",
+      "license": "CC BY 3.0",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by/3.0/'>CC BY 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/breakfast_room/breakfast_room.zip",
+          "path": "archives/breakfast_room/breakfast_room.zip",
+          "status": "verified",
+          "bytes": 6446862,
+          "sha256": "e56ff9b4c89b680cfd5c4c00390533ae28fff7a122d6fc8c92c273a9066c0ca8",
+          "zipEntries": 6,
+          "uncompressedBytes": 23472999,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "buddha",
+      "title": "Happy Buddha",
+      "source": "https://casual-effects.com/g3d/data10/research/model/buddha/info.js",
+      "advertisedSize": "22 MB",
+      "copyright": "© 1996 Stanford University",
+      "license": "Stanford Scan",
+      "licenseHtml": "<a href='http://www.graphics.stanford.edu/data/3Dscanrep/'>Stanford Scan</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/buddha/buddha.zip",
+          "path": "archives/buddha/buddha.zip",
+          "status": "verified",
+          "bytes": 22519689,
+          "sha256": "c14c098ce8d8caaf05696c54396197bf16a22837ef1275cca04d42fd6ab9a6a8",
+          "zipEntries": 1,
+          "uncompressedBytes": 93037212,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "bunny",
+      "title": "Stanford Bunny",
+      "source": "https://casual-effects.com/g3d/data10/research/model/bunny/info.js",
+      "advertisedSize": "2.9 MB",
+      "copyright": "© 1996 Stanford University",
+      "license": "Stanford Scan",
+      "licenseHtml": "<a href='http://www.graphics.stanford.edu/data/3Dscanrep/'>Stanford Scan</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/bunny/bunny.zip",
+          "path": "archives/bunny/bunny.zip",
+          "status": "verified",
+          "bytes": 2935575,
+          "sha256": "7082df1052c2a13263e5e83aee2b12af2345e2849592a69bfeebd0dc8cb46ef6",
+          "zipEntries": 1,
+          "uncompressedBytes": 13740248,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "CornellBox",
+      "title": "Cornell Box",
+      "source": "https://casual-effects.com/g3d/data10/common/model/CornellBox/info.js",
+      "advertisedSize": "229 kB",
+      "copyright": "© 2009 Morgan McGuire",
+      "license": "CC BY 3.0",
+      "licenseHtml": "<a href='http://creativecommons.org/licenses/by/3.0/'>CC BY 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/common/model/CornellBox/CornellBox.zip",
+          "path": "archives/CornellBox/CornellBox.zip",
+          "status": "verified",
+          "bytes": 224880,
+          "sha256": "f27eaf47afec74b5236ce3095ac02d4256e8ac8610bfdb5a53560c67c2e0d8f1",
+          "zipEntries": 23,
+          "uncompressedBytes": 1183547,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "cloud",
+      "title": "Clouds",
+      "source": "https://casual-effects.com/g3d/data10/research/model/cloud/info.js",
+      "advertisedSize": "825 kB",
+      "copyright": "© 2016 Morgan McGuire and Michael Mara",
+      "license": "CC0",
+      "licenseHtml": "<a href='https://creativecommons.org/publicdomain/zero/1.0/'>CC0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/cloud/cloud.zip",
+          "path": "archives/cloud/cloud.zip",
+          "status": "verified",
+          "bytes": 844727,
+          "sha256": "d3423303b1b532026e4ba8ecb50584031514dc71b3fae971eb4258b0d183ba5f",
+          "zipEntries": 5,
+          "uncompressedBytes": 2884472,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "conference",
+      "title": "Conference Room",
+      "source": "https://casual-effects.com/g3d/data10/research/model/conference/info.js",
+      "advertisedSize": "6.7 MB",
+      "copyright": "© Anat Grynberg and Greg Ward",
+      "license": "Credit required",
+      "licenseHtml": "Credit required",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/conference/conference.zip",
+          "path": "archives/conference/conference.zip",
+          "status": "verified",
+          "bytes": 1934868,
+          "sha256": "3dfd86325416ec344bfb2d19290b2e3305cc862ee504a06a52ce0a0e895453f0",
+          "zipEntries": 3,
+          "uncompressedBytes": 12329960,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "crytek_sponza",
+      "title": "Crytek Sponza",
+      "source": "https://casual-effects.com/g3d/data10/common/model/crytek_sponza/info.js",
+      "advertisedSize": "78 MB",
+      "copyright": "© 2010 Frank Meinl, Crytek",
+      "license": "CC BY 3.0",
+      "licenseHtml": "<a href='http://creativecommons.org/licenses/by/3.0/'>CC BY 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/common/model/crytek_sponza/sponza.zip",
+          "path": "archives/crytek_sponza/sponza.zip",
+          "status": "verified",
+          "bytes": 80113441,
+          "sha256": "da005cbee0be2df2abc8513f3ceb61bcb6f69aac112babcd9c00169a27c2770c",
+          "zipEntries": 57,
+          "uncompressedBytes": 95882276,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "cube",
+      "title": "Cube",
+      "source": "https://casual-effects.com/g3d/data10/common/model/cube/info.js",
+      "advertisedSize": "4 kB",
+      "copyright": "© 2005 Morgan McGuire",
+      "license": "CC0",
+      "licenseHtml": "CC0",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/common/model/cube/cube.zip",
+          "path": "archives/cube/cube.zip",
+          "status": "source_crc_error",
+          "bytes": 3877,
+          "sha256": "4d5eb265ec88d34119af155ccfa2013ba96135e161cc7661c709d3df88a49d82",
+          "zipEntries": 3,
+          "uncompressedBytes": 4148,
+          "zipCrcVerified": false,
+          "warning": "Original source archive has a CRC mismatch for default.png. Two independent downloads matched byte for byte. Original archive preserved unchanged."
+        }
+      ]
+    },
+    {
+      "id": "dabrovic_sponza",
+      "title": "Dabrovic Sponza",
+      "source": "https://casual-effects.com/g3d/data10/research/model/dabrovic_sponza/info.js",
+      "advertisedSize": "3.6 MB",
+      "copyright": "© 2002 Marko Dabrovic",
+      "license": "CC BY-NC",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by-nc/3.0/us/'>CC BY-NC</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/dabrovic_sponza/sponza.zip",
+          "path": "archives/dabrovic_sponza/sponza.zip",
+          "status": "verified",
+          "bytes": 1707889,
+          "sha256": "cf2a45b1d99eb8613db88c343537ec5643d54e4a89d047ff46de635e29953248",
+          "zipEntries": 25,
+          "uncompressedBytes": 6456428,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "dragon",
+      "title": "Chinese Dragon",
+      "source": "https://casual-effects.com/g3d/data10/research/model/dragon/info.js",
+      "advertisedSize": "17.4 MB",
+      "copyright": "© 1996 Stanford University",
+      "license": "Stanford Scan",
+      "licenseHtml": "<a href='http://www.graphics.stanford.edu/data/3Dscanrep/'>Stanford Scan</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/dragon/dragon.zip",
+          "path": "archives/dragon/dragon.zip",
+          "status": "verified",
+          "bytes": 17847685,
+          "sha256": "111124359a31e4d6b2eeb5398e5bc96a5d9e2d2a130afb10bb4cfbc011bdb797",
+          "zipEntries": 1,
+          "uncompressedBytes": 74094075,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "erato",
+      "title": "Erato",
+      "source": "https://casual-effects.com/g3d/data10/research/model/erato/info.js",
+      "advertisedSize": "34 MB",
+      "copyright": "© 2016 Geoffrey Marchal",
+      "license": "CC BY 4.0",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by/4.0/'>CC BY 4.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/erato/erato.zip",
+          "path": "archives/erato/erato.zip",
+          "status": "verified",
+          "bytes": 46915802,
+          "sha256": "6e1a8e12cb8944313e766a49dd7e98ae529ad9fd0c11f6133c4f7c5217630021",
+          "zipEntries": 3,
+          "uncompressedBytes": 128078032,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "fireplace_room",
+      "title": "Fireplace Room",
+      "source": "https://casual-effects.com/g3d/data10/research/model/fireplace_room/info.js",
+      "advertisedSize": "8.9 MB",
+      "copyright": "© Wig42",
+      "license": "CC BY 3.0",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by/3.0/'>CC BY 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/fireplace_room/fireplace_room.zip",
+          "path": "archives/fireplace_room/fireplace_room.zip",
+          "status": "verified",
+          "bytes": 9107724,
+          "sha256": "9d7be47b9f2065e13a57c1831072d1599bb10ac4740582d6fc0f94efd80ff724",
+          "zipEntries": 6,
+          "uncompressedBytes": 32691058,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "gallery",
+      "title": "Gallery",
+      "source": "https://casual-effects.com/g3d/data10/research/model/gallery/info.js",
+      "advertisedSize": "63.4 MB",
+      "copyright": "© 2017 The Hallwyl Museum",
+      "license": "CC BY-SA 4.0",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by-sa/4.0/legalcode'>CC BY-SA 4.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/gallery/gallery.zip",
+          "path": "archives/gallery/gallery.zip",
+          "status": "verified",
+          "bytes": 64961580,
+          "sha256": "243b81301c2c091559e2c334cf35cd98d9fcb0ad5d4940319158539143bdbcba",
+          "zipEntries": 4,
+          "uncompressedBytes": 139574339,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "geodesic",
+      "title": "Geodesics",
+      "source": "https://casual-effects.com/g3d/data10/research/model/geodesic/info.js",
+      "advertisedSize": "8.1 MB",
+      "copyright": "Public domain",
+      "license": "Public domain",
+      "licenseHtml": "Public domain",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/geodesic/geodesic.zip",
+          "path": "archives/geodesic/geodesic.zip",
+          "status": "verified",
+          "bytes": 8114005,
+          "sha256": "bf49524575d601014e52fc6e35b5ee716ef765221ddb0dfa3a12e63a88225da8",
+          "zipEntries": 86,
+          "uncompressedBytes": 46338240,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "hairball",
+      "title": "Hairball",
+      "source": "https://casual-effects.com/g3d/data10/research/model/hairball/info.js",
+      "advertisedSize": "50 MB",
+      "copyright": "© 2010 NVIDIA Research",
+      "license": "CC BY 3.0",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by/3.0/'>CC BY 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/hairball/hairball.zip",
+          "path": "archives/hairball/hairball.zip",
+          "status": "verified",
+          "bytes": 52634140,
+          "sha256": "b1d36143d932269d4c2b585d0f8c5fe505938f8b558a5ed39d27e3b7fbedca2e",
+          "zipEntries": 1,
+          "uncompressedBytes": 236055639,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "holodeck",
+      "title": "Holodeck",
+      "source": "https://casual-effects.com/g3d/data10/common/model/holodeck/info.js",
+      "advertisedSize": "417 kB",
+      "copyright": "© 2016 John William Telford",
+      "license": "CC BY 3.0",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by/3.0/us/'>CC BY 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/common/model/holodeck/holodeck.zip",
+          "path": "archives/holodeck/holodeck.zip",
+          "status": "verified",
+          "bytes": 759505,
+          "sha256": "9329cb02f68cb72cc002b13605e571266ed85ec547407d38e74a910913fce53e",
+          "zipEntries": 9,
+          "uncompressedBytes": 1066857,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "horseChestnut",
+      "title": "Horse Chestnut Tree",
+      "source": "https://casual-effects.com/g3d/data10/research/model/horseChestnut/info.js",
+      "advertisedSize": "18.5 MB",
+      "copyright": "© 2015 Xfrog Inc.",
+      "license": "Royalty Free",
+      "licenseHtml": "<a href='https://blog.turbosquid.com/royalty-free-license/'>Royalty Free</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/horseChestnut/chestnut.zip",
+          "path": "archives/horseChestnut/chestnut.zip",
+          "status": "verified",
+          "bytes": 19495063,
+          "sha256": "1ddaa54224de9b0e53cf7cad6ff3165d9341c06f0c74d2fffcee0597e8446d7b",
+          "zipEntries": 12,
+          "uncompressedBytes": 63469782,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "indonesian",
+      "title": "Indonesian Statue",
+      "source": "https://casual-effects.com/g3d/data10/research/model/indonesian/info.js",
+      "advertisedSize": "17.6 MB",
+      "copyright": "© 2012 Didier3d",
+      "license": "CC BY-SA 2.5",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by-sa/2.5/'>CC BY-SA 2.5</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/indonesian/indonesian.zip",
+          "path": "archives/indonesian/indonesian.zip",
+          "status": "verified",
+          "bytes": 18024066,
+          "sha256": "cbf6e769900dd56a2165d06ef3d10f87c09abbda564d8b28bbe09da66149c604",
+          "zipEntries": 1,
+          "uncompressedBytes": 29496084,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "lost_empire",
+      "title": "Lost Empire",
+      "source": "https://casual-effects.com/g3d/data10/research/model/lost_empire/info.js",
+      "advertisedSize": "2.1 MB",
+      "copyright": "© 2011 Morgan McGuire",
+      "license": "CC BY 3.0",
+      "licenseHtml": "<a href='http://creativecommons.org/licenses/by/3.0/'>CC BY 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/lost_empire/lost-empire.zip",
+          "path": "archives/lost_empire/lost-empire.zip",
+          "status": "verified",
+          "bytes": 2775448,
+          "sha256": "404be374106115db8dba369c9b7eda43d3792471e6030db8f83b83988f2c6953",
+          "zipEntries": 7,
+          "uncompressedBytes": 9351860,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "living_room",
+      "title": "Living Room",
+      "source": "https://casual-effects.com/g3d/data10/research/model/living_room/info.js",
+      "advertisedSize": "14.2 MB",
+      "copyright": "© 2012 Jay",
+      "license": "CC BY 3.0",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by/3.0/'>CC BY 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/living_room/living_room.zip",
+          "path": "archives/living_room/living_room.zip",
+          "status": "verified",
+          "bytes": 14547906,
+          "sha256": "f14daf4f566871e18c262a450db9ae0285b7124e93e05b3a8bfbcbf674a21aeb",
+          "zipEntries": 19,
+          "uncompressedBytes": 60888828,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "lpshead",
+      "title": "LPS Head",
+      "source": "https://casual-effects.com/g3d/data10/research/model/lpshead/info.js",
+      "advertisedSize": "42 MB",
+      "copyright": "© I-R Entertainment Ltd.",
+      "license": "CC BY 3.0",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by/3.0/'>CC BY 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/lpshead/lpshead.zip",
+          "path": "archives/lpshead/lpshead.zip",
+          "status": "verified",
+          "bytes": 43603192,
+          "sha256": "cc683bb006de4c1770ffbf0ec6da64c02df0173398001013b3782814b6d619ca",
+          "zipEntries": 7,
+          "uncompressedBytes": 44741436,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "mori_knob",
+      "title": "Mori Knob",
+      "source": "https://casual-effects.com/g3d/data10/common/model/mori_knob/info.js",
+      "advertisedSize": "238 kB",
+      "copyright": "© Yasutoshi Mori",
+      "license": "CC BY 3.0",
+      "licenseHtml": "CC BY 3.0",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/common/model/mori_knob/mori_knob.zip",
+          "path": "archives/mori_knob/mori_knob.zip",
+          "status": "verified",
+          "bytes": 244361,
+          "sha256": "7ef9d756891dc9df972109d7767105d7dea8d8c55171a6462033ae36e257238b",
+          "zipEntries": 5,
+          "uncompressedBytes": 952175,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "mitsuba_knob",
+      "title": "Mitsuba Knob",
+      "source": "https://casual-effects.com/g3d/data10/research/model/mitsuba_knob/info.js",
+      "advertisedSize": "2.1 MB",
+      "copyright": "© Jonas Pilo",
+      "license": "Restricted",
+      "licenseHtml": "<a href='http://www.mitsuba-renderer.org/download.html'>Restricted</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/mitsuba_knob/mitsuba.zip",
+          "path": "archives/mitsuba_knob/mitsuba.zip",
+          "status": "verified",
+          "bytes": 2185513,
+          "sha256": "0d3922dbc4251950c74c9e0d4f99b9106f8580b46eaaa7797006767aefcb3176",
+          "zipEntries": 6,
+          "uncompressedBytes": 12261962,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "powerplant",
+      "title": "Power Plant",
+      "source": "https://casual-effects.com/g3d/data10/research/model/powerplant/info.js",
+      "advertisedSize": "97 MB",
+      "copyright": "© 1999 University of North Carolina",
+      "license": "Custom",
+      "licenseHtml": "<a href='http://gamma.cs.unc.edu/POWERPLANT/#acknowledgements'>Custom</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/powerplant/powerplant.zip",
+          "path": "archives/powerplant/powerplant.zip",
+          "status": "verified",
+          "bytes": 124310853,
+          "sha256": "e5f9e9805c54b1e5b45ca38150ed40ff4b385206e50a8bbc501aaafccff2cad3",
+          "zipEntries": 4,
+          "uncompressedBytes": 817974053,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "roadBike",
+      "title": "Road Bike",
+      "source": "https://casual-effects.com/g3d/data10/research/model/roadBike/info.js",
+      "advertisedSize": "1.8 MB",
+      "copyright": "© 2015, Yasutoshi Mori",
+      "license": "CC BY 4.0",
+      "licenseHtml": "<a href='http://creativecommons.org/licenses/by/4.0/'>CC BY 4.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/roadBike/roadBike.zip",
+          "path": "archives/roadBike/roadBike.zip",
+          "status": "verified",
+          "bytes": 29623836,
+          "sha256": "7cfa644820b225e9234563b9832d01b5790d3a3195a207247b64433cd836ce96",
+          "zipEntries": 2,
+          "uncompressedBytes": 143553521,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "rungholt",
+      "title": "Rungholt",
+      "source": "https://casual-effects.com/g3d/data10/research/model/rungholt/info.js",
+      "advertisedSize": "48 MB",
+      "copyright": "© kescha",
+      "license": "CC BY 3.0",
+      "licenseHtml": "CC BY 3.0",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/rungholt/rungholt.zip",
+          "path": "archives/rungholt/rungholt.zip",
+          "status": "verified",
+          "bytes": 49767647,
+          "sha256": "dd927901828e19e042e02448f3814e18592c9c076b39bff226bb8dc7a5ad6f4a",
+          "zipEntries": 13,
+          "uncompressedBytes": 281858570,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "salle_de_bain",
+      "title": "Salle de Bain",
+      "source": "https://casual-effects.com/g3d/data10/research/model/salle_de_bain/info.js",
+      "advertisedSize": "30.1 MB",
+      "copyright": "© Nacimus Ait Cherif",
+      "license": "CC BY 3.0",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by/3.0/'>CC BY 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/salle_de_bain/salle_de_bain.zip",
+          "path": "archives/salle_de_bain/salle_de_bain.zip",
+          "status": "verified",
+          "bytes": 30857397,
+          "sha256": "caf37ceca995e19f3a3f983f517f786245561da32aad7cef8e6fea72a1579899",
+          "zipEntries": 6,
+          "uncompressedBytes": 130728363,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "San_Miguel",
+      "title": "San Miguel 2.0",
+      "source": "https://casual-effects.com/g3d/data10/research/model/San_Miguel/info.js",
+      "advertisedSize": "523 MB",
+      "copyright": "© Guillermo M. Leal Llaguno",
+      "license": "CC BY 3.0",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by/3.0/'>CC BY 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/San_Miguel/San_Miguel.zip",
+          "path": "archives/San_Miguel/San_Miguel.zip",
+          "status": "verified",
+          "bytes": 535519642,
+          "sha256": "85874077735808150e679b3c71d70a37a270cb8833f4911325aa1099da3f7d4a",
+          "zipEntries": 328,
+          "uncompressedBytes": 1910092684,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "scrubPine",
+      "title": "Scrub Pine Tree",
+      "source": "https://casual-effects.com/g3d/data10/research/model/scrubPine/info.js",
+      "advertisedSize": "384 kB",
+      "copyright": "By3hree Tier Digital Studios",
+      "license": "CC0 (Public Domain)",
+      "licenseHtml": "CC0 (Public Domain)",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/scrubPine/pine.zip",
+          "path": "archives/scrubPine/pine.zip",
+          "status": "verified",
+          "bytes": 393223,
+          "sha256": "da785f248fbd47ef747f48dbf31e29b376a43afced92e5c5c62a99066a2b72bc",
+          "zipEntries": 4,
+          "uncompressedBytes": 426667,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "serapis",
+      "title": "Serapis Bust",
+      "source": "https://casual-effects.com/g3d/data10/research/model/serapis/info.js",
+      "advertisedSize": "4.5 MB",
+      "copyright": "© 2012 MakerBot",
+      "license": "CC BY 2.0",
+      "licenseHtml": "<A href='https://creativecommons.org/licenses/by/2.0/'>CC BY 2.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/serapis/serapis.zip",
+          "path": "archives/serapis/serapis.zip",
+          "status": "verified",
+          "bytes": 4602265,
+          "sha256": "550625b90376af99af8c92949e06648cf2fe5fa308a3ba3667d69238c6c10cbe",
+          "zipEntries": 1,
+          "uncompressedBytes": 22253806,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "sibenik",
+      "title": "Sibenik Cathedral",
+      "source": "https://casual-effects.com/g3d/data10/research/model/sibenik/info.js",
+      "advertisedSize": "4.5 MB",
+      "copyright": "© 2002 Marko Dabrovic",
+      "license": "CC BY-NC",
+      "licenseHtml": "CC BY-NC",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/sibenik/sibenik.zip",
+          "path": "archives/sibenik/sibenik.zip",
+          "status": "verified",
+          "bytes": 1936467,
+          "sha256": "b7980306d30d4cc93deb3596082cfa63831b3902e51892e386f5e3721ed06e5c",
+          "zipEntries": 8,
+          "uncompressedBytes": 6173817,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "sphere",
+      "title": "Lat-Long Sphere",
+      "source": "https://casual-effects.com/g3d/data10/research/model/sphere/info.js",
+      "advertisedSize": "826 kB",
+      "copyright": "Public Domain",
+      "license": "Public Domain",
+      "licenseHtml": "Public Domain",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/sphere/sphere.zip",
+          "path": "archives/sphere/sphere.zip",
+          "status": "verified",
+          "bytes": 878608,
+          "sha256": "8dc3b4749213954a86eb1ea362534fd506628c1677ac09ead1c7e0a04c8706e8",
+          "zipEntries": 7,
+          "uncompressedBytes": 2158952,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "sportsCar",
+      "title": "Sports Car",
+      "source": "https://casual-effects.com/g3d/data10/research/model/sportsCar/info.js",
+      "advertisedSize": "3.6 MB",
+      "copyright": "© 2015 Yasutoshi Mori",
+      "license": "CC BY 4.0",
+      "licenseHtml": "<a href='http://creativecommons.org/licenses/by/4.0/'>CC BY 4.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/sportsCar/sportsCar.zip",
+          "path": "archives/sportsCar/sportsCar.zip",
+          "status": "verified",
+          "bytes": 3732847,
+          "sha256": "83dac92ab6ed1b902d61b8e7cbfc9bcf7b95afa2a6070e6a3ec1cc16d5585046",
+          "zipEntries": 2,
+          "uncompressedBytes": 16777065,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "teapot",
+      "title": "Teapot",
+      "source": "https://casual-effects.com/g3d/data10/common/model/teapot/info.js",
+      "advertisedSize": "233 kB",
+      "copyright": "© 1975 Martin Newell",
+      "license": "CC0",
+      "licenseHtml": "CC0",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/common/model/teapot/teapot.zip",
+          "path": "archives/teapot/teapot.zip",
+          "status": "verified",
+          "bytes": 238932,
+          "sha256": "a6163f5bd662915c21f5a40d2cf6a7231afe25f09cd34679a9d82948ed891ac4",
+          "zipEntries": 3,
+          "uncompressedBytes": 869194,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "vokselia_spawn",
+      "title": "Vokselia Spawn",
+      "source": "https://casual-effects.com/g3d/data10/research/model/vokselia_spawn/info.js",
+      "advertisedSize": "13.3 MB",
+      "copyright": "© 2011 Vokselia",
+      "license": "CC BY 3.0",
+      "licenseHtml": "<a href='http://creativecommons.org/licenses/by/3.0/'>CC BY 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/vokselia_spawn/vokselia_spawn.zip",
+          "path": "archives/vokselia_spawn/vokselia_spawn.zip",
+          "status": "verified",
+          "bytes": 13625713,
+          "sha256": "4bb76192fde49f4165cd7cb58b484035b879cabc182d6944f054c1b6a01dc3cb",
+          "zipEntries": 3,
+          "uncompressedBytes": 81116659,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "white_oak",
+      "title": "White Oak Tree",
+      "source": "https://casual-effects.com/g3d/data10/research/model/white_oak/info.js",
+      "advertisedSize": "9.5 MB",
+      "copyright": "© 2017 SpeedTree",
+      "license": "CC BY-NC-SA 3.0",
+      "licenseHtml": "<a href='http://creativecommons.org/licenses/by-nc-sa/3.0/'>CC BY-NC-SA 3.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/white_oak/white_oak.zip",
+          "path": "archives/white_oak/white_oak.zip",
+          "status": "verified",
+          "bytes": 9936084,
+          "sha256": "fae799c7990bea9c152321c3efa029a0eb96db16e250159c8f9002c9dc877084",
+          "zipEntries": 12,
+          "uncompressedBytes": 12962121,
+          "zipCrcVerified": true
+        }
+      ]
+    },
+    {
+      "id": "bistro",
+      "title": "Amazon Lumberyard Bistro",
+      "source": "https://casual-effects.com/g3d/data10/research/model/bistro/info.js",
+      "advertisedSize": "2.4 GB",
+      "copyright": "© 2017 Amazon Lumberyard",
+      "license": "CC-BY 4.0",
+      "licenseHtml": "<a href='https://creativecommons.org/licenses/by/4.0/'>CC-BY 4.0</a>",
+      "files": [
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/bistro/Exterior.zip",
+          "path": "archives/bistro/Exterior.zip",
+          "status": "verified",
+          "bytes": 64186766,
+          "sha256": "f612ba0d8a65811afe0d48a023d31e5b43ac40b78e9b12d15e2b7dc8923c29d4",
+          "zipEntries": 2,
+          "uncompressedBytes": 311371057,
+          "zipCrcVerified": true
+        },
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/bistro/Interior.zip",
+          "path": "archives/bistro/Interior.zip",
+          "status": "verified",
+          "bytes": 21293389,
+          "sha256": "3faa41f8d6860d1267268348d44d2b74c64a8bfb55dd4b03c562a70ab83b1062",
+          "zipEntries": 2,
+          "uncompressedBytes": 108416959,
+          "zipCrcVerified": true
+        },
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/bistro/BuildingTextures",
+          "path": "archives/bistro/BuildingTextures.zip",
+          "status": "verified",
+          "bytes": 507671451,
+          "sha256": "16538a37f34cadec5665d97e5b77ef3581d67ab674b33b9caeef1d277cbde6bf",
+          "zipEntries": 141,
+          "uncompressedBytes": 508329182,
+          "zipCrcVerified": true
+        },
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/bistro/OtherTextures",
+          "path": "archives/bistro/OtherTextures.zip",
+          "status": "verified",
+          "bytes": 431016313,
+          "sha256": "0806fee3eeb0e14cd501582edbd2d5caf33c5416a62a871e0f126391096f5c58",
+          "zipEntries": 191,
+          "uncompressedBytes": 431592637,
+          "zipCrcVerified": true
+        },
+        {
+          "url": "https://casual-effects.com/g3d/data10/research/model/bistro/PropTextures",
+          "path": "archives/bistro/PropTextures.zip",
+          "status": "verified",
+          "bytes": 415421476,
+          "sha256": "a179e4ee6367d2b518c4978d7e2e690c59503861634d67d0da8bacfa7196571a",
+          "zipEntries": 200,
+          "uncompressedBytes": 416385050,
+          "zipCrcVerified": true
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "entries": 39,
+    "files": 43,
+    "downloadedFiles": 43,
+    "zipCrcVerifiedFiles": 42,
+    "sourceErrorFiles": 1,
+    "totalBytes": 2704077156
+  }
+}

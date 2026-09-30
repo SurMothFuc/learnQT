@@ -440,6 +440,26 @@ void tiesAndAlpha(Gpu &gpu)
         const float fraction = float(accepted) / (Gpu::size * Gpu::size / 2);
         require(std::abs(fraction - opacity) < .05f, "Blend coverage no longer follows opacity");
     }
+    // Rungholt's water atlas has alpha 136/255. Applying its duplicate map_d
+    // again and using Mask removes the surface from beauty and picking.
+    const float waterAlpha = 136.f / 255.f;
+    f.materials[0].opacity = waterAlpha * waterAlpha;
+    f.materials[0].alphaMode = 2;
+    gpu.scene(f);
+    for (bool picking : {false, true})
+        require(f.surfaceInstances.at(int(gpu.run(rays, hitBody, picking)[4]) - 1) == 1u,
+                "Water alpha-cutout reproduction did not skip the front surface");
+    f.materials[0].opacity = waterAlpha;
+    f.materials[0].alphaMode = 3;
+    gpu.scene(f);
+    require(f.surfaceInstances.at(int(gpu.run(rays, hitBody, true)[4]) - 1) == 0u,
+            "Corrected partially transparent water cannot be picked");
+    const auto water = gpu.run(rays, hitBody);
+    int waterHits = 0;
+    for (int i = 1; i < Gpu::size * Gpu::size; i += 2)
+        waterHits += f.surfaceInstances.at(int(water[i * 4]) - 1) == 0;
+    require(std::abs(float(waterHits) / (Gpu::size * Gpu::size / 2) - waterAlpha) < .05f,
+            "Corrected water disappeared or lost its partial coverage in beauty");
     std::cout << "GPU equal-distance ordering and textured Mask/Blend passed\n";
 }
 void normalsAndMedia(Gpu &gpu)

@@ -74,6 +74,21 @@ struct RenderStats
     quint64 compositeCount = 0;
     QSize size;
     RenderJobState state = RenderJobState::Idle;
+    // 交互预览当前是否由光栅化提供，以及最近一帧光栅化耗时。
+    bool rasterActive = false;
+    bool computePathtrace = false;
+    QString pathtraceBackend;
+    double rasterMs = 0, rasterFps = 0;
+    // GPU 拾取 pass 的最近耗时、本窗口重绘次数与累计 GPU 耗时，用于定位相机交互期间的额外整屏开销。
+    double pickMs = 0;
+    double pickWindowMs = 0;
+    int pickPasses = 0;
+    // 单次拾取重绘的最长耗时：确认补绘不是零成本，也不是每帧都在跑。
+    double pickMaxMs = 0;
+    // 最近一个统计窗口（约 200 ms）的渲染循环分解，单位为毫秒。
+    int frames = 0, ticks = 0;
+    double windowMs = 0, boundaryWaitMs = 0, loopMs = 0, cadenceSleepMs = 0, tailMs = 0,
+           rasterSubmitMs = 0, pickSubmitMs = 0, presentMs = 0;
 };
 Q_DECLARE_METATYPE(RenderStats)
 Q_DECLARE_METATYPE(RenderJobState)

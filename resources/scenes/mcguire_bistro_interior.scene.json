@@ -1,0 +1,6127 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 65,
+    "position": [
+      0.5800915956497192,
+      -0.06915553659200668,
+      1.2799999713897705
+    ],
+    "target": [
+      -0.3867277503013611,
+      -0.10373330116271973,
+      -1.2799999713897705
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 65,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        0.5800915956497192,
+        -0.06915553659200668,
+        1.2799999713897705
+      ],
+      "target": [
+        -0.3867277503013611,
+        -0.10373330116271973,
+        -1.2799999713897705
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [
+        "Missing ceiling-fan emissive map omitted in derived MTL. Other emissive maps retained.",
+        "512px texture derivatives used to limit the shared texture-array allocation. Original full-resolution images retained.",
+        "OBJ object/group boundaries consolidated by material for practical loading; positions, UVs, normals and faces retained.",
+        "Added interior fill light and fitted camera; original renderer lighting is not reproduced exactly."
+      ],
+      "asset": "Amazon Lumberyard Bistro",
+      "author": "© 2017 Amazon Lumberyard",
+      "license": "CC-BY 4.0",
+      "source": "https://casual-effects.com/g3d/data10/research/model/bistro/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "Amazon Lumberyard Bistro · interior",
+      "order": 0,
+      "parent": ""
+    },
+    {
+      "id": "model-000/group",
+      "name": "interior_by_material",
+      "order": 0,
+      "parent": "root"
+    },
+    {
+      "id": "model-000/node/0",
+      "name": "interior_by_material.obj",
+      "order": 0,
+      "parent": "model-000/group"
+    },
+    {
+      "id": "model-000/node/0/0",
+      "name": "defaultobject",
+      "order": 1,
+      "parent": "model-000/node/0"
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [
+    {
+      "id": "interior-fill",
+      "position": [
+        0,
+        0.19017772323746346,
+        0
+      ],
+      "radiance": [
+        65,
+        60,
+        52
+      ],
+      "radius": 0.03025554687868737,
+      "type": "sphere"
+    }
+  ],
+  "materials": [
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/1",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/2",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/1"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/3",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/2"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/5",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/4"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/4",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/3"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/6",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/5"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/7",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/6"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/8",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/9",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/7"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/10",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/8"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 3,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/11",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 0.19999998807907104,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/9"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/12",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/10"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/13",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/11"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/14",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/12"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/15",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/13"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/16",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/14",
+        "emissive": "model-000/texture/15",
+        "opacity": "model-000/texture/16"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/18",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/18"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/17",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/17"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/19",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/19",
+        "emissive": "model-000/texture/20"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/20",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/21",
+        "emissive": "model-000/texture/22"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        1,
+        1,
+        1
+      ],
+      "id": "model-000/material/21",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/23"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/22",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/14",
+        "emissive": "model-000/texture/15"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/23",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/24"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/24",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/25"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/25",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/26"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0,
+        0,
+        0
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/26",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/27",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/27"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/28",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/28"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/29",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/29"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0,
+        0,
+        0
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/30",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0,
+        0,
+        0
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/31",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/32",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/30"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/33",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/31"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/34",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/32"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/35",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/33"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/36",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/34"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/37",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/35"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/38",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/36"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/39",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/37"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.2000000476837158,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0,
+        0,
+        0
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/40",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0,
+        0,
+        0
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/41",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0,
+        0,
+        0
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/42",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {},
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/43",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/38"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/44",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/39"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/45",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/40"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/46",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/41",
+        "opacity": "model-000/texture/41"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/47",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/42"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/48",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/43",
+        "opacity": "model-000/texture/44"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/49",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/45"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/50",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/46"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/51",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/47"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/52",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/37"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/53",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/48"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/55",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/30"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/54",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/49",
+        "opacity": "model-000/texture/50"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/56",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/32"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/57",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/51"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/58",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/52"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/59",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/53"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/60",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/54"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/61",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/55"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/62",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/56"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 3,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/63",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 0.10000002384185791,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/35"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/64",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/57"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/65",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/58"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        1,
+        1,
+        1
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/66",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/32"
+      },
+      "transmission": 0
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {
+        "../../../derived/bistro/textures/092fd817fd7e.png": "../imported/mcguire/derived/bistro/textures/092fd817fd7e.png",
+        "../../../derived/bistro/textures/0d307466f929.png": "../imported/mcguire/derived/bistro/textures/0d307466f929.png",
+        "../../../derived/bistro/textures/18b203d16773.png": "../imported/mcguire/derived/bistro/textures/18b203d16773.png",
+        "../../../derived/bistro/textures/18e69279f2ec.png": "../imported/mcguire/derived/bistro/textures/18e69279f2ec.png",
+        "../../../derived/bistro/textures/37b6f901ec4f.png": "../imported/mcguire/derived/bistro/textures/37b6f901ec4f.png",
+        "../../../derived/bistro/textures/4451de8ae397.png": "../imported/mcguire/derived/bistro/textures/4451de8ae397.png",
+        "../../../derived/bistro/textures/47d62787c7e4.png": "../imported/mcguire/derived/bistro/textures/47d62787c7e4.png",
+        "../../../derived/bistro/textures/49050a94049d.png": "../imported/mcguire/derived/bistro/textures/49050a94049d.png",
+        "../../../derived/bistro/textures/4cb232e2688d.png": "../imported/mcguire/derived/bistro/textures/4cb232e2688d.png",
+        "../../../derived/bistro/textures/52656cd66426.png": "../imported/mcguire/derived/bistro/textures/52656cd66426.png",
+        "../../../derived/bistro/textures/53046e9afd34.png": "../imported/mcguire/derived/bistro/textures/53046e9afd34.png",
+        "../../../derived/bistro/textures/58f32b390578.png": "../imported/mcguire/derived/bistro/textures/58f32b390578.png",
+        "../../../derived/bistro/textures/5b6f8ba07b39.png": "../imported/mcguire/derived/bistro/textures/5b6f8ba07b39.png",
+        "../../../derived/bistro/textures/5e228f2ed65c.png": "../imported/mcguire/derived/bistro/textures/5e228f2ed65c.png",
+        "../../../derived/bistro/textures/5e50b921fc95.png": "../imported/mcguire/derived/bistro/textures/5e50b921fc95.png",
+        "../../../derived/bistro/textures/629e10039d65.png": "../imported/mcguire/derived/bistro/textures/629e10039d65.png",
+        "../../../derived/bistro/textures/654eaced1e99.png": "../imported/mcguire/derived/bistro/textures/654eaced1e99.png",
+        "../../../derived/bistro/textures/668a4a29d114.png": "../imported/mcguire/derived/bistro/textures/668a4a29d114.png",
+        "../../../derived/bistro/textures/7534c2d87d42.png": "../imported/mcguire/derived/bistro/textures/7534c2d87d42.png",
+        "../../../derived/bistro/textures/7bac66fe743d.png": "../imported/mcguire/derived/bistro/textures/7bac66fe743d.png",
+        "../../../derived/bistro/textures/7d82c1b00df4.png": "../imported/mcguire/derived/bistro/textures/7d82c1b00df4.png",
+        "../../../derived/bistro/textures/8627db5b88f5.png": "../imported/mcguire/derived/bistro/textures/8627db5b88f5.png",
+        "../../../derived/bistro/textures/873f79712d7c.png": "../imported/mcguire/derived/bistro/textures/873f79712d7c.png",
+        "../../../derived/bistro/textures/9b6b5d0d82b4.png": "../imported/mcguire/derived/bistro/textures/9b6b5d0d82b4.png",
+        "../../../derived/bistro/textures/ae365cb3abdc.png": "../imported/mcguire/derived/bistro/textures/ae365cb3abdc.png",
+        "../../../derived/bistro/textures/aeb69b4c7954.png": "../imported/mcguire/derived/bistro/textures/aeb69b4c7954.png",
+        "../../../derived/bistro/textures/b43a36910559.png": "../imported/mcguire/derived/bistro/textures/b43a36910559.png",
+        "../../../derived/bistro/textures/bc1828e0aa93.png": "../imported/mcguire/derived/bistro/textures/bc1828e0aa93.png",
+        "../../../derived/bistro/textures/bceea57bf67f.png": "../imported/mcguire/derived/bistro/textures/bceea57bf67f.png",
+        "../../../derived/bistro/textures/bf512dce0555.png": "../imported/mcguire/derived/bistro/textures/bf512dce0555.png",
+        "../../../derived/bistro/textures/c19039628c7a.png": "../imported/mcguire/derived/bistro/textures/c19039628c7a.png",
+        "../../../derived/bistro/textures/cad3bab6aef8.png": "../imported/mcguire/derived/bistro/textures/cad3bab6aef8.png",
+        "../../../derived/bistro/textures/cf1a2f706a28.png": "../imported/mcguire/derived/bistro/textures/cf1a2f706a28.png",
+        "../../../derived/bistro/textures/d21d996b15b2.png": "../imported/mcguire/derived/bistro/textures/d21d996b15b2.png",
+        "../../../derived/bistro/textures/d3ee8996a694.png": "../imported/mcguire/derived/bistro/textures/d3ee8996a694.png",
+        "../../../derived/bistro/textures/d8a2d274b3b9.png": "../imported/mcguire/derived/bistro/textures/d8a2d274b3b9.png",
+        "../../../derived/bistro/textures/d8e8e1b1d621.png": "../imported/mcguire/derived/bistro/textures/d8e8e1b1d621.png",
+        "../../../derived/bistro/textures/dc43a63fcb2c.png": "../imported/mcguire/derived/bistro/textures/dc43a63fcb2c.png",
+        "../../../derived/bistro/textures/dcf1c68e6f0c.png": "../imported/mcguire/derived/bistro/textures/dcf1c68e6f0c.png",
+        "../../../derived/bistro/textures/ee3b69fa50f6.png": "../imported/mcguire/derived/bistro/textures/ee3b69fa50f6.png",
+        "../../../derived/bistro/textures/f6f3ecfccaa5.png": "../imported/mcguire/derived/bistro/textures/f6f3ecfccaa5.png",
+        "../BuildingTextures/Grey_128.png": "../imported/mcguire/assets/bistro/BuildingTextures/Grey_128.png",
+        "../BuildingTextures/Metal_Hexagonal_Grid_01_diff.png": "../imported/mcguire/assets/bistro/BuildingTextures/Metal_Hexagonal_Grid_01_diff.png",
+        "../BuildingTextures/Metal_Hexagonal_Grid_01_spec.png": "../imported/mcguire/assets/bistro/BuildingTextures/Metal_Hexagonal_Grid_01_spec.png",
+        "../BuildingTextures/Paris_BarTrim_01a_diff.png": "../imported/mcguire/assets/bistro/BuildingTextures/Paris_BarTrim_01a_diff.png",
+        "../BuildingTextures/Paris_BarTrim_01a_spec.png": "../imported/mcguire/assets/bistro/BuildingTextures/Paris_BarTrim_01a_spec.png",
+        "../BuildingTextures/Paris_Lantern_01A_mask.png": "../imported/mcguire/assets/bistro/BuildingTextures/Paris_Lantern_01A_mask.png",
+        "../BuildingTextures/Paris_Lantern_01A_spec.png": "../imported/mcguire/assets/bistro/BuildingTextures/Paris_Lantern_01A_spec.png",
+        "../BuildingTextures/Paris_MenuSign_01B_diff.png": "../imported/mcguire/assets/bistro/BuildingTextures/Paris_MenuSign_01B_diff.png",
+        "../BuildingTextures/White.png": "../imported/mcguire/assets/bistro/BuildingTextures/White.png",
+        "../BuildingTextures/Wood_Painted_02_Diff.png": "../imported/mcguire/assets/bistro/BuildingTextures/Wood_Painted_02_Diff.png",
+        "../BuildingTextures/concrete_smooth_02_diff.png": "../imported/mcguire/assets/bistro/BuildingTextures/concrete_smooth_02_diff.png",
+        "../BuildingTextures/concrete_smooth_02_red_diff.png": "../imported/mcguire/assets/bistro/BuildingTextures/concrete_smooth_02_red_diff.png",
+        "../BuildingTextures/concrete_smooth_02_spec.png": "../imported/mcguire/assets/bistro/BuildingTextures/concrete_smooth_02_spec.png",
+        "../BuildingTextures/frosted_glass_diff.png": "../imported/mcguire/assets/bistro/BuildingTextures/frosted_glass_diff.png",
+        "../BuildingTextures/paris_brushed_metal_diff.png": "../imported/mcguire/assets/bistro/BuildingTextures/paris_brushed_metal_diff.png",
+        "../BuildingTextures/paris_brushed_metal_spec.png": "../imported/mcguire/assets/bistro/BuildingTextures/paris_brushed_metal_spec.png",
+        "../BuildingTextures/tile_hexagonal_01_ddna.png": "../imported/mcguire/assets/bistro/BuildingTextures/tile_hexagonal_01_ddna.png",
+        "../BuildingTextures/tile_hexagonal_01_diff.png": "../imported/mcguire/assets/bistro/BuildingTextures/tile_hexagonal_01_diff.png",
+        "../BuildingTextures/wood_painted_02_spec.png": "../imported/mcguire/assets/bistro/BuildingTextures/wood_painted_02_spec.png",
+        "../BuildingTextures/wood_planks_01_diff.png": "../imported/mcguire/assets/bistro/BuildingTextures/wood_planks_01_diff.png",
+        "../BuildingTextures/wood_polished_01_diff.png": "../imported/mcguire/assets/bistro/BuildingTextures/wood_polished_01_diff.png",
+        "../BuildingTextures/wood_polished_01_spec.png": "../imported/mcguire/assets/bistro/BuildingTextures/wood_polished_01_spec.png",
+        "../OtherTextures/Colors/Grey_128.png": "../imported/mcguire/assets/bistro/OtherTextures/Colors/Grey_128.png",
+        "../OtherTextures/Colors/Grey_30.png": "../imported/mcguire/assets/bistro/OtherTextures/Colors/Grey_30.png",
+        "../OtherTextures/Colors/White.png": "../imported/mcguire/assets/bistro/OtherTextures/Colors/White.png",
+        "../OtherTextures/Tiling/Bronze_01/Bronze_01_diff.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Bronze_01/Bronze_01_diff.png",
+        "../OtherTextures/Tiling/Bronze_01/Bronze_01_spec.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Bronze_01/Bronze_01_spec.png",
+        "../OtherTextures/Tiling/Ceramic_01/Ceramic_01_diff.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Ceramic_01/Ceramic_01_diff.png",
+        "../OtherTextures/Tiling/Glass_Dirty_01/Glass_Dirty_01_Diff.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Glass_Dirty_01/Glass_Dirty_01_Diff.png",
+        "../OtherTextures/Tiling/Metal_Chrome_01/Metal_Chrome_01_Diff.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Metal_Chrome_01/Metal_Chrome_01_Diff.png",
+        "../OtherTextures/Tiling/Metal_Chrome_01/Metal_Chrome_01_Spec.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Metal_Chrome_01/Metal_Chrome_01_Spec.png",
+        "../OtherTextures/Tiling/Metal_Chrome_02/Metal_Chrome_02_diff.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Metal_Chrome_02/Metal_Chrome_02_diff.png",
+        "../OtherTextures/Tiling/Metal_Chrome_02/Metal_Chrome_02_spec.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Metal_Chrome_02/Metal_Chrome_02_spec.png",
+        "../OtherTextures/Tiling/Metal_Clean_01/Metal_Clean_01_diff.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Metal_Clean_01/Metal_Clean_01_diff.png",
+        "../OtherTextures/Tiling/Metal_Clean_01/Metal_Clean_01_spec.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Metal_Clean_01/Metal_Clean_01_spec.png",
+        "../OtherTextures/Tiling/Plastic_01/Plastic_01_Diff.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Plastic_01/Plastic_01_Diff.png",
+        "../OtherTextures/Tiling/Plastic_01/Plastic_01_Spec.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Plastic_01/Plastic_01_Spec.png",
+        "../OtherTextures/Tiling/Rubber_Bar_Mat_01/Rubber_Bar_Mat_01_Diff.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Rubber_Bar_Mat_01/Rubber_Bar_Mat_01_Diff.png",
+        "../OtherTextures/Tiling/Rubber_Bar_Mat_01/Rubber_Bar_Mat_01_Spec.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Rubber_Bar_Mat_01/Rubber_Bar_Mat_01_Spec.png",
+        "../OtherTextures/Tiling/Wood_Painted_02/Wood_Painted_02_Diff.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Wood_Painted_02/Wood_Painted_02_Diff.png",
+        "../OtherTextures/Tiling/Wood_Painted_02/Wood_Painted_02_Spec.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Wood_Painted_02/Wood_Painted_02_Spec.png",
+        "../OtherTextures/Tiling/Wood_Planks_01/Wood_Planks_01_Diff.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Wood_Planks_01/Wood_Planks_01_Diff.png",
+        "../OtherTextures/Tiling/Wood_Planks_01/Wood_Planks_01_Spec.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Wood_Planks_01/Wood_Planks_01_Spec.png",
+        "../OtherTextures/Tiling/Wood_Polished_01/Wood_Polished_01_Diff.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Wood_Polished_01/Wood_Polished_01_Diff.png",
+        "../OtherTextures/Tiling/Wood_Polished_01/Wood_Polished_01_spec.png": "../imported/mcguire/assets/bistro/OtherTextures/Tiling/Wood_Polished_01/Wood_Polished_01_spec.png",
+        "../PropTextures/Bistro/Paris_BarStool_01/Paris_BarStool_01A_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_BarStool_01/Paris_BarStool_01A_diff.png",
+        "../PropTextures/Bistro/Paris_BarStool_01/Paris_BarStool_01A_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_BarStool_01/Paris_BarStool_01A_spec.png",
+        "../PropTextures/Bistro/Paris_BeerTap_01/Paris_BeerTap_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_BeerTap_01/Paris_BeerTap_01_diff.png",
+        "../PropTextures/Bistro/Paris_BeerTap_01/Paris_BeerTap_01_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_BeerTap_01/Paris_BeerTap_01_spec.png",
+        "../PropTextures/Bistro/Paris_CashRegister_01/Paris_CashRegister_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_CashRegister_01/Paris_CashRegister_01_diff.png",
+        "../PropTextures/Bistro/Paris_CashRegister_01/Paris_CashRegister_01_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_CashRegister_01/Paris_CashRegister_01_spec.png",
+        "../PropTextures/Bistro/Paris_CashRegister_01/Paris_CashRegister_Buttons_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_CashRegister_01/Paris_CashRegister_Buttons_01_diff.png",
+        "../PropTextures/Bistro/Paris_CashRegister_01/Paris_CashRegister_Buttons_01_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_CashRegister_01/Paris_CashRegister_Buttons_01_spec.png",
+        "../PropTextures/Bistro/Paris_CeilingFan_01/Paris_CeilingFan_01A_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_CeilingFan_01/Paris_CeilingFan_01A_diff.png",
+        "../PropTextures/Bistro/Paris_CeilingFan_01/Paris_CeilingFan_01A_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_CeilingFan_01/Paris_CeilingFan_01A_spec.png",
+        "../PropTextures/Bistro/Paris_Ceiling_Lamp_01/Paris_Ceiling_Lamp_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Ceiling_Lamp_01/Paris_Ceiling_Lamp_01_diff.png",
+        "../PropTextures/Bistro/Paris_Ceiling_Lamp_01/Paris_Ceiling_Lamp_01_emi.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Ceiling_Lamp_01/Paris_Ceiling_Lamp_01_emi.png",
+        "../PropTextures/Bistro/Paris_Ceiling_Lamp_01/Paris_Ceiling_Lamp_01_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Ceiling_Lamp_01/Paris_Ceiling_Lamp_01_spec.png",
+        "../PropTextures/Bistro/Paris_Coasters_01/Paris_Coasters_01_ddna.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Coasters_01/Paris_Coasters_01_ddna.png",
+        "../PropTextures/Bistro/Paris_Coasters_01/Paris_Coasters_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Coasters_01/Paris_Coasters_01_diff.png",
+        "../PropTextures/Bistro/Paris_Coasters_01/Paris_Coasters_01_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Coasters_01/Paris_Coasters_01_spec.png",
+        "../PropTextures/Bistro/Paris_CookieJar/Cookie_01_Lo_default_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_CookieJar/Cookie_01_Lo_default_diff.png",
+        "../PropTextures/Bistro/Paris_Cotton_Placemat_01/Paris_Cotton_Placemat_01_Diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Cotton_Placemat_01/Paris_Cotton_Placemat_01_Diff.png",
+        "../PropTextures/Bistro/Paris_Cotton_Placemat_01/Paris_Cotton_Placemat_01_Spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Cotton_Placemat_01/Paris_Cotton_Placemat_01_Spec.png",
+        "../PropTextures/Bistro/Paris_Cotton_Placemat_01/Paris_Cotton_Placemat_01_ddna.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Cotton_Placemat_01/Paris_Cotton_Placemat_01_ddna.png",
+        "../PropTextures/Bistro/Paris_Curtain_01/Paris_Curtain_01A_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Curtain_01/Paris_Curtain_01A_diff.png",
+        "../PropTextures/Bistro/Paris_Curtain_01/Paris_Curtain_01A_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Curtain_01/Paris_Curtain_01A_spec.png",
+        "../PropTextures/Bistro/Paris_Curtain_01/Paris_Curtain_01B_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Curtain_01/Paris_Curtain_01B_diff.png",
+        "../PropTextures/Bistro/Paris_Curtain_01/Paris_Curtain_01B_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Curtain_01/Paris_Curtain_01B_spec.png",
+        "../PropTextures/Bistro/Paris_Cutlery_01/Paris_Cutlery_01_details_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Cutlery_01/Paris_Cutlery_01_details_diff.png",
+        "../PropTextures/Bistro/Paris_Cutlery_01/Paris_Cutlery_01_details_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Cutlery_01/Paris_Cutlery_01_details_spec.png",
+        "../PropTextures/Bistro/Paris_Doormats/Paris_Doormat_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Doormats/Paris_Doormat_01_diff.png",
+        "../PropTextures/Bistro/Paris_Flower_Pot_01/Paris_interior_plants_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Flower_Pot_01/Paris_interior_plants_01_diff.png",
+        "../PropTextures/Bistro/Paris_LiquorBottle_01/Paris_LiquorBottle_01_Cap_Diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_LiquorBottle_01/Paris_LiquorBottle_01_Cap_Diff.png",
+        "../PropTextures/Bistro/Paris_LiquorBottle_01/Paris_LiquorBottle_01_Cap_Spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_LiquorBottle_01/Paris_LiquorBottle_01_Cap_Spec.png",
+        "../PropTextures/Bistro/Paris_LiquorBottle_01/Paris_LiquorBottle_labels_01_Diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_LiquorBottle_01/Paris_LiquorBottle_labels_01_Diff.png",
+        "../PropTextures/Bistro/Paris_LiquorBottle_01/Paris_LiquorBottle_labels_01_Spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_LiquorBottle_01/Paris_LiquorBottle_labels_01_Spec.png",
+        "../PropTextures/Bistro/Paris_NapkinHolder_01/Paris_Napkinholder_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_NapkinHolder_01/Paris_Napkinholder_01_diff.png",
+        "../PropTextures/Bistro/Paris_NapkinHolder_01/Paris_Napkinholder_01_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_NapkinHolder_01/Paris_Napkinholder_01_spec.png",
+        "../PropTextures/Bistro/Paris_Painting_01/Paris_Painting_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Painting_01/Paris_Painting_01_diff.png",
+        "../PropTextures/Bistro/Paris_Painting_01/Paris_Painting_01_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Painting_01/Paris_Painting_01_spec.png",
+        "../PropTextures/Bistro/Paris_Painting_01/Paris_Paintings_01_Diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Painting_01/Paris_Paintings_01_Diff.png",
+        "../PropTextures/Bistro/Paris_Painting_01/Paris_Paintings_01_Spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Painting_01/Paris_Paintings_01_Spec.png",
+        "../PropTextures/Bistro/Paris_Plates_01/Paris_Plates_details_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Plates_01/Paris_Plates_details_diff.png",
+        "../PropTextures/Bistro/Paris_Plates_01/Paris_Plates_details_mask.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Plates_01/Paris_Plates_details_mask.png",
+        "../PropTextures/Bistro/Paris_Radiator_01/Paris_Radiator_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Radiator_01/Paris_Radiator_01_diff.png",
+        "../PropTextures/Bistro/Paris_Radiator_01/Paris_Radiator_01_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Radiator_01/Paris_Radiator_01_spec.png",
+        "../PropTextures/Bistro/Paris_Wall_Light_Interior_01/Paris_Wall_Light_Interior_Emi.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Wall_Light_Interior_01/Paris_Wall_Light_Interior_Emi.png",
+        "../PropTextures/Bistro/Paris_Wall_Light_Interior_01/Paris_Wall_Light_Interior_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Wall_Light_Interior_01/Paris_Wall_Light_Interior_diff.png",
+        "../PropTextures/Bistro/Paris_Wall_Light_Interior_01/Paris_Wall_Light_Interior_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Wall_Light_Interior_01/Paris_Wall_Light_Interior_spec.png",
+        "../PropTextures/Bistro/Paris_WickerBasket_01/Paris_WickerBasket_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_WickerBasket_01/Paris_WickerBasket_01_diff.png",
+        "../PropTextures/Bistro/Paris_Wine_Cooler_01/Paris_Cloths_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Wine_Cooler_01/Paris_Cloths_01_diff.png",
+        "../PropTextures/Street/Paris_Lantern_01/Paris_Lantern_01A_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Street/Paris_Lantern_01/Paris_Lantern_01A_diff.png",
+        "../PropTextures/Street/Paris_Lantern_01/Paris_Lantern_01A_emi.png": "../imported/mcguire/assets/bistro/PropTextures/Street/Paris_Lantern_01/Paris_Lantern_01A_emi.png",
+        "../PropTextures/Street/Paris_Lantern_01/Paris_Lantern_01A_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Street/Paris_Lantern_01/Paris_Lantern_01A_spec.png",
+        "../PropTextures/Street/Paris_TrashCan_01/Paris_TrashCan_01_diff.png": "../imported/mcguire/assets/bistro/PropTextures/Street/Paris_TrashCan_01/Paris_TrashCan_01_diff.png",
+        "../PropTextures/Street/Paris_TrashCan_01/Paris_TrashCan_01_spec.png": "../imported/mcguire/assets/bistro/PropTextures/Street/Paris_TrashCan_01/Paris_TrashCan_01_spec.png",
+        "interior.mtl": "../imported/mcguire/derived/bistro/mtl/Interior/interior.mtl"
+      },
+      "expanded": true,
+      "id": "model-000",
+      "material": null,
+      "materialBindings": {
+        "1": "model-000/material/1",
+        "10": "model-000/material/10",
+        "11": "model-000/material/11",
+        "12": "model-000/material/12",
+        "13": "model-000/material/13",
+        "14": "model-000/material/14",
+        "15": "model-000/material/15",
+        "16": "model-000/material/16",
+        "17": "model-000/material/17",
+        "18": "model-000/material/18",
+        "19": "model-000/material/19",
+        "2": "model-000/material/2",
+        "20": "model-000/material/20",
+        "21": "model-000/material/21",
+        "22": "model-000/material/22",
+        "23": "model-000/material/23",
+        "24": "model-000/material/24",
+        "25": "model-000/material/25",
+        "26": "model-000/material/26",
+        "27": "model-000/material/27",
+        "28": "model-000/material/28",
+        "29": "model-000/material/29",
+        "3": "model-000/material/3",
+        "30": "model-000/material/30",
+        "31": "model-000/material/31",
+        "32": "model-000/material/32",
+        "33": "model-000/material/33",
+        "34": "model-000/material/34",
+        "35": "model-000/material/35",
+        "36": "model-000/material/36",
+        "37": "model-000/material/37",
+        "38": "model-000/material/38",
+        "39": "model-000/material/39",
+        "4": "model-000/material/4",
+        "40": "model-000/material/40",
+        "41": "model-000/material/41",
+        "42": "model-000/material/42",
+        "43": "model-000/material/43",
+        "44": "model-000/material/44",
+        "45": "model-000/material/45",
+        "46": "model-000/material/46",
+        "47": "model-000/material/47",
+        "48": "model-000/material/48",
+        "49": "model-000/material/49",
+        "5": "model-000/material/5",
+        "50": "model-000/material/50",
+        "51": "model-000/material/51",
+        "52": "model-000/material/52",
+        "53": "model-000/material/53",
+        "54": "model-000/material/54",
+        "55": "model-000/material/55",
+        "56": "model-000/material/56",
+        "57": "model-000/material/57",
+        "58": "model-000/material/58",
+        "59": "model-000/material/59",
+        "6": "model-000/material/6",
+        "60": "model-000/material/60",
+        "61": "model-000/material/61",
+        "62": "model-000/material/62",
+        "63": "model-000/material/63",
+        "64": "model-000/material/64",
+        "65": "model-000/material/65",
+        "66": "model-000/material/66",
+        "7": "model-000/material/7",
+        "8": "model-000/material/8",
+        "9": "model-000/material/9"
+      },
+      "name": "interior",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/derived/bistro/geometry/interior_by_material.obj",
+      "transform": [
+        0.002145379496179079,
+        0,
+        0,
+        -1.2983482723258917,
+        0,
+        0.002145379496179079,
+        0,
+        -0.5155786732115043,
+        0,
+        0,
+        0.002145379496179079,
+        0.9910494767419409,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · Amazon Lumberyard Bistro · interior",
+  "objects": [
+    {
+      "id": "model-000/object/0/0/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "defaultobject",
+      "order": 0,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/1",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 1,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Wood",
+      "order": 1,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/2",
+      "locked": false,
+      "material": "model-000/material/3",
+      "mesh": 2,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Wooden_stuco",
+      "order": 2,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/3",
+      "locked": false,
+      "material": "model-000/material/5",
+      "mesh": 3,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Plaster_Red",
+      "order": 3,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/4",
+      "locked": false,
+      "material": "model-000/material/4",
+      "mesh": 4,
+      "model": "model-000",
+      "name": "MASTER_Wood_Painted3",
+      "order": 4,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/5",
+      "locked": false,
+      "material": "model-000/material/6",
+      "mesh": 5,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Grid",
+      "order": 5,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/6",
+      "locked": false,
+      "material": "model-000/material/7",
+      "mesh": 6,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Brushed_Metal",
+      "order": 6,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/7",
+      "locked": false,
+      "material": "model-000/material/8",
+      "mesh": 7,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Plaster2",
+      "order": 7,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/8",
+      "locked": false,
+      "material": "model-000/material/9",
+      "mesh": 8,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Frozen_Glass",
+      "order": 8,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/9",
+      "locked": false,
+      "material": "model-000/material/10",
+      "mesh": 9,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Floor_Tile_Hexagonal_BLENDSHADER",
+      "order": 9,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/10",
+      "locked": false,
+      "material": "model-000/material/11",
+      "mesh": 10,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Glass",
+      "order": 10,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/11",
+      "locked": false,
+      "material": "model-000/material/12",
+      "mesh": 11,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Paris_Bartrim",
+      "order": 11,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/12",
+      "locked": false,
+      "material": "model-000/material/13",
+      "mesh": 12,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_White_Plastic",
+      "order": 12,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/13",
+      "locked": false,
+      "material": "model-000/material/14",
+      "mesh": 13,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Grid1",
+      "order": 13,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/14",
+      "locked": false,
+      "material": "model-000/material/15",
+      "mesh": 14,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Material",
+      "order": 14,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/15",
+      "locked": false,
+      "material": "model-000/material/16",
+      "mesh": 15,
+      "model": "model-000",
+      "name": "MASTER_Interior_01_Paris_Lantern",
+      "order": 15,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/16",
+      "locked": false,
+      "material": "model-000/material/18",
+      "mesh": 16,
+      "model": "model-000",
+      "name": "curtainA",
+      "order": 16,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/17",
+      "locked": false,
+      "material": "model-000/material/17",
+      "mesh": 17,
+      "model": "model-000",
+      "name": "curtainB1",
+      "order": 17,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/18",
+      "locked": false,
+      "material": "model-000/material/19",
+      "mesh": 18,
+      "model": "model-000",
+      "name": "Paris_Ceiling_Lamp",
+      "order": 18,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/19",
+      "locked": false,
+      "material": "model-000/material/20",
+      "mesh": 19,
+      "model": "model-000",
+      "name": "Paris_Wall_Light_Interior",
+      "order": 19,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/20",
+      "locked": false,
+      "material": "model-000/material/21",
+      "mesh": 20,
+      "model": "model-000",
+      "name": "Paris_Wall_Bulb_Light",
+      "order": 20,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/21",
+      "locked": false,
+      "material": "model-000/material/22",
+      "mesh": 21,
+      "model": "model-000",
+      "name": "Wall_Lamp",
+      "order": 21,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/22",
+      "locked": false,
+      "material": "model-000/material/23",
+      "mesh": 22,
+      "model": "model-000",
+      "name": "Metal_Bronze_01",
+      "order": 22,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/23",
+      "locked": false,
+      "material": "model-000/material/24",
+      "mesh": 23,
+      "model": "model-000",
+      "name": "Paris_CeilingFan",
+      "order": 23,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/24",
+      "locked": false,
+      "material": "model-000/material/25",
+      "mesh": 24,
+      "model": "model-000",
+      "name": "Paris_Beertap",
+      "order": 24,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/25",
+      "locked": false,
+      "material": "model-000/material/26",
+      "mesh": 25,
+      "model": "model-000",
+      "name": "Paris_LiquorBottle_02_Glass",
+      "order": 25,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/26",
+      "locked": false,
+      "material": "model-000/material/27",
+      "mesh": 26,
+      "model": "model-000",
+      "name": "Paris_LiquorBottle_01_Caps",
+      "order": 26,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/27",
+      "locked": false,
+      "material": "model-000/material/28",
+      "mesh": 27,
+      "model": "model-000",
+      "name": "ToffeeJar_Label",
+      "order": 27,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/28",
+      "locked": false,
+      "material": "model-000/material/29",
+      "mesh": 28,
+      "model": "model-000",
+      "name": "Paris_LiquorBottle_01_Glass_Wine",
+      "order": 28,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/29",
+      "locked": false,
+      "material": "model-000/material/30",
+      "mesh": 29,
+      "model": "model-000",
+      "name": "Paris_LiquorBottle_01_Glass",
+      "order": 29,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/30",
+      "locked": false,
+      "material": "model-000/material/31",
+      "mesh": 30,
+      "model": "model-000",
+      "name": "Paris_LiquorBottle_03_Glass",
+      "order": 30,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/31",
+      "locked": false,
+      "material": "model-000/material/32",
+      "mesh": 31,
+      "model": "model-000",
+      "name": "Metal_Worn_01",
+      "order": 31,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/32",
+      "locked": false,
+      "material": "model-000/material/33",
+      "mesh": 32,
+      "model": "model-000",
+      "name": "Wood",
+      "order": 32,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/33",
+      "locked": false,
+      "material": "model-000/material/34",
+      "mesh": 33,
+      "model": "model-000",
+      "name": "Plastic_02",
+      "order": 33,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/34",
+      "locked": false,
+      "material": "model-000/material/35",
+      "mesh": 34,
+      "model": "model-000",
+      "name": "Paris_Painting_Metal",
+      "order": 34,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/35",
+      "locked": false,
+      "material": "model-000/material/36",
+      "mesh": 35,
+      "model": "model-000",
+      "name": "Paris_Paintings",
+      "order": 35,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/36",
+      "locked": false,
+      "material": "model-000/material/37",
+      "mesh": 36,
+      "model": "model-000",
+      "name": "Paris_Paintings_Glass",
+      "order": 36,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/37",
+      "locked": false,
+      "material": "model-000/material/38",
+      "mesh": 37,
+      "model": "model-000",
+      "name": "Paris_BarStool",
+      "order": 37,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/38",
+      "locked": false,
+      "material": "model-000/material/39",
+      "mesh": 38,
+      "model": "model-000",
+      "name": "ToffeeJar_Metal",
+      "order": 38,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/39",
+      "locked": false,
+      "material": "model-000/material/40",
+      "mesh": 39,
+      "model": "model-000",
+      "name": "Paris_LiquorBottle_01_Glass1",
+      "order": 39,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/40",
+      "locked": false,
+      "material": "model-000/material/41",
+      "mesh": 40,
+      "model": "model-000",
+      "name": "ToffeeJar_Toffee",
+      "order": 40,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/41",
+      "locked": false,
+      "material": "model-000/material/42",
+      "mesh": 41,
+      "model": "model-000",
+      "name": "CookieJar_Glass1",
+      "order": 41,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/42",
+      "locked": false,
+      "material": "model-000/material/43",
+      "mesh": 42,
+      "model": "model-000",
+      "name": "CookieJar_Cookies",
+      "order": 42,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/43",
+      "locked": false,
+      "material": "model-000/material/44",
+      "mesh": 43,
+      "model": "model-000",
+      "name": "Paris_Radiator",
+      "order": 43,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/44",
+      "locked": false,
+      "material": "model-000/material/45",
+      "mesh": 44,
+      "model": "model-000",
+      "name": "Cutlery_chrome",
+      "order": 44,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/45",
+      "locked": false,
+      "material": "model-000/material/46",
+      "mesh": 45,
+      "model": "model-000",
+      "name": "Cutlery_details",
+      "order": 45,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/46",
+      "locked": false,
+      "material": "model-000/material/47",
+      "mesh": 46,
+      "model": "model-000",
+      "name": "Paris_Table_03",
+      "order": 46,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/47",
+      "locked": false,
+      "material": "model-000/material/48",
+      "mesh": 47,
+      "model": "model-000",
+      "name": "Plates_Details",
+      "order": 47,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/48",
+      "locked": false,
+      "material": "model-000/material/49",
+      "mesh": 48,
+      "model": "model-000",
+      "name": "Plates_Ceramic",
+      "order": 48,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/49",
+      "locked": false,
+      "material": "model-000/material/50",
+      "mesh": 49,
+      "model": "model-000",
+      "name": "NapkinHolder_01",
+      "order": 49,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/50",
+      "locked": false,
+      "material": "model-000/material/51",
+      "mesh": 50,
+      "model": "model-000",
+      "name": "Paris_Table_cloth_01",
+      "order": 50,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/51",
+      "locked": false,
+      "material": "model-000/material/52",
+      "mesh": 51,
+      "model": "model-000",
+      "name": "Metal_Chrome1",
+      "order": 51,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/52",
+      "locked": false,
+      "material": "model-000/material/53",
+      "mesh": 52,
+      "model": "model-000",
+      "name": "Cloth",
+      "order": 52,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/53",
+      "locked": false,
+      "material": "model-000/material/55",
+      "mesh": 53,
+      "model": "model-000",
+      "name": "Plants_Metal_Base_01",
+      "order": 53,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/54",
+      "locked": false,
+      "material": "model-000/material/54",
+      "mesh": 54,
+      "model": "model-000",
+      "name": "Plants_plants",
+      "order": 54,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/55",
+      "locked": false,
+      "material": "model-000/material/56",
+      "mesh": 55,
+      "model": "model-000",
+      "name": "Trolley_Plastic",
+      "order": 55,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/56",
+      "locked": false,
+      "material": "model-000/material/57",
+      "mesh": 56,
+      "model": "model-000",
+      "name": "Trolley_Wheels",
+      "order": 56,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/57",
+      "locked": false,
+      "material": "model-000/material/58",
+      "mesh": 57,
+      "model": "model-000",
+      "name": "Trolley_Wood_Painted",
+      "order": 57,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/58",
+      "locked": false,
+      "material": "model-000/material/59",
+      "mesh": 58,
+      "model": "model-000",
+      "name": "WickerBasket",
+      "order": 58,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/59",
+      "locked": false,
+      "material": "model-000/material/60",
+      "mesh": 59,
+      "model": "model-000",
+      "name": "Paris_Coasters_01",
+      "order": 59,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/60",
+      "locked": false,
+      "material": "model-000/material/61",
+      "mesh": 60,
+      "model": "model-000",
+      "name": "Paris_Cashregister",
+      "order": 60,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/61",
+      "locked": false,
+      "material": "model-000/material/62",
+      "mesh": 61,
+      "model": "model-000",
+      "name": "Paris_Cashregister_Buttons",
+      "order": 61,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/62",
+      "locked": false,
+      "material": "model-000/material/63",
+      "mesh": 62,
+      "model": "model-000",
+      "name": "Paris_Cashregister_Glass",
+      "order": 62,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/63",
+      "locked": false,
+      "material": "model-000/material/64",
+      "mesh": 63,
+      "model": "model-000",
+      "name": "Paris_Doormat",
+      "order": 63,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/64",
+      "locked": false,
+      "material": "model-000/material/65",
+      "mesh": 64,
+      "model": "model-000",
+      "name": "Rubber_Bar_Mat_01",
+      "order": 64,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/65",
+      "locked": false,
+      "material": "model-000/material/66",
+      "mesh": 65,
+      "model": "model-000",
+      "name": "Plastic_01",
+      "order": 65,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.002145379548892379,
+        0,
+        0,
+        -1.298348307609558,
+        0,
+        0.002145379548892379,
+        0,
+        -0.5155786871910095,
+        0,
+        0,
+        0.002145379548892379,
+        0.9910494685173035,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [
+    {
+      "dependencies": {},
+      "id": "model-000/texture/0",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/0d307466f929.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/1",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/5e50b921fc95.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/2",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/d8e8e1b1d621.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/3",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/b43a36910559.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/4",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/cf1a2f706a28.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/5",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/BuildingTextures/Grey_128.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/6",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/cad3bab6aef8.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/7",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/BuildingTextures/frosted_glass_diff.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/8",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/bc1828e0aa93.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/9",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/OtherTextures/Colors/Grey_128.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/10",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/dc43a63fcb2c.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/11",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/BuildingTextures/White.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/12",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/BuildingTextures/Metal_Hexagonal_Grid_01_diff.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/13",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/aeb69b4c7954.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/14",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/PropTextures/Street/Paris_Lantern_01/Paris_Lantern_01A_diff.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/15",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/PropTextures/Street/Paris_Lantern_01/Paris_Lantern_01A_emi.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/16",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/BuildingTextures/Paris_Lantern_01A_mask.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/17",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/873f79712d7c.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/18",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/668a4a29d114.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/19",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/d8a2d274b3b9.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/20",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Ceiling_Lamp_01/Paris_Ceiling_Lamp_01_emi.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/21",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/d21d996b15b2.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/22",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Wall_Light_Interior_01/Paris_Wall_Light_Interior_Emi.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/23",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/OtherTextures/Colors/White.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/24",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/c19039628c7a.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/25",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/654eaced1e99.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/26",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/d3ee8996a694.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/27",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_LiquorBottle_01/Paris_LiquorBottle_01_Cap_Diff.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/28",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/4451de8ae397.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/29",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/OtherTextures/Colors/Grey_30.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/30",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/37b6f901ec4f.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/31",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/ae365cb3abdc.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/32",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/52656cd66426.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/33",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/9b6b5d0d82b4.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/34",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/7d82c1b00df4.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/35",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/ee3b69fa50f6.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/36",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/7bac66fe743d.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/37",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/8627db5b88f5.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/38",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/4cb232e2688d.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/39",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/53046e9afd34.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/40",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/629e10039d65.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/41",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Cutlery_01/Paris_Cutlery_01_details_diff.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/42",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/f6f3ecfccaa5.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/43",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Plates_01/Paris_Plates_details_diff.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/44",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Plates_01/Paris_Plates_details_mask.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/45",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/bf512dce0555.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/46",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/5e228f2ed65c.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/47",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/5b6f8ba07b39.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/48",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/58f32b390578.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/49",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/092fd817fd7e.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/50",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/7534c2d87d42.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/51",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/18b203d16773.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/52",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/47d62787c7e4.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/53",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/bceea57bf67f.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/54",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_Coasters_01/Paris_Coasters_01_diff.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/55",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/49050a94049d.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/56",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/bistro/PropTextures/Bistro/Paris_CashRegister_01/Paris_CashRegister_Buttons_01_diff.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/57",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/dcf1c68e6f0c.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/58",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/bistro/textures/18e69279f2ec.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    }
+  ],
+  "version": 2
+}

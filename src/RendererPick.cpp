@@ -1,14 +1,23 @@
 #include "renderer.h"
 #include <QCoreApplication>
-void Renderer::updatePick(int w, int h, quint64 version)
+bool Renderer::updatePick(int w, int h, quint64 version)
 {
     if (pickVersion == version && pickSize == QSize(w, h))
-        return;
+        return false;
     if (!pickProgram)
         pickProgram.reset(getShaderProgram(getShaderPath("pick.frag"), getShaderPath("triangle.vert"), {},
                                            {{"INSTANCED_SCENE", "1"}}));
     if (!pickProgram->isLinked())
         throw std::runtime_error("GPU picking shader could not link");
+    // 拾取 pass 是整屏 BVH 遍历，和光栅化预览是两笔独立开销，所以单独计时。
+    // GL 规范只允许一个活动的 GL_TIME_ELAPSED 查询，这里依赖 Renderer::render() 在返回前
+    // 已经结束它自己的查询；若将来把 render 的计时改成跨帧进行，必须同时改掉这一点。
+    pollGpuTimers();
+    if (!pickTimerQuery)
+        glGenQueries(1, &pickTimerQuery);
+    const bool pickTimed = !pickTimerPending;
+    if (pickTimed)
+        glBeginQuery(GL_TIME_ELAPSED, pickTimerQuery);
     GLint previous = 0;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previous);
     if (!pickFbo)
@@ -41,7 +50,7 @@ void Renderer::updatePick(int w, int h, quint64 version)
     p->setUniformValue("picking", true);
     p->setUniformValue("width", w);
     p->setUniformValue("height", h);
-    auto &s = Scene::getInstance();
+    auto &s = m_scene;
     p->setUniformValue("eye", s.camera.position);
     p->setUniformValue("view", s.camera.getViewMatrix().inverted());
     p->setUniformValue("cameraFov", s.camera.zoom);
@@ -67,6 +76,14 @@ void Renderer::updatePick(int w, int h, quint64 version)
     p->release();
     pickVersion = version;
     glBindFramebuffer(GL_FRAMEBUFFER, previous);
+    ++stats.pickPasses;
+    if (pickTimed)
+    {
+        glEndQuery(GL_TIME_ELAPSED);
+        pickTimerPending = true;
+    }
+    pollGpuTimers();
+    return true;
 }
 void Renderer::requestPick(QPoint pixel, quint64 request)
 {

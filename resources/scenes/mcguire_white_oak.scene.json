@@ -1,0 +1,544 @@
+{
+  "activeCameraId": "camera-1",
+  "camera": {
+    "fov": 45,
+    "position": [
+      4.300000190734863,
+      2.700000047683716,
+      5.699999809265137
+    ],
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ]
+  },
+  "cameras": [
+    {
+      "fov": 45,
+      "id": "camera-1",
+      "name": "相机 1",
+      "position": [
+        4.300000190734863,
+        2.700000047683716,
+        5.699999809265137
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "up": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "credits": [
+    {
+      "adaptations": [
+        "Missing leaf opacity texture derived from the original diffuse PNG alpha channel."
+      ],
+      "asset": "White Oak Tree",
+      "author": "© 2017 SpeedTree",
+      "license": "CC BY-NC-SA 3.0",
+      "source": "https://casual-effects.com/g3d/data10/research/model/white_oak/info.js"
+    },
+    {
+      "asset": "White Cliff Top HDR",
+      "author": "Greg Zaal / Poly Haven",
+      "license": "CC0",
+      "source": "https://polyhaven.com/a/white_cliff_top"
+    }
+  ],
+  "display": {
+    "exposure": 0,
+    "tonemap": 1
+  },
+  "environment": {
+    "intensity": 0.7,
+    "rotation": 0
+  },
+  "groups": [
+    {
+      "id": "root",
+      "name": "White Oak Tree",
+      "order": 0,
+      "parent": ""
+    },
+    {
+      "id": "model-000/group",
+      "name": "white_oak",
+      "order": 0,
+      "parent": "root"
+    },
+    {
+      "id": "model-000/node/0",
+      "name": "white_oak.obj",
+      "order": 0,
+      "parent": "model-000/group"
+    },
+    {
+      "id": "model-000/node/0/0",
+      "name": "White_Oak_Hero_14",
+      "order": 1,
+      "parent": "model-000/node/0"
+    }
+  ],
+  "hdr": "../imported/glslpt/assets/HDR/white_cliff_top_1k.hdr",
+  "lights": [],
+  "materials": [
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/1",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/0"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 0,
+      "anisotropic": 0,
+      "baseColor": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/2",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/1"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/4",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/4"
+      },
+      "transmission": 0
+    },
+    {
+      "IOR": 1.5,
+      "alphaCutoff": 0.5,
+      "alphaMode": 2,
+      "anisotropic": 0,
+      "baseColor": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929
+      ],
+      "clearcoat": 0,
+      "clearcoatGloss": 1,
+      "emissive": [
+        0,
+        0,
+        0
+      ],
+      "id": "model-000/material/3",
+      "mediumAnisotropy": 0,
+      "mediumColor": [
+        1,
+        1,
+        1
+      ],
+      "mediumDensity": 0,
+      "mediumtype": 0,
+      "metallic": 0,
+      "metallicChannel": 0,
+      "normalMapFlipY": false,
+      "normalScale": 1,
+      "opacity": 1,
+      "roughness": 0.699999988079071,
+      "roughnessChannel": 0,
+      "sheen": 0,
+      "sheenTint": 0,
+      "specularTint": 0,
+      "subsurface": 0,
+      "textures": {
+        "baseColor": "model-000/texture/2",
+        "opacity": "model-000/texture/3"
+      },
+      "transmission": 0
+    }
+  ],
+  "models": [
+    {
+      "dependencies": {
+        "../../derived/white_oak/leaf-opacity.png": "../imported/mcguire/derived/white_oak/leaf-opacity.png",
+        "T_Cap_02_D.png": "../imported/mcguire/assets/white_oak/T_Cap_02_D.png",
+        "T_WhiteOakBark_D.png": "../imported/mcguire/assets/white_oak/T_WhiteOakBark_D.png",
+        "T_White_Oak_Leaves_Hero_1_D.png": "../imported/mcguire/assets/white_oak/T_White_Oak_Leaves_Hero_1_D.png",
+        "T_White_Oak_Leaves_Hero_3_D.png": "../imported/mcguire/assets/white_oak/T_White_Oak_Leaves_Hero_3_D.png",
+        "white_oak.mtl": "../imported/mcguire/derived/white_oak/mtl/white_oak.mtl"
+      },
+      "expanded": true,
+      "id": "model-000",
+      "material": null,
+      "materialBindings": {
+        "1": "model-000/material/1",
+        "2": "model-000/material/2",
+        "3": "model-000/material/3",
+        "4": "model-000/material/4"
+      },
+      "name": "white_oak",
+      "normalize": false,
+      "parent": null,
+      "smoothNormals": true,
+      "source": "../imported/mcguire/assets/white_oak/white_oak.obj",
+      "transform": [
+        0.005277010046107876,
+        0,
+        0,
+        0.05418961616348181,
+        0,
+        0.005277010046107876,
+        0,
+        -1.7600701842336135,
+        0,
+        0,
+        0.005277010046107876,
+        0.056118363335334216,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "name": "McGuire · White Oak Tree",
+  "objects": [
+    {
+      "id": "model-000/object/0/0/0",
+      "locked": false,
+      "material": "model-000/material/1",
+      "mesh": 0,
+      "model": "model-000",
+      "name": "White_Oak_Hero_14",
+      "order": 0,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.0052770101465284824,
+        0,
+        0,
+        0.054189614951610565,
+        0,
+        0.0052770101465284824,
+        0,
+        -1.7600702047348022,
+        0,
+        0,
+        0.0052770101465284824,
+        0.05611836165189743,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/1",
+      "locked": false,
+      "material": "model-000/material/2",
+      "mesh": 1,
+      "model": "model-000",
+      "name": "White_Oak_Hero_14",
+      "order": 1,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.0052770101465284824,
+        0,
+        0,
+        0.054189614951610565,
+        0,
+        0.0052770101465284824,
+        0,
+        -1.7600702047348022,
+        0,
+        0,
+        0.0052770101465284824,
+        0.05611836165189743,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/2",
+      "locked": false,
+      "material": "model-000/material/4",
+      "mesh": 2,
+      "model": "model-000",
+      "name": "White_Oak_Hero_14",
+      "order": 2,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.0052770101465284824,
+        0,
+        0,
+        0.054189614951610565,
+        0,
+        0.0052770101465284824,
+        0,
+        -1.7600702047348022,
+        0,
+        0,
+        0.0052770101465284824,
+        0.05611836165189743,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    },
+    {
+      "id": "model-000/object/0/0/3",
+      "locked": false,
+      "material": "model-000/material/3",
+      "mesh": 3,
+      "model": "model-000",
+      "name": "White_Oak_Hero_14",
+      "order": 3,
+      "parent": "model-000/node/0/0",
+      "transform": [
+        0.0052770101465284824,
+        0,
+        0,
+        0.054189614951610565,
+        0,
+        0.0052770101465284824,
+        0,
+        -1.7600702047348022,
+        0,
+        0,
+        0.0052770101465284824,
+        0.05611836165189743,
+        0,
+        0,
+        0,
+        1
+      ],
+      "visible": true
+    }
+  ],
+  "output": {
+    "bounces": 8,
+    "denoise": true,
+    "height": 1000,
+    "samples": 128,
+    "tileSize": 128,
+    "width": 1600
+  },
+  "portable": false,
+  "render": {
+    "denoise": true,
+    "interactionIdleMs": 250,
+    "interactionMode": 1,
+    "maxBounces": 5,
+    "maxRenderFrames": 64,
+    "rasterLocked": false,
+    "renderLow": true,
+    "tileSize": 128,
+    "useEnvironmentMap": true,
+    "useTileRendering": true
+  },
+  "textures": [
+    {
+      "dependencies": {},
+      "id": "model-000/texture/0",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/white_oak/T_Cap_02_D.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/1",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/white_oak/T_WhiteOakBark_D.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/2",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/white_oak/T_White_Oak_Leaves_Hero_3_D.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/3",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/derived/white_oak/leaf-opacity.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    },
+    {
+      "dependencies": {},
+      "id": "model-000/texture/4",
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "source": "../imported/mcguire/assets/white_oak/T_White_Oak_Leaves_Hero_1_D.png",
+      "uvOffset": [
+        0,
+        0
+      ],
+      "uvRotation": 0,
+      "uvScale": [
+        1,
+        1
+      ],
+      "wrapS": 0,
+      "wrapT": 0
+    }
+  ],
+  "version": 2
+}

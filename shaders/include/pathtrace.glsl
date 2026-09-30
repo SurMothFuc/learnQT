@@ -1,24 +1,24 @@
 vec3 EstimateDirectLighting(HitResult hit, vec3 history, float eta, MediumStack media)
 {
-    LightSample sample = SampleOneLight(hit.hitPoint, rand(), rand(), rand());
-    if (!sample.valid || sample.pdf <= 0.0 || maxComponent(sample.radiance) <= 0.0) return vec3(0.0);
+    LightSample lightSample = SampleOneLight(hit.hitPoint, rand(), rand(), rand());
+    if (!lightSample.valid || lightSample.pdf <= 0.0 || maxComponent(lightSample.radiance) <= 0.0) return vec3(0.0);
     float bsdfPdf;
-    vec3 f = DisneyEval(-hit.viewDir, hit.normal, sample.direction, hit.material, eta, bsdfPdf);
+    vec3 f = DisneyEval(-hit.viewDir, hit.normal, lightSample.direction, hit.material, eta, bsdfPdf);
     if (bsdfPdf <= 0.0 || maxComponent(f) <= 0.0) return vec3(0.0);
-    if (!CrossMediumBoundary(media, hit, sample.direction)) return vec3(0.0);
-    vec3 tr = ShadowTransmittance(hit.hitPoint, hit.geometricNormal, sample.direction, sample.distance, media, sample.lightIndex, sample.triangleIndex);
-    return history * tr * sample.radiance * f * abs(dot(hit.normal, sample.direction)) *
-        misMixWeight(sample.pdf, bsdfPdf) / sample.pdf;
+    if (!CrossMediumBoundary(media, hit, lightSample.direction)) return vec3(0.0);
+    vec3 tr = ShadowTransmittance(hit.hitPoint, hit.geometricNormal, lightSample.direction, lightSample.distance, media, lightSample.lightIndex, lightSample.triangleIndex);
+    return history * tr * lightSample.radiance * f * abs(dot(hit.normal, lightSample.direction)) *
+        misMixWeight(lightSample.pdf, bsdfPdf) / lightSample.pdf;
 }
 
 vec3 EstimateVolumeLighting(vec3 point, vec3 incoming, vec3 history, MediumStack media)
 {
-    LightSample sample = SampleOneLight(point, rand(), rand(), rand());
-    if (!sample.valid || sample.pdf <= 0.0 || maxComponent(sample.radiance) <= 0.0) return vec3(0.0);
+    LightSample lightSample = SampleOneLight(point, rand(), rand(), rand());
+    if (!lightSample.valid || lightSample.pdf <= 0.0 || maxComponent(lightSample.radiance) <= 0.0) return vec3(0.0);
     Medium medium = CurrentMedium(media);
-    float phasePdf = PhaseHG(dot(-incoming, sample.direction), medium.g);
-    vec3 tr = ShadowTransmittance(point, vec3(0.0), sample.direction, sample.distance, media, sample.lightIndex, sample.triangleIndex);
-    return history * tr * sample.radiance * phasePdf * misMixWeight(sample.pdf, phasePdf) / sample.pdf;
+    float phasePdf = PhaseHG(dot(-incoming, lightSample.direction), medium.g);
+    vec3 tr = ShadowTransmittance(point, vec3(0.0), lightSample.direction, lightSample.distance, media, lightSample.lightIndex, lightSample.triangleIndex);
+    return history * tr * lightSample.radiance * phasePdf * misMixWeight(lightSample.pdf, phasePdf) / lightSample.pdf;
 }
 
 float EmitterMisWeight(bool previousDelta, float previousPdf, float lightPdf) {
@@ -64,7 +64,11 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
         float sphereDistance;
         int sphereIndex = IntersectAnalyticLights(ray.startPoint, ray.direction, sphereDistance);
         float segment = min(hit.hitDistance, sphereDistance);
+#ifdef NO_PARTICIPATING_MEDIA
+        if (false)
+#else
         if (step == 0 && hit.isHit && hit.isInside && hit.material.mediumtype != MEDIUM_NONE)
+#endif
             media.entries[media.size++] = MaterialMedium(hit.material);
         Medium medium = CurrentMedium(media);
         bool scattered = false;
@@ -132,13 +136,13 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
             if (HasNonDeltaLobes(hit.material, eta))
                 result.render_color += EstimateDirectLighting(hit, throughput, eta, media);
             vec2 uv = CranleyPattersonRotation(vec2(sobelNumber[depth*2], sobelNumber[depth*2+1]));
-            BsdfSample sample = SampleDisneyBSDF(-ray.direction, hit.normal, hit.material, eta, vec3(uv,rand()));
-            throughput *= sample.weight;
-            if (!CrossMediumBoundary(media, hit, sample.direction)) break;
+            BsdfSample bsdfSample = SampleDisneyBSDF(-ray.direction, hit.normal, hit.material, eta, vec3(uv,rand()));
+            throughput *= bsdfSample.weight;
+            if (!CrossMediumBoundary(media, hit, bsdfSample.direction)) break;
             previousPoint = hit.hitPoint;
-            previousPdf = sample.pdf;
-            previousDelta = sample.delta;
-            ray.direction = sample.direction;
+            previousPdf = bsdfSample.pdf;
+            previousDelta = bsdfSample.delta;
+            ray.direction = bsdfSample.direction;
             ray.startPoint = OffsetRayOrigin(hit.hitPoint, hit.geometricNormal, ray.direction);
         }
         if (any(isnan(throughput)) || any(isinf(throughput)) || maxComponent(throughput) <= 0.0) break;

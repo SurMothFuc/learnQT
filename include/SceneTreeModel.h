@@ -28,12 +28,20 @@ class SceneTreeModel : public QAbstractItemModel
     QModelIndex find(const QString &id) const;
     QString id(const QModelIndex &index) const;
     void refresh();
+    int itemCount() const
+    {
+        return items.size();
+    }
+    mutable quint64 dataCalls = 0;
 
   private:
     struct Item
     {
         QString id;
         Item *parent = nullptr;
+        // 在父节点 children 中的下标。视图布局会大量调用 from()，
+        // 沿用扫描兄弟列表的实现会退化成 O(N²)（实测 71 个条目产生 560 万次 data()）。
+        int row = 0;
         std::vector<std::unique_ptr<Item>> children;
     };
     EditorController *editor;
