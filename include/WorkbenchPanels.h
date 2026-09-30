@@ -12,6 +12,7 @@
 #include <QPushButton>
 #include <QSpinBox>
 #include <QWidget>
+#include <functional>
 class MixedSpin : public QDoubleSpinBox
 {
   public:
@@ -26,6 +27,7 @@ class ObjectInspector : public QWidget
     void refresh();
     void setMaterialPage(bool enabled);
     void browseMaterial(const QString &id);
+    std::function<void()> openMaterialPage;
 
   private:
     EditorController *editor;
@@ -42,6 +44,9 @@ class ObjectInspector : public QWidget
     QString browsedMaterial;
     QWidget *transformSection = nullptr;
     QWidget *materialSlotLabel = nullptr;
+    QWidget *materialSection = nullptr;
+    QLabel *materialSummary = nullptr;
+    QWidget *materialOverview = nullptr;
     void editTransform(int component, double value);
     void chooseColor(const QString &field);
     void chooseTexture(const QString &slot);

@@ -312,15 +312,22 @@ void learnQT::setupWorkbench()
     editMenu->addAction(redoAction);
     auto duplicate = editMenu->addAction(tr("复制模型"), editor, &EditorController::duplicate);
     duplicate->setShortcut(QKeySequence("Ctrl+D"));
+    duplicate->setProperty("viewportEdit", true);
     editActions.append(duplicate);
-    toolbar->addSeparator();
+    auto viewportTools = new QToolBar(tr("视口工具"), editorPage);
+    viewportTools->setObjectName("viewportToolbar");
+    viewportTools->setMovable(false);
+    viewportTools->setIconSize(QSize(18, 18));
+    viewportTools->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    editorLayout->insertWidget(1, viewportTools);
     auto tools = new QActionGroup(this);
     QStringList labels = {tr("选择 Q"), tr("移动 W"), tr("旋转 E"), tr("缩放 R")};
     for (int i = 0; i < 4; ++i)
     {
-        auto a = toolbar->addAction(
+        auto a = viewportTools->addAction(
             WorkbenchStyle::icon(QStringList{"select", "move", "rotate", "scale"}[i]), labels[i]);
         a->setCheckable(true);
+        a->setProperty("viewportEdit", true);
         tools->addAction(a);
         a->setChecked(i == 0);
         connect(a, &QAction::triggered, this, [this, i] {
@@ -331,22 +338,28 @@ void learnQT::setupWorkbench()
         editActions.append(a);
     }
     auto space = new QComboBox;
+    space->setObjectName("viewportAxes");
     space->addItems({tr("世界轴"), tr("局部轴")});
     space->setMaximumWidth(92);
-    toolbar->addWidget(space);
+    viewportTools->addWidget(space);
     connect(space, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             [this](int i) { viewport->setLocalAxes(i == 1); });
-    auto snapAction = toolbar->addAction(WorkbenchStyle::icon("snap"), tr("吸附"));
+    auto snapAction = viewportTools->addAction(WorkbenchStyle::icon("snap"), tr("吸附"));
     snapAction->setCheckable(true);
+    snapAction->setProperty("viewportEdit", true);
     connect(snapAction, &QAction::toggled, this, [this](bool enabled) { viewport->snap = enabled; });
     editActions.append(snapAction);
-    toolbar->addSeparator();
     renderAction = new QAction(WorkbenchStyle::icon("play"), tr("加入队列"), this);
     connect(renderAction, &QAction::triggered, this, [this] {
         if (workspace && workspace->page == int(WorkspacePage::Render))
             addRenderTask();
+        else {
+            setRenderPreviewMode(true);
+            navigateWorkspace(WorkspacePage::Render);
+        }
     });
     renderAction->setShortcut(QKeySequence("F12"));
+    addAction(renderAction);
     pauseAction = new QAction(tr("暂停"), this);
     connect(pauseAction, &QAction::triggered, this, [this] {
         if (m_activeQueueId && m_queueWorker)
@@ -371,6 +384,7 @@ void learnQT::setupWorkbench()
     });
     pauseAction->setIcon(WorkbenchStyle::icon("pause"));
     stopAction->setIcon(WorkbenchStyle::icon("stop"));
+    stopAction->setText(tr("停止当前任务"));
     // 顶栏的预览设置入口取代原“渲染设置”按钮：弹出面板里直接改常用项，更多设置走不跳页的弹窗。
     previewChromePanel = new PreviewSettingsPanel;
     previewDetailPanel = new PreviewSettingsPanel(this);
@@ -379,12 +393,12 @@ void learnQT::setupWorkbench()
             [this](const RenderParams::Snapshot &settings) { commitPreviewSettings(settings); });
     connect(previewDetailPanel, &PreviewSettingsPanel::changed, this,
             [this](const RenderParams::Snapshot &settings) { commitPreviewSettings(settings); });
-    auto previewButton = new QToolButton(toolbar);
+    auto previewButton = new QToolButton(viewportTools);
     previewButton->setObjectName("previewSettingsButton");
     previewButton->setText(tr("预览设置"));
     previewButton->setIcon(WorkbenchStyle::icon("settings"));
     previewButton->setToolTip(tr("交互预览的采样上限、反弹数、块大小与降噪"));
-    previewButton->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    previewButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     previewButton->setPopupMode(QToolButton::InstantPopup);
     auto previewMenu = new QMenu(previewButton);
     auto previewWidgetAction = new QWidgetAction(previewMenu);
@@ -396,9 +410,9 @@ void learnQT::setupWorkbench()
         previewChromePanel->setValues(editor->document.settings());
     });
     previewButton->setMenu(previewMenu);
-    auto previewWidgetActionForToolbar = new QWidgetAction(toolbar);
+    auto previewWidgetActionForToolbar = new QWidgetAction(viewportTools);
     previewWidgetActionForToolbar->setDefaultWidget(previewButton);
-    toolbar->addAction(previewWidgetActionForToolbar);
+    viewportTools->addAction(previewWidgetActionForToolbar);
     toolbar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     pauseAction->setEnabled(false);
     stopAction->setEnabled(false);
@@ -421,15 +435,12 @@ void learnQT::setupWorkbench()
     tabs->addTab(lightsScroll, tr("灯光"));
     inspectorDock->setWidget(tabs);
     addDockWidget(Qt::RightDockWidgetArea, inspectorDock);
-    splitDockWidget(treeDock, inspectorDock, Qt::Horizontal);
     performanceDock = new QDockWidget(tr("性能"), this);
     performanceDock->setObjectName("performanceDock");
     performance = new PerformancePanel;
     performanceDock->setWidget(performance);
-    addDockWidget(Qt::RightDockWidgetArea, performanceDock);
-    splitDockWidget(inspectorDock, performanceDock, Qt::Vertical);
-    // Put telemetry above the inspector, beside the full-height scene tree.
-    splitDockWidget(performanceDock, inspectorDock, Qt::Vertical);
+    addDockWidget(Qt::BottomDockWidgetArea, performanceDock);
+    performanceDock->hide();
     logDock = new QDockWidget(tr("任务日志"), this);
     logDock->setObjectName("logDock");
     log = new QPlainTextEdit;
@@ -463,15 +474,21 @@ void learnQT::setupWorkbench()
     statusBar()->addWidget(taskLabel, 1);
     statusBar()->addPermanentWidget(statsLabel);
     statusBar()->addPermanentWidget(progress);
+    auto diagnostics = new QPushButton(tr("性能"));
+    diagnostics->setObjectName("togglePerformance");
+    diagnostics->setFlat(true);
+    connect(diagnostics, &QPushButton::clicked, this, [this] {
+        performanceDock->setVisible(!performanceDock->isVisible());
+    });
+    statusBar()->addPermanentWidget(diagnostics);
     auto logs = new QPushButton(tr("日志"));
     logs->setFlat(true);
     connect(logs, &QPushButton::clicked, this, [this] { logDock->setVisible(!logDock->isVisible()); });
     statusBar()->addPermanentWidget(logs);
     treeDock->setMinimumWidth(220);
-    inspectorDock->setMinimumWidth(340);
-    performanceDock->setMinimumWidth(340);
+    inspectorDock->setMinimumWidth(320);
+    performanceDock->setMinimumWidth(280);
     resizeDocks({treeDock, inspectorDock}, {240, 350}, Qt::Horizontal);
-    resizeDocks({performanceDock, inspectorDock}, {250, 500}, Qt::Vertical);
     setupDockTitle(treeDock, "scene");
     setupDockTitle(inspectorDock, "settings");
     setupDockTitle(performanceDock, "chart");
@@ -480,7 +497,8 @@ void learnQT::setupWorkbench()
     auto resetLayout = viewMenu->addAction(tr("恢复当前页面布局"), this, [this] {
         int page = workspace->page;
         workspace->page = -1;
-        workspace->layouts.remove(page);
+        workspace->layouts.remove(workspaceLayoutKey(page, m_renderPreviewMode));
+        workspace->activeLayoutKey.clear();
         navigateWorkspace(WorkspacePage(page));
     });
     resetLayout->setObjectName("resetWorkspaceLayout");
@@ -496,7 +514,9 @@ void learnQT::setupDockTitle(QDockWidget *dock, const QString &icon)
     auto symbol = new QLabel;
     symbol->setPixmap(WorkbenchStyle::icon(icon).pixmap(18, 18));
     row->addWidget(symbol);
-    row->addWidget(new QLabel(dock->windowTitle()), 1);
+    auto caption = new QLabel(dock->windowTitle());
+    row->addWidget(caption, 1);
+    connect(dock, &QDockWidget::windowTitleChanged, caption, &QLabel::setText);
     auto close = new QToolButton;
     close->setIcon(WorkbenchStyle::icon("close"));
     close->setIconSize(QSize(15, 15));
@@ -512,11 +532,12 @@ void learnQT::setupTree()
     auto widget = new QWidget;
     auto layout = new QVBoxLayout(widget);
     layout->setContentsMargins(8, 8, 8, 8);
-    m_sceneList = new QComboBox;
+    // Legacy scene-discovery regression adapter; presets are presented in Resources/Home.
+    m_sceneList = new QComboBox(this);
     m_sceneList->setObjectName("sceneList");
     m_sceneList->setMinimumContentsLength(12);
     m_sceneList->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-    layout->addWidget(m_sceneList);
+    m_sceneList->hide();
     connect(m_sceneList, QOverload<int>::of(&QComboBox::activated), this, [this](int i) {
         auto path = m_sceneList->itemData(i).toString();
         if (path.isEmpty())
@@ -561,7 +582,7 @@ void learnQT::setupTree()
     }
     layout->addWidget(tree);
     treeDock->setWidget(widget);
-    addDockWidget(Qt::RightDockWidgetArea, treeDock);
+    addDockWidget(Qt::LeftDockWidgetArea, treeDock);
     tree->expandAll();
     connect(tree->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this] {
         if (syncingSelection)
@@ -999,7 +1020,7 @@ void learnQT::startRender()
     workspace->task->item(0, 1)->setText(QString("%1 × %2").arg(settings.size.width()).arg(settings.size.height()));
     workspace->task->item(0, 2)->setText(QString("0 / %1 spp").arg(settings.samples));
     workspace->task->item(0, 4)->setText("0.0 秒");
-    m_renderPreviewMode = false;
+    setRenderPreviewMode(false);
     navigateWorkspace(WorkspacePage::Render);
     syncWorkspaceAvailability();
     viewport->renderThread()->startJob(settings);
@@ -1263,9 +1284,9 @@ void learnQT::closeEvent(QCloseEvent *e)
     }
     QSettings settings(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
     settings.setValue("geometry", saveGeometry());
-    workspace->layouts[workspace->page] = saveState(4);
+    workspace->layouts[workspace->activeLayoutKey] = saveState(5);
     for (auto it = workspace->layouts.begin(); it != workspace->layouts.end(); ++it)
-        settings.setValue(QString("workspaceV4/layout/%1").arg(it.key()), it.value());
+        settings.setValue("workspaceV5/layout/" + it.key(), it.value());
     e->accept();
 }
 void learnQT::keyPressEvent(QKeyEvent *e)

@@ -96,7 +96,7 @@ ObjectInspector::ObjectInspector(EditorController *e, QWidget *p) : QWidget(p), 
             transform[i] = new MixedSpin;
             transform[i]->setObjectName(QString("transform%1").arg(i));
             transform[i]->setButtonSymbols(QAbstractSpinBox::NoButtons);
-            transform[i]->setMinimumWidth(92);
+            transform[i]->setMinimumWidth(80);
             transform[i]->setPrefix(QString("XYZ")[c] + QString(" "));
             line->addWidget(transform[i]);
             connect(transform[i], QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
@@ -110,6 +110,7 @@ ObjectInspector::ObjectInspector(EditorController *e, QWidget *p) : QWidget(p), 
     }
     layout->addWidget(transformBox);
     auto materialBox = new QGroupBox(tr("材质"));
+    materialSection = materialBox;
     materialBox->setObjectName("materialSection");
     auto materialLayout = new QVBoxLayout(materialBox);
     auto materialForm = new QFormLayout;
@@ -215,6 +216,20 @@ ObjectInspector::ObjectInspector(EditorController *e, QWidget *p) : QWidget(p), 
     materialLayout->addWidget(textureBox);
     materialLayout->addWidget(advancedBox);
     layout->addWidget(materialBox);
+    auto overview = new QGroupBox(tr("当前材质"));
+    materialOverview = overview;
+    auto overviewLayout = new QVBoxLayout(overview);
+    materialSummary = new QLabel;
+    materialSummary->setObjectName("objectMaterialSummary");
+    materialSummary->setWordWrap(true);
+    overviewLayout->addWidget(materialSummary);
+    auto openMaterial = new QPushButton(tr("进入材质页编辑…"));
+    openMaterial->setObjectName("openObjectMaterial");
+    overviewLayout->addWidget(openMaterial);
+    connect(openMaterial, &QPushButton::clicked, this, [this] {
+        if (openMaterialPage) openMaterialPage();
+    });
+    layout->addWidget(overview);
     layout->addStretch();
     connect(editor, &EditorController::selectionChanged, this, [this] { refresh(); });
     connect(editor, &EditorController::changed, this, [this](int) {
@@ -234,8 +249,14 @@ void ObjectInspector::refresh()
     auto ids = editor->selectedModels();
     auto editable = editor->selectedModels(true);
     bool scopeEditable = browsedMaterial.isEmpty();
-    for (auto id : editable)
-        scopeEditable |= editor->node(id)["material"].toString() == browsedMaterial;
+    QStringList affected;
+    for (auto id : editable) {
+        const auto node = editor->node(id);
+        if (browsedMaterial.isEmpty() || node["material"].toString() == browsedMaterial) {
+            scopeEditable = true;
+            affected << node["name"].toString(id);
+        }
+    }
     bool enabled = !editable.isEmpty() && scopeEditable && !editor->busy && !editor->renderLocked;
     for (auto s : transform)
         s->setEnabled(enabled);
@@ -254,6 +275,16 @@ void ObjectInspector::refresh()
                                          .arg(editable.size())
                                          .arg(ids.size() > 1 ? tr("多选旋转 / 缩放围绕整体中心按增量应用")
                                                              : editor->node(ids.front())["name"].toString()));
+    QStringList materialNames;
+    QSet<QString> materialIds;
+    for (const auto &id : ids)
+        materialIds.insert(editor->node(id)["material"].toString());
+    for (const auto &id : materialIds) {
+        const auto definition = findMaterial(editor->document, id);
+        materialNames << definition["name"].toString(id);
+    }
+    materialSummary->setText(materialNames.isEmpty() ? tr("未选择模型") : materialNames.join("\n"));
+    materialOverview->findChild<QPushButton *>()->setEnabled(!ids.isEmpty());
     if (ids.isEmpty() && browsedMaterial.isEmpty())
     {
         materialList->clear();
@@ -263,7 +294,12 @@ void ObjectInspector::refresh()
         return;
     }
     if (!browsedMaterial.isEmpty())
-        summary->setText(enabled ? tr("编辑所选对象使用的材质") : tr("只读浏览 · 选择使用此材质的对象后可编辑"));
+        summary->setText(enabled ? tr("影响 %1 个可编辑对象：%2\n共享材质按需隔离，修改不影响未选中对象")
+                                      .arg(affected.size()).arg(affected.mid(0, 4).join("、") + (affected.size() > 4 ? "…" : ""))
+                                : editor->renderLocked ? tr("只读 · 正式任务锁定编辑")
+                                : !ids.isEmpty() && editable.isEmpty() ? tr("只读 · 所选对象已锁定")
+                                : tr("只读浏览 · 选择使用此材质的对象后可编辑"));
+    summary->setToolTip(affected.join("\n"));
     auto m = sceneMatrix(editor->node(ids.isEmpty() ? QString() : ids.front())["transform"]);
     auto position = ids.size() > 1 ? editor->bounds(ids).center() : m.column(3).toVector3D();
     auto rotation = ids.size() > 1 ? QVector3D() : rotationOf(m);
@@ -341,6 +377,8 @@ void ObjectInspector::refresh()
 void ObjectInspector::setMaterialPage(bool enabled)
 {
     transformSection->setVisible(!enabled);
+    materialSection->setVisible(enabled);
+    materialOverview->setVisible(!enabled);
     if (!enabled) browsedMaterial.clear();
     materialList->setVisible(browsedMaterial.isEmpty());
     materialSlotLabel->setVisible(browsedMaterial.isEmpty());

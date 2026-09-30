@@ -23,7 +23,10 @@ class learnQT : public QMainWindow
 {
     Q_OBJECT
   public:
-    enum class WorkspacePage { Home, Scene, Material, Lights, Camera, Environment, Render, Resources, Settings };
+    // Preserve legacy numeric page IDs; Lights/Environment are navigation aliases.
+    enum class WorkspacePage { Home = 0, Scene = 1, Material = 2, Lighting = 3,
+                               Camera = 4, Environment = 5, Render = 6,
+                               Resources = 7, Settings = 8, Lights = 9 };
     explicit learnQT(QWidget *parent = nullptr);
     ~learnQT() override;
     void navigateWorkspace(WorkspacePage page);
@@ -31,6 +34,8 @@ class learnQT : public QMainWindow
   private:
     std::shared_ptr<WorkspaceUi> workspace;
     void setupWorkspace();
+    void applyWorkspaceLayout();
+    void refreshTaskProperties();
     void refreshWorkspace();
     void syncWorkspaceAvailability();
     void rememberScene(const QString &path);

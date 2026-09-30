@@ -202,6 +202,16 @@ void learnQT::refreshRenderQueue()
 {
     if (!workspace || !workspace->task)
         return;
+    int waiting = 0;
+    for (const auto &item : m_renderQueue) if (item.status == tr("等待中")) ++waiting;
+    workspace->queueBadge->setText(tr("等待 %1 · 共 %2 个任务").arg(waiting).arg(m_renderQueue.size()));
+    workspace->stopQueue->setEnabled(m_queueRunning || m_activeQueueId);
+    workspace->runQueue->setEnabled(!m_queueRunning);
+    if (auto stop = findChild<QPushButton *>("stopRenderQueue")) stop->setEnabled(workspace->stopQueue->isEnabled());
+    if (auto run = findChild<QPushButton *>("runRenderQueue")) run->setEnabled(!m_queueRunning);
+    if (!m_activeQueueId && !editor->renderLocked && !m_renderQueue.isEmpty())
+        taskLabel->setText(tr("队列%1 · 等待 %2 个任务").arg(m_queueRunning ? tr("运行中") : tr("已停止")).arg(waiting));
+    refreshTaskProperties();
     auto table = workspace->task;
     const auto selected = table->currentRow() >= 0 && table->item(table->currentRow(), 0)
                               ? table->item(table->currentRow(), 0)->data(Qt::UserRole).toULongLong()
@@ -250,26 +260,56 @@ void learnQT::showRenderTaskResult()
 
 void learnQT::setRenderPreviewMode(bool preview)
 {
+    const bool changed = m_renderPreviewMode != preview;
     m_renderPreviewMode = preview;
+    QSettings settings(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
+    settings.setValue("workspaceV5/renderComposition", preview);
     if (!preview && m_viewedTaskId)
         for (const auto &item : m_renderQueue)
-            if (item.request.id == m_viewedTaskId)
-            {
+            if (item.request.id == m_viewedTaskId) {
                 resultView->setImage(item.result);
                 break;
             }
-    if (workspace && workspace->page == int(WorkspacePage::Render))
-    {
-        if (!m_draftCamera.isEmpty())
-        {
+    if (workspace && workspace->page == int(WorkspacePage::Render)) {
+        if (changed) applyWorkspaceLayout();
+        else if (preview && !m_draftCamera.isEmpty()) {
             Camera draft;
             draft.restoreState(sceneVector(m_draftCamera["position"]), sceneVector(m_draftCamera["target"]),
                                sceneVector(m_draftCamera["up"]), m_draftCamera["fov"].toDouble());
             viewport->setCompositionMode(true, draft, QSize(outputWidth->value(), outputHeight->value()));
         }
-        const QSignalBlocker block(views);
-        views->setCurrentIndex(preview ? 0 : 1);
-        if (viewport->renderThread())
-            viewport->renderThread()->setPreviewVisible(preview);
     }
+    refreshTaskProperties();
+}
+
+void learnQT::refreshTaskProperties()
+{
+    if (!workspace || !workspace->taskProperties) return;
+    const QueueItem *selected = nullptr;
+    for (const auto &item : m_renderQueue)
+        if (item.request.id == m_viewedTaskId) { selected = &item; break; }
+    if (!selected) {
+        workspace->taskProperties->setText(workspace->taskTarget > 0
+            ? tr("正式输出 %1 × %2\n采样 %3 / %4 spp\n状态：%5")
+                .arg(workspace->taskSize.width()).arg(workspace->taskSize.height())
+                .arg(workspace->taskSamples).arg(workspace->taskTarget).arg(renderJobText(jobState))
+            : tr("尚未选择任务。\n在构图页提交任务，再从队列中选择查看。"));
+        return;
+    }
+    const auto &item = *selected;
+    const auto &request = item.request;
+    // Preview stats stop when the viewport is hidden; refresh result status immediately.
+    if (workspace->page == int(WorkspacePage::Render) && !m_renderPreviewMode && !m_activeQueueId) {
+        statsLabel->setText(tr("任务 %1 · %2 × %3 · %4 / %5 spp")
+            .arg(request.id).arg(request.settings.size.width()).arg(request.settings.size.height())
+            .arg(item.samples).arg(request.settings.samples));
+        progress->setValue(request.settings.samples > 0 ? int(100. * item.samples / request.settings.samples) : 0);
+    }
+    workspace->taskProperties->setText(
+        tr("%1\n\n相机快照：%2\n尺寸：%3 × %4\n采样：%5 / %6 spp\n反弹：%7\n分块：%8\n降噪：%9\n状态：%10\n耗时：%11 秒\n\n输出路径：\n%12\n\n错误信息：\n%13")
+        .arg(item.name).arg(item.cameraName).arg(request.settings.size.width()).arg(request.settings.size.height())
+        .arg(item.samples).arg(request.settings.samples).arg(request.settings.bounces).arg(request.settings.tileSize)
+        .arg(request.settings.denoise ? tr("启用") : tr("关闭")).arg(item.status)
+        .arg(item.seconds, 0, 'f', 1).arg(request.outputPath.isEmpty() ? tr("运行时生成") : request.outputPath)
+        .arg(item.error.isEmpty() ? tr("无") : item.error));
 }

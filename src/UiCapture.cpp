@@ -25,6 +25,7 @@ bool pageFromToken(const QString &token, learnQT::WorkspacePage &page)
         {QStringLiteral("home"), learnQT::WorkspacePage::Home},
         {QStringLiteral("scene"), learnQT::WorkspacePage::Scene},
         {QStringLiteral("material"), learnQT::WorkspacePage::Material},
+        {QStringLiteral("lighting"), learnQT::WorkspacePage::Lighting},
         {QStringLiteral("lights"), learnQT::WorkspacePage::Lights},
         {QStringLiteral("camera"), learnQT::WorkspacePage::Camera},
         {QStringLiteral("environment"), learnQT::WorkspacePage::Environment},
@@ -34,6 +35,7 @@ bool pageFromToken(const QString &token, learnQT::WorkspacePage &page)
         {QStringLiteral("首页"), learnQT::WorkspacePage::Home},
         {QStringLiteral("场景"), learnQT::WorkspacePage::Scene},
         {QStringLiteral("材质"), learnQT::WorkspacePage::Material},
+        {QStringLiteral("照明"), learnQT::WorkspacePage::Lighting},
         {QStringLiteral("灯光"), learnQT::WorkspacePage::Lights},
         {QStringLiteral("相机"), learnQT::WorkspacePage::Camera},
         {QStringLiteral("环境"), learnQT::WorkspacePage::Environment},
@@ -58,6 +60,8 @@ bool pageFromToken(const QString &token, learnQT::WorkspacePage &page)
 
 QString pageFileName(learnQT::WorkspacePage page)
 {
+    if (page == learnQT::WorkspacePage::Lights) return "lights";
+    if (page == learnQT::WorkspacePage::Lighting) return "lighting";
     static const char *keys[] = {"home", "scene", "material", "lights", "camera",
                                  "environment", "render", "resources", "settings"};
     return QString::fromLatin1(keys[int(page)]);
@@ -65,6 +69,8 @@ QString pageFileName(learnQT::WorkspacePage page)
 
 QString describe(learnQT::WorkspacePage page)
 {
+    if (page == learnQT::WorkspacePage::Lights) return "灯光";
+    if (page == learnQT::WorkspacePage::Lighting) return "照明";
     static const char *names[] = {"首页", "场景", "材质", "灯光", "相机", "环境", "渲染", "资源", "设置"};
     return QString::fromUtf8(names[int(page)]);
 }
@@ -219,6 +225,8 @@ void learnQT::configureUiCapture()
         }
 
         const WorkspacePage page = state->pages[state->index];
+        if (page == WorkspacePage::Render && QCoreApplication::arguments().contains("--capture-render-results"))
+            setRenderPreviewMode(false);
         state->pageStartFrame = state->freshFrames;
         state->waitClock.restart();
         if (workspace && workspace->page == int(page))

@@ -155,7 +155,7 @@ void learnQT::configureRenderQueueRegression()
             if (!collision.open(QIODevice::WriteOnly) || collision.write("collision sentinel") < 0)
                 return finish("Could not create filename collision fixture");
             collision.close();
-            findChild<QPushButton *>("runRenderQueue")->click();
+            workspace->runQueue->trigger();
             if (!m_queueRunning)
                 return finish("Run queue did not start");
             state->phase = 2;
@@ -203,6 +203,7 @@ void learnQT::configureRenderQueueRegression()
             }
             if (!state->thirdEdited || editor->busy)
                 return;
+            if (!m_renderPreviewMode) workspace->compositionMode->click();
             findChild<QToolButton *>("renderPrimary")->click();
             if (m_renderQueue.size() != 3)
                 return finish(QString("Could not append after live edit: busy=%1 locked=%2 active=%3 draft=%4")
@@ -255,6 +256,11 @@ void learnQT::configureRenderQueueRegression()
                 if (resultView->image.isNull() || workspace->page != int(WorkspacePage::Render) ||
                     views->currentIndex() != 1)
                     return finish("Session result browsing failed");
+                if (!workspace->resultProperties->isVisible() || workspace->outputProperties->isVisible() ||
+                    !workspace->taskProperties->text().contains(m_renderQueue[0].cameraName) ||
+                    !workspace->taskProperties->text().contains(m_renderQueue[0].request.outputPath) ||
+                    !statsLabel->text().contains("512 / 512 spp"))
+                    return finish("Result inspector did not show selected task snapshot");
                 grab().save(output + "/result-page.png");
                 state->capturedUi = true;
             }
@@ -262,6 +268,7 @@ void learnQT::configureRenderQueueRegression()
             {
                 const auto before = editor->document.root["cameras"].toArray();
                 m_draftCamera["position"] = QJsonArray{3.0, 1.2, 5.0};
+                workspace->compositionMode->click();
                 findChild<QPushButton *>("saveCompositionCamera")->click();
                 const auto after = editor->document.root["cameras"].toArray();
                 if (after.size() != before.size() + 1 || after[2] != before[2] ||
@@ -273,12 +280,14 @@ void learnQT::configureRenderQueueRegression()
             if (editor->busy)
                 return;
             outputSamples->setValue(1000000);
+            if (!m_renderPreviewMode) workspace->compositionMode->click();
             findChild<QToolButton *>("renderPrimary")->click();
             outputSamples->setValue(2);
+            if (!m_renderPreviewMode) workspace->compositionMode->click();
             findChild<QToolButton *>("renderPrimary")->click();
             if (m_renderQueue.size() != 5)
                 return finish("Pause/stop queue fixtures were not captured");
-            findChild<QPushButton *>("runRenderQueue")->click();
+            workspace->runQueue->trigger();
             state->phase = 5;
             return;
         }
@@ -324,12 +333,14 @@ void learnQT::configureRenderQueueRegression()
                 m_renderQueue[4].status != tr("完成"))
                 return finish("Stopping current task did not advance to the next task");
             outputSamples->setValue(1000000);
+            if (!m_renderPreviewMode) workspace->compositionMode->click();
             findChild<QToolButton *>("renderPrimary")->click();
             outputSamples->setValue(2);
+            if (!m_renderPreviewMode) workspace->compositionMode->click();
             findChild<QToolButton *>("renderPrimary")->click();
             if (m_renderQueue.size() != 7)
                 return finish("Stop-queue fixtures were not captured");
-            findChild<QPushButton *>("runRenderQueue")->click();
+            workspace->runQueue->trigger();
             findChild<QPushButton *>("stopRenderQueue")->click();
             state->phase = 9;
             return;
@@ -341,7 +352,7 @@ void learnQT::configureRenderQueueRegression()
             if (m_queueRunning || m_renderQueue[5].status != tr("已停止") ||
                 m_renderQueue[6].status != tr("等待中"))
                 return finish("Stop queue did not retain waiting tasks");
-            findChild<QPushButton *>("runRenderQueue")->click();
+            workspace->runQueue->trigger();
             state->phase = 10;
             return;
         }
@@ -352,6 +363,7 @@ void learnQT::configureRenderQueueRegression()
             if (m_renderQueue[6].status != tr("完成"))
                 return finish("Retained task did not run on queue restart");
             outputSamples->setValue(128);
+            if (!m_renderPreviewMode) workspace->compositionMode->click();
             findChild<QToolButton *>("renderPrimary")->click();
             outputSamples->setValue(2);
             {
@@ -359,11 +371,12 @@ void learnQT::configureRenderQueueRegression()
                 outputDenoise->setChecked(true);
             }
             m_renderFormat->setCurrentIndex(1);
+            if (!m_renderPreviewMode) workspace->compositionMode->click();
             findChild<QToolButton *>("renderPrimary")->click();
             if (m_renderQueue.size() != 9 || !m_renderQueue[8].request.settings.denoise ||
                 m_renderQueue[8].format != "jpg")
                 return finish("Export-failure fixtures were not captured");
-            findChild<QPushButton *>("runRenderQueue")->click();
+            workspace->runQueue->trigger();
             state->phase = 11;
             return;
         }
@@ -406,10 +419,11 @@ void learnQT::configureRenderQueueRegression()
                 asset.write("after") != 5)
                 return finish("Could not modify queued-resource fixture");
             asset.close();
+            if (!m_renderPreviewMode) workspace->compositionMode->click();
             findChild<QToolButton *>("renderPrimary")->click();
             if (m_renderQueue.size() != 11)
                 return finish("Follow-up task was not captured after changed resource");
-            findChild<QPushButton *>("runRenderQueue")->click();
+            workspace->runQueue->trigger();
             state->phase = 13;
             return;
         }
@@ -523,6 +537,7 @@ void learnQT::configureWorkspaceRegression()
                 outputSamples->setValue(1);
                 outputDenoise->setChecked(false);
                 navigateWorkspace(WorkspacePage::Render);
+                workspace->compositionMode->click();
                 auto start = findChild<QToolButton *>("renderPrimary");
                 if (!start || !start->isVisible())
                 {
@@ -530,7 +545,8 @@ void learnQT::configureWorkspaceRegression()
                     return;
                 }
                 startRender();
-                if (!workspace->pendingRender)
+                // GL initialization may finish synchronously during navigation at high DPI.
+                if (!workspace->pendingRender && !editor->renderLocked)
                 {
                     finish("Cold render request was dropped");
                     return;
@@ -568,9 +584,9 @@ void learnQT::configureWorkspaceRegression()
                 finish("Navigation mismatch");
                 return;
             }
-            if (state->page == 1 && width() >= 1450 && !workspace->bottom->isVisible())
+            if (state->page == 1 && workspace->bottom->isVisible())
             {
-                finish("Scene resource panel missing from default layout");
+                finish("Scene resource panel is not collapsed by default");
                 return;
             }
             if (state->page == 8 && !findChild<QSpinBox *>("recentFileLimit")->isVisible())
@@ -595,7 +611,9 @@ void learnQT::configureWorkspaceRegression()
                     return;
                 }
             capture(state->phase == 1 ? "empty-" : "loaded-");
-            if (++state->page < 9)
+            ++state->page;
+            if (state->page == 5) ++state->page;
+            if (state->page < 9)
                 return;
             if (state->phase == 1)
             {
@@ -625,6 +643,25 @@ void learnQT::configureWorkspaceRegression()
         }
         else if (state->phase == 4)
         {
+            if (workspace->navigation.size() != 8 || workspace->navigation.contains(5))
+                return finish("Workspace navigation does not contain exactly eight pages");
+            navigateWorkspace(WorkspacePage::Scene);
+            if (dockWidgetArea(treeDock) != Qt::LeftDockWidgetArea || performanceDock->isVisible() ||
+                inspector->findChild<QWidget *>("materialSection")->isVisible() || m_sceneList->isVisible())
+                return finish("Scene panel responsibilities are incorrect");
+            workspace->bottom->toggleViewAction()->trigger();
+            resize(1366, 768);
+            QApplication::processEvents();
+            resize(1600, 900);
+            if (!workspace->bottom->isVisible()) return finish("Resize hid explicitly expanded resources");
+            workspace->bottom->hide();
+            navigateWorkspace(WorkspacePage::Lights);
+            if (workspace->page != int(WorkspacePage::Lighting) || workspace->lightingTabs->currentIndex() != 0)
+                return finish("Legacy lights alias did not enter Lighting");
+            navigateWorkspace(WorkspacePage::Environment);
+            if (workspace->page != int(WorkspacePage::Lighting) || workspace->lightingTabs->currentIndex() != 1 ||
+                workspace->bottom->isVisible()) return finish("Legacy environment alias or HDR panel failed");
+
             navigateWorkspace(WorkspacePage::Camera);
             auto fov = findChild<MixedSpin *>("cameraValue6");
             float before = viewport->camera.zoom;
@@ -700,11 +737,27 @@ void learnQT::configureWorkspaceRegression()
                 return;
             }
             findChild<QAction *>("resetWorkspaceLayout")->trigger();
-            if (!workspace->bottom->isVisible())
+            if (workspace->bottom->isVisible())
             {
                 finish("Default layout reset failed");
                 return;
             }
+            navigateWorkspace(WorkspacePage::Render);
+            workspace->compositionMode->click();
+            if (workspace->bottom->isVisible() || !workspace->outputProperties->isVisible() ||
+                !workspace->compositionMode->isChecked() || workspace->resultsMode->isChecked())
+                return finish("Composition default layout failed");
+            workspace->resultsMode->click();
+            if (!workspace->bottom->isVisible() || !workspace->resultProperties->isVisible() ||
+                workspace->compositionMode->isChecked() || !workspace->resultsMode->isChecked() ||
+                workspace->outputProperties->isVisible()) return finish("Result layout did not separate task properties");
+            workspace->bottom->toggleViewAction()->trigger();
+            workspace->compositionMode->click();
+            workspace->resultsMode->click();
+            if (workspace->bottom->isVisible()) return finish("Result mode layout was not preserved independently");
+            workspace->bottom->toggleViewAction()->trigger();
+            workspace->compositionMode->click();
+            if (workspace->bottom->isVisible()) return finish("Result layout leaked into composition");
             state->phase = 5;
         }
         else if (state->phase == 5)
@@ -714,6 +767,7 @@ void learnQT::configureWorkspaceRegression()
             outputHeight->setValue(180);
             outputSamples->setValue(1000000);
             outputDenoise->setChecked(false);
+            workspace->compositionMode->click();
             auto start = findChild<QToolButton *>("renderPrimary");
             if (!start || !start->isVisible())
             {
@@ -792,17 +846,19 @@ void learnQT::configureWorkspaceRegression()
             if (!state->compactRequested) { state->compactRequested = true; resize(1366, 768); return; }
             if (size() != QSize(1366, 768)) { finish("Compact window was enlarged by minimum layout size"); return; }
             auto start = findChild<QToolButton *>("renderPrimary");
-            if (!start || start->isVisible() || findChild<QWidget *>("renderControls"))
+            if (!start || start->isVisible() || workspace->renderModes->isVisible())
             {
                 finish("Render controls visible outside the render page");
                 return;
             }
             renderAction->trigger();
-            if (jobState != RenderJobState::Completed || editor->renderLocked)
+            if (jobState != RenderJobState::Completed || editor->renderLocked ||
+                workspace->page != int(WorkspacePage::Render) || !m_renderPreviewMode)
             {
-                finish("Render shortcut started a job outside the render page");
+                finish("Render shortcut did not enter composition without starting a job");
                 return;
             }
+            navigateWorkspace(WorkspacePage::Scene);
             capture("compact-");
             if (viewport->width() < 160 || viewport->height() < 120)
             {
@@ -859,6 +915,18 @@ void learnQT::configureWorkspaceRegression()
         else if (state->phase == 13)
         {
             capture("recent-");
+            // Exercise the production close handler without closing the test window.
+            editor->markSaved();
+            m_sceneDirty = false;
+            QCloseEvent close;
+            closeEvent(&close);
+            QSettings stored(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
+            stored.sync();
+            for (const auto &key : {"scene", "render/composition", "render/results"})
+                if (stored.value(QString("workspaceV5/layout/") + key).toByteArray().isEmpty())
+                    return finish("Stable page/mode layout was not persisted by close handler");
+            if (!close.isAccepted() || stored.value("workspaceV5/renderComposition").toBool() != m_renderPreviewMode)
+                return finish("Render mode preference was not persisted");
             finish({});
         }
     });

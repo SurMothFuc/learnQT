@@ -88,7 +88,7 @@ void learnQT::configurePreviewPanelRegression()
         // 1) 顶栏入口存在，替代了原“渲染设置”，并且挂的是即时弹出菜单。
         if (state->phase == 0)
         {
-            auto toolbar = findChild<QToolBar *>(QStringLiteral("workbenchToolbar"));
+            auto toolbar = findChild<QToolBar *>(QStringLiteral("viewportToolbar"));
             if (!toolbar)
             {
                 finish(QStringLiteral("Workbench toolbar is missing"));
