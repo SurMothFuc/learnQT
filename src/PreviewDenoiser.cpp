@@ -1,3 +1,4 @@
+#include "OidnAuxiliary.h"
 #include "PreviewDenoiser.h"
 #include <QElapsedTimer>
 #include <QThread>
@@ -53,12 +54,7 @@ PreviewDenoiser::Result PreviewDenoiser::execute(Snapshot snapshot)
             mainFilter.set("hdr", true);
             mainFilter.set("cleanAux", true);
         }
-        for (auto &n : snapshot.normal)
-        {
-            n = std::max(-1.f, std::min(1.f, n * 2.f - 1.f));
-            result.normalMinimum = std::min(result.normalMinimum, double(n));
-            result.normalMaximum = std::max(result.normalMaximum, double(n));
-        }
+        decodeOidnNormals(snapshot.normal.data(),snapshot.normal.data(),snapshot.normal.size(),result.normalMinimum,result.normalMaximum);
         result.color.resize(snapshot.color.size());
         bytes = quint64(snapshot.color.size()) * sizeof(float) * 4;
         const int w = snapshot.size.width(), h = snapshot.size.height();

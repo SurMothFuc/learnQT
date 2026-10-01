@@ -32,7 +32,7 @@ public:
         float yaw = YAW, float pitch = PITCH);
     ~Camera();
 
-    QMatrix4x4 getViewMatrix();
+    QMatrix4x4 getViewMatrix() const;
     void restoreState(const QVector3D& eye, const QVector3D& lookAt, const QVector3D& worldUp, float fov);
     void processMouseMovement(float xoffset, float yoffset, bool constraintPitch = true);
     void processMousePan(float xoffset, float yoffset);

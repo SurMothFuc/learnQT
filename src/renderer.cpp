@@ -1,3 +1,4 @@
+#include "OidnAuxiliary.h"
 #include "renderer.h"
 
 #include "MaterialTextureImage.h"
@@ -242,12 +243,19 @@ GLuint Renderer::bindData(std::vector<GLuint> colorAttachments)
 // 路径追踪只画全屏四边形，它的 FBO 没有也不需要深度附件。
 // 光栅化交互预览需要深度测试，所以单独建一个只含「RenderColorTex + 深度」的 FBO，
 // 颜色靶与路径追踪共用，但绝不改动 pathtrace_fbo 本身，避免影响既有预览行为。
-void Renderer::ensureDepthAttachment()
+void Renderer::ensureDepthAttachment(bool antialiasing)
 {
     if (!pathtrace_fbo || render_width <= 0 || render_height <= 0)
         return;
-    if (rasterFbo && rasterDepthSize == QSize(render_width, render_height))
+    GLint maximumSamples = 1;
+    glGetIntegerv(GL_MAX_SAMPLES, &maximumSamples);
+    const int requestedSamples = antialiasing ? std::max(1, std::min(4, maximumSamples)) : 1;
+    if (rasterFbo && rasterDepthSize == QSize(render_width, render_height) && rasterSampleRequest == requestedSamples)
         return;
+    glDeleteFramebuffers(1, &multisampleFbo);
+    glDeleteRenderbuffers(1, &multisampleColor);
+    glDeleteRenderbuffers(1, &multisampleDepth);
+    multisampleFbo = multisampleColor = multisampleDepth = 0;
     if (!rasterFbo)
         glGenFramebuffers(1, &rasterFbo);
     if (depthRenderbuffer)
@@ -263,6 +271,27 @@ void Renderer::ensureDepthAttachment()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     if (status != GL_FRAMEBUFFER_COMPLETE)
         throw std::runtime_error("Raster preview framebuffer is incomplete");
+    rasterSampleRequest = requestedSamples;
+    multisampleCount = 1;
+    for (int candidate=requestedSamples; candidate>1; candidate/=2) {
+        glGenFramebuffers(1, &multisampleFbo); glBindFramebuffer(GL_FRAMEBUFFER, multisampleFbo);
+        glGenRenderbuffers(1, &multisampleColor); glBindRenderbuffer(GL_RENDERBUFFER, multisampleColor);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, candidate, GL_RGBA32F, render_width, render_height);
+        GLint actual=0; glGetRenderbufferParameteriv(GL_RENDERBUFFER,GL_RENDERBUFFER_SAMPLES,&actual);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, multisampleColor);
+        glGenRenderbuffers(1, &multisampleDepth); glBindRenderbuffer(GL_RENDERBUFFER, multisampleDepth);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, candidate, GL_DEPTH_COMPONENT24, render_width, render_height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, multisampleDepth);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE && glGetError()==GL_NO_ERROR) {
+            multisampleCount=actual; break;
+        }
+        glDeleteFramebuffers(1, &multisampleFbo); glDeleteRenderbuffers(1, &multisampleColor); glDeleteRenderbuffers(1, &multisampleDepth);
+        multisampleFbo = multisampleColor = multisampleDepth = 0;
+        while (glGetError()!=GL_NO_ERROR) {}
+    }
+    if (antialiasing && multisampleCount<4) qWarning()<<"Raster MSAA actual samples:"<<multisampleCount;
+    stats.rasterSamples = multisampleCount;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     rasterDepthSize = QSize(render_width, render_height);
 }
 
@@ -321,6 +350,7 @@ void Renderer::submitGpuBoundary()
 }
 void Renderer::pollGpuTimers()
 {
+    if (gpuDenoiser.ready()) { gpuDenoiser.poll(); stats.realtimeDenoiseMs=gpuDenoiser.milliseconds; stats.historyAcceptance=gpuDenoiser.acceptance; }
     if (rasterTimerQuery && rasterTimerPending)
     {
         GLint ready = 0;
@@ -373,6 +403,11 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot &snaps
                       SceneDirtyFlags dirtyFlags, int maxTiles, const std::function<bool()> &interrupted)
 {
     const RefreshActions actions = resolveRefreshActions(width, height, snapshot, dirtyFlags);
+    const bool resetHistory = (dirtyFlags & (toSceneDirtyFlags(SceneDirtyFlag::Material) | toSceneDirtyFlags(SceneDirtyFlag::SceneBuffers))) ||
+        actions.resizeTargets || actions.rebuildShader || actions.refreshDenoisePolicy ||
+        snapshot.antialiasing != m_lastAppliedSnapshot.antialiasing || snapshot.maxBounces != m_lastAppliedSnapshot.maxBounces;
+    if (resetHistory) { gpuDenoiser.invalidate(); realtimeFailed = false; stats.denoiseError.clear(); }
+    if (actions.resizeTargets || actions.rebuildShader || snapshot.antialiasing != m_lastAppliedSnapshot.antialiasing) previewSequence=0;
     applyRefreshActions(width, height, snapshot, actions);
 
     // 交互回退决策：进入或离开光栅化时重置累积，避免两种模式的画面互相残留。
@@ -389,7 +424,8 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot &snaps
         if (!m_rasterInstancesUploaded)
             uploadRasterInstances();
         // Resize the depth attachment only when the render resolution changes.
-        ensureDepthAttachment();
+        ensureDepthAttachment(snapshot.antialiasing);
+        gpuDenoiser.invalidate();
         if (renderRasterPreview(snapshot))
             return;
         // 光栅化资源不可用时回到路径追踪，本帧不再重复重置累积。
@@ -397,10 +433,13 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot &snaps
         m_rasterRequested = false;
     }
 
+    prepareRealtime(snapshot);
     const bool previewChanged = pollPreviewDenoise(snapshot);
     stats.batchTiles = 0;
     if (!samplingActive(snapshot))
     {
+        refreshRealtimeGuides(snapshot);
+        if (snapshot.effectiveDenoiseMode()==DenoiseMode::Realtime) realtimeDenoise(snapshot,true);
         performDenoising(snapshot, true);
         compositePreview(snapshot, previewChanged || actions.refreshDenoisePolicy || actions.refreshDisplay,
                          actions.refreshDisplay);
@@ -415,7 +454,7 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot &snaps
             : 1;
     stats.batchLimit = limit;
     const auto initialRound = frameCounter;
-    bindPathtraceInputs(clampMaxBounces(snapshot.maxBounces));
+    bindPathtraceInputs(clampMaxBounces(snapshot.maxBounces), snapshot);
     QElapsedTimer submission;
     submission.start();
     for (int step = 0; step < limit; ++step)
@@ -446,14 +485,20 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot &snaps
         if (frameCounter != initialRound)
             break;
     }
+    if (frameCounter != initialRound) {
+        refreshRealtimeGuides(snapshot);
+        ++previewSequence;
+        if (snapshot.effectiveDenoiseMode() == DenoiseMode::Realtime) realtimeDenoise(snapshot, false);
+    }
     const bool finished = !samplingActive(snapshot);
     if (!formal)
         performDenoising(snapshot, finished);
-    compositePreview(snapshot, true, finished || actions.refreshDisplay);
+    compositePreview(snapshot, frameCounter != initialRound, finished || actions.refreshDisplay);
 }
 
 void Renderer::compositePreview(const RenderParams::Snapshot &snapshot, bool changed, bool force)
 {
+    if (!m_rasterActive && !frameCounter) return;
     displayDirty |= changed;
     // A new raster image remains pending until the throttled composite consumes it.
     const bool needed = m_rasterActive ? rasterNeedsComposite : displayDirty;
@@ -503,15 +548,17 @@ void Renderer::init(int width, int height, const RenderParams::Snapshot &snapsho
     RenderColorTex = getTextureRGB32F(render_width, render_height);
     normal_texture = getTextureRGB32F(render_width, render_height);
     baseColorTex = getTextureRGB32F(render_width, render_height);
+    previousNormalTex = getTextureRGB32F(render_width, render_height);
+    previousAlbedoTex = getTextureRGB32F(render_width, render_height);
     batchTextureSettings.insert(batchTextureSettings.end(),
-                                {preRenderColorTex, RenderColorTex, normal_texture, baseColorTex});
+                                {preRenderColorTex, RenderColorTex, normal_texture, baseColorTex, previousNormalTex, previousAlbedoTex});
 
     pathtrace_fbo = bindData(std::vector<GLuint>{RenderColorTex, normal_texture, baseColorTex});
     ensureDepthAttachment();
 
     historysave_program.reset(
         getShaderProgram(getShaderPath("historysave.frag"), getShaderPath("triangle.vert")));
-    historysave_fbo = bindData(std::vector<GLuint>{preRenderColorTex});
+    historysave_fbo = bindData(std::vector<GLuint>{preRenderColorTex, previousNormalTex, previousAlbedoTex});
 
     RenderColorTexfiltered = getTextureRGB32F(render_width, render_height);
     batchTextureSettings.push_back(RenderColorTexfiltered);
@@ -560,11 +607,15 @@ void Renderer::initOIDN()
 
 void Renderer::uninit()
 {
+    gpuDenoiser.release();
     glDeleteFramebuffers(1, &m_fbo);
     glDeleteFramebuffers(1, &pathtrace_fbo);
     glDeleteFramebuffers(1, &historysave_fbo);
     glDeleteRenderbuffers(1, &depthRenderbuffer);
     glDeleteFramebuffers(1, &rasterFbo);
+    glDeleteFramebuffers(1, &multisampleFbo);
+    glDeleteRenderbuffers(1, &multisampleColor);glDeleteRenderbuffers(1, &multisampleDepth);
+    multisampleFbo=multisampleColor=multisampleDepth=0;multisampleCount=1;rasterSampleRequest=0;
 
     glDeleteTextures(1, &m_texture);
     for (auto &perTex : batchTextureSettings)
@@ -667,6 +718,10 @@ void Renderer::ensureDenoisePbos()
 
 void Renderer::adjustSize()
 {
+    if(rasterDepthSize!=QSize(render_width,render_height)) {
+        glDeleteFramebuffers(1,&multisampleFbo);glDeleteRenderbuffers(1,&multisampleColor);glDeleteRenderbuffers(1,&multisampleDepth);
+        multisampleFbo=multisampleColor=multisampleDepth=0;multisampleCount=1;rasterSampleRequest=0;
+    }
     while (glGetError() != GL_NO_ERROR)
     {
     }
@@ -733,10 +788,11 @@ void Renderer::updateTileGrid(int tileSize)
     tilesY = (render_height + safeTileSize - 1) / safeTileSize;
 }
 
-void Renderer::bindPathtraceInputs(int maxBounces)
+void Renderer::bindPathtraceInputs(int maxBounces, const RenderParams::Snapshot &snapshot)
 {
     const unsigned int sobolBounceCount = static_cast<unsigned int>(std::max(1, maxBounces));
-    const auto sobelNumber = getSobelRandomNumber(frameCounter, sobolBounceCount);
+    const unsigned sequence = formal || snapshot.effectiveDenoiseMode() != DenoiseMode::Realtime ? frameCounter : previewSequence;
+    const auto sobelNumber = getSobelRandomNumber(sequence, sobolBounceCount);
 
     pathtrace_program->bind();
     {
@@ -745,6 +801,18 @@ void Renderer::bindPathtraceInputs(int maxBounces)
         const GLint sobelLocation = pathtrace_program->uniformLocation("sobelNumber");
         glUniform1fv(sobelLocation, static_cast<GLsizei>(sobolBounceCount * 2u), sobelNumber.data());
         pathtrace_program->setUniformValue("maxBounces", maxBounces);
+        glUniform1ui(pathtrace_program->uniformLocation("sampleSequence"), sequence);
+        // R2 low-discrepancy sequence is independent of the path's Sobol dimensions.
+        pathtrace_program->setUniformValue("aaSample", QVector2D(float(std::fmod((sequence+.5)*.7548776662466927,1.0)),
+                                                               float(std::fmod((sequence+.5)*.5698402909980532,1.0))));
+        pathtrace_program->setUniformValue("antialiasing", snapshot.antialiasing);
+        pathtrace_program->setUniformValue("realtimeGuides", realtimeAttached && !realtimeFailed);
+        pathtrace_program->setUniformValue("previousNormal", 13);
+        glActiveTexture(GL_TEXTURE13); glBindTexture(GL_TEXTURE_2D, previousNormalTex);
+        pathtrace_program->setUniformValue("previousAlbedo", 14);
+        glActiveTexture(GL_TEXTURE14); glBindTexture(GL_TEXTURE_2D, previousAlbedoTex);
+        pathtrace_program->setUniformValue("reprojectionTable", 15);
+        glActiveTexture(GL_TEXTURE15); glBindTexture(GL_TEXTURE_BUFFER, gpuDenoiser.transformTexture());
 
         pathtrace_program->setUniformValue("triangles", 0);
         pathtrace_program->setUniformValue("nodes", 1);
@@ -795,6 +863,8 @@ void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, i
         gl->glBindImageTexture(0, RenderColorTex, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
         gl->glBindImageTexture(1, normal_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
         gl->glBindImageTexture(2, baseColorTex, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+        if (realtimeAttached && !realtimeFailed)
+            for (int i=0; i<5; ++i) gl->glBindImageTexture(3+i, gpuDenoiser.sample(i), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
         // Includes image writes, following sampler reads/history blits, and target reuse.
         gl->glMemoryBarrier(GL_ALL_BARRIER_BITS);
         gl->glDispatchCompute((tileWidth + 7) / 8, (tileHeight + 7) / 8, 1);
@@ -931,7 +1001,8 @@ Renderer::RefreshActions Renderer::resolveRefreshActions(int width, int height,
     const bool renderLowChanged = snapshot.renderLow != m_lastAppliedSnapshot.renderLow;
     const bool tileModeChanged = snapshot.useTileRendering != m_lastAppliedSnapshot.useTileRendering;
     const bool tileSizeChanged = snapshot.tileSize != m_lastAppliedSnapshot.tileSize;
-    const bool denoiseChanged = snapshot.denoise != m_lastAppliedSnapshot.denoise;
+    const bool denoiseChanged = snapshot.effectiveDenoiseMode() != m_lastAppliedSnapshot.effectiveDenoiseMode();
+    const bool aaChanged = snapshot.antialiasing != m_lastAppliedSnapshot.antialiasing;
     const bool maxBouncesChanged = snapshot.maxBounces != m_lastAppliedSnapshot.maxBounces;
     const bool sizeChanged = width != m_width || height != m_height;
 
@@ -962,7 +1033,7 @@ Renderer::RefreshActions Renderer::resolveRefreshActions(int width, int height,
         actions.resetAccumulation = true;
     }
 
-    if (maxBouncesChanged)
+    if (maxBouncesChanged || aaChanged)
     {
         actions.resetAccumulation = true;
     }
@@ -978,7 +1049,7 @@ Renderer::RefreshActions Renderer::resolveRefreshActions(int width, int height,
         actions.resetAccumulation = true;
     }
 
-    if (hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::Material))
+    if (hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::Material) || hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::Transform))
     {
         actions.syncMaterialBuffer = true;
         actions.resetAccumulation = true;
@@ -1026,6 +1097,7 @@ void Renderer::applyRefreshActions(int width, int height, const RenderParams::Sn
     {
         invalidatePreviewDenoise();
         m_forceDenoiseRefresh = true;
+        m_hasDenoisedFrame=false; stats.denoisedVersion=0; stats.denoisedSamples=0; stats.oidnMs=0;
     }
 
     if (actions.syncSceneBuffers)
@@ -1094,8 +1166,10 @@ void Renderer::resetAccumulation()
     clearTexture(RenderColorTex);
     clearTexture(normal_texture);
     clearTexture(baseColorTex);
+    clearTexture(previousNormalTex);
+    clearTexture(previousAlbedoTex);
     clearTexture(RenderColorTexfiltered);
-    clearTexture(m_texture);
+    // The published image stays visible until a complete replacement is available.
 
     lasttime = clock();
     lastframeCounter = 0;
@@ -1570,6 +1644,7 @@ void Renderer::processHistorySaving(const RenderParams::Snapshot &snapshot)
     {
         nowChunkedCount = 0;
         frameCounter++;
+        ++stats.completedRounds;
 
         historysave_program->bind();
         {
@@ -1580,6 +1655,10 @@ void Renderer::processHistorySaving(const RenderParams::Snapshot &snapshot)
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, RenderColorTex);
             historysave_program->setUniformValue("RenderColor", 0);
+            glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, normal_texture);
+            historysave_program->setUniformValue("NormalColor", 1);
+            glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, baseColorTex);
+            historysave_program->setUniformValue("BaseColor", 2);
 
             glViewport(m_viewportX, m_viewportY, render_width, render_height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1598,6 +1677,11 @@ void Renderer::processHistorySaving(const RenderParams::Snapshot &snapshot)
 
 void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool forceCurrentFrame)
 {
+    if (snapshot.effectiveDenoiseMode() != DenoiseMode::OIDN) {
+        if (formal && forceCurrentFrame && snapshot.effectiveDenoiseMode() == DenoiseMode::Realtime)
+            realtimeDenoise(snapshot, true);
+        return;
+    }
     if (!formal)
     {
         requestPreviewDenoise(snapshot, forceCurrentFrame);
@@ -1640,7 +1724,7 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
 
     // 使用 PBO 异步读取数据；降噪只在完整累计帧上触发。
     const GLenum formats[] = {GL_RGB, GL_RGB, GL_RGB};
-    const GLuint textures[] = {normal_texture, baseColorTex, RenderColorTex};
+    const GLuint textures[] = {previousNormalTex, previousAlbedoTex, preRenderColorTex};
     float *srcPtrs[3] = {nullptr, nullptr, nullptr};
 
     for (int i = refreshAuxiliaryBuffers ? 0 : 2; i < 3; i++)
@@ -1671,12 +1755,7 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
         auto *normals = static_cast<float *>(oidnNormalBuf.getData());
         stats.normalMinimum = 1;
         stats.normalMaximum = -1;
-        for (size_t i = 0; i < oidnNormalBuf.getSize() / sizeof(float); ++i)
-        {
-            normals[i] = srcPtrs[0][i] * 2.0f - 1.0f;
-            stats.normalMinimum = std::min(stats.normalMinimum, double(normals[i]));
-            stats.normalMaximum = std::max(stats.normalMaximum, double(normals[i]));
-        }
+        decodeOidnNormals(normals,srcPtrs[0],oidnNormalBuf.getSize()/sizeof(float),stats.normalMinimum,stats.normalMaximum);
         stats.auxiliarySize = QSize(render_width, render_height);
         std::memcpy(oidnAlbedoBuf.getData(), srcPtrs[1], oidnAlbedoBuf.getSize());
     }
@@ -1734,13 +1813,13 @@ void Renderer::compositeToScreen(const RenderParams::Snapshot &snapshot)
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE5);
-        if (!m_rasterActive && snapshot.denoise && m_hasDenoisedFrame)
+        if (!m_rasterActive && snapshot.effectiveDenoiseMode() != DenoiseMode::None && m_hasDenoisedFrame)
         {
-            glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
+            glBindTexture(GL_TEXTURE_2D, snapshot.effectiveDenoiseMode() == DenoiseMode::Realtime ? gpuDenoiser.output() : RenderColorTexfiltered);
         }
         else
         {
-            glBindTexture(GL_TEXTURE_2D, formal ? preRenderColorTex : RenderColorTex);
+            glBindTexture(GL_TEXTURE_2D, m_rasterActive ? RenderColorTex : preRenderColorTex);
         }
         m_program->setUniformValue("texPass1", 5);
         auto display = m_scene.document.root["display"].toObject();
@@ -1817,7 +1896,8 @@ bool Renderer::renderRasterPreview(const RenderParams::Snapshot &snapshot)
         glBeginQuery(GL_TIME_ELAPSED, rasterTimerQuery);
 
     // 光栅化写进专用 FBO（颜色靶与路径追踪共用 RenderColorTex），不触碰 pathtrace_fbo。
-    glBindFramebuffer(GL_FRAMEBUFFER, rasterFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, multisampleFbo ? multisampleFbo : rasterFbo);
+    glEnable(GL_MULTISAMPLE);
     glViewport(0, 0, render_width, render_height);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
@@ -1917,6 +1997,10 @@ bool Renderer::renderRasterPreview(const RenderParams::Snapshot &snapshot)
     }
     glBindVertexArray(0);
     raster_program->release();
+    if (multisampleFbo) {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, multisampleFbo); glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rasterFbo);
+        glBlitFramebuffer(0,0,render_width,render_height,0,0,render_width,render_height,GL_COLOR_BUFFER_BIT,GL_NEAREST);
+    }
     if (rasterTimed)
     {
         glEndQuery(GL_TIME_ELAPSED);
@@ -2094,7 +2178,7 @@ quint64 Renderer::allocatedBytes() const
 {
     const auto &s = m_scene;
     quint64 bytes = textureArrayBytes + quint64(m_width) * m_height * 16 +
-                    quint64(render_width) * render_height * 5 * 16 +
+                    quint64(render_width) * render_height * 7 * 16 +
                     quint64(denoisePboSize.width()) * denoisePboSize.height() * 3 * 12 +
                     quint64(pickSize.width()) * pickSize.height() * 8;
     bytes += s.geometryData.size() * sizeof(QVector4D) + s.nodes_encoded.size() * sizeof(BVHNode_encoded) +
@@ -2106,7 +2190,8 @@ quint64 Renderer::allocatedBytes() const
     if (oidnColorBuf)
         bytes += oidnColorBuf.getSize() + oidnAlbedoBuf.getSize() + oidnNormalBuf.getSize() +
                  oidnOutputBuf.getSize();
-    bytes += previewDenoiser.allocatedBytes();
+    bytes += previewDenoiser.allocatedBytes() + gpuDenoiser.allocatedBytes();
+    if (multisampleFbo) bytes += quint64(render_width)*render_height*multisampleCount*20;
     bytes += quint64(rasterVertexCount) * 8 * sizeof(float) +
              quint64(rasterInstanceCount) * 5 * sizeof(QVector4D) +
              quint64(rasterDepthSize.width()) * rasterDepthSize.height() * 4;

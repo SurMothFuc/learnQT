@@ -1,4 +1,10 @@
 #version 330 core
+#define DENOISE_GUIDES
+uniform bool antialiasing, realtimeGuides, guidesOnly;
+uniform vec2 aaSample;
+uniform uint sampleSequence;
+uniform sampler2D previousNormal, previousAlbedo;
+uniform samplerBuffer reprojectionTable;
 
 #ifdef COMPUTE_PATH
 layout(local_size_x=8, local_size_y=8) in;
@@ -8,11 +14,21 @@ layout(rgba32f, binding=0) uniform writeonly image2D traceColor;
 layout(rgba32f, binding=1) uniform writeonly image2D traceNormal;
 layout(rgba32f, binding=2) uniform writeonly image2D traceBase;
 #define TRACE_PIXEL_COORD vec4(vec2(traceTileOrigin + ivec2(gl_GlobalInvocationID.xy)) + vec2(0.5), 0.0, 1.0)
+layout(rgba32f, binding=3) uniform writeonly image2D traceSample;
+layout(rgba32f, binding=4) uniform writeonly image2D tracePosition;
+layout(rgba32f, binding=5) uniform writeonly image2D traceGuideNormal;
+layout(rgba32f, binding=6) uniform writeonly image2D traceGuideAlbedo;
+layout(rgba32f, binding=7) uniform writeonly image2D traceMaterial;
 vec4 RenderColorResult, NormalResult, BaseColorResult;
 #else
 layout(location = 0) out vec4 RenderColorResult;
 layout(location = 1) out vec4 NormalResult;
 layout(location = 2) out vec4 BaseColorResult;
+layout(location=3) out vec4 SampleResult;
+layout(location=4) out vec4 PositionResult;
+layout(location=5) out vec4 GuideNormalResult;
+layout(location=6) out vec4 GuideAlbedoResult;
+layout(location=7) out vec4 MaterialResult;
 in vec3 pix;
 #endif
 
@@ -38,38 +54,48 @@ void main(void)
    // ray.startPoint = vec3(0, 0, 4);
 
    
-   // vec2 AA = vec2((rand()-0.5)/float(width), (rand()-0.5)/float(height));
-    //vec2 AA = vec2(0);
-    // 计算当前像素在整个窗口中的归一化坐标 (0.0-1.0范围)
-    vec2 normalizedCoords = vec2(
-        (TRACE_PIXEL_COORD.x) / float(width),
-        (TRACE_PIXEL_COORD.y) / float(height)
-    );
-    
-    // 使用归一化坐标计算光线方向，这样就与视口无关
-    ray.direction = CameraRayDirection(TRACE_PIXEL_COORD.xy);
+    vec2 normalizedCoords = TRACE_PIXEL_COORD.xy / vec2(width,height);
+    vec2 pixel = TRACE_PIXEL_COORD.xy;
+    if (antialiasing) {
+        uint aaSeed = uint(pixel.x)*1973u + uint(pixel.y)*9277u + 0x9e3779b9u;
+        vec2 rotation = vec2(wang_hash(aaSeed),wang_hash(aaSeed))*(1.0/4294967296.0);
+        pixel += fract(aaSample+rotation)-.5;
+    }
+    if (realtimeGuides) seed = (uint(TRACE_PIXEL_COORD.x)*1973u + uint(TRACE_PIXEL_COORD.y)*9277u + sampleSequence*26699u) | 1u;
+    ray.direction = CameraRayDirection(pixel);
 
     // primary hit  
     OutputColor color = pathTracingImportanceSampling(ray, maxBounces);
     
-    // 输出结果
-    RenderColorResult=vec4(color.render_color,1.0);
-    NormalResult=vec4((color.normal_color+1.0)/2.0,0.0);
-    BaseColorResult=vec4(color.base_color,1.0);
-    
-    // 计算混合因子    
-    float alpha =1.0/(frameCounter+1.0);//该项控制累计帧数
-    
-    // 使用相同的归一化坐标获取上一帧的结果
-    vec4 prevIllum= texture(preRenderColor, normalizedCoords);
-    
-    float hasNaN = float(any(isnan(RenderColorResult.xyz)));
-    float finalAlpha = mix(alpha, 0.0, hasNaN);
-    RenderColorResult = mix(prevIllum, RenderColorResult, finalAlpha);
+    vec4 raw=vec4(color.render_color,Luminance(color.render_color)*Luminance(color.render_color));
+    vec4 normal=vec4((color.normal_color+1.0)*.5,0);
+    vec4 base=vec4(color.base_color,1);
+    bool valid=!any(isnan(raw)) && !any(isinf(raw)) &&
+               !any(isnan(normal)) && !any(isinf(normal)) &&
+               !any(isnan(base)) && !any(isinf(base));
+    float alpha=1.0/(float(frameCounter)+1.0);
+    vec4 oldColor=texture(preRenderColor,normalizedCoords);
+    vec4 oldNormal=texture(previousNormal,normalizedCoords), oldBase=texture(previousAlbedo,normalizedCoords);
+    alpha=1.0/(oldNormal.a+1.0);
+    RenderColorResult=valid ? mix(oldColor,raw,alpha) : oldColor;
+    NormalResult=valid ? mix(oldNormal,normal,alpha) : oldNormal;
+    BaseColorResult=valid ? mix(oldBase,base,alpha) : oldBase;
+    // Normal alpha counts valid samples; albedo alpha records all accumulated path classes.
+    if(valid) { NormalResult.a=oldNormal.a+1.0; BaseColorResult.a=float(uint(oldBase.a) | (1u << uint(color.guideMaterial.y))); }
+    if(guidesOnly) { RenderColorResult=oldColor; NormalResult=oldNormal; BaseColorResult=oldBase; }
+    if(!valid) { raw=vec4(0); color.guideMaterial.w=0; }
 #ifdef COMPUTE_PATH
-    ivec2 pixel = traceTileOrigin + ivec2(gl_GlobalInvocationID.xy);
-    imageStore(traceColor, pixel, RenderColorResult);
-    imageStore(traceNormal, pixel, NormalResult);
-    imageStore(traceBase, pixel, BaseColorResult);
+    ivec2 outputPixel=traceTileOrigin+ivec2(gl_GlobalInvocationID.xy);
+    imageStore(traceColor,outputPixel,RenderColorResult);
+    imageStore(traceNormal,outputPixel,NormalResult);
+    imageStore(traceBase,outputPixel,BaseColorResult);
+    if(realtimeGuides) {
+        imageStore(traceSample,outputPixel,raw); imageStore(tracePosition,outputPixel,color.guidePosition);
+        imageStore(traceGuideNormal,outputPixel,color.guideNormal); imageStore(traceGuideAlbedo,outputPixel,color.guideAlbedo);
+        imageStore(traceMaterial,outputPixel,color.guideMaterial);
+    }
+#else
+    SampleResult=raw; PositionResult=color.guidePosition; GuideNormalResult=color.guideNormal;
+    GuideAlbedoResult=color.guideAlbedo; MaterialResult=color.guideMaterial;
 #endif
 }

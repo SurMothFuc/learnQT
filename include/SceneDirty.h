@@ -8,6 +8,7 @@ enum class SceneDirtyFlag : uint32_t {
     Material = 1u << 1,
     SceneBuffers = 1u << 2,
     Display = 1u << 3,
+    Transform = 1u << 4, // Instances changed without changing materials/topology.
 };
 
 using SceneDirtyFlags = uint32_t;

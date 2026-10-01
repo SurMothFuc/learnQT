@@ -3,6 +3,7 @@
 #include <QObject>
 
 #include <atomic>
+#include "DenoiseMode.h"
 
 #define RENDER_PARAMS_PARAM(Camel, getter, type, member, defaultValue) \
 public: \
@@ -48,6 +49,10 @@ public:
         int interactionIdleMs = 250;
         // Local application preference, deliberately excluded from scene applySnapshot().
         bool computePathtrace = false;
+        bool antialiasing = false;
+        DenoiseMode denoiseMode = DenoiseMode::OIDN;
+        // The bool is retained for source compatibility with existing callers.
+        DenoiseMode effectiveDenoiseMode() const { return denoise ? denoiseMode : DenoiseMode::None; }
 
         bool operator==(const Snapshot& other) const {
             return denoise == other.denoise &&
@@ -60,7 +65,9 @@ public:
                    maxRenderFrames == other.maxRenderFrames &&
                    rasterLocked == other.rasterLocked &&
                    interactionIdleMs == other.interactionIdleMs &&
-                   computePathtrace == other.computePathtrace;
+                   computePathtrace == other.computePathtrace &&
+                   antialiasing == other.antialiasing &&
+                   effectiveDenoiseMode() == other.effectiveDenoiseMode();
         }
 
         bool operator!=(const Snapshot& other) const {
@@ -81,6 +88,8 @@ public:
     RENDER_PARAMS_PARAM(RasterLocked, rasterLocked, bool, m_rasterLocked, false)
     RENDER_PARAMS_PARAM(InteractionIdleMs, interactionIdleMs, int, m_interactionIdleMs, 250)
     RENDER_PARAMS_PARAM(ComputePathtrace, computePathtrace, bool, m_computePathtrace, false)
+    RENDER_PARAMS_PARAM(Antialiasing, antialiasing, bool, m_antialiasing, false)
+    RENDER_PARAMS_PARAM(DenoiseMode, denoiseMode, DenoiseMode, m_denoiseMode, DenoiseMode::OIDN)
 
 public:
     Snapshot snapshot() const;
@@ -90,6 +99,7 @@ public:
         setTileSize(s.tileSize); setUseEnvironmentMap(s.useEnvironmentMap);
         setMaxBounces(s.maxBounces); setMaxRenderFrames(s.maxRenderFrames);
         setRasterLocked(s.rasterLocked); setInteractionIdleMs(s.interactionIdleMs);
+        setAntialiasing(s.antialiasing); setDenoiseMode(s.denoiseMode);
     }
 
 public:

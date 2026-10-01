@@ -106,7 +106,12 @@ SceneDocument SceneDocument::model(const QString &path)
                                                                         32 / (PI * .0001)}}}}}};
     Camera c(QVector3D(0, .35f, 4.5f));
     d.captureCamera(c);
-    d.captureSettings(RenderParams::Snapshot());
+    auto settings = RenderParams::Snapshot();
+    settings.antialiasing = true;
+    settings.denoiseMode = DenoiseMode::Realtime;
+    d.captureSettings(settings);
+    d.root["output"] = QJsonObject{{"width",1920},{"height",1080},{"samples",256},{"tileSize",128},
+                                  {"antialiasing",true},{"denoiseMode","oidn"},{"denoise",true}};
     return d;
 }
 SceneDocument SceneDocument::empty()
@@ -125,11 +130,15 @@ SceneDocument SceneDocument::empty()
         {"hdr", ""},
         {"environment", QJsonObject{{"intensity", 1.0}, {"rotation", 0.0}}},
         {"display", QJsonObject{{"exposure", 0.0}, {"tonemap", 1}}},
-        {"output", QJsonObject{{"width", 1920}, {"height", 1080}, {"samples", 256}, {"tileSize", 128}}}};
+        {"output", QJsonObject{{"width", 1920}, {"height", 1080}, {"samples", 256}, {"tileSize", 128},
+                              {"antialiasing", true}, {"denoiseMode", "oidn"}, {"denoise", true}}}};
     Camera camera(QVector3D(4, 3, 6));
     d.captureCamera(camera);
     d.migrate();
-    d.captureSettings(RenderParams::Snapshot());
+    auto settings = RenderParams::Snapshot();
+    settings.antialiasing = true;
+    settings.denoiseMode = DenoiseMode::Realtime;
+    d.captureSettings(settings);
     return d;
 }
 void SceneDocument::migrate()
@@ -340,6 +349,8 @@ bool SceneDocument::validate(QString &error, bool checkFiles) const
     if (!root["render"].isObject())
         return fail("Missing render settings.");
     auto render = root["render"].toObject();
+    if (!validDenoiseSettings(render) || !validDenoiseSettings(root["output"].toObject()))
+        return fail("Invalid antialiasing or denoiser mode.");
     for (auto key : {"denoise", "renderLow", "useTileRendering", "useEnvironmentMap", "rasterLocked"})
         if (render.contains(key) && !render[key].isBool())
             return fail("Invalid render toggle.");
@@ -565,7 +576,9 @@ void SceneDocument::restoreCamera(Camera &c) const
 }
 void SceneDocument::captureSettings(const RenderParams::Snapshot &s)
 {
-    root["render"] = QJsonObject{{"denoise", s.denoise},
+    root["render"] = QJsonObject{{"denoise", s.effectiveDenoiseMode() != DenoiseMode::None},
+                                 {"denoiseMode", denoiseModeName(s.effectiveDenoiseMode())},
+                                 {"antialiasing", s.antialiasing},
                                  {"renderLow", s.renderLow},
                                  {"interactionMode", s.interactionMode},
                                  {"useTileRendering", s.useTileRendering},
@@ -584,12 +597,15 @@ RenderParams::Snapshot SceneDocument::settings() const
     if (o.contains(#name))                                                                                   \
         s.name = o[#name].toVariant().value<decltype(s.name)>();
     SETTING(denoise)
+    SETTING(antialiasing)
     SETTING(renderLow)
     SETTING(interactionMode)
     SETTING(useTileRendering)
     SETTING(tileSize) SETTING(useEnvironmentMap) SETTING(maxBounces) SETTING(maxRenderFrames)
     SETTING(rasterLocked) SETTING(interactionIdleMs)
 #undef SETTING
+    s.denoiseMode = readDenoiseMode(o);
+    s.denoise = s.denoiseMode != DenoiseMode::None;
     // Persistent preview resolution and the temporary interaction strategy are independent.
     return s;
 }

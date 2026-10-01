@@ -110,7 +110,7 @@ void learnQT::configureRenderQueueRegression()
             outputWidth->setValue(96);
             outputHeight->setValue(54);
             outputSamples->setValue(512);
-            outputDenoise->setChecked(false);
+            outputDenoise->setCurrentIndex(int(DenoiseMode::None));
             navigateWorkspace(WorkspacePage::Render);
             m_renderCameraChoice->setCurrentIndex(1);
             auto add = findChild<QToolButton *>("renderPrimary");
@@ -127,7 +127,8 @@ void learnQT::configureRenderQueueRegression()
             outputSettings["width"] = outputWidth->value();
             outputSettings["height"] = outputHeight->value();
             outputSettings["samples"] = outputSamples->value();
-            outputSettings["denoise"] = outputDenoise->isChecked();
+            outputSettings["denoise"] = outputDenoise->currentIndex() != 0;
+            outputSettings["denoiseMode"] = denoiseModeName(DenoiseMode(outputDenoise->currentIndex()));
             next.root["output"] = outputSettings;
             auto camera = next.root["camera"].toObject();
             camera["position"] = QJsonArray{2.5, 1.2, 5.0};
@@ -368,7 +369,7 @@ void learnQT::configureRenderQueueRegression()
             outputSamples->setValue(2);
             {
                 const QSignalBlocker block(outputDenoise);
-                outputDenoise->setChecked(true);
+                outputDenoise->setCurrentIndex(int(DenoiseMode::OIDN));
             }
             m_renderFormat->setCurrentIndex(1);
             if (!m_renderPreviewMode) workspace->compositionMode->click();
@@ -535,7 +536,7 @@ void learnQT::configureWorkspaceRegression()
                 outputWidth->setValue(32);
                 outputHeight->setValue(32);
                 outputSamples->setValue(1);
-                outputDenoise->setChecked(false);
+                outputDenoise->setCurrentIndex(int(DenoiseMode::None));
                 navigateWorkspace(WorkspacePage::Render);
                 workspace->compositionMode->click();
                 auto start = findChild<QToolButton *>("renderPrimary");
@@ -766,7 +767,7 @@ void learnQT::configureWorkspaceRegression()
             outputWidth->setValue(320);
             outputHeight->setValue(180);
             outputSamples->setValue(1000000);
-            outputDenoise->setChecked(false);
+            outputDenoise->setCurrentIndex(int(DenoiseMode::None));
             workspace->compositionMode->click();
             auto start = findChild<QToolButton *>("renderPrimary");
             if (!start || !start->isVisible())

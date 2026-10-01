@@ -67,7 +67,9 @@ void learnQT::addRenderTask()
     settings.samples = outputSamples->value();
     settings.tileSize = outputTile->value();
     settings.bounces = outputBounces->value();
-    settings.denoise = outputDenoise->isChecked();
+    settings.denoiseMode = DenoiseMode(outputDenoise->currentIndex());
+    settings.denoise = settings.denoiseMode != DenoiseMode::None;
+    settings.antialiasing = outputAntialiasing->isChecked();
     if (!settings.valid())
     {
         QMessageBox::warning(this, tr("输出设置"), tr("请使用有效设置；单张图最多 6710 万像素。"));
@@ -306,10 +308,10 @@ void learnQT::refreshTaskProperties()
         progress->setValue(request.settings.samples > 0 ? int(100. * item.samples / request.settings.samples) : 0);
     }
     workspace->taskProperties->setText(
-        tr("%1\n\n相机快照：%2\n尺寸：%3 × %4\n采样：%5 / %6 spp\n反弹：%7\n分块：%8\n降噪：%9\n状态：%10\n耗时：%11 秒\n\n输出路径：\n%12\n\n错误信息：\n%13")
+        tr("%1\n\n相机快照：%2\n尺寸：%3 × %4\n采样：%5 / %6 spp\n反弹：%7\n分块：%8\n降噪：%9\n抗锯齿：%14\n状态：%10\n耗时：%11 秒\n\n输出路径：\n%12\n\n错误信息：\n%13")
         .arg(item.name).arg(item.cameraName).arg(request.settings.size.width()).arg(request.settings.size.height())
         .arg(item.samples).arg(request.settings.samples).arg(request.settings.bounces).arg(request.settings.tileSize)
-        .arg(request.settings.denoise ? tr("启用") : tr("关闭")).arg(item.status)
+        .arg(outputDenoise->itemText(int(request.settings.effectiveDenoiseMode()))).arg(item.status)
         .arg(item.seconds, 0, 'f', 1).arg(request.outputPath.isEmpty() ? tr("运行时生成") : request.outputPath)
-        .arg(item.error.isEmpty() ? tr("无") : item.error));
+        .arg(item.error.isEmpty() ? tr("无") : item.error).arg(request.settings.antialiasing ? tr("开启") : tr("关闭")));
 }

@@ -117,6 +117,7 @@ learnQT::learnQT(QWidget *parent) : QMainWindow(parent)
     configureRenderQueueRegression();
     configurePreviewPanelRegression();
     configureRasterRegression();
+    configureAaDenoiseRegression();
     // 回归入口可关闭交互回退，避免默认的光栅化回退改变既有预览用例的判断。
     if (QCoreApplication::arguments().contains(QStringLiteral("--no-interaction-fallback")))
         connect(viewport, &GLWidget::renderThreadReady, this, [this] {
@@ -703,13 +704,19 @@ QWidget *learnQT::createSettings()
     outputSamples = spin(tr("目标 spp"), 1, 1000000, 256);
     outputTile = spin(tr("Tile 大小"), 16, 1024, 128);
     outputBounces = spin(tr("反弹数"), 1, 64, 8);
-    outputDenoise = new QCheckBox(tr("正式出图降噪"));
-    outputDenoise->setChecked(true);
-    form->addRow(outputDenoise);
+    outputDenoise = new QComboBox;
+    outputDenoise->setObjectName("outputDenoiseMode");
+    outputDenoise->addItems({tr("关闭"), tr("GPU 实时"), tr("OIDN")});
+    outputDenoise->setCurrentIndex(int(DenoiseMode::OIDN));
+    form->addRow(tr("正式出图降噪"), outputDenoise);
+    outputAntialiasing = new QCheckBox(tr("抗锯齿"));
+    outputAntialiasing->setObjectName("outputAntialiasing");
+    form->addRow(outputAntialiasing);
     auto commitOutput = [this] { commitOutputSettings(); };
     for (auto s : {outputWidth, outputHeight, outputSamples, outputTile, outputBounces})
         connect(s, &QSpinBox::editingFinished, this, commitOutput);
-    connect(outputDenoise, &QCheckBox::toggled, this, [commitOutput] { commitOutput(); });
+    connect(outputDenoise, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [commitOutput] { commitOutput(); });
+    connect(outputAntialiasing, &QCheckBox::toggled, this, [commitOutput] { commitOutput(); });
     form = section(tr("色彩管理"), "displaySection");
     auto exposure = new MixedSpin;
     exposure->setRange(-16, 16);
@@ -808,7 +815,9 @@ void learnQT::commitOutputSettings()
     d.root["output"] =
         QJsonObject{{"width", outputWidth->value()},     {"height", outputHeight->value()},
                     {"samples", outputSamples->value()}, {"tileSize", outputTile->value()},
-                    {"bounces", outputBounces->value()}, {"denoise", outputDenoise->isChecked()}};
+                    {"bounces", outputBounces->value()}, {"denoise", outputDenoise->currentIndex() != 0},
+                    {"denoiseMode", denoiseModeName(DenoiseMode(outputDenoise->currentIndex()))},
+                    {"antialiasing", outputAntialiasing->isChecked()}};
     editor->submit(d, tr("输出设置"), EditorController::Display);
 }
 void learnQT::connectRenderThread()
@@ -1006,7 +1015,9 @@ void learnQT::startRender()
     settings.samples = outputSamples->value();
     settings.tileSize = outputTile->value();
     settings.bounces = outputBounces->value();
-    settings.denoise = outputDenoise->isChecked();
+    settings.denoiseMode = DenoiseMode(outputDenoise->currentIndex());
+    settings.denoise = settings.denoiseMode != DenoiseMode::None;
+    settings.antialiasing = outputAntialiasing->isChecked();
     if (!settings.valid())
     {
         QMessageBox::warning(this, tr("输出设置"), tr("请使用有效设置；单张图最多 6710 万像素。"));
@@ -1177,7 +1188,8 @@ void learnQT::restoreSceneControls()
     outputSamples->setValue(output.samples);
     outputTile->setValue(output.tileSize);
     outputBounces->setValue(output.bounces);
-    outputDenoise->setChecked(output.denoise);
+    outputDenoise->setCurrentIndex(int(output.effectiveDenoiseMode()));
+    outputAntialiasing->setChecked(output.antialiasing);
     m_restoring = false;
     syncPreviewControls(settings);
     inspector->refresh();

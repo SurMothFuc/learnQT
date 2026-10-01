@@ -285,7 +285,7 @@ void learnQT::setupWorkspace()
 
     auto renderPanel = new QWidget;
     auto renderLayout = column(renderPanel);
-    renderLayout->addWidget(label("路径追踪 · OpenGL 3.3\n当前上下文设备；最终降噪使用 CPU OIDN。"));
+    renderLayout->addWidget(label("路径追踪 · OpenGL 3.3\n当前上下文设备；降噪可选 GPU 实时或 CPU OIDN。"));
     auto framing = group("构图相机与画幅");
     auto framingForm = new QFormLayout;
     m_renderCameraChoice = new QComboBox;

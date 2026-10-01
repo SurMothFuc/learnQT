@@ -48,6 +48,9 @@ float GetMaterialOpacity(int triangleIndex, vec2 uv)
     return clamp(opacity, 0.0, 1.0);
 }
 
+#ifdef DENOISE_GUIDES
+bool unstableAlpha = false;
+#endif
 bool RejectAlphaIntersection(int triangleIndex, vec2 uv)
 {
     int offset = triangleIndex * SIZE_TRIANGLE;
@@ -62,6 +65,9 @@ bool RejectAlphaIntersection(int triangleIndex, vec2 uv)
         float alphaCutoff = FetchTriangleVector(offset + 15).y;
         return opacity < alphaCutoff;
     }
+#ifdef DENOISE_GUIDES
+    unstableAlpha = true;
+#endif
     #ifdef INSTANCED_SCENE
     if(picking) return opacity < 0.5;
     #endif

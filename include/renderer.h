@@ -25,10 +25,12 @@
 #include "Scene.h"
 #include "SceneDirty.h"
 #include "RasterEnvironment.h"
+#include "GpuDenoiser.h"
 #include <atomic>
 
 class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
 {
+    friend struct RendererDenoiseTestAccess;
     Q_OBJECT
   public:
     explicit Renderer(int width, int height, const RenderParams::Snapshot &initialSnapshot,
@@ -55,6 +57,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     {
         return int(chunkedRenderingCount);
     }
+    bool roundInProgress() const { return nowChunkedCount != 0; }
     bool completeRound() const
     {
         return nowChunkedCount == 0 && frameCounter > 0;
@@ -143,7 +146,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     void updateSizeParam();
     void calResolution(bool renderLow);
     void updateTileGrid(int tileSize);
-    void bindPathtraceInputs(int maxBounces);
+    void bindPathtraceInputs(int maxBounces, const RenderParams::Snapshot &snapshot);
     void compositePreview(const RenderParams::Snapshot &snapshot, bool changed, bool force);
     void renderTile(int tileX, int tileY, int tileWidth, int tileHeight, int maxBounces); // 渲染单个块
     void renderFullImage(int maxBounces);                                                 // 渲染完整图像
@@ -188,7 +191,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     // 光栅化交互预览：几何按 mesh 分组上传，实例参数按实例步进的属性缓冲提供。
     bool renderRasterPreview(const RenderParams::Snapshot &snapshot);
     void rebuildRasterProgram(const RenderParams::Snapshot &snapshot);
-    void ensureDepthAttachment();
+    void ensureDepthAttachment(bool antialiasing = false);
     void uploadRasterGeometry();
     void uploadRasterInstances();
     void releaseRasterResources();
@@ -215,6 +218,9 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     bool pollPreviewDenoise(const RenderParams::Snapshot &snapshot);
     void requestPreviewDenoise(const RenderParams::Snapshot &snapshot, bool force);
     void invalidatePreviewDenoise();
+    void prepareRealtime(const RenderParams::Snapshot &snapshot);
+    void realtimeDenoise(const RenderParams::Snapshot &snapshot, bool final);
+    void refreshRealtimeGuides(const RenderParams::Snapshot &snapshot);
     void ensureDenoisePbos();
 
     /**
@@ -253,6 +259,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
 
     unsigned m_texture = 0;
     unsigned preRenderColorTex = 0;
+    unsigned previousNormalTex = 0, previousAlbedoTex = 0;
     unsigned RenderColorTex = 0;
     unsigned normal_texture = 0;
     unsigned baseColorTex = 0;
@@ -301,6 +308,8 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     // 光栅化预览专用 FBO：颜色靶复用 RenderColorTex，另带自己的深度附件。
     GLuint rasterFbo = 0;
     GLuint depthRenderbuffer = 0;
+    GLuint multisampleFbo = 0, multisampleColor = 0, multisampleDepth = 0;
+    int multisampleCount = 1, rasterSampleRequest = 0;
     QSize rasterDepthSize;
     std::vector<RasterDrawRange> rasterRanges;      // 下标与 Scene::meshes 对齐
     std::vector<int> rasterInstanceMesh;            // 每条实例属性对应的 mesh 下标
@@ -366,6 +375,9 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     quint64 pickVersion = ~quint64(0), pickRequest = 0, readVersion = 0;
     std::unique_ptr<QOpenGLShaderProgram> pickProgram;
     unsigned int m_lastDenoisedFrameCounter = 0;
+    GpuDenoiser gpuDenoiser;
+    bool realtimeFailed = false, realtimeAttached = false, realtimeNeedsGuides = false;
+    unsigned previewSequence = 0;
 };
 
 #endif // RENDERER_H

@@ -46,6 +46,8 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     void setCompositionMode(bool active, const Camera &draft = Camera(), QSize aspect = {});
     void setCompositionAspect(QSize aspect);
     Camera camera;
+    quint64 displayedNewFrames() const { return displayedFrames; }
+    double displayedNewFps() const { return displayRateClock.isValid() && displayRateClock.elapsed()<2000 ? displayedFps : 0; }
     quint64 sceneVersion() const
     {
         return version;
@@ -102,7 +104,9 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     quint64 version = 1, pickSerial = 0;
     // Completed interactive images may lag edits, but never cross scene/size replacement.
     quint64 minimumDisplayVersion = 1;
-    quint64 lastPresentationSerial = 0;
+    quint64 lastPresentationSerial = 0, displayedFrames = 0, displayWindowFrames = 0;
+    QElapsedTimer displayRateClock;
+    double displayedFps = 0;
     bool pickCtrl = false;
     int dragAxis = -1;
     QVector3D dragCenter, dragDirection;

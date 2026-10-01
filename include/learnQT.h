@@ -43,6 +43,7 @@ class learnQT : public QMainWindow
     void configureRenderQueueRegression();
     void configurePreviewPanelRegression();
     void configureRasterRegression();
+    void configureAaDenoiseRegression();
     EditorController *editor;
     GLWidget *viewport;
     SceneTreeModel *treeModel;
@@ -60,7 +61,8 @@ class learnQT : public QMainWindow
     QStringList m_sessionScenes;
     QSet<QString> expanded;
     bool syncingSelection = false;
-    QCheckBox *outputDenoise;
+    QComboBox *outputDenoise;
+    QCheckBox *outputAntialiasing;
     QSpinBox *outputWidth, *outputHeight, *outputSamples, *outputTile, *outputBounces;
     PreviewSettingsPanel *previewChromePanel = nullptr, *previewDetailPanel = nullptr;
     QDialog *previewDialog = nullptr;

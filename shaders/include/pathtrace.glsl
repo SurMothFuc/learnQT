@@ -51,6 +51,13 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
     result.render_color = vec3(0.0);
     result.normal_color = vec3(0.0);
     result.base_color = vec3(0.0);
+#ifdef DENOISE_GUIDES
+    result.guidePosition = vec4(ray.direction,-1.0);
+    result.guideNormal = vec4(0);
+    result.guideAlbedo = vec4(0);
+    result.guideMaterial = vec4(1,0,-1,1);
+    bool fragilePath = false, volumePath = false;
+#endif
     vec3 throughput = vec3(1.0);
     vec3 previousPoint = ray.startPoint;
     float previousPdf = 0.0;
@@ -60,7 +67,13 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
     int depth = 0;
     // Transparent boundaries do not consume scattering depth, but remain bounded.
     for (int step=0; step<MAX_BOUNCES_LIMIT+MAX_SHADOW_LAYERS; ++step) {
+#ifdef DENOISE_GUIDES
+        unstableAlpha = false;
+#endif
         HitResult hit = hitBVH(ray);
+#ifdef DENOISE_GUIDES
+        fragilePath = fragilePath || unstableAlpha;
+#endif
         float sphereDistance;
         int sphereIndex = IntersectAnalyticLights(ray.startPoint, ray.direction, sphereDistance);
         float segment = min(hit.hitDistance, sphereDistance);
@@ -71,6 +84,9 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
 #endif
             media.entries[media.size++] = MaterialMedium(hit.material);
         Medium medium = CurrentMedium(media);
+#ifdef DENOISE_GUIDES
+        volumePath = volumePath || (medium.type != MEDIUM_NONE && medium.density > 0.0);
+#endif
         bool scattered = false;
         if (medium.type == MEDIUM_SCATTER && medium.density > 0.0) {
             float freeFlight = -log(max(1.0-rand(), 1e-30)) / medium.density;
@@ -82,6 +98,12 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
                     result.normal_color = -ray.direction;
                     result.base_color = clamp(medium.color, 0.0, 1.0);
                     recordedFeatures = true;
+#ifdef DENOISE_GUIDES
+                    result.guidePosition = vec4(point,distance(point,eye));
+                    result.guideNormal = vec4(-ray.direction,0);
+                    result.guideAlbedo = vec4(result.base_color,-1);
+                    result.guideMaterial = vec4(0,4,-1,1);
+#endif
                 }
                 result.render_color += EstimateVolumeLighting(point, ray.direction, throughput, media);
                 vec3 direction = normalize(SampleHG(-ray.direction, medium.g, rand(), rand()));
@@ -103,6 +125,14 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
             if (sphereIndex >= 0 && sphereDistance <= hit.hitDistance) {
                 EncodedLight light = GetEncodedLight(sphereIndex);
                 vec3 point = ray.startPoint + sphereDistance * ray.direction;
+#ifdef DENOISE_GUIDES
+                if (!recordedFeatures) {
+                    result.guidePosition=vec4(point,distance(point,eye));
+                    result.guideNormal=vec4(normalize(point-light.positionOrDirection),0);
+                    result.guideAlbedo=vec4(0,0,0,float(-sphereIndex-2));
+                    result.guideMaterial=vec4(0,5,-1,1);
+                }
+#endif
                 if (dot(ray.direction, point-light.positionOrDirection) < 0.0) {
                     float p = SphereLightPdf(light, previousPoint, ray.direction);
                     result.render_color += throughput * light.color *
@@ -111,6 +141,9 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
                 break;
             }
             if (!hit.isHit) {
+#ifdef DENOISE_GUIDES
+                if(!recordedFeatures && fragilePath) result.guideMaterial.y=4.0;
+#endif
                 result.render_color += throughput * InfiniteEmission(ray.direction, previousPoint, previousDelta, previousPdf);
                 break;
             }
@@ -122,6 +155,9 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
                     EmitterMisWeight(previousDelta, previousPdf, p);
             }
             if (hit.material.alphaMode == ALPHA_MODE_TRANSPARENT) {
+#ifdef DENOISE_GUIDES
+                fragilePath = true;
+#endif
                 if (!CrossMediumBoundary(media, hit, ray.direction)) break;
                 ray.startPoint = OffsetRayOrigin(hit.hitPoint, hit.geometricNormal, ray.direction);
                 continue;
@@ -130,6 +166,18 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
                 result.normal_color = hit.normal;
                 result.base_color = hit.material.baseColor;
                 recordedFeatures = true;
+#ifdef DENOISE_GUIDES
+                result.guidePosition=vec4(hit.hitPoint,distance(hit.hitPoint,eye));
+                result.guideNormal=vec4(hit.normal,hit.material.roughness);
+                int kind=1;
+                if(hit.material.metallic>.5 || hit.material.roughness<.2) kind=2;
+                if(fragilePath || hit.material.transmission>0.0 || hit.material.alphaMode==ALPHA_MODE_BLEND) kind=3;
+                if(maxComponent(hit.material.emissive)>0.0) kind=5;
+                int instance=int(texelFetch(surfaceTable,hit.triangleIndex).y);
+                float identity=realtimeGuides ? texelFetch(reprojectionTable,instance*5+4).x : 0.0;
+                result.guideAlbedo=vec4(hit.material.baseColor,identity);
+                result.guideMaterial=vec4(hit.material.roughness,float(kind),float(instance),1);
+#endif
             }
             if (depth >= maxBounce) break;
             float eta = hit.isInside ? hit.material.IOR : 1.0 / hit.material.IOR;
@@ -153,5 +201,8 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
             throughput /= survival;
         }
     }
+#ifdef DENOISE_GUIDES
+    if(volumePath) result.guideMaterial.y=4.0;
+#endif
     return result;
 }

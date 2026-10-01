@@ -2,6 +2,9 @@ struct OutputColor{
     vec3 render_color;
     vec3 normal_color;
     vec3 base_color;
+#ifdef DENOISE_GUIDES
+    vec4 guidePosition, guideNormal, guideAlbedo, guideMaterial;
+#endif
 };
 
 // Triangle 数据格式

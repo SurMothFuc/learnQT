@@ -26,6 +26,8 @@ RenderParams::Snapshot RenderParams::snapshot() const {
         m_maxRenderFrames.load(std::memory_order_relaxed),
         m_rasterLocked.load(std::memory_order_relaxed),
         m_interactionIdleMs.load(std::memory_order_relaxed),
-        m_computePathtrace.load(std::memory_order_relaxed)
+        m_computePathtrace.load(std::memory_order_relaxed),
+        m_antialiasing.load(std::memory_order_relaxed),
+        m_denoiseMode.load(std::memory_order_relaxed)
     };
 }

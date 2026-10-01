@@ -309,8 +309,15 @@ void GLWidget::paintGL()
                 }))
         {
             emit framePresented();
-            if (fresh)
+            if (fresh) {
+                ++displayedFrames; ++displayWindowFrames;
+                if (!displayRateClock.isValid()) displayRateClock.start();
+                if (displayRateClock.elapsed()>=1000) {
+                    displayedFps=displayWindowFrames*1000.0/displayRateClock.elapsed();
+                    displayWindowFrames=0;displayRateClock.restart();
+                }
                 emit freshFramePresented();
+            }
         }
     }
     glBindVertexArray(0);

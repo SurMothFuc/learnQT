@@ -102,7 +102,8 @@ class PreviewSettingsPanel : public QWidget
     QSpinBox *tile;
     QCheckBox *tiled;
     QCheckBox *lowResolution;
-    QCheckBox *denoise;
+    QComboBox *denoise;
+    QCheckBox *antialiasing;
     QComboBox *interaction;
     QCheckBox *rasterLock;
     QSpinBox *idle;

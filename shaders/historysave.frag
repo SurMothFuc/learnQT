@@ -1,12 +1,12 @@
 #version 330 core
-out vec4 FragColor;
+layout(location=0) out vec4 RenderColorResult;
+layout(location=1) out vec4 NormalResult;
+layout(location=2) out vec4 BaseResult;
 in vec3 pix;
-
-uniform sampler2D RenderColor;
-
-layout(location = 0) out vec4 RenderColorResult;
-
-void main(void)
-{
-    RenderColorResult=texture( RenderColor, pix.xy*0.5+0.5);
+uniform sampler2D RenderColor, NormalColor, BaseColor;
+void main() {
+ vec2 uv=pix.xy*.5+.5;
+ RenderColorResult=texture(RenderColor,uv);
+ NormalResult=texture(NormalColor,uv);
+ BaseResult=texture(BaseColor,uv);
 }

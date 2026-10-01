@@ -143,6 +143,7 @@ void RenderThread::run()
         clock.start();
         interval.start();
         presentationClock.start();
+        RenderRateTracker completionRates, publicationRates;
         RenderRateTracker rates;
         RenderRateTracker rasterRates;
         int rasterFrames = 0;
@@ -199,6 +200,8 @@ void RenderThread::run()
                 emit imageReady();
                 presentationPending = false;
             }
+            completionRates.observe(clock.nsecsElapsed()/1e9, int(renderer.stats.completedRounds), 0, 0, true);
+            publicationRates.observe(clock.nsecsElapsed()/1e9, int(renderer.stats.publishedFrames), 0, 0, true);
             rates.observe(clock.nsecsElapsed() / 1e9, renderer.samples(), renderer.completedTiles(),
                           renderer.stats.accumulationVersion, wasSampling);
             if (wasRaster)
@@ -215,7 +218,7 @@ void RenderThread::run()
             std::shared_ptr<Scene> prepared;
             SceneDocument doc;
             int changes = 0;
-            bool final = true, has = false, start = false;
+            bool final = true, has = false, start = false, deferredMotion = false;
             quint64 v = 0, batchRevision = 0;
             const QSize previousSize = size;
             const quint64 previousVersion = currentVersion;
@@ -231,15 +234,17 @@ void RenderThread::run()
                     else
                         size.setHeight(std::max(1, int(std::round(size.width() / aspect))));
                 }
-                dirty = pendingDirty;
-                pendingDirty = 0;
+                const int motionMask=(1 << EditorController::CameraChange) | (1 << EditorController::Transform);
+                deferredMotion = (hasDocument || pendingDirty != 0) && !job && !jobRequested && !pendingScene && size == previousSize &&
+                    renderer.roundInProgress() && !renderer.rasterActive() &&
+                    RenderParams::instance().snapshot().effectiveDenoiseMode() == DenoiseMode::Realtime &&
+                    (documentChanges & ~motionMask) == 0 &&
+                    (pendingDirty & ~toSceneDirtyFlags(SceneDirtyFlag::Camera)) == 0;
+                dirty = deferredMotion ? 0 : pendingDirty;
+                if (!deferredMotion) pendingDirty=0;
                 prepared = std::move(pendingScene);
-                has = hasDocument;
-                hasDocument = false;
-                if (has)
-                    doc = pendingDocument;
-                changes = documentChanges;
-                documentChanges = 0;
+                has = hasDocument && !deferredMotion;
+                if (has) { doc=pendingDocument; hasDocument=false; changes=documentChanges; documentChanges=0; }
                 final = finalTransform;
                 v = pendingVersion;
                 start = jobRequested;
@@ -270,9 +275,15 @@ void RenderThread::run()
                         ((1 << EditorController::Transform) | (1 << EditorController::MaterialChange) |
                          (1 << EditorController::Lighting)))
                     {
+                        QMap<QString,bool> previousVisibility;
+                        for(const auto &instance:scene.instances) previousVisibility[instance.id]=instance.visible;
                         scene.applyEditorDocument(doc, final,
                                                   (changes & (1 << EditorController::Transform)) == 0);
-                        dirty |= toSceneDirtyFlags(SceneDirtyFlag::Material);
+                        dirty |= (changes & ((1 << EditorController::MaterialChange) | (1 << EditorController::Lighting)))
+                                     ? toSceneDirtyFlags(SceneDirtyFlag::Material) : toSceneDirtyFlags(SceneDirtyFlag::Transform);
+                        for(const auto &instance:scene.instances)
+                            if(previousVisibility.value(instance.id,instance.visible)!=instance.visible)
+                                dirty |= toSceneDirtyFlags(SceneDirtyFlag::Material);
                     }
                     else
                         scene.document = doc;
@@ -303,6 +314,8 @@ void RenderThread::run()
                         jobSnapshot.maxRenderFrames = settings.samples;
                         jobSnapshot.maxBounces = settings.bounces;
                         jobSnapshot.denoise = settings.denoise;
+                        jobSnapshot.denoiseMode = settings.denoiseMode;
+                        jobSnapshot.antialiasing = settings.antialiasing;
                         dirty |= toSceneDirtyFlags(SceneDirtyFlag::Camera);
                         setState(RenderJobState::Preparing);
                         gpuWork = true;
@@ -324,7 +337,7 @@ void RenderThread::run()
                 // 正式任务不参与，避免出图期间被交互回退打断。
                 const bool interactionWasActive = interactionActive;
                 if (!job && !m_interactionFallbackDisabled &&
-                    (hasSceneDirtyFlag(dirty, SceneDirtyFlag::Camera) ||
+                    (deferredMotion || hasSceneDirtyFlag(dirty, SceneDirtyFlag::Transform) || hasSceneDirtyFlag(dirty, SceneDirtyFlag::Camera) ||
                      hasSceneDirtyFlag(dirty, SceneDirtyFlag::SceneBuffers) ||
                      hasSceneDirtyFlag(dirty, SceneDirtyFlag::Material)))
                 {
@@ -497,7 +510,8 @@ void RenderThread::run()
                                                 : QString(),
                                             request, revision);
                         }
-                        if (!job && (pickRepublish || renderer.rasterActive() ||
+                        if (!job && (renderer.rasterActive() || renderer.completeRound()) &&
+                            (pickRepublish || renderer.rasterActive() ||
                                      presentationClock.elapsed() >= 16) &&
                             (pickRepublish || presentedRevision != renderer.imageRevision() ||
                              presentedVersion != currentVersion || renderer.rasterActive()))
@@ -512,10 +526,11 @@ void RenderThread::run()
                                     context, size.width(), size.height(),
                                     job ? 0 : renderer.pickFramebuffer(), currentVersion,
                                     renderer.displayFramebuffer(), minimumPresentationVersion,
-                                    job ? ~quint64(0) : renderer.pickBufferVersion()))
+                                    job ? ~quint64(0) : renderer.pickBufferVersion(), renderer.imageRevision()))
                             {
                                 diagnostics.presentMs += segmentClock.nsecsElapsed() / 1e6;
                                 presentationPending = true;
+                                if (presentedRevision != renderer.imageRevision()) ++renderer.stats.publishedFrames;
                                 presentedRevision = renderer.imageRevision();
                                 presentedVersion = currentVersion;
                                 presentationClock.restart();
@@ -580,6 +595,7 @@ void RenderThread::run()
                 s.seconds = clock.elapsed() / 1000.;
                 s.version = currentVersion;
                 s.fps = wasSampling ? rates.fps(s.seconds) : 0;
+                s.completedFps=completionRates.fps(s.seconds); s.publishedFps=publicationRates.fps(s.seconds);
                 s.rasterFps = wasRaster ? rasterRates.fps(s.seconds) : 0;
                 s.tileFps = wasSampling ? rates.tileFps(s.seconds) : 0;
                 s.samples = renderer.samples();

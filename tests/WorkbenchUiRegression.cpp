@@ -408,7 +408,7 @@ void learnQT::configureWorkbenchRegression()
             outputHeight->setValue(128);
             outputSamples->setValue(3);
             outputTile->setValue(32);
-            outputDenoise->setChecked(true);
+            outputDenoise->setCurrentIndex(int(DenoiseMode::OIDN));
             m_restoring = false;
             startRender();
             viewport->renderThread()->pauseJob(true);
@@ -492,7 +492,7 @@ void learnQT::configureWorkbenchRegression()
             grab().save(output + "/result.png");
             m_restoring = true;
             outputSamples->setValue(100000);
-            outputDenoise->setChecked(false);
+            outputDenoise->setCurrentIndex(int(DenoiseMode::None));
             m_restoring = false;
             startRender();
             state->phase = 13;
@@ -534,7 +534,7 @@ void learnQT::configureWorkbenchRegression()
             outputSamples->setValue(1);
             outputWidth->setValue(96);
             outputHeight->setValue(64);
-            outputDenoise->setChecked(true);
+            outputDenoise->setCurrentIndex(int(DenoiseMode::OIDN));
             m_restoring = false;
             startRender();
             state->phase = 16;

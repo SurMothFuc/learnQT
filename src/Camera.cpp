@@ -49,7 +49,7 @@ void Camera::restoreState(const QVector3D& eye, const QVector3D& lookAt, const Q
 }
 
 // Returns the view matrix calculated using Euler Angles and the LookAt Matrix
-QMatrix4x4 Camera::getViewMatrix()
+QMatrix4x4 Camera::getViewMatrix() const
 {
     QMatrix4x4 view;
     //view.lookAt(this->position, this->position + this->front, this->up);

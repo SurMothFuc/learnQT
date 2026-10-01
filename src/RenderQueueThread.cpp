@@ -132,6 +132,8 @@ void RenderQueueThread::run()
             snapshot.maxRenderFrames = job.settings.samples;
             snapshot.maxBounces = job.settings.bounces;
             snapshot.denoise = job.settings.denoise;
+            snapshot.denoiseMode = job.settings.denoiseMode;
+            snapshot.antialiasing = job.settings.antialiasing;
             Renderer renderer(job.settings.size.width(), job.settings.size.height(), snapshot, nullptr, scene.get());
             renderer.cancel = &cancel;
             renderer.formal = true;
@@ -177,6 +179,7 @@ void RenderQueueThread::run()
                 if (cancel || !running)
                     throw std::runtime_error("Render stopped before final denoising");
                 renderer.finishDenoise(snapshot);
+                if(cancel || !running) throw std::runtime_error("Render stopped during final denoising");
                 result = renderer.result(snapshot);
                 rendered = !result.isNull();
                 if (rendered)

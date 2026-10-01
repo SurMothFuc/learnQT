@@ -149,7 +149,7 @@ add_custom_command(TARGET learnQT POST_BUILD
 
 if(BUILD_TESTING)
     add_executable(renderer_batch_tests tests/RendererBatchTests.cpp
-        src/renderer.cpp src/RendererPick.cpp src/RendererPreview.cpp src/PreviewDenoiser.cpp
+        src/renderer.cpp src/RendererPick.cpp src/RendererPreview.cpp src/PreviewDenoiser.cpp src/GpuDenoiser.cpp
         src/Scene.cpp src/SceneRuntime.cpp src/SceneDocument.cpp src/SceneGraph.cpp src/SceneEncoding.cpp
         src/SceneAssets.cpp src/Mesh.cpp src/Camera.cpp src/BVH.cpp src/common.cpp src/hdrloader.cpp src/RenderParams.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/include/moc_renderer.cpp ${CMAKE_CURRENT_BINARY_DIR}/include/moc_RenderParams.cpp)
@@ -163,6 +163,23 @@ if(BUILD_TESTING)
         --environment-regression ${CMAKE_CURRENT_BINARY_DIR}/environment-sphere-regression)
     set_tests_properties(environment_sphere_regression PROPERTIES LABELS "gpu;render;lighting" TIMEOUT 120)
     set_tests_properties(renderer_batch_regression PROPERTIES LABELS "gpu;render" TIMEOUT 60)
+    get_target_property(AA_RENDER_SOURCES renderer_batch_tests SOURCES)
+    list(REMOVE_ITEM AA_RENDER_SOURCES tests/RendererBatchTests.cpp)
+    add_executable(aa_denoise_tests tests/AntialiasingDenoiseTests.cpp ${AA_RENDER_SOURCES})
+    target_include_directories(aa_denoise_tests PRIVATE include libs/Eigen libs/Assimp/include libs/oidn/include)
+    target_compile_options(aa_denoise_tests PRIVATE /utf-8)
+    target_compile_definitions(aa_denoise_tests PRIVATE RESOURCE_DIR="${CMAKE_SOURCE_DIR}/resources" SHADER_DIR="${CMAKE_SOURCE_DIR}/shaders")
+    target_link_libraries(aa_denoise_tests PRIVATE Qt5::Widgets Qt5::OpenGL opengl32 OpenImageDenoise_core OpenImageDenoise assimp::assimp)
+    add_dependencies(aa_denoise_tests learnQT)
+    add_test(NAME aa_denoise_ui_regression COMMAND $<TARGET_FILE:learnQT> --scene ${CMAKE_SOURCE_DIR}/resources/scenes/glslpt_test_mis.scene.json --aa-denoise-ui-regression ${CMAKE_CURRENT_BINARY_DIR}/aa-denoise-ui)
+    set_tests_properties(aa_denoise_ui_regression PROPERTIES LABELS "gpu;ui;denoise" TIMEOUT 120)
+    add_test(NAME aa_denoise_compute_regression COMMAND aa_denoise_tests ${CMAKE_CURRENT_BINARY_DIR}/aa-denoise-compute --compute)
+    set_tests_properties(aa_denoise_compute_regression PROPERTIES LABELS "gpu;render;denoise" TIMEOUT 120)
+    add_test(NAME aa_denoise_regression COMMAND aa_denoise_tests ${CMAKE_CURRENT_BINARY_DIR}/aa-denoise-regression)
+    set_tests_properties(aa_denoise_regression PROPERTIES LABELS "gpu;render;denoise" TIMEOUT 120)
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/denoise-convergence")
+    add_test(NAME denoise_stationary_convergence COMMAND aa_denoise_tests --benchmark ${CMAKE_SOURCE_DIR}/resources/scenes/lantern.scene.json ${CMAKE_CURRENT_BINARY_DIR}/denoise-convergence/lantern.json 320 180 256 realtime --aa --preview --no-warmup --capture-tail 16 --check-convergence)
+    set_tests_properties(denoise_stationary_convergence PROPERTIES LABELS "gpu;render;denoise" TIMEOUT 120)
     add_executable(presentation_tests tests/PresentationTests.cpp src/texturebuffer.cpp)
     target_include_directories(presentation_tests PRIVATE include)
     target_compile_options(presentation_tests PRIVATE /utf-8)
@@ -185,7 +202,7 @@ if(BUILD_TESTING)
     target_link_libraries(lighting_tests PRIVATE Qt5::Core Qt5::Gui Qt5::OpenGL opengl32)
     add_test(NAME lighting_numerical_regression COMMAND lighting_tests)
     set_tests_properties(lighting_numerical_regression PROPERTIES LABELS "gpu;lighting" TIMEOUT 300)
-    target_sources(learnQT PRIVATE tests/SceneUiRegression.cpp tests/WorkbenchUiRegression.cpp tests/InteractionRegression.cpp tests/PreviewModeRegression.cpp tests/WorkspaceUiRegression.cpp tests/PreviewPanelRegression.cpp tests/RasterPreviewRegression.cpp)
+    target_sources(learnQT PRIVATE tests/SceneUiRegression.cpp tests/WorkbenchUiRegression.cpp tests/InteractionRegression.cpp tests/PreviewModeRegression.cpp tests/WorkspaceUiRegression.cpp tests/PreviewPanelRegression.cpp tests/RasterPreviewRegression.cpp tests/AaDenoiseUiRegression.cpp)
     target_compile_definitions(learnQT PRIVATE SCENE_TESTING)
     add_test(NAME workspace_pages_regression COMMAND $<TARGET_FILE:learnQT> --workspace-regression ${CMAKE_CURRENT_BINARY_DIR}/workspace-regression)
     add_test(NAME render_queue_regression COMMAND $<TARGET_FILE:learnQT> --render-queue-regression ${CMAKE_CURRENT_BINARY_DIR}/render-queue-regression)
@@ -298,7 +315,7 @@ if(BUILD_TESTING)
     get_filename_component(QT_RUNTIME_DIRECTORY "${QT_CORE_RUNTIME}" DIRECTORY)
     set(SCENE_TEST_PATH "${QT_RUNTIME_DIRECTORY};$ENV{PATH}")
     string(REPLACE ";" "\\;" SCENE_TEST_PATH "${SCENE_TEST_PATH}")
-    set_tests_properties(workspace_pages_regression render_queue_regression instanced_traversal_regression lighting_numerical_regression scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression workbench_ui_and_render_job preview_interaction_regression preview_mode_switch_regression preview_mis_mode_switch_regression display_buffer_handoff_regression renderer_batch_regression environment_sphere_regression
+    set_tests_properties(denoise_stationary_convergence aa_denoise_compute_regression aa_denoise_ui_regression aa_denoise_regression workspace_pages_regression render_queue_regression instanced_traversal_regression lighting_numerical_regression scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression workbench_ui_and_render_job preview_interaction_regression preview_mode_switch_regression preview_mis_mode_switch_regression display_buffer_handoff_regression renderer_batch_regression environment_sphere_regression
         import_fbx_embedded_texture import_gltf_tangent_sampler_transform preview_panel_regression raster_preview_regression
         PROPERTIES ENVIRONMENT "PATH=${SCENE_TEST_PATH}")
     if(WIN32)

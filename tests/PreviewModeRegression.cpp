@@ -73,6 +73,7 @@ void learnQT::configurePreviewModeRegression()
             auto d = editor->document;
             auto settings = d.settings();
             settings.denoise = state->phase == 8;
+            settings.denoiseMode = settings.denoise ? DenoiseMode::OIDN : DenoiseMode::None;
             settings.renderLow = false;
             settings.maxRenderFrames = state->phase >= 6 ? 0 : 8;
             // Exercise the real settings commit path, not only RenderParams.

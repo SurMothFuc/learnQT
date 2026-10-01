@@ -3,11 +3,15 @@
 #include <QMetaType>
 #include <QSize>
 #include <QString>
+#include "DenoiseMode.h"
 struct RenderJobSettings
 {
     QSize size{1920, 1080};
     int samples = 256, tileSize = 128, bounces = 8;
     bool denoise = true;
+    bool antialiasing = false;
+    DenoiseMode denoiseMode = DenoiseMode::OIDN;
+    DenoiseMode effectiveDenoiseMode() const { return denoise ? denoiseMode : DenoiseMode::None; }
     static RenderJobSettings fromJson(const QJsonObject &o)
     {
         RenderJobSettings s;
@@ -16,6 +20,9 @@ struct RenderJobSettings
         s.tileSize = o["tileSize"].toInt(128);
         s.bounces = o["bounces"].toInt(8);
         s.denoise = o["denoise"].toBool(true);
+        s.denoiseMode = readDenoiseMode(o);
+        s.denoise = s.denoiseMode != DenoiseMode::None;
+        s.antialiasing = o["antialiasing"].toBool(false);
         return s;
     }
     bool valid() const
@@ -85,6 +92,11 @@ struct RenderStats
     int pickPasses = 0;
     // 单次拾取重绘的最长耗时：确认补绘不是零成本，也不是每帧都在跑。
     double pickMaxMs = 0;
+    double realtimeDenoiseMs = 0, historyAcceptance = 0;
+    quint64 denoiseRounds = 0, denoiseBytes = 0, publishedFrames = 0, completedRounds = 0;
+    double completedFps = 0, publishedFps = 0;
+    int rasterSamples = 1;
+    QString denoiseMode, denoiseError;
     // 最近一个统计窗口（约 200 ms）的渲染循环分解，单位为毫秒。
     int frames = 0, ticks = 0;
     double windowMs = 0, boundaryWaitMs = 0, loopMs = 0, cadenceSleepMs = 0, tailMs = 0,
