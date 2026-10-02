@@ -15,6 +15,7 @@
 #include <cmath>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <random>
 #include <stdexcept>
 
@@ -629,6 +630,29 @@ void islandEdgeHits(Gpu &gpu)
     for (int i=0;i<2;++i) require(shadow[4*i] == 1, "Shadow traversal missed island edge");
     std::cout << "GPU island edge fixtures hit the front surfaces in beauty/picking/shadow paths\n";
 }
+void collapsedWorldEdges(Gpu &gpu)
+{
+    for (bool mirrored : {false, true})
+    {
+        Fixture f; f.meshes = {plane()};
+        SceneInstance instance; instance.mesh = instance.material = 0;
+        instance.transform.translate(16777216.f, 16777216.f, 0);
+        instance.transform.scale(mirrored ? -.001f : .001f, .001f, .001f);
+        f.instances = {instance}; f.prepare(); gpu.scene(f);
+        const auto pixels = gpu.run({{{16777216.f,16777216.f,1},{0,0,-1}}},
+            "HitResult h=hitBVH(r);outputColor=vec4(h.isHit?1:0,h.geometricNormal.z,h.normal.z,h.hitDistance);");
+        require(pixels[0] == 1 && std::isfinite(pixels[1]) && std::isfinite(pixels[2]),
+                "Collapsed world edges produced a non-finite surface normal");
+        require(std::abs(pixels[1]-1) < 1e-5f && std::abs(pixels[2]-1) < 1e-5f &&
+                    std::abs(pixels[3]-1) < 1e-5f, "Local face normal or mirrored hit orientation changed");
+    }
+    const float nan = std::numeric_limits<float>::quiet_NaN();
+    const float inf = std::numeric_limits<float>::infinity();
+    const auto invalid = gpu.run({{{nan,0,1},{0,0,-1}},{{0,0,1},{inf,0,-1}},{{0,0,1},{0,0,0}}},
+        "HitResult h=hitBVH(r);outputColor=vec4(h.isHit?1:0,0,0,0);");
+    for (int i=0;i<3;++i) require(invalid[4*i] == 0, "Invalid ray entered BVH traversal");
+    std::cout << "GPU collapsed world edges, mirrored normals and invalid ray rejection passed\n";
+}
 void sharedEdgesAndGaps(Gpu &gpu)
 {
     Fixture f; f.meshes = {plane(8)};
@@ -692,6 +716,7 @@ int main(int argc, char **argv)
         grazingShadingNormals(gpu);
         surfaceReconstruction(gpu);
         islandEdgeHits(gpu);
+        collapsedWorldEdges(gpu);
         sharedEdgesAndGaps(gpu);
     }
     catch (const std::exception &error)

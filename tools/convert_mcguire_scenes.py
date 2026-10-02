@@ -22,6 +22,7 @@ IDENTITY=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]
 BLOCK={'lost_empire','rungholt','vokselia_spawn'}
 INDOOR={'breakfast_room','conference','fireplace_room','gallery','holodeck','living_room','salle_de_bain','sibenik','lost_empire'}
 NOTES={
+ 'powerplant':['Legacy Power Plant MTL Tr values interpreted as dissolve/opacity (1 is opaque); emitted as d in the derived MTL. Original source retained.'],
  'cube':['Source default.png has a CRC mismatch. Derived neutral checker replaces this unreadable image; archive unchanged.'],
  'white_oak':['Missing leaf opacity texture derived from the original diffuse PNG alpha channel.'],
  'bistro':['Missing ceiling-fan emissive map omitted in derived MTL. Other emissive maps retained.','512px texture derivatives used to limit the shared texture-array allocation. Original full-resolution images retained.','OBJ object/group boundaries consolidated by material for practical loading; positions, UVs, normals and faces retained.'],
@@ -74,6 +75,11 @@ def prepare_materials(key):
   lines=[]
   for line in mtl.read_text(encoding='utf-8',errors='replace').splitlines():
    stripped=line.split('#')[0].strip()
+   # This legacy asset uses Tr=1 for its solid structures. Assimp's standard
+   # transparency interpretation would make the solid structures invisible.
+   # Preserve fractional values and scope the compatibility fix to Power Plant.
+   if key=='powerplant' and re.match(r'Tr\s+',stripped):
+    line=re.sub(r'^(\s*)Tr(\s+)',r'\1d\2',line)
    if stripped.startswith(('map_','bump ','norm ')):
     name=map_path(stripped);p=(mtl.parent/name).resolve()
     if not p.exists():

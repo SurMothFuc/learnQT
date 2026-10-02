@@ -44,7 +44,10 @@ int BuildBVH::buildBVHwithSAH(std::vector<Triangle> &triangles, std::vector<BVHN
     }
 
     // 否则递归建树
-    float Cost = INF;
+    // SAH costs have units of area times primitive count, not ray distance.
+    // A finite scene-distance sentinel can be smaller than every valid split
+    // when a source model uses large coordinates (for example millimetres).
+    double Cost = std::numeric_limits<double>::infinity();
     int Axis = 0;
     int Split = (l + r) / 2;
     for (int axis = 0; axis < 3; axis++)
@@ -59,8 +62,8 @@ int BuildBVH::buildBVHwithSAH(std::vector<Triangle> &triangles, std::vector<BVHN
 
         // leftMax[i]: [l, i] 中最大的 xyz 值
         // leftMin[i]: [l, i] 中最小的 xyz 值
-        std::vector<QVector3D> leftMax(r - l + 1, QVector3D(-INF, -INF, -INF));
-        std::vector<QVector3D> leftMin(r - l + 1, QVector3D(INF, INF, INF));
+        std::vector<QVector3D> leftMax(r - l + 1, QVector3D(-infinity, -infinity, -infinity));
+        std::vector<QVector3D> leftMin(r - l + 1, QVector3D(infinity, infinity, infinity));
         // 计算前缀 注意 i-l 以对齐到下标 0
         for (int i = l; i <= r; i++)
         {
@@ -84,8 +87,8 @@ int BuildBVH::buildBVHwithSAH(std::vector<Triangle> &triangles, std::vector<BVHN
 
         // rightMax[i]: [i, r] 中最大的 xyz 值
         // rightMin[i]: [i, r] 中最小的 xyz 值
-        std::vector<QVector3D> rightMax(r - l + 1, QVector3D(-INF, -INF, -INF));
-        std::vector<QVector3D> rightMin(r - l + 1, QVector3D(INF, INF, INF));
+        std::vector<QVector3D> rightMax(r - l + 1, QVector3D(-infinity, -infinity, -infinity));
+        std::vector<QVector3D> rightMin(r - l + 1, QVector3D(infinity, infinity, infinity));
         // 计算后缀 注意 i-l 以对齐到下标 0
         for (int i = r; i >= l; i--)
         {
@@ -108,19 +111,19 @@ int BuildBVH::buildBVHwithSAH(std::vector<Triangle> &triangles, std::vector<BVHN
         }
 
         // 遍历寻找分割
-        float cost = INF;
+        double cost = std::numeric_limits<double>::infinity();
         int split = l;
         for (int i = l; i <= r - 1; i++)
         {
-            float lenx, leny, lenz;
+            double lenx, leny, lenz;
             // 左侧 [l, i]
             QVector3D leftAA = leftMin[i - l];
             QVector3D leftBB = leftMax[i - l];
             lenx = leftBB.x() - leftAA.x();
             leny = leftBB.y() - leftAA.y();
             lenz = leftBB.z() - leftAA.z();
-            float leftS = 2.0 * ((lenx * leny) + (lenx * lenz) + (leny * lenz));
-            float leftCost = leftS * (i - l + 1);
+            double leftS = 2.0 * ((lenx * leny) + (lenx * lenz) + (leny * lenz));
+            double leftCost = leftS * (i - l + 1);
 
             // 右侧 [i+1, r]
             QVector3D rightAA = rightMin[i + 1 - l];
@@ -128,11 +131,11 @@ int BuildBVH::buildBVHwithSAH(std::vector<Triangle> &triangles, std::vector<BVHN
             lenx = rightBB.x() - rightAA.x();
             leny = rightBB.y() - rightAA.y();
             lenz = rightBB.z() - rightAA.z();
-            float rightS = 2.0 * ((lenx * leny) + (lenx * lenz) + (leny * lenz));
-            float rightCost = rightS * (r - i);
+            double rightS = 2.0 * ((lenx * leny) + (lenx * lenz) + (leny * lenz));
+            double rightCost = rightS * (r - i);
 
             // 记录每个分割的最小答案
-            float totalCost = leftCost + rightCost;
+            double totalCost = leftCost + rightCost;
             if (totalCost < cost)
             {
                 cost = totalCost;

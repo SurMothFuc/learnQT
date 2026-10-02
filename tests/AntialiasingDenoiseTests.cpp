@@ -121,8 +121,14 @@ void antialiasing(QOpenGLFunctions_3_3_Core *gl,const QString &output,QJsonObjec
     GLint maximum=0;gl->glGetIntegerv(GL_MAX_TEXTURE_SIZE,&maximum);
     settings.denoiseMode=DenoiseMode::Realtime;RendererDenoiseTestAccess::guideWidth(renderer,maximum+1);
     renderer.render(w,h,settings,0,16);finish(renderer);
-    require(!renderer.stats.denoiseError.isEmpty() && !renderer.stats.denoisedVersion &&
-            read(gl,RendererDenoiseTestAccess::color(renderer),w,h)==before,"GPU resource failure corrupted raw preview");
+    require(!renderer.stats.denoiseError.isEmpty() && !renderer.stats.denoisedVersion,
+            "GPU resource failure was not explicitly reported");
+    // This deliberately invalid allocation leaves a GL error. Consume the
+    // expected fault before checking a NEW readback operation; otherwise read()
+    // reports the injected allocation error as a texture readback failure.
+    for(int error=0;error<16 && gl->glGetError()!=GL_NO_ERROR;++error) {}
+    require(read(gl,RendererDenoiseTestAccess::color(renderer),w,h)==before,
+            "GPU resource failure corrupted raw preview");
     renderer.formal=true;bool failed=false;
     try {renderer.render(w,h,settings,0,16);}catch(const std::exception&){failed=true;}
     require(failed,"Explicit realtime final job silently fell back after GPU failure");
@@ -334,6 +340,9 @@ void benchmark(const QStringList &args,QOpenGLFunctions_3_3_Core *gl)
     const auto mode=args[7];require(mode=="none" || mode=="oidn" || mode=="realtime","Invalid benchmark mode");
     settings.denoiseMode=readDenoiseMode(QJsonObject{{"denoiseMode",mode}});settings.denoise=mode!="none";
     settings.computePathtrace=args.contains("--compute");settings.renderLow=false;settings.maxBounces=4;
+    const int bouncesOption=args.indexOf("--bounces");
+    if(bouncesOption>=0) settings.maxBounces=args.value(bouncesOption+1).toInt();
+    require(settings.maxBounces>0 && settings.maxBounces<=int(MAX_BOUNCES_LIMIT),"Invalid bounce budget");
     settings.tileSize=128;settings.useTileRendering=true;const int w=args[4].toInt(),h=args[5].toInt(),spp=args[6].toInt();
     const int warmup=args.contains("--no-warmup") ? 0 : 2;
     const int secondsOption=args.indexOf("--seconds");
@@ -341,6 +350,7 @@ void benchmark(const QStringList &args,QOpenGLFunctions_3_3_Core *gl)
     require(secondsOption<0 || budget>0,"Invalid time budget");
     settings.maxRenderFrames=budget>0?1000000:spp+warmup;require(w>0 && h>0 && spp>0,"Invalid dimensions/spp");
     Renderer renderer(w,h,settings,nullptr,scene.get());renderer.prepareJob({w,h},settings,kInitialSceneDirty);
+    require(!args.contains("--require-compute") || renderer.stats.computePathtrace,"Requested compute backend fell back to fragment shader");
     const bool preview=args.contains("--preview");renderer.formal=!preview;
     const int captureOption=args.indexOf("--capture-tail");
     const int captureTail=captureOption<0?0:args.value(captureOption+1).toInt();
@@ -377,6 +387,8 @@ void benchmark(const QStringList &args,QOpenGLFunctions_3_3_Core *gl)
         {"gpuDenoiseMs",renderer.stats.realtimeDenoiseMs},{"oidnMs",renderer.stats.oidnMs},
         {"rawTailRms",framePairs?std::sqrt(rawDelta/framePairs):0},{"filteredTailRms",framePairs?std::sqrt(filteredDelta/framePairs):0},
         {"bytes",double(renderer.allocatedBytes())},{"compute",renderer.stats.computePathtrace},
+        {"backend",renderer.stats.pathtraceBackend},
+        {"bounces",settings.maxBounces},
         {"device",QString::fromLatin1(reinterpret_cast<const char*>(gl->glGetString(GL_RENDERER)))}};
     QFile f(args[3]);require(f.open(QIODevice::WriteOnly),"Benchmark JSON write failed");f.write(QJsonDocument(result).toJson());
     std::cout<<QJsonDocument(result).toJson(QJsonDocument::Compact).constData()<<std::endl;
@@ -384,6 +396,10 @@ void benchmark(const QStringList &args,QOpenGLFunctions_3_3_Core *gl)
 }
 int main(int argc,char **argv)
 {
+    qInstallMessageHandler([](QtMsgType type,const QMessageLogContext &,const QString &message) {
+        if(type==QtWarningMsg || type==QtCriticalMsg || type==QtFatalMsg)
+            std::cerr<<message.toStdString()<<std::endl;
+    });
     bool requestCompute=false;for(int i=1;i<argc;++i) requestCompute=requestCompute || std::string(argv[i])=="--compute";
     QSurfaceFormat format;format.setVersion(requestCompute?4:3,3);format.setProfile(QSurfaceFormat::CoreProfile);format.setSwapInterval(0);QSurfaceFormat::setDefaultFormat(format);
     QApplication app(argc,argv);

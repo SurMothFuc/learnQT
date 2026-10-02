@@ -116,6 +116,7 @@ learnQT::learnQT(QWidget *parent) : QMainWindow(parent)
     configureWorkspaceRegression();
     configureRenderQueueRegression();
     configurePreviewPanelRegression();
+    configureLargeScenePreviewRegression();
     configureRasterRegression();
     configureAaDenoiseRegression();
     // 回归入口可关闭交互回退，避免默认的光栅化回退改变既有预览用例的判断。

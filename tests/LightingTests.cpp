@@ -354,6 +354,38 @@ outputColor=vec4(float(s.delta),float(HasNonDeltaLobes(m,1.0/1.5)),s.delta?s.wei
     checkNear(mixture[2],.04,.003,"mixed BSDF delta contribution");
 }
 
+static void standardInterfaceLightingTests(Audit& a) {
+    a.environment(8,4,std::vector<float>(8*4*3,0));
+    a.setLights(light(2,3,.5f,3),1);
+    // The emitter is visible from the surface, but every connection from
+    // the interior receiver crosses the material interface.
+    const QString blocked=R"(
+void main(){MediumStack m;m.size=0;
+outputColor=vec4(ShadowTransmittance(vec3(0),vec3(0),vec3(0,0,1),4.0,m).r,
+EstimateVolumeLighting(vec3(0),vec3(0,0,-1),vec3(1),m).r,0,1);})";
+    const QString surfaceEstimator=R"(
+void main(){Ray r;r.startPoint=vec3(0,0,2);r.direction=vec3(0,0,-1);
+HitResult h=hitBVH(r);float eta=1.0/h.material.IOR;
+BsdfSample s=SampleDisneyBSDF(-r.direction,h.normal,h.material,eta,vec3(rand(),rand(),rand()));
+MediumStack m;m.size=0;
+outputColor=vec4(float(HasNonDeltaLobes(h.material,eta)),float(s.delta),
+EstimateDirectLighting(h,vec3(1),eta,m).r,1);})";
+    for(float roughness:{0.f,.12f}) {
+        auto glass=triangle(1);glass[37]=1.5f;glass[38]=1;glass[45]=roughness;
+        // The rough fixture also carries a scattering medium, like water.
+        if(roughness>0){glass[40]=2;glass[41]=6;}
+        a.setGeometry(glass);
+        const auto shadow=a.mean(blocked,false),surface=a.mean(surfaceEstimator,false);
+        checkNear(shadow[0],0,0,"material interface blocks straight shadow connection");
+        checkNear(shadow[1],0,0,"material interface blocks volume light connection");
+        checkNear(surface[0],roughness>0?1:0,0,"surface NEE only for continuous BSDF lobes");
+        checkNear(surface[1],roughness>0?0:1,0,"ideal versus rough dielectric BSDF event");
+        if(roughness==0) checkNear(surface[2],0,0,"pure delta has no ordinary NEE contribution");
+        else check(surface[2]>0,"rough dielectric ordinary NEE lost visible emitter");
+    }
+    a.setGeometry({});a.setLights({},0);
+}
+
 static void mediumTests(Audit& a) {
     auto entry=triangle(1,false),exit=triangle(3,true);
     for(auto* t:{&entry,&exit}) {
@@ -486,7 +518,7 @@ void main() {
 
 int main(int argc,char** argv) {
     QGuiApplication app(argc,argv);
-    try { Audit audit; materialTextureUploadTests(audit); hdrTests(audit); analyticTests(audit); alphaDeltaTests(audit); mediumTests(audit); rasterEnvironmentTests(audit); std::cout<<"Lighting numerical tests passed\n"; }
+    try { Audit audit; materialTextureUploadTests(audit); hdrTests(audit); analyticTests(audit); alphaDeltaTests(audit); standardInterfaceLightingTests(audit); mediumTests(audit); rasterEnvironmentTests(audit); std::cout<<"Lighting numerical tests passed\n"; }
     catch(const std::exception& error) { std::cerr<<error.what()<<"\n"; return 1; }
     return 0;
 }

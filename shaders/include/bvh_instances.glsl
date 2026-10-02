@@ -86,6 +86,12 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
     res.isInside = false;
     res.triangleIndex = -1;
     res.hitDistance = INF;
+    // NaN rays can make the slab min/max operations accept every node, turning
+    // a numerical error into an exhaustive traversal of a large scene.
+    if (any(isnan(ray.startPoint)) || any(isinf(ray.startPoint)) ||
+        any(isnan(ray.direction)) || any(isinf(ray.direction)) ||
+        all(equal(ray.direction, vec3(0))))
+        return res;
     if (nTopNodes <= 1)
         return res;
     vec3 worldReciprocal = 1.0 / ray.direction;
@@ -238,6 +244,9 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
                 float d;
                 if (!IntersectTriangle(triangleRay, p1, p2, p3, candidate, d) || d > res.hitDistance)
                     continue;
+                vec3 face = cross(p2 - p1, p3 - p1);
+                if (all(equal(face, vec3(0))) || any(isnan(face)) || any(isinf(face)))
+                    continue;
                 // Logical surface order is independent of BVH traversal order.
                 int surface = i + int(info.z);
                 if (d == res.hitDistance && res.triangleIndex >= 0 && surface > res.triangleIndex)
@@ -264,10 +273,23 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
         int instance = int(selected.y), g = int(selected.x) * 11;
         mat4 world = InstanceMatrix(instance, 0);
         mat3 normals = transpose(mat3(InstanceMatrix(instance, 4)));
-        vec3 a = (world * vec4(texelFetch(triangles, g).xyz, 1)).xyz;
-        vec3 b = (world * vec4(texelFetch(triangles, g + 1).xyz, 1)).xyz;
-        vec3 c = (world * vec4(texelFetch(triangles, g + 2).xyz, 1)).xyz;
-        res.geometricNormal = normalize(cross(b - a, c - a)) * sign(determinant(mat3(world)));
+        vec3 localA = texelFetch(triangles, g).xyz;
+        vec3 localAB = texelFetch(triangles, g + 1).xyz - localA;
+        vec3 localAC = texelFetch(triangles, g + 2).xyz - localA;
+        vec3 a = (world * vec4(localA, 1)).xyz;
+        vec3 edgeAB = mat3(world) * localAB, edgeAC = mat3(world) * localAC;
+        // Transform the local face normal, rather than subtracting separately
+        // rounded world vertices. Tiny faces can collapse after a translation.
+        vec3 localGeometry = cross(localAB, localAC);
+        vec3 geometry = normals * (localGeometry / maxComponent(abs(localGeometry)));
+        float geometryScale = maxComponent(abs(geometry));
+        if (!(geometryScale > 0.0) || any(isnan(geometry)) || any(isinf(geometry)))
+        {
+            res.isHit = false;
+            res.hitDistance = INF;
+            return res;
+        }
+        res.geometricNormal = normalize(geometry / geometryScale);
         vec3 normal = bary.x * (normals * texelFetch(triangles, g + 3).xyz) +
                       bary.y * (normals * texelFetch(triangles, g + 4).xyz) +
                       bary.z * (normals * texelFetch(triangles, g + 5).xyz);
@@ -280,7 +302,7 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
         res.viewDir = ray.direction;
         // Reconstruct on the triangle, avoiding cancellation along long rays.
         // Keep hitDistance as the original ray parameter for traversal/light ordering.
-        res.hitPoint = a + bary.y * (b - a) + bary.z * (c - a);
+        res.hitPoint = a + bary.y * edgeAB + bary.z * edgeAC;
         if (shadowOnly)
             res.material = ShadowMaterial(res.triangleIndex);
         else

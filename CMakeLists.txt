@@ -148,6 +148,13 @@ add_custom_command(TARGET learnQT POST_BUILD
 )
 
 if(BUILD_TESTING)
+    if(WIN32)
+        add_executable(background_failure_tests tests/BackgroundFailureTests.cpp src/BackgroundTestSession.cpp)
+        target_include_directories(background_failure_tests PRIVATE include)
+        target_link_libraries(background_failure_tests PRIVATE Qt5::Widgets)
+        add_test(NAME background_failure_exit_status COMMAND background_failure_tests --background-test)
+        set_tests_properties(background_failure_exit_status PROPERTIES TIMEOUT 30)
+    endif()
     add_executable(renderer_batch_tests tests/RendererBatchTests.cpp
         src/renderer.cpp src/RendererPick.cpp src/RendererPreview.cpp src/PreviewDenoiser.cpp src/GpuDenoiser.cpp
         src/Scene.cpp src/SceneRuntime.cpp src/SceneDocument.cpp src/SceneGraph.cpp src/SceneEncoding.cpp
@@ -187,6 +194,11 @@ if(BUILD_TESTING)
     add_test(NAME display_buffer_handoff_regression COMMAND presentation_tests)
     set_tests_properties(display_buffer_handoff_regression PROPERTIES LABELS "gpu;ui" TIMEOUT 20)
     add_executable(traversal_tests tests/TraversalTests.cpp src/SceneGraph.cpp src/BVH.cpp src/common.cpp)
+    add_executable(bvh_build_tests tests/BvhBuildTests.cpp src/BVH.cpp)
+    target_include_directories(bvh_build_tests PRIVATE include libs/Eigen libs/Assimp/include)
+    target_link_libraries(bvh_build_tests PRIVATE Qt5::Core Qt5::Gui)
+    add_test(NAME bvh_sah_scale_regression COMMAND bvh_build_tests)
+    set_tests_properties(bvh_sah_scale_regression PROPERTIES LABELS "cpu;scene" TIMEOUT 20)
     target_include_directories(traversal_tests PRIVATE include)
     target_compile_options(traversal_tests PRIVATE /utf-8)
     target_compile_definitions(traversal_tests PRIVATE
@@ -202,7 +214,7 @@ if(BUILD_TESTING)
     target_link_libraries(lighting_tests PRIVATE Qt5::Core Qt5::Gui Qt5::OpenGL opengl32)
     add_test(NAME lighting_numerical_regression COMMAND lighting_tests)
     set_tests_properties(lighting_numerical_regression PROPERTIES LABELS "gpu;lighting" TIMEOUT 300)
-    target_sources(learnQT PRIVATE tests/SceneUiRegression.cpp tests/WorkbenchUiRegression.cpp tests/InteractionRegression.cpp tests/PreviewModeRegression.cpp tests/WorkspaceUiRegression.cpp tests/PreviewPanelRegression.cpp tests/RasterPreviewRegression.cpp tests/AaDenoiseUiRegression.cpp)
+    target_sources(learnQT PRIVATE tests/SceneUiRegression.cpp tests/WorkbenchUiRegression.cpp tests/InteractionRegression.cpp tests/PreviewModeRegression.cpp tests/WorkspaceUiRegression.cpp tests/PreviewPanelRegression.cpp tests/LargeScenePreviewRegression.cpp tests/RasterPreviewRegression.cpp tests/AaDenoiseUiRegression.cpp)
     target_compile_definitions(learnQT PRIVATE SCENE_TESTING)
     add_test(NAME workspace_pages_regression COMMAND $<TARGET_FILE:learnQT> --workspace-regression ${CMAKE_CURRENT_BINARY_DIR}/workspace-regression)
     add_test(NAME render_queue_regression COMMAND $<TARGET_FILE:learnQT> --render-queue-regression ${CMAKE_CURRENT_BINARY_DIR}/render-queue-regression)
@@ -316,10 +328,10 @@ if(BUILD_TESTING)
     set(SCENE_TEST_PATH "${QT_RUNTIME_DIRECTORY};$ENV{PATH}")
     string(REPLACE ";" "\\;" SCENE_TEST_PATH "${SCENE_TEST_PATH}")
     set_tests_properties(denoise_stationary_convergence aa_denoise_compute_regression aa_denoise_ui_regression aa_denoise_regression workspace_pages_regression render_queue_regression instanced_traversal_regression lighting_numerical_regression scene_ui_switch_regression scene_roundtrip_and_package gpu_render_regression workbench_ui_and_render_job preview_interaction_regression preview_mode_switch_regression preview_mis_mode_switch_regression display_buffer_handoff_regression renderer_batch_regression environment_sphere_regression
-        import_fbx_embedded_texture import_gltf_tangent_sampler_transform preview_panel_regression raster_preview_regression
+        import_fbx_embedded_texture import_gltf_tangent_sampler_transform preview_panel_regression raster_preview_regression bvh_sah_scale_regression
         PROPERTIES ENVIRONMENT "PATH=${SCENE_TEST_PATH}")
     if(WIN32)
-        set_tests_properties(background_ui_regression PROPERTIES ENVIRONMENT "PATH=${SCENE_TEST_PATH}")
+        set_tests_properties(background_ui_regression background_failure_exit_status PROPERTIES ENVIRONMENT "PATH=${SCENE_TEST_PATH}")
     endif()
     # Even with ctest -j, GPU/UI workloads share one lane to limit foreground contention.
     get_property(LEARNQT_TESTS DIRECTORY PROPERTY TESTS)

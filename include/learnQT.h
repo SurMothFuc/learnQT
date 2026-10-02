@@ -42,6 +42,7 @@ class learnQT : public QMainWindow
     void configureWorkspaceRegression();
     void configureRenderQueueRegression();
     void configurePreviewPanelRegression();
+    void configureLargeScenePreviewRegression();
     void configureRasterRegression();
     void configureAaDenoiseRegression();
     EditorController *editor;
