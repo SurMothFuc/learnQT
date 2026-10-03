@@ -350,6 +350,7 @@ void benchmark(const QStringList &args,QOpenGLFunctions_3_3_Core *gl)
     QString error;auto scene=Scene::prepareScene(args[2],false,error);require(bool(scene),qPrintable(error));
     auto settings=scene->document.settings();settings.antialiasing=args.contains("--aa");
     const auto mode=args[7];require(mode=="none" || mode=="oidn" || mode=="realtime","Invalid benchmark mode");
+    if(args.contains("--capture-diagnostics"))qputenv("LEARNQT_TRACE_DIAGNOSTICS","1");
     if(args.contains("--profile")) {
         require(mode=="none","Profile pass requires denoising disabled");
         qputenv("LEARNQT_TRACE_PROFILE","1");
@@ -404,12 +405,93 @@ void benchmark(const QStringList &args,QOpenGLFunctions_3_3_Core *gl)
     finish(renderer);const double seconds=timer.nsecsElapsed()/1e9;
     if(checkConvergence) require(framePairs>=captureTail-1 && filteredDelta<=rawDelta*16,
         "Stationary textured preview flicker did not converge with raw sampling");
+    if(args.contains("--quality-sequence")) {
+        require(preview && mode=="realtime","Quality sequence requires realtime preview");
+        QJsonArray observations;
+        auto record=[&](const QString &phase,int frame) {
+            const auto raw=read(gl,RendererDenoiseTestAccess::color(renderer),w,h);
+            const auto filtered=read(gl,RendererDenoiseTestAccess::filtered(renderer,settings.effectiveDenoiseMode()),w,h);
+            for(float value:filtered)require(std::isfinite(value),"Nonfinite motion-filter output");
+            observations.append(QJsonObject{{"phase",phase},{"frame",frame},{"samples",renderer.samples()},
+                {"version",double(renderer.stats.accumulationVersion)},{"rawMean",mean(raw)},
+                {"filteredMean",mean(filtered)},{"filterRawMse",mse(filtered,raw)},
+                {"historyAcceptance",renderer.stats.historyAcceptance}});
+            if(frame==11 && (phase=="camera" || phase=="object")) {
+                auto refSettings=settings;refSettings.denoise=false;refSettings.denoiseMode=DenoiseMode::None;refSettings.sampleSeed=137;refSettings.maxRenderFrames=512;
+                Renderer refRenderer(w,h,refSettings,nullptr,scene.get());refRenderer.formal=true;refRenderer.prepareJob({w,h},refSettings,kInitialSceneDirty);
+                while(refRenderer.samples()<512){refRenderer.render(w,h,refSettings,0,16);finish(refRenderer);}
+                const auto reference=read(gl,RendererDenoiseTestAccess::color(refRenderer),w,h);
+                saveLinear(reference,w,h,args[3]+"."+phase+"-reference.png");
+                auto entry=observations.last().toObject();entry["rawMse"]=mse(raw,reference);entry["filteredMse"]=mse(filtered,reference);observations[observations.size()-1]=entry;
+            }
+            if(frame==0 || frame==11) {
+                saveLinear(raw,w,h,args[3]+"."+phase+"-"+QString::number(frame)+".raw.png");
+                saveLinear(filtered,w,h,args[3]+"."+phase+"-"+QString::number(frame)+".filtered.png");
+            }
+        };
+        settings.maxRenderFrames=0;
+        const auto originalCamera=scene->camera.position;
+        for(int frame=0;frame<12;++frame) {
+            scene->camera.position=originalCamera+QVector3D(float(frame+1)*.015f,0,0);
+            renderer.render(w,h,settings,toSceneDirtyFlags(SceneDirtyFlag::Camera),16);finish(renderer);
+            while(renderer.roundInProgress()){renderer.render(w,h,settings,0,16);finish(renderer);}
+            record("camera",frame);
+        }
+        auto document=scene->document;auto objects=document.root["objects"].toArray();
+        if(!objects.isEmpty()) {
+            auto object=objects[0].toObject();const auto original=sceneMatrix(object["transform"]);
+            for(int frame=0;frame<12;++frame) {
+                auto transform=original;transform.translate(float(frame+1)*.015f,0,0);object["transform"]=sceneMatrixJson(transform);
+                objects[0]=object;document.root["objects"]=objects;scene->applyEditorDocument(document,false);
+                renderer.render(w,h,settings,toSceneDirtyFlags(SceneDirtyFlag::Transform),16);finish(renderer);
+                while(renderer.roundInProgress()){renderer.render(w,h,settings,0,16);finish(renderer);}
+                record("object",frame);
+            }
+        }
+        auto materials=scene->document.root["materials"].toArray();
+        if(!materials.isEmpty()) {
+            auto changed=scene->document;auto material=materials[0].toObject();material["baseColor"]=QJsonArray{.8,.12,.06};
+            materials[0]=material;changed.root["materials"]=materials;scene->applyEditorDocument(changed,true,true);
+            renderer.render(w,h,settings,toSceneDirtyFlags(SceneDirtyFlag::Material),16);finish(renderer);
+            while(renderer.roundInProgress()){renderer.render(w,h,settings,0,16);finish(renderer);}
+            record("material",0);
+            require(renderer.stats.accumulationVersion>2,"Material edit did not invalidate accumulation");
+        }
+        auto environment=scene->document.root["environment"].toObject();environment["intensity"]=environment["intensity"].toDouble(1)*.25;
+        scene->document.root["environment"]=environment;
+        renderer.render(w,h,settings,toSceneDirtyFlags(SceneDirtyFlag::Material),16);finish(renderer);
+        while(renderer.roundInProgress()){renderer.render(w,h,settings,0,16);finish(renderer);}
+        record("lighting",0);
+        for(int frame=0;frame<12;++frame) {
+            while(renderer.samples()<unsigned((frame+1)*8)){renderer.render(w,h,settings,0,16);finish(renderer);}
+            record("settle",frame);
+        }
+        QFile sequence(args[3]+".sequence.json");require(sequence.open(QIODevice::WriteOnly),"Cannot write quality sequence");
+        sequence.write(QJsonDocument(QJsonObject{{"observations",observations},{"scope","Actual offscreen renderer camera/object motion, material/lighting invalidation and settling. No desktop input."}}).toJson());
+        auto referenceSettings=settings;referenceSettings.denoise=false;referenceSettings.denoiseMode=DenoiseMode::None;
+        referenceSettings.sampleSeed=137;referenceSettings.maxRenderFrames=512;
+        Renderer reference(w,h,referenceSettings,nullptr,scene.get());reference.formal=true;reference.prepareJob({w,h},referenceSettings,kInitialSceneDirty);
+        while(reference.samples()<512){reference.render(w,h,referenceSettings,0,16);finish(reference);}
+        const auto raw=read(gl,RendererDenoiseTestAccess::color(renderer),w,h),filtered=read(gl,RendererDenoiseTestAccess::filtered(renderer,settings.effectiveDenoiseMode()),w,h);
+        const auto ref=read(gl,RendererDenoiseTestAccess::color(reference),w,h);
+        saveLinear(ref,w,h,args[3]+".sequence-reference.png");
+        QFile quality(args[3]+".quality.json");require(quality.open(QIODevice::WriteOnly),"Cannot write sequence quality");
+        quality.write(QJsonDocument(QJsonObject{{"rawMse",mse(raw,ref)},{"filteredMse",mse(filtered,ref)},
+            {"rawMean",mean(raw)},{"filteredMean",mean(filtered)},{"referenceMean",mean(ref)}}).toJson());
+    }
+    if(args.contains("--linear-result")) {
+        const auto linear=renderer.linearResult(settings);QString error;
+        require(linear->writeExr(args[3]+".float.exr",false,error),error.toStdString().c_str());
+        require(linear->writeExr(args[3]+".half.exr",true,error),error.toStdString().c_str());
+        require(linear->display(-2,2,false).save(args[3]+".reexposed.png"),"Reexposed result save failed");
+    }
     const auto image=renderer.result(settings);require(image.save(args[3]+".png"),"Benchmark save failed");
     const auto raw=read(gl,RendererDenoiseTestAccess::color(renderer),w,h);saveLinear(raw,w,h,args[3]+".raw.png");
     if(args.contains("--diagnostics")) {
         QFile diagnostics(args[3]+".diagnostics.json");
         require(diagnostics.open(QIODevice::WriteOnly),"Cannot write path diagnostics");
         diagnostics.write(QJsonDocument(renderer.pathDiagnostics()).toJson());
+        if(args.contains("--capture-diagnostics"))require(renderer.diagnosticImage().save(args[3]+".diagnostics.png"),"Diagnostic image save failed");
         QFile textures(args[3]+".textures.json");
         require(textures.open(QIODevice::WriteOnly),"Cannot write texture resource diagnostics");
         textures.write(QJsonDocument(renderer.textureResources()).toJson());
@@ -422,6 +504,7 @@ void benchmark(const QStringList &args,QOpenGLFunctions_3_3_Core *gl)
     QJsonObject result{{"width",w},{"height",h},{"spp",measuredSpp},{"totalSpp",renderer.samples()},{"seconds",seconds},{"fps",measuredSpp/seconds},
         {"mode",mode},{"aa",settings.antialiasing},{"preview",preview},{"historyAcceptance",renderer.stats.historyAcceptance},
         {"gpuDenoiseMs",renderer.stats.realtimeDenoiseMs},{"oidnMs",renderer.stats.oidnMs},
+        {"oidnProtectedPixels",double(renderer.stats.oidnProtectedPixels)},{"oidnGuidePolicy",renderer.stats.oidnGuidePolicy},
         {"rawTailRms",framePairs?std::sqrt(rawDelta/framePairs):0},{"filteredTailRms",framePairs?std::sqrt(filteredDelta/framePairs):0},
         {"bytes",double(renderer.allocatedBytes())},{"compute",renderer.stats.computePathtrace},
         {"backend",renderer.stats.pathtraceBackend},

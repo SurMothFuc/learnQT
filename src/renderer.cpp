@@ -1,4 +1,5 @@
 #include "OidnAuxiliary.h"
+#include "OidnConfidence.h"
 #include "renderer.h"
 
 #include "MaterialTextureImage.h"
@@ -6,6 +7,8 @@
 #include "MaterialTexturePlan.h"
 #include <cstring>
 #include "PathDiagnostics.h"
+#include "InitialMedia.h"
+#include "MediumInterfaces.h"
 #include <QDebug>
 #include <QDir>
 #include <QFile>
@@ -737,11 +740,11 @@ void Renderer::ensureDenoisePbos()
     const QSize size(render_width, render_height);
     if (denoisePboSize == size)
         return;
-    const size_t bufferSize = size_t(render_width) * render_height * 3 * sizeof(float);
+    const size_t pixels=size_t(render_width)*render_height;
     for (int i = 0; i < 3; ++i)
     {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
-        glBufferData(GL_PIXEL_PACK_BUFFER, static_cast<GLsizeiptr>(bufferSize), nullptr, GL_STREAM_READ);
+        glBufferData(GL_PIXEL_PACK_BUFFER, static_cast<GLsizeiptr>(pixels*4*sizeof(float)), nullptr, GL_STREAM_READ);
     }
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     denoisePboSize = size;
@@ -840,6 +843,8 @@ void Renderer::bindPathtraceInputs(int maxBounces, const RenderParams::Snapshot 
         glUniform1ui(pathtrace_program->uniformLocation("samplerIndex"),sequence);
         pathtrace_program->setUniformValue("useEtaScaleRR",!qEnvironmentVariableIsSet("LEARNQT_LEGACY_RR"));
         pathtrace_program->setUniformValue("rrMinDepth",snapshot.rrMinDepth);
+        pathtrace_program->setUniformValue("legacyOidnGuides",qEnvironmentVariableIsSet("LEARNQT_LEGACY_OIDN_GUIDES"));
+        pathtrace_program->setUniformValue("correctClearcoat",!qEnvironmentVariableIsSet("LEARNQT_LEGACY_CLEARCOAT"));
         glUniform4uiv(pathtrace_program->uniformLocation("samplerSobol"),int(sampleBits.size()/4),sampleBits.data());
         // R2 low-discrepancy sequence is independent of the path's Sobol dimensions.
         pathtrace_program->setUniformValue("aaSample", QVector2D(float(std::fmod((sequence+.5)*.7548776662466927,1.0)),
@@ -949,6 +954,7 @@ bool Renderer::rebuildPathtraceProgram(const RenderParams::Snapshot &snapshot)
     const auto baseKey = std::to_string(capacity) + ":" + std::to_string(media) + ":" +
                          std::to_string(snapshot.useEnvironmentMap)+":"+std::to_string(materialTexturePoolCapacity)+
                          (qEnvironmentVariableIsSet("LEARNQT_TRACE_PROFILE")?":profile":":beauty")+
+                         (qEnvironmentVariableIsSet("LEARNQT_TRACE_DIAGNOSTICS")?":diagnostics":":plain")+
                          (qEnvironmentVariableIsSet("LEARNQT_LEGACY_SAMPLER")?":legacy":":unified");
     if (compute && failedComputePrograms.count(baseKey))
     {
@@ -966,6 +972,11 @@ bool Renderer::rebuildPathtraceProgram(const RenderParams::Snapshot &snapshot)
             throw std::runtime_error("Trace profiling requires denoising disabled");
         defines.emplace("TRACE_PROFILE","1");
         defines.emplace("TRACE_TRAVERSAL_PROFILE","1");
+    }
+    if(qEnvironmentVariableIsSet("LEARNQT_TRACE_DIAGNOSTICS")) {
+        if(snapshot.effectiveDenoiseMode()!=DenoiseMode::None || qEnvironmentVariableIsSet("LEARNQT_TRACE_PROFILE"))
+            throw std::runtime_error("Event capture requires denoising/profile disabled");
+        defines.emplace("TRACE_DIAGNOSTICS","1");
     }
     if (!media) defines.emplace("NO_PARTICIPATING_MEDIA", "1");
     if (snapshot.useEnvironmentMap) defines.emplace("USEENVIRONMENTMAP", "");
@@ -1201,6 +1212,7 @@ void Renderer::clearTexture(GLuint texture)
 
 void Renderer::resetAccumulation()
 {
+    diagnosticCapture.reset({render_width,render_height});
     estimatedTileMs = 0;
     firstComposite = displayDirty = true;
     const auto &instances = m_scene.instances;
@@ -1505,6 +1517,15 @@ void Renderer::syncCameraUniforms()
     pathtrace_program->setUniformValue("view", inverseView);
     pathtrace_program->setUniformValue("eye", eye);
     pathtrace_program->setUniformValue("cameraFov", fov);
+    const bool boundaries=!qEnvironmentVariableIsSet("LEARNQT_LEGACY_MEDIA");
+    const auto initial=boundaries?initialMediaAt(m_scene,eye):InitialMediumState{};
+    pathtrace_program->setUniformValue("useBoundaryMedia",boundaries);
+    pathtrace_program->setUniformValue("initialMediumCount",int(initial.properties.size()));
+    if(!initial.properties.empty()) {
+        pathtrace_program->setUniformValueArray("initialMediumProperties",initial.properties.data(),int(initial.properties.size()));
+        pathtrace_program->setUniformValueArray("initialMediumColors",initial.colors.data(),int(initial.colors.size()));
+        pathtrace_program->setUniformValueArray("initialMediumIdentity",initial.identity.data(),int(initial.identity.size()));
+    }
     pathtrace_program->release();
 }
 
@@ -1536,6 +1557,8 @@ void Renderer::uploadInstanceBuffers(bool topology)
     surfacePdfOffset=int(materialData.size());
     materialData.resize(materialData.size()+(scene.surfacePdfs.size()+3)/4);
     for(size_t i=0;i<scene.surfacePdfs.size();++i)materialData[surfacePdfOffset+i/4][int(i%4)]=scene.surfacePdfs[i];
+    const auto contacts=mediumContactData(scene);mediumContactOffset=int(materialData.size());mediumContactCount=int(contacts.size()/3);
+    materialData.insert(materialData.end(),contacts.begin(),contacts.end());
     upload(1, GL_RGBA32F, materialData.data(), materialData.size() * sizeof(QVector4D));
     upload(2, GL_RGB32F, scene.tlasData.data(), scene.tlasData.size() * sizeof(BVHNode_encoded));
     if (topology)
@@ -1556,6 +1579,8 @@ void Renderer::bindInstanceBuffers(QOpenGLShaderProgram *program)
         return m.alphaMode==Transparent || m.mediumtype!=None;
     });
     program->setUniformValue("shadowBinaryScene",binary);
+    program->setUniformValue("mediumContactOffset",mediumContactOffset);
+    program->setUniformValue("mediumContactCount",mediumContactCount);
     program->setUniformValue("shadowAnyHit",!qEnvironmentVariableIsSet("LEARNQT_DISABLE_ANYHIT"));
     program->setUniformValue("picking", false);
     auto env = m_scene.document.root["environment"].toObject();
@@ -1704,6 +1729,7 @@ void Renderer::processHistorySaving(const RenderParams::Snapshot &snapshot)
         nowChunkedCount = 0;
         frameCounter++;
         ++stats.completedRounds;
+        if(qEnvironmentVariableIsSet("LEARNQT_TRACE_DIAGNOSTICS"))collectPathDiagnostics();
 
         historysave_program->bind();
         {
@@ -1782,7 +1808,7 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
     const bool refreshAuxiliaryBuffers = true; // A fresh, matching complete-frame snapshot for each denoise.
 
     // 使用 PBO 异步读取数据；降噪只在完整累计帧上触发。
-    const GLenum formats[] = {GL_RGB, GL_RGB, GL_RGB};
+    const GLenum formats[] = {GL_RGBA, GL_RGBA, GL_RGBA};
     const GLuint textures[] = {previousNormalTex, previousAlbedoTex, preRenderColorTex};
     float *srcPtrs[3] = {nullptr, nullptr, nullptr};
 
@@ -1809,16 +1835,22 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
             throw std::runtime_error("OIDN auxiliary readback failed");
         }
 
-    if (refreshAuxiliaryBuffers)
-    {
-        auto *normals = static_cast<float *>(oidnNormalBuf.getData());
-        stats.normalMinimum = 1;
-        stats.normalMaximum = -1;
-        decodeOidnNormals(normals,srcPtrs[0],oidnNormalBuf.getSize()/sizeof(float),stats.normalMinimum,stats.normalMaximum);
-        stats.auxiliarySize = QSize(render_width, render_height);
-        std::memcpy(oidnAlbedoBuf.getData(), srcPtrs[1], oidnAlbedoBuf.getSize());
+    const size_t pixels=size_t(render_width)*render_height;
+    std::vector<float> packedNormals(pixels*3),secondMoment(pixels),counts(pixels);
+    std::vector<unsigned char> confidenceEligible(pixels);bool auxiliarySafe=true;
+    auto *albedo=static_cast<float*>(oidnAlbedoBuf.getData());
+    auto *raw=static_cast<float*>(oidnColorBuf.getData());
+    for(size_t p=0;p<pixels;++p) {
+        for(int c=0;c<3;++c){packedNormals[p*3+c]=srcPtrs[0][p*4+c];raw[p*3+c]=srcPtrs[2][p*4+c];}
+        secondMoment[p]=srcPtrs[2][p*4+3];counts[p]=srcPtrs[0][p*4+3];
+        for(int c=0;c<3;++c)albedo[p*3+c]=srcPtrs[1][p*4+c];
+        const unsigned flags=unsigned(srcPtrs[1][p*4+3]);confidenceEligible[p]=(flags&128u)==0u;
+        if((flags&64u)!=0u)auxiliarySafe=false;
     }
-    std::memcpy(oidnColorBuf.getData(), srcPtrs[2], oidnColorBuf.getSize());
+    stats.normalMinimum=1;stats.normalMaximum=-1;
+    decodeOidnNormals(static_cast<float*>(oidnNormalBuf.getData()),packedNormals.data(),packedNormals.size(),stats.normalMinimum,stats.normalMaximum);
+    stats.auxiliarySize={render_width,render_height};
+
 
     for (int i = refreshAuxiliaryBuffers ? 0 : 2; i < 3; i++)
     {
@@ -1836,7 +1868,16 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
     oidnMainFilter.setProgressMonitorFunction(progress, cancel);
     if (denoising)
         denoising();
-    if (refreshAuxiliaryBuffers)
+    if(qEnvironmentVariableIsSet("LEARNQT_LEGACY_OIDN_GUIDES"))auxiliarySafe=true;
+    if(auxiliarySafe) {
+        oidnMainFilter.setImage("albedo",oidnAlbedoBuf,oidn::Format::Float3,render_width,render_height);
+        oidnMainFilter.setImage("normal",oidnNormalBuf,oidn::Format::Float3,render_width,render_height);
+        oidnMainFilter.set("cleanAux",true);
+    } else {
+        oidnMainFilter.unsetImage("albedo");oidnMainFilter.unsetImage("normal");oidnMainFilter.set("cleanAux",false);
+    }
+    oidnMainFilter.commit();
+    if (refreshAuxiliaryBuffers && auxiliarySafe)
     {
         oidnAlbedoFilter.execute();
         oidnNormalFilter.execute();
@@ -1851,6 +1892,10 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
     if (error != oidn::Error::None)
         throw std::runtime_error(errorMessage ? errorMessage : "OIDN failed");
 
+    stats.oidnGuidePolicy=auxiliarySafe?QStringLiteral("surface/delta guides"):QStringLiteral("beauty-only volume fallback");
+    stats.oidnProtectedPixels=0;
+    if(!qEnvironmentVariableIsSet("LEARNQT_LEGACY_OIDN_GUIDES"))
+        stats.oidnProtectedPixels=protectOidnOutput(raw,static_cast<float*>(oidnOutputBuf.getData()),pixels,secondMoment,counts,&confidenceEligible);
     glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, render_width, render_height, GL_RGB, GL_FLOAT,
                     oidnOutputBuf.getData());
@@ -1884,6 +1929,7 @@ void Renderer::compositeToScreen(const RenderParams::Snapshot &snapshot)
         auto display = m_scene.document.root["display"].toObject();
         m_program->setUniformValue("exposure", float(display["exposure"].toDouble()));
         m_program->setUniformValue("tonemap", display["tonemap"].toInt());
+        m_program->setUniformValue("legacyGamma",qEnvironmentVariableIsSet("LEARNQT_LEGACY_GAMMA"));
         glActiveTexture(GL_TEXTURE6);
 
         // 渲染到屏幕尺寸，所以这里使用窗口尺寸。
@@ -2214,7 +2260,9 @@ QJsonObject Renderer::pathDiagnostics()
     glBindTexture(GL_TEXTURE_2D,previousAlbedoTex);
     glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA,GL_FLOAT,albedo.data());
     if(glGetError()!=GL_NO_ERROR) throw std::runtime_error("Diagnostic readback failed");
-    return summarizePathDiagnostics(normal,albedo,render_width,frameCounter,stats.accumulationVersion);
+    auto result=summarizePathDiagnostics(normal,albedo,render_width,frameCounter,stats.accumulationVersion);
+    if(qEnvironmentVariableIsSet("LEARNQT_TRACE_DIAGNOSTICS"))result["capture"]=diagnosticCapture.json();
+    return result;
 }
 QJsonObject Renderer::traceProfile()
 {
@@ -2275,10 +2323,11 @@ quint64 Renderer::allocatedBytes() const
     const auto &s = m_scene;
     quint64 bytes = textureArrayBytes + quint64(m_width) * m_height * 16 +
                     quint64(render_width) * render_height * 7 * 16 +
-                    quint64(denoisePboSize.width()) * denoisePboSize.height() * 3 * 12 +
+                    quint64(denoisePboSize.width()) * denoisePboSize.height() * 12 * sizeof(float) +
                     quint64(pickSize.width()) * pickSize.height() * 8;
     bytes += s.geometryData.size() * sizeof(QVector4D) + s.nodes_encoded.size() * sizeof(BVHNode_encoded) +
              s.instanceData.size() * sizeof(QVector4D) + s.materialData.size() * sizeof(QVector4D) +
+             quint64(mediumContactCount)*3*sizeof(QVector4D) +
              s.tlasData.size() * sizeof(BVHNode_encoded) + s.surfaces.size() * sizeof(SurfaceReference) +
              ((s.surfacePdfs.size()+3)/4) * sizeof(QVector4D) + s.lights_encoded.size() * sizeof(Light_encoded) +
              std::max(1, materialTextureLayerCount) * 5 * sizeof(QVector4D) +
@@ -2292,4 +2341,68 @@ quint64 Renderer::allocatedBytes() const
              quint64(rasterInstanceCount) * 5 * sizeof(QVector4D) +
              quint64(rasterDepthSize.width()) * rasterDepthSize.height() * 4;
     return bytes;
+}
+
+void Renderer::collectPathDiagnostics() {
+    std::array<std::vector<float>,5> values;
+    glBindBuffer(GL_PIXEL_PACK_BUFFER,0);
+    for(int i=0;i<5;++i) {
+        values[i].resize(size_t(render_width)*render_height*4);
+        glBindTexture(GL_TEXTURE_2D,gpuDenoiser.sample(i));
+        glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA,GL_FLOAT,values[i].data());
+    }
+    if(glGetError()!=GL_NO_ERROR)throw std::runtime_error("Event capture readback failed");
+    diagnosticCapture.append(values,frameCounter-1);
+}
+
+RenderResultPtr Renderer::linearResult(const RenderParams::Snapshot &snapshot,bool includeDepth) {
+    if(!frameCounter)throw std::runtime_error("Linear result requires a completed sample round");
+    if(qEnvironmentVariableIsSet("LEARNQT_TRACE_PROFILE") || qEnvironmentVariableIsSet("LEARNQT_TRACE_DIAGNOSTICS"))
+        throw std::runtime_error("Instrumented auxiliary images are not render-result guides");
+    auto result=std::make_shared<RenderResult>();result->size={render_width,render_height};
+    result->samples=frameCounter;result->version=stats.accumulationVersion;
+    auto actualDocument=m_scene.document;actualDocument.captureCamera(m_scene.camera);
+    result->settings={{"camera",actualDocument.root["camera"]},{"environment",m_scene.document.root["environment"]},
+        {"hdr",m_scene.document.root["hdr"]},{"width",render_width},{"height",render_height},{"targetSamples",snapshot.maxRenderFrames},
+        {"useEnvironmentMap",snapshot.useEnvironmentMap},{"tileSize",snapshot.tileSize},{"tiled",snapshot.useTileRendering},
+        {"algorithmVersion","render-quality-v1"},{"oidnGuidePolicy",stats.oidnGuidePolicy},
+        {"oidnProtectedPixels",double(stats.oidnProtectedPixels)},{"sampleSeed",double(snapshot.sampleSeed)},{"rrMinDepth",snapshot.rrMinDepth},
+        {"maxBounces",snapshot.maxBounces},{"antialiasing",snapshot.antialiasing},
+        {"denoiseMode",denoiseModeName(snapshot.effectiveDenoiseMode())},
+        {"exposure",m_scene.document.root["display"].toObject()["exposure"]},{"tonemap",m_scene.document.root["display"].toObject()["tonemap"]},
+        {"sceneName",m_scene.document.root["name"]},{"backend",stats.pathtraceBackend}};
+    const size_t pixels=size_t(render_width)*render_height;
+    std::vector<float> raw(pixels*4),normal(raw.size()),base(raw.size());
+    glBindBuffer(GL_PIXEL_PACK_BUFFER,0);
+    auto read=[&](GLuint texture,std::vector<float> &data){glBindTexture(GL_TEXTURE_2D,texture);glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA,GL_FLOAT,data.data());};
+    read(preRenderColorTex,raw);read(previousNormalTex,normal);read(previousAlbedoTex,base);
+    result->beauty.resize(pixels*3);result->normal.resize(pixels*3);result->albedo.resize(pixels*3);
+    result->variance.resize(pixels);result->sampleCount.resize(pixels);
+    std::vector<float> filtered;
+    if(m_hasDenoisedFrame && stats.denoisedVersion==stats.accumulationVersion && m_lastDenoisedFrameCounter==frameCounter) {
+        filtered.resize(raw.size());GLuint texture=snapshot.effectiveDenoiseMode()==DenoiseMode::Realtime?gpuDenoiser.output():RenderColorTexfiltered;
+        read(texture,filtered);result->denoised.resize(pixels*3);
+    }
+    for(int y=0;y<render_height;++y)for(int x=0;x<render_width;++x) {
+        const size_t source=size_t(y)*render_width+x,dest=size_t(render_height-1-y)*render_width+x;
+        for(int c=0;c<3;++c) {
+            result->beauty[dest*3+c]=raw[source*4+c];
+            result->normal[dest*3+c]=normal[source*4+c]*2-1;
+            result->albedo[dest*3+c]=base[source*4+c];
+            if(!filtered.empty())result->denoised[dest*3+c]=filtered[source*4+c];
+        }
+        const double count=normal[source*4+3];
+        const double luminance=raw[source*4]*.212671+raw[source*4+1]*.715160+raw[source*4+2]*.072169;
+        result->sampleCount[dest]=float(count);
+        result->variance[dest]=count>1?float(std::max(0.,double(raw[source*4+3])-luminance*luminance)*count/(count-1)):0;
+    }
+    if(includeDepth) {
+        updatePick(render_width,render_height,stats.accumulationVersion);
+        std::vector<float> depth(pixels);glBindTexture(GL_TEXTURE_2D,pickTextures[1]);glGetTexImage(GL_TEXTURE_2D,0,GL_RED,GL_FLOAT,depth.data());
+        result->depth.resize(pixels);
+        for(int y=0;y<render_height;++y)for(int x=0;x<render_width;++x)
+            result->depth[size_t(render_height-1-y)*render_width+x]=depth[size_t(y)*render_width+x];
+    }
+    if(glGetError()!=GL_NO_ERROR)throw std::runtime_error("Linear render result readback failed");
+    return result;
 }

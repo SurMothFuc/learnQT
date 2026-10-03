@@ -64,5 +64,8 @@ bool IntersectTriangle(TriangleRay ray, vec3 a, vec3 b, vec3 c,
     float deltaE=2.0*(FloatGamma(2.0)*maxX*maxY+deltaY*maxX+deltaX*maxY);
     float maxE=maxComponent(abs(edges));
     float deltaT=3.0*(FloatGamma(3.0)*maxE*maxZ+deltaE*maxZ+deltaZ*maxE)/abs(determinant);
-    return distance > deltaT;
+    // A robustly offset ray inside a named closed boundary may immediately
+    // exit an adjacent face at a corner. Discarding that positive hit loses
+    // the boundary identity. The conservative t bound remains the default.
+    return distance > (allowNearBoundaryHit?0.0:deltaT);
 }

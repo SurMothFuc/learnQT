@@ -7,6 +7,7 @@
 #include <QDoubleSpinBox>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsView>
+#include "RenderResult.h"
 #include <QLabel>
 #include <QPixmap>
 #include <QPushButton>
@@ -116,6 +117,15 @@ class ResultView : public QGraphicsView
   public:
     explicit ResultView(QWidget *parent = nullptr);
     void setImage(const QImage &image);
+    void setResult(RenderResultPtr result);
+    void refreshLinearDisplay();
+    RenderResultPtr linear;
+    float resultExposure=0;
+    int resultTonemap=1;
+    bool useDenoised=true;
+    QString channel="beauty";
+    struct DisplayState { float exposure;int tonemap;bool denoised;QString channel; };
+    std::map<std::weak_ptr<const RenderResult>,DisplayState,std::owner_less<std::weak_ptr<const RenderResult>>> displayStates;
     void fit();
     void actualSize();
     QImage image;

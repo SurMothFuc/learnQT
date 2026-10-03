@@ -9,6 +9,7 @@ uniform samplerBuffer transforms;
 uniform mat4 previousView;
 uniform float previousFov;
 uniform bool historyValid, moving;
+uniform bool rejectStaleMotion;
 float luminance(vec3 c) { return dot(c, vec3(.2126,.7152,.0722)); }
 void main()
 {
@@ -78,7 +79,15 @@ void main()
         }
         mean/=max(count,1); vec3 deviation=sqrt(max(square/max(count,1)-mean*mean,vec3(0)));
         // Static lighting needs no clipping: clipping stationary MC noise introduces bias.
-        if(moving) historyColor=clamp(historyColor,mean-3.0*deviation,mean+3.0*deviation);
+        if(moving) {
+            vec3 low=mean-3.0*deviation,high=mean+3.0*deviation;
+            bool stale=any(lessThan(historyColor,low)) || any(greaterThan(historyColor,high));
+            if(rejectStaleMotion && stale && count>=5.0 && historyMoments.z>=4.0) {
+                // A clipped stale sample still has influence for many frames.
+                // Reject confident radiance disocclusions during motion instead.
+                accepted=false;historyColor=current;historyMoments=vec3(moments,0.0);
+            }else historyColor=clamp(historyColor,low,high);
+        }
         lengthHistory=min(historyMoments.z+1.0,kind>=2 ? 4.0 : 32.0);
         float alpha=1.0/lengthHistory;
         result=mix(historyColor,current,alpha); moments=mix(historyMoments.xy,moments,alpha);

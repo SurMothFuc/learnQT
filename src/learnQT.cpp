@@ -242,6 +242,18 @@ void learnQT::setupWorkbench()
     resultTools->addAction(tr("适应窗口"), resultView, &ResultView::fit);
     resultTools->addAction(tr("1:1"), resultView, &ResultView::actualSize);
     resultTools->addAction(tr("导出图片…"), this, &learnQT::saveGLImage);
+    auto resultExposure=new QDoubleSpinBox;resultExposure->setObjectName("resultExposure");
+    resultExposure->setRange(-24,24);resultExposure->setDecimals(2);resultExposure->setPrefix(tr("曝光 "));
+    resultExposure->setEnabled(false);resultTools->addWidget(resultExposure);
+    auto resultTonemap=new QComboBox;resultTonemap->setObjectName("resultTonemap");resultTonemap->addItems({tr("旧曲线"),tr("ACES 近似"),tr("线性裁切")});resultTonemap->setEnabled(false);resultTools->addWidget(resultTonemap);
+    connect(resultTonemap,qOverload<int>(&QComboBox::currentIndexChanged),this,[this](int value){resultView->resultTonemap=value;resultView->refreshLinearDisplay();});
+    connect(resultExposure,qOverload<double>(&QDoubleSpinBox::valueChanged),this,[this](double value){resultView->resultExposure=float(value);resultView->refreshLinearDisplay();});
+    auto resultChannel=new QComboBox;resultChannel->setObjectName("resultChannel");
+    for(const auto &pair:QVector<QPair<QString,QString>>{{tr("图像"),"beauty"},{tr("法线"),"normal"},{tr("反照率"),"albedo"},{tr("深度"),"depth"},{tr("方差"),"variance"},{tr("有效采样"),"sampleCount"}})resultChannel->addItem(pair.first,pair.second);
+    resultChannel->setEnabled(false);resultTools->addWidget(resultChannel);
+    connect(resultChannel,qOverload<int>(&QComboBox::currentIndexChanged),this,[this,resultChannel](int index){resultView->channel=resultChannel->itemData(index).toString();resultView->refreshLinearDisplay();});
+    auto resultDenoised=new QCheckBox(tr("降噪"));resultDenoised->setChecked(true);resultDenoised->setObjectName("resultDenoised");resultDenoised->setEnabled(false);resultTools->addWidget(resultDenoised);
+    connect(resultDenoised,&QCheckBox::toggled,this,[this](bool value){resultView->useDenoised=value;resultView->refreshLinearDisplay();});
     resultLayout->addWidget(resultTools);
     resultLayout->addWidget(resultView);
     views->addTab(results, tr("渲染结果"));
@@ -873,6 +885,9 @@ void learnQT::connectRenderThread()
                     taskLabel->setText(tr("任务 %1 · %2").arg(id).arg(renderJobText(state)));
                     refreshRenderQueue();
                 });
+        connect(m_queueWorker,&RenderQueueThread::jobLinearResult,this,[this](quint64 id,RenderResultPtr result){
+            for(auto &item:m_renderQueue)if(item.request.id==id)item.linear=std::move(result);
+        });
         connect(m_queueWorker, &RenderQueueThread::jobProgress, this,
                 [this](quint64 id, int samples, int target, double seconds, QImage image) {
                     for (auto &item : m_renderQueue)
@@ -885,7 +900,7 @@ void learnQT::connectRenderThread()
                                 item.result = image;
                                 if (workspace->page == int(WorkspacePage::Render) &&
                                     !m_renderPreviewMode && m_viewedTaskId == id)
-                                    resultView->setImage(image);
+                                    if(item.linear)resultView->setResult(item.linear);else resultView->setImage(image);
                             }
                             break;
                         }
@@ -903,7 +918,7 @@ void learnQT::connectRenderThread()
                             {
                                 item.result = image;
                                 if (m_viewedTaskId == id)
-                                    resultView->setImage(image);
+                                    if(item.linear)resultView->setResult(item.linear);else resultView->setImage(image);
                             }
                             item.samples = rendered ? item.request.settings.samples : item.samples;
                             item.error = error;
@@ -973,6 +988,7 @@ void learnQT::connectRenderThread()
             progress->setValue(int(100. * workspace->taskSamples / workspace->taskTarget));
         }
     });
+    connect(thread,&RenderThread::linearResultReady,this,[this](RenderResultPtr result){resultView->setResult(std::move(result));});
     connect(thread, &RenderThread::resultReady, this, [this](QImage im, bool final) {
         if (im.isNull())
             return;
@@ -1279,11 +1295,17 @@ void learnQT::saveGLImage()
     }
     QString selectedFilter;
     auto path = QFileDialog::getSaveFileName(this, tr("导出渲染结果"), QString(),
-                                             tr("PNG (*.png);;JPEG (*.jpg *.jpeg)"), &selectedFilter);
+                                             tr("PNG (*.png);;JPEG (*.jpg *.jpeg);;OpenEXR FLOAT (*.exr);;OpenEXR HALF (*.exr)"), &selectedFilter);
     if (path.isEmpty())
         return;
     if (QFileInfo(path).suffix().isEmpty())
-        path += selectedFilter.startsWith("JPEG") ? ".jpg" : ".png";
+        path += selectedFilter.startsWith("OpenEXR")?".exr":selectedFilter.startsWith("JPEG") ? ".jpg" : ".png";
+    if(QFileInfo(path).suffix().compare("exr",Qt::CaseInsensitive)==0) {
+        QString error;
+        if(!resultView->linear || !resultView->linear->writeExr(path,selectedFilter.contains("HALF"),error))
+            QMessageBox::critical(this,tr("导出失败"),error.isEmpty()?tr("此结果没有线性数据，请重新渲染。"):error);
+        return;
+    }
     QImageWriter writer(path);
     writer.setQuality(95);
     if (!writer.write(image.convertToFormat(QImage::Format_RGB32)))

@@ -130,6 +130,7 @@ void GpuDenoiser::filter(GLuint vao, const Scene &scene, GLuint accumulated, uns
         bind(p,"accumulatedNormal",14,accumulatedNormal);
         p.setUniformValue("hasAccumulation",accumulated!=0 && accumulatedAlbedo!=0 && accumulatedNormal!=0);
         p.setUniformValue("historyValid", history); p.setUniformValue("moving", moving);
+        p.setUniformValue("rejectStaleMotion",!qEnvironmentVariableIsSet("LEARNQT_LEGACY_MOTION_FILTER"));
         draw(p, temporalFbos[write], vao);
         if (!queryPending)
         {

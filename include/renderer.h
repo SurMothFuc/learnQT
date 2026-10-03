@@ -26,6 +26,8 @@
 #include "SceneDirty.h"
 #include "RasterEnvironment.h"
 #include "GpuDenoiser.h"
+#include "PathDiagnosticCapture.h"
+#include "RenderResult.h"
 #include <atomic>
 
 class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
@@ -76,6 +78,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     RenderStats stats;
     std::function<void()> denoising;
     QImage result(const RenderParams::Snapshot &snapshot);
+    RenderResultPtr linearResult(const RenderParams::Snapshot &snapshot,bool includeDepth=true);
     void finishDenoise(const RenderParams::Snapshot &snapshot);
     void prepareJob(QSize size, const RenderParams::Snapshot &snapshot, SceneDirtyFlags dirty = 0);
     // Wait for the preceding tile/frame with a 1 ms timeout so the caller can recheck shutdown.
@@ -85,6 +88,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     quint64 allocatedBytes() const;
     // Explicit diagnostic readback at a completed GPU boundary; never used every frame.
     QJsonObject pathDiagnostics();
+    QImage diagnosticImage() const { return diagnosticCapture.image(); }
     QJsonObject traceProfile();
     QJsonObject textureResources() const { return textureResourceReport; }
     // 返回本次调用是否真的重绘了拾取缓冲；只有版本或尺寸变化才会重绘。
@@ -287,7 +291,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     GLuint lightsTextureBuffer = 0;
     GLuint materialTextureArray = 0;
     std::array<GLuint,3> materialTextureExtraArrays{};
-    int materialTexturePoolCapacity=2,surfacePdfOffset=0;
+    int materialTexturePoolCapacity=2,surfacePdfOffset=0,mediumContactOffset=0,mediumContactCount=0;
     QJsonObject textureResourceReport;
     GLuint materialTextureInfoBuffer = 0;
     GLuint materialTextureInfoTexture = 0;
@@ -386,6 +390,8 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     std::unique_ptr<QOpenGLShaderProgram> pickProgram;
     unsigned int m_lastDenoisedFrameCounter = 0;
     GpuDenoiser gpuDenoiser;
+    PathDiagnosticCapture diagnosticCapture;
+    void collectPathDiagnostics();
     bool realtimeFailed = false, realtimeAttached = false, realtimeNeedsGuides = false;
     unsigned previewSequence = 0;
 };

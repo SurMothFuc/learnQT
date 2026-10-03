@@ -2,6 +2,7 @@ struct OutputColor{
     vec3 render_color;
     vec3 normal_color;
     vec3 base_color;
+    bool oidnReliable,oidnConfidence;
 #ifdef DENOISE_GUIDES
     vec4 guidePosition, guideNormal, guideAlbedo, guideMaterial;
 #endif

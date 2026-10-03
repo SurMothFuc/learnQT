@@ -96,7 +96,7 @@ void learnQT::addRenderTask()
         }
     item.cameraName = m_renderCameraChoice ? m_renderCameraChoice->currentText() : tr("相机");
     item.name = tr("任务 %1 · %2").arg(item.request.id).arg(item.cameraName);
-    item.format = m_renderFormat && m_renderFormat->currentIndex() == 1 ? "jpg" : "png";
+    item.format = m_renderFormat && m_renderFormat->currentIndex()==2?"exr":m_renderFormat && m_renderFormat->currentIndex() == 1 ? "jpg" : "png";
     m_renderQueue.append(std::move(item));
     refreshRenderQueue();
     if (workspace && workspace->task)
@@ -258,7 +258,7 @@ void learnQT::showRenderTaskResult()
         return;
     m_viewedTaskId = m_renderQueue[row].request.id;
     m_resultBrowsingPinned = true;
-    resultView->setImage(m_renderQueue[row].result);
+    if(m_renderQueue[row].linear)resultView->setResult(m_renderQueue[row].linear);else resultView->setImage(m_renderQueue[row].result);
     setRenderPreviewMode(false);
 }
 
@@ -271,7 +271,7 @@ void learnQT::setRenderPreviewMode(bool preview)
     if (!preview && m_viewedTaskId)
         for (const auto &item : m_renderQueue)
             if (item.request.id == m_viewedTaskId) {
-                resultView->setImage(item.result);
+                if(item.linear)resultView->setResult(item.linear);else resultView->setImage(item.result);
                 break;
             }
     if (workspace && workspace->page == int(WorkspacePage::Render)) {

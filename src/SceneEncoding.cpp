@@ -194,7 +194,8 @@ void Scene::encodeInstances()
         for (int c = 0; c < 4; ++c)
             instanceData.push_back(obj.inverse.column(c));
         instanceData.emplace_back(obj.material, obj.nodeRoot, obj.surfaceOffset - obj.triangleOffset,
-                                  obj.visible ? 1 : 0);
+                                  obj.visible ? ((materials[obj.material].alphaMode!=Mask && materials[obj.material].alphaMode!=Blend) && (materials[obj.material].mediumtype!=None || materials[obj.material].transmission>0) &&
+                                      meshes[obj.mesh]->closedBoundary()?2:1) : 0);
     }
     tlasData.resize(tlas.size());
     for (int i = 0; i < int(tlas.size()); ++i)

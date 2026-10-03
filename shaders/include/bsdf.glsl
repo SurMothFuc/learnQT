@@ -290,7 +290,7 @@ vec3 EvalClearcoat(float clearcoatRoughness, vec3 V, vec3 L, vec3 H, out float p
     float jacobian = 1.0 / (4.0 * VDotH);
 
     pdf = D * H.z * jacobian;
-    return vec3(F) * D * G;
+    return vec3(F) * D * G / (correctClearcoat?max(4.0*L.z*V.z,1e-20):1.0);
 }
 vec3 SampleHG(vec3 V, float g, float r1, float r2)
 {
@@ -422,6 +422,14 @@ vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float
         }
     }
 
+    // Thin-coat attenuation is a reciprocal single-pass layer approximation;
+    // multiple scattering between layers is not represented.
+    if(correctClearcoat && material.clearcoat>0.0) {
+        float strength=.25*material.clearcoat;
+        float fv=mix(.04,1.0,SchlickFresnel(abs(V.z)));
+        float fl=mix(.04,1.0,SchlickFresnel(abs(L.z)));
+        f*=(1.0-strength*fv)*(1.0-strength*fl);
+    }
     // Clearcoat
     if (clearCtPr > 0.0 && reflect && material.clearcoatGloss > 0.0)
     {
@@ -483,6 +491,10 @@ BsdfSample SampleDisneyBSDF(vec3 V, vec3 N, Material m, float eta, vec3 xi) {
         if (m.roughness <= 0.0 || abs(eta-1.0)<1e-6) {
             mass += glass*F;
             value += vec3(glass*F);
+        }
+        if(correctClearcoat && m.clearcoat>0.0) {
+            float attenuation=1.0-.25*m.clearcoat*mix(.04,1.0,schlick);
+            value*=attenuation*attenuation;
         }
         if (m.clearcoatGloss <= 0.0) {
             mass += pc;

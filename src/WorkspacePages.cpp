@@ -375,7 +375,7 @@ void learnQT::setupWorkspace()
     auto formatRow = new QHBoxLayout;
     formatRow->addWidget(new QLabel("自动导出格式"));
     m_renderFormat = new QComboBox;
-    m_renderFormat->addItems({"PNG", "JPEG"});
+    m_renderFormat->addItems({"PNG", "JPEG", "OpenEXR FLOAT"});
     formatRow->addWidget(m_renderFormat, 1);
     renderLayout->addLayout(formatRow);
     auto submit = new QToolButton;

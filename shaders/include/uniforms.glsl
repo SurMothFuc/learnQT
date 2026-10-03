@@ -48,3 +48,13 @@ uniform bool shadowAnyHit,shadowBinaryScene;
 uniform sampler2D preRenderColor;
 
 uniform float cameraFov;
+
+uniform bool useBoundaryMedia;
+uniform int initialMediumCount;
+uniform vec4 initialMediumProperties[8],initialMediumColors[8],initialMediumIdentity[8];
+
+uniform bool correctClearcoat;
+
+uniform bool legacyOidnGuides;
+
+uniform int mediumContactOffset,mediumContactCount;

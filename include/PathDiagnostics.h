@@ -16,7 +16,7 @@ inline QJsonObject summarizePathDiagnostics(const std::vector<float> &normal,
   if (width <= 0 || normal.size() != albedo.size() ||
       normal.size() % (size_t(width) * 4) != 0)
     throw std::invalid_argument("Mismatched diagnostic image dimensions");
-  quint64 valid = 0, affected[6] = {};
+  quint64 valid = 0, affected[7] = {};
   int first = -1;
   unsigned firstFlags = 0;
   const size_t pixels = normal.size() / 4;
@@ -26,7 +26,7 @@ inline QJsonObject summarizePathDiagnostics(const std::vector<float> &normal,
       valid += quint64(count);
     const unsigned flags =
         std::isfinite(encoded) && encoded >= 0 ? unsigned(encoded) >> 8 : 1u;
-    for (int bit = 0; bit < 6; ++bit)
+    for (int bit = 0; bit < 7; ++bit)
       if (flags & (1u << bit))
         ++affected[bit];
     if (flags && first < 0) {
@@ -45,8 +45,8 @@ inline QJsonObject summarizePathDiagnostics(const std::vector<float> &normal,
       {"countMeaning", "affected pixels accumulated since reset; "
                        "rejectedSamples counts sample events"}};
   const char *names[] = {"nonFinite",   "rejected",       "invalidRay",
-                         "bvhOverflow", "mediumOverflow", "boundaryLimit"};
-  for (int i = 0; i < 6; ++i)
+                         "bvhOverflow", "mediumOverflow", "boundaryLimit", "boundaryMismatch"};
+  for (int i = 0; i < 7; ++i)
     result[names[i]] = double(affected[i]);
   result["firstAffectedPixel"] =
       first < 0 ? QJsonArray() : QJsonArray{first % width, first / width};

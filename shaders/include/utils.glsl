@@ -4,7 +4,30 @@
 // Per-sample flags. Stored in the albedo auxiliary alpha, separate from path classes.
 const uint DIAG_NONFINITE=1u, DIAG_REJECTED=2u, DIAG_INVALID_RAY=4u;
 const uint DIAG_BVH_OVERFLOW=8u, DIAG_MEDIUM_OVERFLOW=16u, DIAG_BOUNDARY_LIMIT=32u;
+const uint DIAG_BOUNDARY_MISMATCH=64u;
 uint pathDiagnosticFlags=0u;
+#ifdef TRACE_DIAGNOSTICS
+vec4 diagnosticCounts0=vec4(0),diagnosticCounts1=vec4(0);
+vec4 diagnosticOrigin=vec4(0),diagnosticDirection=vec4(0),diagnosticThroughput=vec4(0);
+vec3 diagnosticRayOrigin=vec3(0),diagnosticRayDirection=vec3(0),diagnosticWeight=vec3(1);
+int diagnosticDepth=0,diagnosticMediumCount=0,diagnosticSurface=-1,diagnosticStage=0;
+float diagnosticEta=1.0,diagnosticEtaScale=1.0;
+#endif
+void RaisePathDiagnostic(uint flags) {
+    pathDiagnosticFlags|=flags;
+#ifdef TRACE_DIAGNOSTICS
+    for(int c=0;c<7;++c)if((flags&(1u<<uint(c)))!=0u) {
+        if(c<4)diagnosticCounts0[c]+=1.0;else diagnosticCounts1[c-4]+=1.0;
+    }
+    if(diagnosticCounts1.w==0.0) {
+        uint meta=flags|(uint(diagnosticMediumCount)<<8)|(uint(diagnosticDepth)<<12)|(uint(diagnosticStage)<<19);
+        diagnosticCounts1.w=float(meta);
+        diagnosticOrigin=vec4(diagnosticRayOrigin,float(diagnosticSurface));
+        diagnosticDirection=vec4(diagnosticRayDirection,diagnosticEta);
+        diagnosticThroughput=vec4(diagnosticWeight,diagnosticEtaScale);
+    }
+#endif
+}
 #ifdef TRACE_TRAVERSAL_PROFILE
 uint traversalNodeVisits=0u,traversalTriangleTests=0u,traversalEarlyExits=0u;
 #endif
@@ -14,17 +37,18 @@ uint profileScatters=0u,profileTextureFetches=0u,profileLightAttempts=0u,profile
 bool ValidTraceSample(vec4 beauty,vec4 normal,vec4 albedo) {
     bool valid=!any(isnan(beauty))&&!any(isinf(beauty)) &&
         !any(isnan(normal))&&!any(isinf(normal))&&!any(isnan(albedo))&&!any(isinf(albedo));
-    if(!valid)pathDiagnosticFlags|=DIAG_NONFINITE|DIAG_REJECTED;
+    if(!valid)RaisePathDiagnostic(DIAG_NONFINITE|DIAG_REJECTED);
     return valid;
 }
 float rayConeWidth=0.0,rayConeSpread=0.0;
+bool allowNearBoundaryHit=false;
 vec2 materialEvaluationFootprint=vec2(0);
 bool FiniteRay(vec3 origin,vec3 direction) {
     bool finite=!any(isnan(origin)) && !any(isinf(origin)) &&
         !any(isnan(direction)) && !any(isinf(direction));
-    if(!finite) pathDiagnosticFlags|=DIAG_NONFINITE;
+    if(!finite) RaisePathDiagnostic(DIAG_NONFINITE);
     bool valid=finite && any(notEqual(direction,vec3(0)));
-    if(!valid) pathDiagnosticFlags|=DIAG_INVALID_RAY;
+    if(!valid) RaisePathDiagnostic(DIAG_INVALID_RAY);
     return valid;
 }
 // 返回 vec3 中最大的分量（r/g/b 中的最大值）

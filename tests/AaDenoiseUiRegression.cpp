@@ -1,4 +1,5 @@
 #include "learnQT.h"
+#include "WorkspaceUi.h"
 #include <QApplication>
 #include <QElapsedTimer>
 #include <QJsonDocument>
@@ -19,7 +20,7 @@ void learnQT::configureAaDenoiseRegression()
     struct State {
         QElapsedTimer clock,phaseClock; int phase=0,fresh=0,startFresh=0,undoIndex=0;
         RenderStats stats; QPoint start,last; QString object; QMatrix4x4 original;
-        QJsonArray observations; int cameraFrames=0,objectFrames=0; double acceptance=0;
+        QJsonArray observations; int cameraFrames=0,objectFrames=0,cameraMotionMs=0,objectMotionMs=0; double acceptance=0;
     };
     auto state=std::make_shared<State>();state->clock.start();state->phaseClock.start();
     connect(viewport,&GLWidget::freshFramePresented,this,[state]{++state->fresh;});
@@ -39,6 +40,7 @@ void learnQT::configureAaDenoiseRegression()
             QFile f(output+"/report.json");f.open(QIODevice::WriteOnly);
             f.write(QJsonDocument(QJsonObject{{"error",error},{"cameraFreshFrames",state->cameraFrames},
                 {"objectFreshFrames",state->objectFrames},{"maxMotionAcceptance",state->acceptance},
+                {"cameraMotionMs",state->cameraMotionMs},{"objectMotionMs",state->objectMotionMs},
                 {"dpi",viewport->devicePixelRatioF()},{"width",viewport->width()},{"height",viewport->height()},
                 {"observations",state->observations}}).toJson());
             std::cout<<"AA/denoise UI: "<<error.toStdString()<<std::endl;
@@ -91,12 +93,15 @@ void learnQT::configureAaDenoiseRegression()
             const int elapsed=int(state->phaseClock.elapsed());
             const QPoint point=state->start+QPoint(qRound(12*std::sin(elapsed*.004)),camera?qRound(5*std::sin(elapsed*.003)):0);
             mouse(QEvent::MouseMove,point,camera?Qt::AltModifier:Qt::NoModifier);
-            if(elapsed<2500)return;
-            mouse(QEvent::MouseButtonRelease,state->last,camera?Qt::AltModifier:Qt::NoModifier);
+            // Keep sending input while the first motion variant becomes ready.
+            // This is a liveness check, not a first-frame latency guarantee.
             const int frames=state->fresh-state->startFresh;
+            if(elapsed<2500 || (frames<3 && elapsed<10000))return;
+            mouse(QEvent::MouseButtonRelease,state->last,camera?Qt::AltModifier:Qt::NoModifier);
             if(frames<3){finish("Continuous input starved complete images");return;}
-            if(camera)state->cameraFrames=frames;else{
+            if(camera){state->cameraFrames=frames;state->cameraMotionMs=elapsed;}else{
                 state->objectFrames=frames;
+                state->objectMotionMs=elapsed;
                 if(editor->undo.index()!=state->undoIndex+1 || sceneMatrix(editor->node(state->object)["transform"])==state->original){
                     finish("Object drag did not produce one undoable transform");return;}
             }
@@ -149,8 +154,8 @@ void learnQT::configureAaDenoiseRegression()
             outputWidth->setValue(320);outputHeight->setValue(240);outputSamples->setValue(4);outputBounces->setValue(4);
             outputDenoise->setCurrentIndex(1);outputAntialiasing->setChecked(true);refreshRenderCameras();
             outputDenoise->parentWidget()->grab().save(output+"/output-settings-before.png");
-            m_renderFormat->setCurrentIndex(0);addRenderTask();m_renderFormat->setCurrentIndex(1);addRenderTask();
-            if(m_renderQueue.size()!=2){finish("Queue capture failed");return;}
+            m_renderFormat->setCurrentIndex(0);addRenderTask();m_renderFormat->setCurrentIndex(1);addRenderTask();m_renderFormat->setCurrentIndex(2);addRenderTask();
+            if(m_renderQueue.size()!=3){finish("Queue capture failed");return;}
             outputDenoise->setCurrentIndex(2);outputAntialiasing->click();
             outputDenoise->parentWidget()->grab().save(output+"/output-settings-after.png");
             for(const auto &item:m_renderQueue)if(!item.request.settings.antialiasing || item.request.settings.effectiveDenoiseMode()!=DenoiseMode::Realtime){finish("Queue settings were not frozen");return;}
@@ -158,8 +163,25 @@ void learnQT::configureAaDenoiseRegression()
             preferences.setValue("workspaceV4/autoExportPath",output);runRenderQueue();next();
         }else if(state->phase==12){
             if(m_queueRunning || m_activeQueueId)return;
-            for(const auto &item:m_renderQueue)if(!item.error.isEmpty() || item.samples!=4 || QImage(item.request.outputPath).size()!=QSize(320,240)){
+            for(const auto &item:m_renderQueue)if(!item.error.isEmpty() || item.samples!=4 || !item.linear || !item.linear->valid() ||
+                (item.format!="exr" && QImage(item.request.outputPath).size()!=QSize(320,240))){
                 finish("Realtime PNG/JPEG task failed: "+item.error);return;}
+            workspace->task->selectRow(2);showRenderTaskResult();
+            if(!resultView->linear){finish("Historical task lost linear film");return;}
+            const auto linear=resultView->linear;const auto raw=linear->beauty;const auto before=resultView->image;
+            auto exposure=findChild<QDoubleSpinBox*>("resultExposure");auto channel=findChild<QComboBox*>("resultChannel");
+            if(!exposure || !channel){finish("Result controls missing");return;}
+            before.save(output+"/film-before.png");exposure->setValue(-2);
+            if(resultView->image==before || resultView->linear->beauty!=raw || m_renderQueue[2].samples!=4){finish("Reexposure changed sampling or failed display");return;}
+            resultView->image.save(output+"/film-after.png");channel->setCurrentIndex(3);
+            resultView->image.save(output+"/depth-aov.png");
+            if(resultView->image.isNull() || resultView->linear!=linear){finish("AOV viewing lost linear result");return;}
+            channel->setCurrentIndex(0);
+            workspace->task->selectRow(0);showRenderTaskResult();workspace->task->selectRow(2);showRenderTaskResult();
+            if(exposure->value()!=-2 || resultView->linear!=linear){finish("Historical display settings were lost");return;}
+            auto tone=findChild<QComboBox*>("resultTonemap");if(!tone || !tone->isEnabled()){finish("Historical tone control missing");return;}
+            tone->setCurrentIndex(2);if(resultView->resultTonemap!=2 || resultView->linear->beauty!=raw){finish("Tone control changed film or failed");return;}
+            grab().save(output+"/result-controls.png");
             finish({});
         }
     });timer->start();

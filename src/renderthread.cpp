@@ -12,6 +12,7 @@ RenderThread::RenderThread(QSurface *s, QOpenGLContext *shared, QObject *p) : QT
     context->create();
     context->moveToThread(this);
     qRegisterMetaType<RenderStats>();
+    qRegisterMetaType<RenderResultPtr>();
     qRegisterMetaType<RenderJobState>();
 }
 RenderThread::~RenderThread()
@@ -543,6 +544,7 @@ void RenderThread::run()
                         {
                             renderer.finishDenoise(snapshot);
                             emit resultReady(renderer.result(snapshot), !m_cancel.load());
+                            if(!m_cancel.load())emit linearResultReady(renderer.linearResult(snapshot));
                             setState(m_cancel ? RenderJobState::Stopped : RenderJobState::Completed);
                             jobSeconds = jobClock.elapsed() / 1000.;
                             job = false;

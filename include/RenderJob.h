@@ -88,6 +88,8 @@ struct RenderStats
     quint64 allocatedBytes = 0, geometryUploadBytes = 0;
     quint64 version = 0, accumulationVersion = 0, denoisedVersion = 0;
     double normalMinimum = 0, normalMaximum = 0;
+    quint64 oidnProtectedPixels=0;
+    QString oidnGuidePolicy;
     QSize auxiliarySize;
     int blasBuilds = 0, samples = 0, target = 0;
     bool tiled = false;

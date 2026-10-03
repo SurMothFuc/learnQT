@@ -39,7 +39,8 @@ Material ShadowMaterial(int surface)
     int instance = int(texelFetch(surfaceTable, surface).y);
     int address = int(texelFetch(instanceTable, instance * 9 + 8).x) * 10;
     vec4 medium = texelFetch(materialTable, address + 2), params = texelFetch(materialTable, address + 4);
-    m.alphaMode = int(texelFetch(materialTable, address + 3).w);
+    vec4 surfaceParams=texelFetch(materialTable,address+3);
+    m.alphaMode=int(surfaceParams.w);m.IOR=surfaceParams.y;m.transmission=surfaceParams.z;
     m.mediumColor = medium.xyz;
     m.mediumAnisotropy = clamp(medium.w, -.9, .9);
     m.mediumtype = int(params.x);
@@ -161,7 +162,7 @@ HitResult hitBVH(Ray ray, bool shadowOnly,float distanceLimit,bool anyHit,int ex
                     stack[sp++] = top.right;
                 }
             }
-            else pathDiagnosticFlags|=DIAG_BVH_OVERFLOW;
+            else RaisePathDiagnostic(DIAG_BVH_OVERFLOW);
             continue;
         }
         int instance = top.index;
@@ -241,7 +242,7 @@ HitResult hitBVH(Ray ray, bool shadowOnly,float distanceLimit,bool anyHit,int ex
                         bs[bp++] = n.right;
                     }
                 }
-                else pathDiagnosticFlags|=DIAG_BVH_OVERFLOW;
+                else RaisePathDiagnostic(DIAG_BVH_OVERFLOW);
                 continue;
             }
             for (int i = n.index; i < n.index + n.n; ++i)

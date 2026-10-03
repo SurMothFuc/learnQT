@@ -60,6 +60,7 @@ class Audit : public QOpenGLFunctions_3_3_Core
     bool unifiedSampler=false;
     unsigned samplerSeedValue=0;
     bool etaScaleRR=false;
+    bool boundaryMedia=false,correctCoat=false;
     int rrDepth=3;
     bool powerGroups=false;
     float groupProbability=.5f;
@@ -187,6 +188,8 @@ class Audit : public QOpenGLFunctions_3_3_Core
         program.setUniformValue("height", resolution);
         glUniform1ui(program.uniformLocation("frameCounter"), sampleIndex);
         program.setUniformValue("useEtaScaleRR",etaScaleRR);
+        program.setUniformValue("useBoundaryMedia",boundaryMedia);
+        program.setUniformValue("correctClearcoat",correctCoat);
         program.setUniformValue("rrMinDepth",rrDepth);
         program.setUniformValue("usePowerLightGroups",powerGroups);
         program.setUniformValue("environmentSelectProbability",groupProbability);

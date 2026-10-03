@@ -16,6 +16,9 @@ class PreviewDenoiser
         quint64 version = 0;
         unsigned samples = 0;
         std::vector<float> normal, albedo, color;
+        bool useAuxiliary=true,confidence=true;
+        std::vector<float> secondMoment,sampleCounts;
+        std::vector<unsigned char> confidenceEligible;
     };
     struct Result
     {
@@ -25,6 +28,7 @@ class PreviewDenoiser
         double milliseconds = 0, normalMinimum = 1, normalMaximum = -1;
         std::vector<float> color;
         QString error;
+        quint64 protectedPixels=0;bool usedAuxiliary=true;
     };
     ~PreviewDenoiser();
     bool busy() const

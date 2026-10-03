@@ -6,6 +6,8 @@
 #include <functional>
 #include <limits>
 #include <numeric>
+#include <map>
+#include <array>
 #include <stdexcept>
 
 namespace
@@ -97,6 +99,7 @@ int bvhMaximumDepth(const std::vector<BVHNode> &nodes)
 
 void MeshGeometry::build()
 {
+    boundaryStatus=-1;
     QElapsedTimer timer;
     timer.start();
     bounds = {};
@@ -320,4 +323,30 @@ SceneHit intersectScene(const std::vector<std::shared_ptr<const MeshGeometry>> &
         }
     }
     return hit;
+}
+
+bool MeshGeometry::closedBoundary() const {
+    std::lock_guard<std::mutex> lock(boundaryMutex);
+    if(boundaryStatus>=0)return boundaryStatus!=0;
+    using Point=std::array<float,3>;
+    std::map<std::pair<Point,Point>,std::pair<int,int>> edges;
+    double volume=0;const auto center=bounds.center();
+    for(const auto &t:triangles) {
+        const QVector3D vertices[]={t.p1,t.p2,t.p3};
+        const auto a=t.p1-center,b=t.p2-center,c=t.p3-center;
+        volume+=double(a.x())*(double(b.y())*c.z()-double(b.z())*c.y())+
+            double(a.y())*(double(b.z())*c.x()-double(b.x())*c.z())+
+            double(a.z())*(double(b.x())*c.y()-double(b.y())*c.x());
+        for(int i=0;i<3;++i) {
+            const auto &v=vertices[i],&u=vertices[(i+1)%3];
+            Point a={v.x(),v.y(),v.z()},b={u.x(),u.y(),u.z()};
+            if(a==b){boundaryStatus=0;return false;}
+            const bool forward=a<b;auto &edge=edges[forward?std::make_pair(a,b):std::make_pair(b,a)];
+            ++edge.first;edge.second+=forward?1:-1;
+        }
+    }
+    boundaryStatus=volume>0 && !edges.empty() && std::all_of(edges.begin(),edges.end(),[](const auto &edge){
+        return edge.second.first==2 && edge.second.second==0;
+    });
+    return boundaryStatus!=0;
 }

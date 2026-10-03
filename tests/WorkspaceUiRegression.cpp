@@ -34,6 +34,7 @@ void learnQT::configureRenderQueueRegression()
         QElapsedTimer pauseCheck;
         int pausedSamples = 0;
         bool blockedExport = false;
+        QMetaObject::Connection exportPause;
     };
     auto state = std::make_shared<State>();
     state->clock.start();
@@ -41,6 +42,7 @@ void learnQT::configureRenderQueueRegression()
     timer->setInterval(100);
     auto finish = [this, timer, state, output](const QString &error) {
         timer->stop();
+        QObject::disconnect(state->exportPause);
         if (!error.isEmpty())
             grab().save(output + "/failure.png");
         QJsonArray tasks;
@@ -377,17 +379,29 @@ void learnQT::configureRenderQueueRegression()
             if (m_renderQueue.size() != 9 || !m_renderQueue[8].request.settings.denoise ||
                 m_renderQueue[8].format != "jpg")
                 return finish("Export-failure fixtures were not captured");
+            // Stop at the worker's rendering boundary. A 100-ms UI poll can miss
+            // the entire small task on a fast GPU, so the fault must be installed
+            // before sampling is allowed to finish.
+            const auto blockedId = m_renderQueue[7].request.id;
+            auto worker = m_queueWorker;
+            state->exportPause = connect(worker, &RenderQueueThread::jobState, worker,
+                [worker, blockedId](quint64 id, RenderJobState status) {
+                    if (id == blockedId && status == RenderJobState::Rendering)
+                        worker->pauseCurrent(true);
+                }, Qt::DirectConnection);
             workspace->runQueue->trigger();
             state->phase = 11;
             return;
         }
         if (state->phase == 11)
         {
-            if (m_renderQueue[7].status != tr("渲染中"))
+            if (m_renderQueue[7].status != tr("已暂停"))
                 return;
             if (!QDir().mkpath(m_renderQueue[7].request.outputPath))
                 return finish("Could not block the first export output path");
             state->blockedExport = true;
+            QObject::disconnect(state->exportPause);
+            m_queueWorker->pauseCurrent(false);
             state->phase = 12;
             return;
         }

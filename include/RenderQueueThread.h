@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RenderJob.h"
+#include "RenderResult.h"
 #include "Scene.h"
 #include <QImage>
 #include <QMutex>
@@ -35,6 +36,7 @@ class RenderQueueThread : public QThread
     void workerFailed(QString error);
     void jobState(quint64 id, RenderJobState state);
     void jobProgress(quint64 id, int samples, int target, double seconds, QImage image);
+    void jobLinearResult(quint64 id,RenderResultPtr result);
     void jobFinished(quint64 id, bool rendered, bool stopped, QImage image,
                      QString outputPath, QString error);
 

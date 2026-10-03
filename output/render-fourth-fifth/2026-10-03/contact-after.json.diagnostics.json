@@ -1,0 +1,19 @@
+{
+    "boundaryLimit": 0,
+    "boundaryMismatch": 0,
+    "bvhOverflow": 0,
+    "countMeaning": "affected pixels accumulated since reset; rejectedSamples counts sample events",
+    "firstAffectedPixel": [
+    ],
+    "firstFlags": 0,
+    "height": 144,
+    "invalidRay": 0,
+    "mediumOverflow": 0,
+    "nonFinite": 0,
+    "rejected": 0,
+    "rejectedSamples": 0,
+    "samples": 64,
+    "validSamples": 1769472,
+    "version": 2,
+    "width": 192
+}

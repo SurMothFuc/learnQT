@@ -73,6 +73,8 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
     result.render_color = vec3(0.0);
     result.normal_color = vec3(0.0);
     result.base_color = vec3(0.0);
+    result.oidnReliable=true;result.oidnConfidence=true;
+    bool recordedOidn=false;
 #ifdef DENOISE_GUIDES
     result.guidePosition = vec4(ray.direction,-1.0);
     result.guideNormal = vec4(0);
@@ -86,7 +88,7 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
     float previousPdf = 0.0;
     bool previousDelta = true;
     bool recordedFeatures = false;
-    MediumStack media; media.size = 0;
+    MediumStack media=InitialMediumStack();
     rayConeWidth=0.0;
     rayConeSpread=cameraFov>0.0 ? 2.0*tan(radians(cameraFov)*.5)/float(max(height,1)) : 0.0;
     int depth = 0;
@@ -94,9 +96,14 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
     int step;
     for (step=0; step<MAX_BOUNCES_LIMIT+MAX_SHADOW_LAYERS; ++step) {
         samplingBounce=depth;
+#ifdef TRACE_DIAGNOSTICS
+        diagnosticRayOrigin=ray.startPoint;diagnosticRayDirection=ray.direction;diagnosticWeight=throughput;
+        diagnosticDepth=depth;diagnosticMediumCount=media.size;diagnosticEtaScale=etaScale;diagnosticStage=1;
+#endif
 #ifdef DENOISE_GUIDES
         unstableAlpha = false;
 #endif
+        allowNearBoundaryHit=useBoundaryMedia && media.size>0;
         HitResult hit = hitBVH(ray);
 #ifdef DENOISE_GUIDES
         fragilePath = fragilePath || unstableAlpha;
@@ -107,14 +114,18 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
 #ifdef NO_PARTICIPATING_MEDIA
         if (false)
 #else
-        if (step == 0 && hit.isHit && hit.isInside && hit.material.mediumtype != MEDIUM_NONE)
+        if ((!useBoundaryMedia || !SupportedBoundary(hit)) && step == 0 && hit.isHit && hit.isInside && hit.material.mediumtype != MEDIUM_NONE)
 #endif
             media.entries[media.size++] = MaterialMedium(hit.material);
         Medium medium = CurrentMedium(media);
+#ifdef TRACE_DIAGNOSTICS
+        diagnosticStage=2;diagnosticSurface=hit.isHit?hit.triangleIndex:-1;
+#endif
 #ifdef DENOISE_GUIDES
         volumePath = volumePath || (medium.type != MEDIUM_NONE && medium.density > 0.0);
 #endif
         bool scattered = false;
+        if(medium.type==MEDIUM_SCATTER || medium.type==MEDIUM_EMISSIVE){result.oidnReliable=false;result.oidnConfidence=false;}
         if (medium.type == MEDIUM_SCATTER && medium.density > 0.0) {
             float flightSample=step==depth?SampleBounce(depth,6):SampleEvent(0xf11e0000u+uint(depth),uint(step));
             float freeFlight = -log(max(1.0-flightSample, 1e-30)) / medium.density;
@@ -125,8 +136,9 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
                 rayConeSpread=min(1.0,rayConeSpread+.25);
                 throughput *= clamp(medium.color, 0.0, 1.0);
                 if (!recordedFeatures) {
-                    result.normal_color = -ray.direction;
-                    result.base_color = clamp(medium.color, 0.0, 1.0);
+                    if(!recordedOidn) {
+                        result.normal_color=-ray.direction;result.base_color=clamp(medium.color,0.0,1.0);recordedOidn=true;
+                    }
                     recordedFeatures = true;
 #ifdef DENOISE_GUIDES
                     result.guidePosition = vec4(point,distance(point,eye));
@@ -189,13 +201,23 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
 #ifdef DENOISE_GUIDES
                 fragilePath = true;
 #endif
+                #ifdef TRACE_DIAGNOSTICS
+                diagnosticWeight=throughput;
+#endif
                 if (!CrossMediumBoundary(media, hit, ray.direction)) break;
                 ray.startPoint = OffsetRayOrigin(hit.hitPoint, hit.positionError, hit.geometricNormal, ray.direction);
                 continue;
             }
+            if(hit.material.transmission>0.0 && hit.material.roughness>0.0)result.oidnConfidence=false;
+            float featureEta=BoundaryEta(media,hit);
+            if(!recordedOidn && (legacyOidnGuides || HasNonDeltaLobes(hit.material,featureEta))) {
+                result.normal_color=hit.normal;
+                result.base_color=legacyOidnGuides?clamp(hit.material.baseColor,0.0,1.0):
+                    mix(clamp(hit.material.baseColor,0.0,1.0),vec3(1),hit.material.transmission*(1.0-hit.material.metallic));
+                recordedOidn=true;
+            }
+            if(!recordedOidn)result.base_color=vec3(1);
             if (!recordedFeatures) {
-                result.normal_color = hit.normal;
-                result.base_color = hit.material.baseColor;
                 recordedFeatures = true;
 #ifdef DENOISE_GUIDES
                 result.guidePosition=vec4(hit.hitPoint,distance(hit.hitPoint,eye));
@@ -211,7 +233,10 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
 #endif
             }
             if (depth >= maxBounce) break;
-            float eta = hit.isInside ? hit.material.IOR : 1.0 / hit.material.IOR;
+            float eta=BoundaryEta(media,hit);
+#ifdef TRACE_DIAGNOSTICS
+            diagnosticStage=3;diagnosticEta=eta;diagnosticWeight=throughput;
+#endif
             if (HasNonDeltaLobes(hit.material, eta))
                 result.render_color += EstimateDirectLighting(hit, throughput, eta, media);
             vec2 uv = UnifiedSamplerEnabled()?vec2(SampleBounce(depth,3),SampleBounce(depth,4)):
@@ -235,7 +260,10 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
             ray.startPoint = OffsetRayOrigin(hit.hitPoint, hit.positionError, hit.geometricNormal, ray.direction);
         }
         if (any(isnan(throughput)) || any(isinf(throughput))) {
-            pathDiagnosticFlags|=DIAG_NONFINITE;break;
+            #ifdef TRACE_DIAGNOSTICS
+            diagnosticWeight=throughput;
+#endif
+            RaisePathDiagnostic(DIAG_NONFINITE);break;
         }
         if (maxComponent(throughput) <= 0.0) break;
         ++depth;
@@ -249,7 +277,7 @@ OutputColor pathTracingImportanceSampling(Ray ray, int maxBounce)
             throughput /= survival;
         }
     }
-    if(step==MAX_BOUNCES_LIMIT+MAX_SHADOW_LAYERS) pathDiagnosticFlags|=DIAG_BOUNDARY_LIMIT;
+    if(step==MAX_BOUNCES_LIMIT+MAX_SHADOW_LAYERS) RaisePathDiagnostic(DIAG_BOUNDARY_LIMIT);
 #ifdef DENOISE_GUIDES
     if(volumePath) result.guideMaterial.y=4.0;
 #endif

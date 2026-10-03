@@ -81,6 +81,7 @@ class learnQT : public QMainWindow
         int samples = 0;
         double seconds = 0;
         QImage result;
+        RenderResultPtr linear;
     };
     QVector<QueueItem> m_renderQueue;
     RenderQueueThread *m_queueWorker = nullptr;

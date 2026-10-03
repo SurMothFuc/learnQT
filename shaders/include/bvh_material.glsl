@@ -241,7 +241,7 @@ void SetTriangleFootprint(int surface,Ray ray,float distance,vec3 geometryNormal
     float grazing=max(abs(dot(geometryNormal,ray.direction)),1e-4);
     materialEvaluationFootprint=diameter/grazing*vec2(length(dpdv),length(dpdu))/area;
     if(any(isnan(materialEvaluationFootprint))||any(isinf(materialEvaluationFootprint))) {
-        pathDiagnosticFlags|=DIAG_NONFINITE;materialEvaluationFootprint=vec2(0);
+        RaisePathDiagnostic(DIAG_NONFINITE);materialEvaluationFootprint=vec2(0);
     }
 }
 vec4 BsdfTangent(int triangleIndex,vec3 bary,vec3 normal)
@@ -471,7 +471,7 @@ HitResult hitBVH(Ray ray) {
         // 在最近的盒子中搜索
         int required=int(d1>0)+int(d2>0);
         if(sp+required>BVH_STACK_CAPACITY) {
-            pathDiagnosticFlags|=DIAG_BVH_OVERFLOW;continue;
+            RaisePathDiagnostic(DIAG_BVH_OVERFLOW);continue;
         }
         if(d1>0 && d2>0) {
             if(d1<d2) { // d1<d2, 左边先

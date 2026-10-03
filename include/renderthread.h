@@ -1,4 +1,5 @@
 #pragma once
+#include "RenderResult.h"
 #include "renderer.h"
 #include "texturebuffer.h"
 #include <QElapsedTimer>
@@ -43,6 +44,7 @@ class RenderThread : public QThread
     void statsReady(RenderStats stats);
     void jobStateChanged(RenderJobState state, const QString &message);
     void resultReady(QImage image, bool final);
+    void linearResultReady(RenderResultPtr result);
     void picked(QString id, quint64 request, quint64 version);
 
   protected:

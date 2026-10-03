@@ -1,0 +1,389 @@
+{
+    "observations": [
+        {
+            "filterRawMse": 0.0052552629899889885,
+            "filteredMean": 0.1446800213278038,
+            "frame": 0,
+            "historyAcceptance": 0.9772135416666666,
+            "phase": "camera",
+            "rawMean": 0.1454078485449055,
+            "samples": 1,
+            "version": 3
+        },
+        {
+            "filterRawMse": 0.005553758309702381,
+            "filteredMean": 0.14478463450699017,
+            "frame": 1,
+            "historyAcceptance": 0.9695457175925926,
+            "phase": "camera",
+            "rawMean": 0.14511025809757874,
+            "samples": 1,
+            "version": 4
+        },
+        {
+            "filterRawMse": 0.005864366458248926,
+            "filteredMean": 0.1453416267161556,
+            "frame": 2,
+            "historyAcceptance": 0.9669415509259259,
+            "phase": "camera",
+            "rawMean": 0.14602408150069623,
+            "samples": 1,
+            "version": 5
+        },
+        {
+            "filterRawMse": 0.00620758939212475,
+            "filteredMean": 0.14564546638094716,
+            "frame": 3,
+            "historyAcceptance": 0.9702690972222222,
+            "phase": "camera",
+            "rawMean": 0.1454700268923199,
+            "samples": 1,
+            "version": 6
+        },
+        {
+            "filterRawMse": 0.006013884060576513,
+            "filteredMean": 0.14577879105546926,
+            "frame": 4,
+            "historyAcceptance": 0.9645543981481481,
+            "phase": "camera",
+            "rawMean": 0.14631816146060428,
+            "samples": 1,
+            "version": 7
+        },
+        {
+            "filterRawMse": 0.0066953417572725845,
+            "filteredMean": 0.1456622227711709,
+            "frame": 5,
+            "historyAcceptance": 0.9712456597222222,
+            "phase": "camera",
+            "rawMean": 0.14649718799772612,
+            "samples": 1,
+            "version": 8
+        },
+        {
+            "filterRawMse": 0.006451187289501948,
+            "filteredMean": 0.1465037118006038,
+            "frame": 6,
+            "historyAcceptance": 0.9654224537037037,
+            "phase": "camera",
+            "rawMean": 0.1476331638275811,
+            "samples": 1,
+            "version": 9
+        },
+        {
+            "filterRawMse": 0.006611513186623863,
+            "filteredMean": 0.1465221026363573,
+            "frame": 7,
+            "historyAcceptance": 0.9705222800925926,
+            "phase": "camera",
+            "rawMean": 0.1477110379131512,
+            "samples": 1,
+            "version": 10
+        },
+        {
+            "filterRawMse": 0.006462544464248009,
+            "filteredMean": 0.14621339744129036,
+            "frame": 8,
+            "historyAcceptance": 0.9662905092592593,
+            "phase": "camera",
+            "rawMean": 0.1460691943099779,
+            "samples": 1,
+            "version": 11
+        },
+        {
+            "filterRawMse": 0.006755559513060397,
+            "filteredMean": 0.14646142450126007,
+            "frame": 9,
+            "historyAcceptance": 0.9671223958333334,
+            "phase": "camera",
+            "rawMean": 0.1474514018367049,
+            "samples": 1,
+            "version": 12
+        },
+        {
+            "filterRawMse": 0.006399796649718846,
+            "filteredMean": 0.14688532962224907,
+            "frame": 10,
+            "historyAcceptance": 0.9668692129629629,
+            "phase": "camera",
+            "rawMean": 0.14734748668685652,
+            "samples": 1,
+            "version": 13
+        },
+        {
+            "filterRawMse": 0.00693915539798908,
+            "filteredMean": 0.14695576633078813,
+            "filteredMse": 0.002219692097835081,
+            "frame": 11,
+            "historyAcceptance": 0.9716435185185185,
+            "phase": "camera",
+            "rawMean": 0.1482684700011792,
+            "rawMse": 0.005920116792615695,
+            "samples": 1,
+            "version": 14
+        },
+        {
+            "filterRawMse": 0.006574549692185745,
+            "filteredMean": 0.14676021759077928,
+            "frame": 0,
+            "historyAcceptance": 0.9655309606481481,
+            "phase": "object",
+            "rawMean": 0.1478145934841138,
+            "samples": 1,
+            "version": 15
+        },
+        {
+            "filterRawMse": 0.007705840124914302,
+            "filteredMean": 0.14705246155384258,
+            "frame": 1,
+            "historyAcceptance": 0.9738859953703703,
+            "phase": "object",
+            "rawMean": 0.14834712414309298,
+            "samples": 1,
+            "version": 16
+        },
+        {
+            "filterRawMse": 0.006877998970616784,
+            "filteredMean": 0.14686958469825626,
+            "frame": 2,
+            "historyAcceptance": 0.9688223379629629,
+            "phase": "object",
+            "rawMean": 0.14800127681834888,
+            "samples": 1,
+            "version": 17
+        },
+        {
+            "filterRawMse": 0.007531371234249312,
+            "filteredMean": 0.14692694919202112,
+            "frame": 3,
+            "historyAcceptance": 0.9737051504629629,
+            "phase": "object",
+            "rawMean": 0.148235714151887,
+            "samples": 1,
+            "version": 18
+        },
+        {
+            "filterRawMse": 0.006979071505577993,
+            "filteredMean": 0.14657926148257927,
+            "frame": 4,
+            "historyAcceptance": 0.9700520833333334,
+            "phase": "object",
+            "rawMean": 0.14783651747334062,
+            "samples": 1,
+            "version": 19
+        },
+        {
+            "filterRawMse": 0.007281107423713599,
+            "filteredMean": 0.1465813541104318,
+            "frame": 5,
+            "historyAcceptance": 0.9740306712962963,
+            "phase": "object",
+            "rawMean": 0.1485580978806008,
+            "samples": 1,
+            "version": 20
+        },
+        {
+            "filterRawMse": 0.0073685030024612875,
+            "filteredMean": 0.14640169198722372,
+            "frame": 6,
+            "historyAcceptance": 0.9696180555555556,
+            "phase": "object",
+            "rawMean": 0.14725322883145464,
+            "samples": 1,
+            "version": 21
+        },
+        {
+            "filterRawMse": 0.007367169922452061,
+            "filteredMean": 0.14649323884509094,
+            "frame": 7,
+            "historyAcceptance": 0.9742838541666666,
+            "phase": "object",
+            "rawMean": 0.14741220773149705,
+            "samples": 1,
+            "version": 22
+        },
+        {
+            "filterRawMse": 0.007240182453781269,
+            "filteredMean": 0.14637395681246715,
+            "frame": 8,
+            "historyAcceptance": 0.9686776620370371,
+            "phase": "object",
+            "rawMean": 0.147023359713956,
+            "samples": 1,
+            "version": 23
+        },
+        {
+            "filterRawMse": 0.00784347514551606,
+            "filteredMean": 0.14633089024361703,
+            "frame": 9,
+            "historyAcceptance": 0.9740668402777778,
+            "phase": "object",
+            "rawMean": 0.1484925657985061,
+            "samples": 1,
+            "version": 24
+        },
+        {
+            "filterRawMse": 0.007330656162106285,
+            "filteredMean": 0.1462644898304813,
+            "frame": 10,
+            "historyAcceptance": 0.9699435763888888,
+            "phase": "object",
+            "rawMean": 0.14803897756614542,
+            "samples": 1,
+            "version": 25
+        },
+        {
+            "filterRawMse": 0.007528366852100568,
+            "filteredMean": 0.14658140024225183,
+            "filteredMse": 0.002657063011152211,
+            "frame": 11,
+            "historyAcceptance": 0.9730902777777778,
+            "phase": "object",
+            "rawMean": 0.14832883220576085,
+            "rawMse": 0.006085848932180051,
+            "samples": 1,
+            "version": 26
+        },
+        {
+            "filterRawMse": 0.0027872343922604203,
+            "filteredMean": 0.14614860556237413,
+            "frame": 0,
+            "historyAcceptance": 0,
+            "phase": "material",
+            "rawMean": 0.14579170338608483,
+            "samples": 1,
+            "version": 27
+        },
+        {
+            "filterRawMse": 0.0003992483425186969,
+            "filteredMean": 0.06027664335028537,
+            "frame": 0,
+            "historyAcceptance": 0,
+            "phase": "lighting",
+            "rawMean": 0.060091782252405995,
+            "samples": 1,
+            "version": 28
+        },
+        {
+            "filterRawMse": 3.703647489689163e-05,
+            "filteredMean": 0.05973723418994976,
+            "frame": 0,
+            "historyAcceptance": 0.9768518518518519,
+            "phase": "settle",
+            "rawMean": 0.05961802877612538,
+            "samples": 8,
+            "version": 28
+        },
+        {
+            "filterRawMse": 1.8110407740128114e-05,
+            "filteredMean": 0.05969661559013759,
+            "frame": 1,
+            "historyAcceptance": 0.9773220486111112,
+            "phase": "settle",
+            "rawMean": 0.05960541245123299,
+            "samples": 16,
+            "version": 28
+        },
+        {
+            "filterRawMse": 2.2741577067385008e-05,
+            "filteredMean": 0.05967447882126833,
+            "frame": 2,
+            "historyAcceptance": 0.9779007523148148,
+            "phase": "settle",
+            "rawMean": 0.05959223212677132,
+            "samples": 24,
+            "version": 28
+        },
+        {
+            "filterRawMse": 7.470093644955571e-06,
+            "filteredMean": 0.05965480888648316,
+            "frame": 3,
+            "historyAcceptance": 0.9769603587962963,
+            "phase": "settle",
+            "rawMean": 0.05959508370089271,
+            "samples": 32,
+            "version": 28
+        },
+        {
+            "filterRawMse": 5.885641343500657e-06,
+            "filteredMean": 0.0596647329926746,
+            "frame": 4,
+            "historyAcceptance": 0.9772135416666666,
+            "phase": "settle",
+            "rawMean": 0.05961286425941829,
+            "samples": 40,
+            "version": 28
+        },
+        {
+            "filterRawMse": 4.750412964877036e-06,
+            "filteredMean": 0.0596527425177987,
+            "frame": 5,
+            "historyAcceptance": 0.9771050347222222,
+            "phase": "settle",
+            "rawMean": 0.059601687620039874,
+            "samples": 48,
+            "version": 28
+        },
+        {
+            "filterRawMse": 4.178633952934736e-06,
+            "filteredMean": 0.05965795278591886,
+            "frame": 6,
+            "historyAcceptance": 0.9776837384259259,
+            "phase": "settle",
+            "rawMean": 0.05960994606099201,
+            "samples": 56,
+            "version": 28
+        },
+        {
+            "filterRawMse": 3.5820951197695105e-06,
+            "filteredMean": 0.05963851061371286,
+            "frame": 7,
+            "historyAcceptance": 0.9760561342592593,
+            "phase": "settle",
+            "rawMean": 0.05959269255767986,
+            "samples": 64,
+            "version": 28
+        },
+        {
+            "filterRawMse": 3.3050588339292764e-06,
+            "filteredMean": 0.059634801243874935,
+            "frame": 8,
+            "historyAcceptance": 0.9785879629629629,
+            "phase": "settle",
+            "rawMean": 0.059590264019183894,
+            "samples": 72,
+            "version": 28
+        },
+        {
+            "filterRawMse": 2.9851210503543375e-06,
+            "filteredMean": 0.05963540865864645,
+            "frame": 9,
+            "historyAcceptance": 0.9768156828703703,
+            "phase": "settle",
+            "rawMean": 0.0595941297808822,
+            "samples": 80,
+            "version": 28
+        },
+        {
+            "filterRawMse": 2.80893950204167e-06,
+            "filteredMean": 0.059637572452708634,
+            "frame": 10,
+            "historyAcceptance": 0.9769241898148148,
+            "phase": "settle",
+            "rawMean": 0.05959893498203112,
+            "samples": 88,
+            "version": 28
+        },
+        {
+            "filterRawMse": 2.5885259284957962e-06,
+            "filteredMean": 0.05963822430204383,
+            "frame": 11,
+            "historyAcceptance": 0.9771773726851852,
+            "phase": "settle",
+            "rawMean": 0.05960247489185825,
+            "samples": 96,
+            "version": 28
+        }
+    ],
+    "scope": "Actual offscreen renderer camera/object motion, material/lighting invalidation and settling. No desktop input."
+}

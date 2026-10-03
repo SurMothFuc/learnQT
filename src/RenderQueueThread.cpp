@@ -53,6 +53,7 @@ RenderQueueThread::RenderQueueThread(QOpenGLContext *shared, QObject *parent) : 
     context->create();
     context->moveToThread(this);
     qRegisterMetaType<RenderJobState>();
+    qRegisterMetaType<RenderResultPtr>();
 }
 
 RenderQueueThread::~RenderQueueThread()
@@ -182,18 +183,24 @@ void RenderQueueThread::run()
                     throw std::runtime_error("Render stopped before final denoising");
                 renderer.finishDenoise(snapshot);
                 if(cancel || !running) throw std::runtime_error("Render stopped during final denoising");
-                result = renderer.result(snapshot);
+                auto linear=renderer.linearResult(snapshot);
+                emit jobLinearResult(job.id,linear);
+                result=linear->display(float(linear->settings["exposure"].toDouble()),linear->settings["tonemap"].toInt(1));
                 rendered = !result.isNull();
                 if (rendered)
                 {
-                    QImageWriter writer(job.outputPath);
-                    writer.setQuality(95);
-                    if (!writer.write(result.convertToFormat(QImage::Format_RGB32)))
-                        error = writer.errorString();
+                    if(QFileInfo(job.outputPath).suffix().compare("exr",Qt::CaseInsensitive)==0)
+                        linear->writeExr(job.outputPath,false,error);
+                    else {
+                        QImageWriter writer(job.outputPath);writer.setQuality(95);
+                        if(!writer.write(result.convertToFormat(QImage::Format_RGB32)))error=writer.errorString();
+                    }
                 }
             }
-            else if (renderer.samples() > 0)
-                result = renderer.result(snapshot);
+            else if (renderer.samples() > 0) {
+                emit jobLinearResult(job.id,renderer.linearResult(snapshot));
+                result=renderer.result(snapshot);
+            }
         }
         catch (const std::exception &e)
         {

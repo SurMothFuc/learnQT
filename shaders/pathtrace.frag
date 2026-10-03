@@ -75,7 +75,14 @@ void main(void)
     vec4 raw=vec4(color.render_color,Luminance(color.render_color)*Luminance(color.render_color));
     vec4 normal=vec4((color.normal_color+1.0)*.5,0);
     vec4 base=vec4(color.base_color,1);
+    #ifdef TRACE_DIAGNOSTICS
+    diagnosticStage=4;
+#endif
     bool valid=ValidTraceSample(raw,normal,base);
+    if((pathDiagnosticFlags & (DIAG_NONFINITE|DIAG_INVALID_RAY|DIAG_BVH_OVERFLOW|DIAG_MEDIUM_OVERFLOW|DIAG_BOUNDARY_LIMIT|DIAG_BOUNDARY_MISMATCH))!=0u) {
+        if(valid)RaisePathDiagnostic(DIAG_REJECTED);
+        valid=false;
+    }
     float alpha=1.0/(float(frameCounter)+1.0);
     vec4 oldColor=texture(preRenderColor,normalizedCoords);
     vec4 oldNormal=texture(previousNormal,normalizedCoords), oldBase=texture(previousAlbedo,normalizedCoords);
@@ -86,7 +93,7 @@ void main(void)
     // Normal alpha counts valid samples; albedo alpha records all accumulated path classes.
     if(valid) NormalResult.a=oldNormal.a+1.0;
     BaseColorResult.a=float(uint(oldBase.a) | (valid ? (1u << uint(color.guideMaterial.y)) : 0u) |
-        (pathDiagnosticFlags<<8));
+        (pathDiagnosticFlags<<8) | (color.oidnReliable?0u:64u) | (color.oidnConfidence?0u:128u));
 #ifdef TRACE_PROFILE
     // A dedicated diagnostic variant reuses auxiliary RGB targets. Beauty and
     // its second moment are unchanged. Denoising is forbidden by the caller.
@@ -95,6 +102,10 @@ void main(void)
 #endif
     if(guidesOnly) { RenderColorResult=oldColor; NormalResult=oldNormal; BaseColorResult=oldBase; }
     if(!valid) { raw=vec4(0); color.guideMaterial.w=0; }
+#ifdef TRACE_DIAGNOSTICS
+    raw=diagnosticCounts0;color.guidePosition=diagnosticCounts1;
+    color.guideNormal=diagnosticOrigin;color.guideAlbedo=diagnosticDirection;color.guideMaterial=diagnosticThroughput;
+#endif
 #ifdef COMPUTE_PATH
     ivec2 outputPixel=traceTileOrigin+ivec2(gl_GlobalInvocationID.xy);
     imageStore(traceColor,outputPixel,RenderColorResult);

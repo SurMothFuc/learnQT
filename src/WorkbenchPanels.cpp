@@ -805,6 +805,9 @@ ResultView::ResultView(QWidget *p) : QGraphicsView(p), canvas(this)
 }
 void ResultView::setImage(const QImage &im)
 {
+    linear.reset();
+    for(const char *name:{"resultExposure","resultChannel","resultDenoised","resultTonemap"})
+        if(auto control=window()->findChild<QWidget*>(name))control->setEnabled(false);
     if (im.isNull())
     {
         image = {};
@@ -853,4 +856,44 @@ void ResultView::drawForeground(QPainter *p, const QRectF &)
     p->drawText(viewport()->rect().adjusted(24, 24, -24, -24), Qt::AlignCenter | Qt::TextWordWrap,
                 tr("尚无渲染结果\n\n调整构图和输出后加入队列，再点击“运行队列”。\n结果会显示在这里。"));
     p->restore();
+}
+
+void ResultView::setResult(RenderResultPtr result) {
+    if(!result || !result->valid()){setImage({});return;}
+    for(auto it=displayStates.begin();it!=displayStates.end();)if(it->first.expired())it=displayStates.erase(it);else ++it;
+    const auto saved=displayStates.find(std::weak_ptr<const RenderResult>(result));
+    if(saved!=displayStates.end()) {
+        resultExposure=saved->second.exposure;resultTonemap=saved->second.tonemap;useDenoised=saved->second.denoised;channel=saved->second.channel;
+    }else {resultExposure=float(result->settings["exposure"].toDouble());resultTonemap=result->settings["tonemap"].toInt(1);useDenoised=!result->denoised.empty();channel="beauty";}
+    linear=std::move(result);
+    if(auto control=window()->findChild<QDoubleSpinBox*>("resultExposure")) {QSignalBlocker block(control);control->setValue(resultExposure);}
+    if(auto control=window()->findChild<QComboBox*>("resultChannel")) {QSignalBlocker block(control);control->setCurrentIndex(control->findData(channel));}
+    if(auto control=window()->findChild<QComboBox*>("resultTonemap")) {QSignalBlocker block(control);control->setCurrentIndex(resultTonemap);}
+    if(auto control=window()->findChild<QCheckBox*>("resultDenoised")) {QSignalBlocker block(control);control->setChecked(useDenoised);}
+    refreshLinearDisplay();
+}
+void ResultView::refreshLinearDisplay() {
+    if(!linear)return;
+    auto result=linear;displayStates[std::weak_ptr<const RenderResult>(result)]={resultExposure,resultTonemap,useDenoised,channel};QImage displayed;
+    if(channel=="beauty")displayed=result->display(resultExposure,resultTonemap,useDenoised);
+    else {
+        const auto &values=channel=="normal"?result->normal:channel=="albedo"?result->albedo:
+            channel=="depth"?result->depth:channel=="variance"?result->variance:result->sampleCount;
+        const bool rgb=channel=="normal"||channel=="albedo";
+        if(values.empty())return;
+        displayed=QImage(result->size,QImage::Format_RGB32);
+        float maximum=rgb?1:std::max(1e-6f,*std::max_element(values.begin(),values.end()));
+        for(int y=0;y<result->size.height();++y)for(int x=0;x<result->size.width();++x) {
+            const size_t p=size_t(y)*result->size.width()+x;int bytes[3];
+            for(int c=0;c<3;++c) {
+                float v=rgb?values[p*3+c]:values[p]/maximum;
+                if(channel=="normal")v=v*.5f+.5f;
+                bytes[c]=qRound(255*encodeDisplaySrgb(v));
+            }
+            displayed.setPixel(x,y,qRgb(bytes[0],bytes[1],bytes[2]));
+        }
+    }
+    setImage(displayed);linear=std::move(result);
+    for(const char *name:{"resultExposure","resultChannel","resultDenoised","resultTonemap"})
+        if(auto control=window()->findChild<QWidget*>(name))control->setEnabled(name!=QStringLiteral("resultDenoised") || !linear->denoised.empty());
 }
