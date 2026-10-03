@@ -35,7 +35,7 @@ void main()
     int kind=int(m.y);
     if(protectVolume && (int(texelFetch(averageAlbedo,p,0).a) & 16)!=0) { result=center; return; }
     if(finalFiltering || stationaryFiltering) {
-        int classes=int(texelFetch(averageAlbedo,p,0).a);
+        int classes=int(texelFetch(averageAlbedo,p,0).a)&63;
         // The last stochastic path must never classify the full spp average by itself.
         if((classes & 16)!=0 || (classes & (classes-1))!=0 ||
            (kind!=0 && length(texelFetch(averageNormal,p,0).xyz*2.0-1.0)<.9)) { result=center; return; }
@@ -70,7 +70,7 @@ void main()
         if(neighborAlbedo.w!=a.w || neighborMaterial.y!=m.y || neighborMaterial.w<.5) continue;
         if(protectVolume && (int(texelFetch(averageAlbedo,q,0).a) & 16)!=0) continue;
         if(finalFiltering || stationaryFiltering) {
-            int classes=int(texelFetch(averageAlbedo,q,0).a);
+            int classes=int(texelFetch(averageAlbedo,q,0).a)&63;
             if((classes & 16)!=0 || (classes & (classes-1))!=0 || length(texelFetch(averageNormal,q,0).xyz*2.0-1.0)<.9) continue;
         }
         vec4 c=value(q);

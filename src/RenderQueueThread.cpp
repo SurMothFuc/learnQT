@@ -134,6 +134,8 @@ void RenderQueueThread::run()
             snapshot.denoise = job.settings.denoise;
             snapshot.denoiseMode = job.settings.denoiseMode;
             snapshot.antialiasing = job.settings.antialiasing;
+            snapshot.sampleSeed=job.settings.sampleSeed;
+            snapshot.rrMinDepth=job.settings.rrMinDepth;
             Renderer renderer(job.settings.size.width(), job.settings.size.height(), snapshot, nullptr, scene.get());
             renderer.cancel = &cancel;
             renderer.formal = true;

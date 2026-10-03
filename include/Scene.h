@@ -132,6 +132,8 @@ class Scene
     std::vector<BVHNode_encoded> nodes_encoded;
     std::vector<Light_encoded> lights_encoded;
     float lightPowerSum = 0.0f;
+    double environmentLuminanceIntegral=0,finiteIrradianceEstimate=0;
+    float environmentSelectionProbability() const;
     HDRLoaderResult hdrRes = {};
     float *cache = nullptr;
     int hdrResolution = 0;

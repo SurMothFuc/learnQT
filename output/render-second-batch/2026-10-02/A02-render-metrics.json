@@ -1,0 +1,20 @@
+{
+  "grid": {
+    "rawRgbMse": 0.0,
+    "rawRgbMaxAbs": 0.0,
+    "meanBefore": 0.008651113662788413,
+    "meanAfter": 0.008651113662788413,
+    "beforeAllocatedBytes": 113498500,
+    "afterAllocatedBytes": 24369844,
+    "spp": 34
+  },
+  "lantern": {
+    "rawRgbMse": 1.1061468908042533e-06,
+    "rawRgbMaxAbs": 0.017980515956878662,
+    "meanBefore": 0.11069495196266893,
+    "meanAfter": 0.11065856023968176,
+    "beforeAllocatedBytes": 531787540,
+    "afterAllocatedBytes": 487048532,
+    "spp": 34
+  }
+}

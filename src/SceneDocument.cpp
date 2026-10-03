@@ -358,6 +358,16 @@ bool SceneDocument::validate(QString &error, bool checkFiles) const
         if (render.contains(key) && (!render[key].isDouble() || render[key].toInt(-1) < 0))
             return fail("Invalid render setting.");
     const auto s = settings();
+    for(const auto &o : {render,root["output"].toObject()})
+        if(o.contains("rrMinDepth") && (!o["rrMinDepth"].isDouble() ||
+            o["rrMinDepth"].toDouble()<0 || o["rrMinDepth"].toDouble()>64 ||
+            std::floor(o["rrMinDepth"].toDouble())!=o["rrMinDepth"].toDouble()))
+            return fail("Invalid RR minimum depth.");
+    for(const auto &o : {render,root["output"].toObject()})
+        if(o.contains("sampleSeed") && (!o["sampleSeed"].isDouble() ||
+            !std::isfinite(o["sampleSeed"].toDouble()) || o["sampleSeed"].toDouble()<0 ||
+            o["sampleSeed"].toDouble()>4294967295.0 || std::floor(o["sampleSeed"].toDouble())!=o["sampleSeed"].toDouble()))
+            return fail("Invalid sample seed.");
     for (auto v : root["objects"].toArray())
         for (auto key : {"visible", "locked"})
         {
@@ -577,6 +587,8 @@ void SceneDocument::restoreCamera(Camera &c) const
 void SceneDocument::captureSettings(const RenderParams::Snapshot &s)
 {
     root["render"] = QJsonObject{{"denoise", s.effectiveDenoiseMode() != DenoiseMode::None},
+                                 {"sampleSeed",double(s.sampleSeed)},
+                                 {"rrMinDepth",s.rrMinDepth},
                                  {"denoiseMode", denoiseModeName(s.effectiveDenoiseMode())},
                                  {"antialiasing", s.antialiasing},
                                  {"renderLow", s.renderLow},
@@ -598,6 +610,11 @@ RenderParams::Snapshot SceneDocument::settings() const
         s.name = o[#name].toVariant().value<decltype(s.name)>();
     SETTING(denoise)
     SETTING(antialiasing)
+    if(o.contains("sampleSeed")) {
+        const double seed=o["sampleSeed"].toDouble(-1);
+        if(std::isfinite(seed) && seed>=0 && seed<=4294967295.0)s.sampleSeed=unsigned(seed);
+    }
+    if(o.contains("rrMinDepth"))s.rrMinDepth=o["rrMinDepth"].toInt(3);
     SETTING(renderLow)
     SETTING(interactionMode)
     SETTING(useTileRendering)

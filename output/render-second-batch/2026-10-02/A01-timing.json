@@ -1,0 +1,39 @@
+{
+  "closest": {
+    "fps": [
+      312.12258137460185,
+      281.93628249995544,
+      283.14978618695466
+    ],
+    "completedSpp": [
+      625,
+      565,
+      567
+    ],
+    "seconds": [
+      2.0024184,
+      2.0039989,
+      2.0024737
+    ],
+    "medianFps": 283.14978618695466
+  },
+  "anyhit": {
+    "fps": [
+      292.06043444314133,
+      289.1035667341158,
+      292.39463559306404
+    ],
+    "completedSpp": [
+      585,
+      579,
+      585
+    ],
+    "seconds": [
+      2.0030101,
+      2.0027425,
+      2.0007207
+    ],
+    "medianFps": 292.06043444314133
+  },
+  "scope": "Final shaders. Three paired 2-second, 400x300 Lantern runs, AA on, denoise off; completed spp, not viewport redraws. Scene-specific timings do not prove a general speedup."
+}

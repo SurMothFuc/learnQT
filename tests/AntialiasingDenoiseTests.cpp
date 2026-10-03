@@ -17,6 +17,7 @@ struct RendererDenoiseTestAccess
     static GLuint color(Renderer &r) { return r.preRenderColorTex; }
     static GLuint normal(Renderer &r) { return r.previousNormalTex; }
     static GLuint albedo(Renderer &r) { return r.previousAlbedoTex; }
+    static GLuint moments(GpuDenoiser &d) { return d.moments[d.read]; }
     static GLuint filtered(Renderer &r, DenoiseMode mode) { return mode==DenoiseMode::Realtime ? r.gpuDenoiser.output() : mode==DenoiseMode::OIDN ? r.RenderColorTexfiltered : r.preRenderColorTex; }
 };
 namespace
@@ -83,6 +84,10 @@ void antialiasing(QOpenGLFunctions_3_3_Core *gl,const QString &output,QJsonObjec
     const auto full=render(true,false,false); require(aa==full,"AA depends on tile layout");
     const auto compute=render(true,true,true);
     const bool computeSupported=renderer.stats.computePathtrace;
+    const auto actualFormat=QOpenGLContext::currentContext()->format();
+    const bool computeContext=actualFormat.majorVersion()>4 ||
+        (actualFormat.majorVersion()==4 && actualFormat.minorVersion()>=3);
+    require(!computeContext || computeSupported,"GL 4.3 compute path silently fell back to fragment shader");
     if(computeSupported) {
         require(mse(aa,compute)<1e-10,"AA compute/fragment mismatch");
         require(mse(aaNormal,read(gl,RendererDenoiseTestAccess::normal(renderer),w,h))<1e-10 &&
@@ -203,6 +208,13 @@ void synthetic(QOpenGLFunctions_3_3_Core *gl,const QString &output,QJsonObject &
     Scene scene(false); scene.camera.restoreState({0,0,3},{0,0,0},{0,1,0},53.130102);
     SceneInstance instance; instance.id="surface"; instance.transform.setToIdentity(); instance.inverse.setToIdentity(); scene.instances.push_back(instance);
     GpuDenoiser denoiser; const int w=64,h=64; denoiser.ensure(renderer,{w,h});
+    // UI query statistics may lag or skip a frame. Assert the current GPU markers,
+    // after the completed fence, rather than treating asynchronous UI metrics as fresh.
+    auto acceptance=[&] {
+        const auto values=read(gl,RendererDenoiseTestAccess::moments(denoiser),w,h);
+        int accepted=0;for(size_t i=3;i<values.size();i+=4)accepted+=values[i]>.5f;
+        return double(accepted)/(w*h);
+    };
     std::vector<float> average(size_t(w)*h*4,0), reference(size_t(w)*h*4,1);
     std::vector<float> data[5]; for(auto &d:data) d.resize(size_t(w)*h*4,0);
     GLuint vao=0,vbo=0;
@@ -239,30 +251,30 @@ void synthetic(QOpenGLFunctions_3_3_Core *gl,const QString &output,QJsonObject &
     };
     for(int n=0;n<4;++n) run(n);
     auto filtered=read(gl,denoiser.output(),w,h);
-    require(denoiser.acceptance>.95,"Static reprojection rejected matching history");
+    require(acceptance()>.95,"Static reprojection rejected matching history");
     require(mse(filtered,reference)<mse(average,reference)*.8,"GPU denoiser failed to reduce low-spp error");
     require(std::abs(mean(filtered)-1)<.02,"GPU denoiser changed diffuse mean by more than 2 percent");
     saveLinear(average,w,h,output+"/diffuse-raw.png");saveLinear(filtered,w,h,output+"/diffuse-filtered.png");
-    const double staticAcceptance=denoiser.acceptance, diffuseError=mse(filtered,reference), diffuseMean=mean(filtered);
+    const double staticAcceptance=acceptance(), diffuseError=mse(filtered,reference), diffuseMean=mean(filtered);
     scene.camera.restoreState({.04f,0,3},{.04f,0,0},{0,1,0},53.130102);run(4);
-    require(denoiser.acceptance>.85,"Camera reprojection lost valid planar history"); const double cameraAcceptance=denoiser.acceptance;
+    require(acceptance()>.85,"Camera reprojection lost valid planar history"); const double cameraAcceptance=acceptance();
     scene.instances[0].transform.translate(.03f,0,0);scene.instances[0].inverse=scene.instances[0].transform.inverted();run(5);
-    require(denoiser.acceptance>.7,"Object transform reprojection lost valid history"); const double objectAcceptance=denoiser.acceptance;
+    require(acceptance()>.7,"Object transform reprojection lost valid history"); const double objectAcceptance=acceptance();
     scene.instances[0].transform.setToIdentity();scene.instances[0].transform.scale(-1.f,1.05f,.5f);
     scene.instances[0].inverse=scene.instances[0].transform.inverted();run(6);
-    require(denoiser.acceptance>.7,"Mirrored/nonuniform transform reprojection lost history");
-    const double mirroredAcceptance=denoiser.acceptance;
+    require(acceptance()>.7,"Mirrored/nonuniform transform reprojection lost history");
+    const double mirroredAcceptance=acceptance();
     SceneInstance revealed=instance;revealed.id="revealed";scene.instances.push_back(revealed);run(7,1,true);
-    require(denoiser.acceptance<.55,"Disoccluded surface accepted old object history");
+    require(acceptance()<.55,"Disoccluded surface accepted old object history");
     filtered=read(gl,denoiser.output(),w,h);
     for(int y=0;y<h;++y) for(int x=0;x<w/2;++x) require(std::abs(filtered[(size_t(y)*w+x)*4]-5)<1e-4,"Disocclusion ghost or edge bleeding");
     scene.camera.restoreState({.08f,0,3},{.08f,0,0},{0,1,0},53.130102);run(8,3);
-    require(denoiser.acceptance==0,"Moving refractive path reused history");
-    denoiser.invalidate();run(9,4);require(denoiser.acceptance==0,"Volume path reused history");
+    require(acceptance()==0,"Moving refractive path reused history");
+    denoiser.invalidate();run(9,4);require(acceptance()==0,"Volume path reused history");
     run(10,1);
     scene.camera.restoreState({.08f,0,3},{.08f,0,6},{0,1,0},53.130102);run(11,1);
-    require(denoiser.acceptance==0,"Rapid camera turn accepted off-screen old geometry");
-    run(12,1);require(denoiser.acceptance>.95,"Stationary history did not recover after turn");
+    require(acceptance()==0,"Rapid camera turn accepted off-screen old geometry");
+    run(12,1);require(acceptance()>.95,"Stationary history did not recover after turn");
     // A last diffuse sample cannot reclassify a full accumulation containing volume paths.
     std::vector<float> volumeAverage(size_t(w)*h*4,2.f), volumeFlags(size_t(w)*h*4,.5f), averageNormals(size_t(w)*h*4,.5f);
     for(size_t i=0;i<volumeFlags.size();i+=4){volumeFlags[i+3]=16;averageNormals[i+2]=1;averageNormals[i+3]=4;volumeAverage[i+3]=4;}
@@ -272,7 +284,7 @@ void synthetic(QOpenGLFunctions_3_3_Core *gl,const QString &output,QJsonObject &
     denoiser.prepare(scene);
     denoiser.filter(vao,scene,RendererDenoiseTestAccess::color(renderer),4,false,
         RendererDenoiseTestAccess::normal(renderer),RendererDenoiseTestAccess::albedo(renderer));finish(renderer);denoiser.poll();
-    require(mse(read(gl,denoiser.output(),w,h),volumeAverage)<1e-12 && denoiser.acceptance==0,"Volume preview lost raw accumulation or reused history");
+    require(mse(read(gl,denoiser.output(),w,h),volumeAverage)<1e-12 && acceptance()==0,"Volume preview lost raw accumulation or reused history");
     denoiser.filter(vao,scene,RendererDenoiseTestAccess::color(renderer),4,true,
         RendererDenoiseTestAccess::normal(renderer),RendererDenoiseTestAccess::albedo(renderer));finish(renderer);
     require(mse(read(gl,denoiser.output(),w,h),volumeAverage)<1e-12,"Final filter reclassified accumulated volume as diffuse");
@@ -280,14 +292,14 @@ void synthetic(QOpenGLFunctions_3_3_Core *gl,const QString &output,QJsonObject &
     upload(gl,RendererDenoiseTestAccess::albedo(renderer),w,h,volumeFlags);
     denoiser.filter(vao,scene,RendererDenoiseTestAccess::color(renderer),4,false,
         RendererDenoiseTestAccess::normal(renderer),RendererDenoiseTestAccess::albedo(renderer));finish(renderer);denoiser.poll();
-    require(denoiser.acceptance==0,"New diffuse region reused old volume accumulation");
+    require(acceptance()==0,"New diffuse region reused old volume accumulation");
     auto invalidMaterial=read(gl,denoiser.sample(4),w,h);
     for(size_t i=3;i<invalidMaterial.size();i+=4)invalidMaterial[i]=0;
     upload(gl,denoiser.sample(4),w,h,invalidMaterial);
     upload(gl,denoiser.sample(0),w,h,std::vector<float>(size_t(w)*h*4,0));
     denoiser.filter(vao,scene,RendererDenoiseTestAccess::color(renderer),4,false,
         RendererDenoiseTestAccess::normal(renderer),RendererDenoiseTestAccess::albedo(renderer));finish(renderer);denoiser.poll();
-    require(mse(read(gl,denoiser.output(),w,h),volumeAverage)<1e-12 && denoiser.acceptance==0,
+    require(mse(read(gl,denoiser.output(),w,h),volumeAverage)<1e-12 && acceptance()==0,
         "Invalid realtime sample replaced the valid raw accumulation");
     // Textured guides can reject history even with a stationary camera. High spp
     // must keep the complete raw mean, rather than restarting from noisy samples.
@@ -338,12 +350,25 @@ void benchmark(const QStringList &args,QOpenGLFunctions_3_3_Core *gl)
     QString error;auto scene=Scene::prepareScene(args[2],false,error);require(bool(scene),qPrintable(error));
     auto settings=scene->document.settings();settings.antialiasing=args.contains("--aa");
     const auto mode=args[7];require(mode=="none" || mode=="oidn" || mode=="realtime","Invalid benchmark mode");
+    if(args.contains("--profile")) {
+        require(mode=="none","Profile pass requires denoising disabled");
+        qputenv("LEARNQT_TRACE_PROFILE","1");
+    }
     settings.denoiseMode=readDenoiseMode(QJsonObject{{"denoiseMode",mode}});settings.denoise=mode!="none";
     settings.computePathtrace=args.contains("--compute");settings.renderLow=false;settings.maxBounces=4;
+    const int seedOption=args.indexOf("--seed");
+    if(seedOption>=0) {bool ok=false;const auto value=args.value(seedOption+1).toULongLong(&ok);
+        require(ok && value<=4294967295ull,"Invalid sampler seed");settings.sampleSeed=unsigned(value);}
+    const int rrOption=args.indexOf("--rr-depth");
+    if(rrOption>=0)settings.rrMinDepth=args.value(rrOption+1).toInt();
+    require(settings.rrMinDepth>=0 && settings.rrMinDepth<=64,"Invalid RR depth");
     const int bouncesOption=args.indexOf("--bounces");
     if(bouncesOption>=0) settings.maxBounces=args.value(bouncesOption+1).toInt();
     require(settings.maxBounces>0 && settings.maxBounces<=int(MAX_BOUNCES_LIMIT),"Invalid bounce budget");
     settings.tileSize=128;settings.useTileRendering=true;const int w=args[4].toInt(),h=args[5].toInt(),spp=args[6].toInt();
+    const int tileOption=args.indexOf("--tile");
+    if(tileOption>=0){settings.tileSize=args.value(tileOption+1).toInt();require(settings.tileSize>0,"Invalid tile size");}
+    if(args.contains("--full"))settings.useTileRendering=false;
     const int warmup=args.contains("--no-warmup") ? 0 : 2;
     const int secondsOption=args.indexOf("--seconds");
     const double budget=secondsOption<0?0:args.value(secondsOption+1).toDouble();
@@ -381,6 +406,18 @@ void benchmark(const QStringList &args,QOpenGLFunctions_3_3_Core *gl)
         "Stationary textured preview flicker did not converge with raw sampling");
     const auto image=renderer.result(settings);require(image.save(args[3]+".png"),"Benchmark save failed");
     const auto raw=read(gl,RendererDenoiseTestAccess::color(renderer),w,h);saveLinear(raw,w,h,args[3]+".raw.png");
+    if(args.contains("--diagnostics")) {
+        QFile diagnostics(args[3]+".diagnostics.json");
+        require(diagnostics.open(QIODevice::WriteOnly),"Cannot write path diagnostics");
+        diagnostics.write(QJsonDocument(renderer.pathDiagnostics()).toJson());
+        QFile textures(args[3]+".textures.json");
+        require(textures.open(QIODevice::WriteOnly),"Cannot write texture resource diagnostics");
+        textures.write(QJsonDocument(renderer.textureResources()).toJson());
+    }
+    if(args.contains("--profile")) {
+        QFile profile(args[3]+".profile.json");require(profile.open(QIODevice::WriteOnly),"Cannot write trace profile");
+        profile.write(QJsonDocument(renderer.traceProfile()).toJson());
+    }
     saveLinear(read(gl,RendererDenoiseTestAccess::filtered(renderer,settings.effectiveDenoiseMode()),w,h),w,h,args[3]+".filtered.png");
     QJsonObject result{{"width",w},{"height",h},{"spp",measuredSpp},{"totalSpp",renderer.samples()},{"seconds",seconds},{"fps",measuredSpp/seconds},
         {"mode",mode},{"aa",settings.antialiasing},{"preview",preview},{"historyAcceptance",renderer.stats.historyAcceptance},
@@ -388,7 +425,16 @@ void benchmark(const QStringList &args,QOpenGLFunctions_3_3_Core *gl)
         {"rawTailRms",framePairs?std::sqrt(rawDelta/framePairs):0},{"filteredTailRms",framePairs?std::sqrt(filteredDelta/framePairs):0},
         {"bytes",double(renderer.allocatedBytes())},{"compute",renderer.stats.computePathtrace},
         {"backend",renderer.stats.pathtraceBackend},
+        {"shadowAnyHitEnabled",!qEnvironmentVariableIsSet("LEARNQT_DISABLE_ANYHIT")},
+        {"binaryShadowScene",std::none_of(scene->materials.begin(),scene->materials.end(),[](const Material &m) {
+            return m.alphaMode==Transparent||m.mediumtype!=None;
+        })},
+        {"gpuTraceMs",renderer.stats.gpuMs},
         {"bounces",settings.maxBounces},
+        {"sampleSeed",double(settings.sampleSeed)},
+        {"rrMinDepth",settings.rrMinDepth},
+        {"environmentSelectProbability",settings.useEnvironmentMap?scene->environmentSelectionProbability():0},
+        {"tileSize",settings.tileSize},{"tiled",settings.useTileRendering},
         {"device",QString::fromLatin1(reinterpret_cast<const char*>(gl->glGetString(GL_RENDERER)))}};
     QFile f(args[3]);require(f.open(QIODevice::WriteOnly),"Benchmark JSON write failed");f.write(QJsonDocument(result).toJson());
     std::cout<<QJsonDocument(result).toJson(QJsonDocument::Compact).constData()<<std::endl;

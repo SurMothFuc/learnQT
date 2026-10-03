@@ -316,6 +316,8 @@ void RenderThread::run()
                         jobSnapshot.denoise = settings.denoise;
                         jobSnapshot.denoiseMode = settings.denoiseMode;
                         jobSnapshot.antialiasing = settings.antialiasing;
+                        jobSnapshot.sampleSeed=settings.sampleSeed;
+                        jobSnapshot.rrMinDepth=settings.rrMinDepth;
                         dirty |= toSceneDirtyFlags(SceneDirtyFlag::Camera);
                         setState(RenderJobState::Preparing);
                         gpuWork = true;

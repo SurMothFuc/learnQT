@@ -1,0 +1,130 @@
+{
+    "R-C01": {
+        "cases": [
+            {
+                "material": "diffuse",
+                "pdfValidMass": 0.999999984775684,
+                "quadratureReflectance": 0.6978458432125905,
+                "roughness": 0.3499999940395355,
+                "sampleEvalError": 0,
+                "sampledReflectance": 0.6978910822363105
+            },
+            {
+                "material": "diffuse",
+                "pdfValidMass": 0.9999999851539201,
+                "quadratureReflectance": 0.712360132130641,
+                "roughness": 0.699999988079071,
+                "sampleEvalError": 0,
+                "sampledReflectance": 0.7124425128686198
+            },
+            {
+                "material": "diffuse",
+                "pdfValidMass": 0.9999999856518116,
+                "quadratureReflectance": 0.7248009513330942,
+                "roughness": 1,
+                "sampleEvalError": 0,
+                "sampledReflectance": 0.724915168588268
+            },
+            {
+                "material": "metal",
+                "pdfValidMass": 0.8905343428432388,
+                "quadratureReflectance": 0.5819040585629409,
+                "roughness": 0.3499999940395355,
+                "sampleEvalError": 0,
+                "sampledReflectance": 0.5814189501805798
+            },
+            {
+                "material": "metal",
+                "pdfValidMass": 0.6742348425368618,
+                "quadratureReflectance": 0.3537831538699763,
+                "roughness": 0.699999988079071,
+                "sampleEvalError": 0,
+                "sampledReflectance": 0.35313587856106937
+            },
+            {
+                "material": "metal",
+                "pdfValidMass": 0.5060984339816059,
+                "quadratureReflectance": 0.2174350163115477,
+                "roughness": 1,
+                "sampleEvalError": 0,
+                "sampledReflectance": 0.21720193330508752
+            },
+            {
+                "material": "mixed",
+                "pdfValidMass": 0.9562136678707702,
+                "quadratureReflectance": 0.6514691477939891,
+                "roughness": 0.3499999940395355,
+                "sampleEvalError": 0,
+                "sampledReflectance": 0.6512835527787182
+            },
+            {
+                "material": "mixed",
+                "pdfValidMass": 0.8696938738139579,
+                "quadratureReflectance": 0.5689293577395205,
+                "roughness": 0.699999988079071,
+                "sampleEvalError": 0,
+                "sampledReflectance": 0.5679807899533562
+            },
+            {
+                "material": "mixed",
+                "pdfValidMass": 0.8024393043288001,
+                "quadratureReflectance": 0.5218545950601339,
+                "roughness": 1,
+                "sampleEvalError": 0,
+                "sampledReflectance": 0.5204044555552854
+            }
+        ],
+        "comparisonIdentical": true,
+        "diffuseModelIntegral": 1.0357430343619853,
+        "reflectionReciprocityError": 4.817685911610772e-09
+    },
+    "R-C02": {
+        "authoredAxesDifference": 2112.8076410945505,
+        "legacyAxesDifference": 0,
+        "sampleEvalError": 0
+    },
+    "R-C05": {
+        "boundaryLimit": 1,
+        "bvhOverflow": 1,
+        "countMeaning": "affected pixels accumulated since reset; rejectedSamples counts sample events",
+        "firstAffectedPixel": [
+            0,
+            0
+        ],
+        "firstFlags": 5,
+        "fixture": "GPU event detection and synthetic CPU aggregation; scene diagnostics saved separately",
+        "gpuFlags": [
+            5,
+            16,
+            32,
+            8,
+            3
+        ],
+        "height": 1,
+        "invalidRay": 1,
+        "mediumOverflow": 1,
+        "nonFinite": 1,
+        "rejected": 0,
+        "rejectedSamples": 1,
+        "samples": 3,
+        "validSamples": 11,
+        "version": 7,
+        "width": 4
+    },
+    "R-Q01": {
+        "alpha": 0.501953125,
+        "linearMidpoint": 0.5,
+        "linearMipMean": 0.5,
+        "sharedImageColor": 0.2158605307340622,
+        "sharedImageData": 0.501960813999176
+    },
+    "R-Q02": {
+        "filteredCheckerMse": 0,
+        "limits": "Ray cone approximation; alpha/emission point sampling; EWA/differentials deferred",
+        "minFiltersTested": 6,
+        "oldCheckerMse": 0.1754754539579153,
+        "uvFootprint": 0.03500000014901161
+    },
+    "device": "NVIDIA GeForce RTX 5070 Ti/PCIe/SSE2",
+    "surface": "QOffscreenSurface; no window shown"
+}

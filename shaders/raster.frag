@@ -45,7 +45,7 @@ void main()
     int roughnessTex = int(tex1.y);
     int emissiveTex = int(tex1.z);
     if (baseColorTex >= 0)
-        baseColor *= SrgbToLinear(SampleMaterialTextureFiltered(baseColorTex, uv0).rgb);
+        baseColor *= SampleMaterialColorTextureFiltered(baseColorTex, uv0).rgb;
     if (metallicTex >= 0)
         metallic = clamp(metallic * TextureChannel(SampleMaterialTextureFiltered(metallicTex, uv0),
                                                    int(textureParam1.x)), 0.0, 1.0);
@@ -53,7 +53,7 @@ void main()
         roughness = clamp(roughness * TextureChannel(SampleMaterialTextureFiltered(roughnessTex, uv0),
                                                      int(textureParam1.y)), 0.045, 1.0);
     if (emissiveTex >= 0)
-        emissive *= SrgbToLinear(SampleMaterialTextureFiltered(emissiveTex, uv0).rgb);
+        emissive *= SampleMaterialColorTextureFiltered(emissiveTex, uv0).rgb;
 
     vec3 normal = normalize(worldNormal);
     vec3 viewDirection = normalize(eye - worldPosition);

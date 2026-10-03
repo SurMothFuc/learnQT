@@ -83,6 +83,10 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     void submitGpuBoundary();
     void pollGpuTimers();
     quint64 allocatedBytes() const;
+    // Explicit diagnostic readback at a completed GPU boundary; never used every frame.
+    QJsonObject pathDiagnostics();
+    QJsonObject traceProfile();
+    QJsonObject textureResources() const { return textureResourceReport; }
     // 返回本次调用是否真的重绘了拾取缓冲；只有版本或尺寸变化才会重绘。
     bool updatePick(int width, int height, quint64 version);
     // 最近一次拾取 pass 的 GPU 执行耗时，用于区分拾取与光栅化预览的开销。
@@ -187,6 +191,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     QStringList uploadedMeshes;
     void uploadHdrTextures(bool recreateResources);
     void uploadMaterialTextures(bool recreateResources);
+    void bindMaterialTextureInputs(QOpenGLShaderProgram *program,int textureUnit,int infoUnit);
 
     // 光栅化交互预览：几何按 mesh 分组上传，实例参数按实例步进的属性缓冲提供。
     bool renderRasterPreview(const RenderParams::Snapshot &snapshot);
@@ -281,6 +286,9 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     GLuint nodesTextureBuffer = 0;
     GLuint lightsTextureBuffer = 0;
     GLuint materialTextureArray = 0;
+    std::array<GLuint,3> materialTextureExtraArrays{};
+    int materialTexturePoolCapacity=2,surfacePdfOffset=0;
+    QJsonObject textureResourceReport;
     GLuint materialTextureInfoBuffer = 0;
     GLuint materialTextureInfoTexture = 0;
     GLuint hdrMap = 0;
@@ -289,6 +297,8 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     GLuint VAO = 0;
     GLuint EBO = 0;
     int materialTextureLayerCount = 0;
+    std::vector<int> uploadedTextureViewSignature;
+    std::vector<std::array<int,2>> materialTextureSourceOverrides;
 
     std::unique_ptr<QOpenGLShaderProgram> m_program = nullptr;
     std::shared_ptr<QOpenGLShaderProgram> pathtrace_program;

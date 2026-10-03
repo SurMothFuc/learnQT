@@ -64,7 +64,7 @@ class learnQT : public QMainWindow
     bool syncingSelection = false;
     QComboBox *outputDenoise;
     QCheckBox *outputAntialiasing;
-    QSpinBox *outputWidth, *outputHeight, *outputSamples, *outputTile, *outputBounces;
+    QSpinBox *outputWidth, *outputHeight, *outputSamples, *outputTile, *outputBounces, *outputRrMinDepth;
     PreviewSettingsPanel *previewChromePanel = nullptr, *previewDetailPanel = nullptr;
     QDialog *previewDialog = nullptr;
     QAction *renderAction, *pauseAction, *stopAction, *undoAction, *redoAction;

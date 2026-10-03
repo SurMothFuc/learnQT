@@ -39,7 +39,9 @@ bool CrossMediumBoundary(inout MediumStack stack, HitResult hit, vec3 outgoing) 
     if (hit.material.mediumtype == MEDIUM_NONE) return true;
     bool intoObject = dot(outgoing, hit.geometricNormal) < 0.0;
     if (!hit.isInside && intoObject) {
-        if (stack.size == MAX_MEDIA) return false;
+        if (stack.size == MAX_MEDIA) {
+            pathDiagnosticFlags|=DIAG_MEDIUM_OVERFLOW;return false;
+        }
         stack.entries[stack.size++] = MaterialMedium(hit.material);
     } else if (hit.isInside && !intoObject && stack.size > 0) {
         --stack.size;
@@ -55,15 +57,27 @@ vec3 MediumTransmittance(Medium medium, float distance) {
         sigma = vec3(medium.density);
     return exp(-sigma * max(0.0, distance));
 }
-vec3 ShadowTransmittance(vec3 origin, vec3 normal, vec3 direction,
+vec3 ShadowTransmittance(vec3 origin, vec3 originError, vec3 normal, vec3 direction,
                          float maxDistance, MediumStack media, int targetLight, int targetTriangle) {
     Ray ray;
-    ray.startPoint = length(normal) > 0.0 ? OffsetRayOrigin(origin, normal, direction) : origin;
+    ray.startPoint = length(normal) > 0.0 ? OffsetRayOrigin(origin, originError, normal, direction) : origin;
     ray.direction = direction;
     vec3 tr = vec3(1.0);
+    float travelled=dot(ray.startPoint-origin,direction);
+#ifdef INSTANCED_SCENE
+    // Boundary/medium queries retain ordered segments. Mask/Blend still pass
+    // through the same alpha test before an occluder can terminate this query.
+    if(shadowAnyHit && shadowBinaryScene && media.size==0) {
+        float limit=maxDistance<INF?max(0.0,maxDistance-travelled):INF;
+        float sphereDistance;int sphere=IntersectAnalyticLights(ray.startPoint,direction,sphereDistance);
+        if(sphere>=0 && sphere!=targetLight && sphereDistance<limit)return vec3(0);
+        HitResult blocker=hitBVH(ray,true,limit,true,targetTriangle);
+        return blocker.isHit?vec3(0):vec3(1);
+    }
+#endif
     for (int layer=0; layer<MAX_SHADOW_LAYERS; ++layer) {
-        float remaining = maxDistance < INF ? maxDistance-dot(ray.startPoint-origin,direction) : INF;
-        float tolerance = 4.0 * RayEpsilon(ray.startPoint);
+        float remaining = maxDistance < INF ? maxDistance-travelled : INF;
+        float tolerance = maxDistance < INF ? FloatGamma(5.0)*(abs(maxDistance)+abs(travelled)) : 0.0;
         if (remaining <= tolerance) return tr;
 #ifdef INSTANCED_SCENE
         HitResult hit = hitBVH(ray, true);
@@ -82,9 +96,26 @@ vec3 ShadowTransmittance(vec3 origin, vec3 normal, vec3 direction,
         if (!hit.isHit) return tr;
         if (hit.material.alphaMode != ALPHA_MODE_TRANSPARENT) return vec3(0.0);
         if (!CrossMediumBoundary(media, hit, direction)) return vec3(0.0);
-        ray.startPoint = OffsetRayOrigin(hit.hitPoint, hit.geometricNormal, direction);
+        vec3 nextOrigin=OffsetRayOrigin(hit.hitPoint,hit.positionError,hit.geometricNormal,direction);
+        travelled+=hit.hitDistance+dot(nextOrigin-hit.hitPoint,direction);
+        ray.startPoint=nextOrigin;
     }
+    pathDiagnosticFlags|=DIAG_BOUNDARY_LIMIT;
     return vec3(0.0);
+}
+vec3 ShadowTransmittance(vec3 origin,vec3 normal,vec3 direction,float maxDistance,
+                         MediumStack media,int targetLight,int targetTriangle) {
+    return ShadowTransmittance(origin,FloatGamma(3.0)*abs(origin),normal,direction,maxDistance,media,targetLight,targetTriangle);
+}
+vec3 ShadowLightTransmittance(vec3 origin,vec3 error,vec3 normal,LightSample light,MediumStack media) {
+    if(light.distance>=INF)
+        return ShadowTransmittance(origin,error,normal,light.direction,INF,media,light.lightIndex,light.triangleIndex);
+    vec3 from=length(normal)>0.0?OffsetRayOrigin(origin,error,normal,light.direction):origin;
+    vec3 to=OffsetRayOrigin(light.point,light.positionError,light.normal,from-light.point);
+    vec3 connection=to-from;float distance=length(connection);
+    if(distance<=0.0)return vec3(1);
+    return ShadowTransmittance(from,vec3(0),vec3(0),connection/distance,distance,
+        media,light.lightIndex,light.triangleIndex);
 }
 
 vec3 ShadowTransmittance(vec3 origin, vec3 normal, vec3 direction,

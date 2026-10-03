@@ -61,10 +61,22 @@ void learnQT::configureAaDenoiseRegression()
         };
         auto interaction=[&](int i){previewDetailPanel->findChild<QComboBox*>("interactionMode")->setCurrentIndex(i);};
         if(state->phase==0){
-            navigateWorkspace(WorkspacePage::Scene);resize(1366,768);viewport->setFixedSize(512,384);
+            navigateWorkspace(WorkspacePage::Scene);resize(1366,768);
+            // Keep the GPU workload at 512x384 physical pixels across DPI settings.
+            const qreal dpi=viewport->devicePixelRatioF();
+            viewport->setFixedSize(qRound(512/dpi),qRound(384/dpi));
             auto s=editor->document.settings();s.renderLow=false;s.maxRenderFrames=0;s.maxBounces=4;
             s.tileSize=64;s.useTileRendering=true;s.antialiasing=true;s.denoise=true;s.denoiseMode=DenoiseMode::Realtime;
             s.interactionMode=RenderParams::InteractionKeepPathtrace;commitPreviewSettings(s);showPreviewSettingsDialog();
+            auto rr=previewDetailPanel->findChild<QSpinBox*>("previewRrMinDepth");
+            if(!rr || !outputRrMinDepth){finish("RR controls missing");return;}
+            rr->setValue(5);
+            if(editor->document.settings().rrMinDepth!=5){finish("Preview RR control not connected");return;}
+            outputRrMinDepth->setValue(7);QMetaObject::invokeMethod(outputRrMinDepth,"editingFinished");
+            if(editor->document.root["output"].toObject()["rrMinDepth"].toInt()!=7 || editor->document.settings().rrMinDepth!=5) {
+                finish("Output RR control not connected or altered preview");return;
+            }
+            rr->setValue(3);outputRrMinDepth->setValue(3);QMetaObject::invokeMethod(outputRrMinDepth,"editingFinished");
             next();return;
         }
         const auto &s=state->stats;
@@ -130,7 +142,9 @@ void learnQT::configureAaDenoiseRegression()
             wheel();if(s.rasterActive || s.size.width()>200 || !s.denoisedVersion)return;
             viewport->grabFramebuffer().save(output+"/low-resolution.png");interaction(0);next();
         }else if(state->phase==11){
-            if(s.rasterActive || s.size.width()!=512 || s.version!=viewport->sceneVersion() || !s.denoisedVersion)return;
+            const QSize expectedSize(qRound(viewport->width()*viewport->devicePixelRatioF()),
+                                     qRound(viewport->height()*viewport->devicePixelRatioF()));
+            if(s.rasterActive || s.size!=expectedSize || s.version!=viewport->sceneVersion() || !s.denoisedVersion)return;
             navigateWorkspace(WorkspacePage::Render);
             outputWidth->setValue(320);outputHeight->setValue(240);outputSamples->setValue(4);outputBounces->setValue(4);
             outputDenoise->setCurrentIndex(1);outputAntialiasing->setChecked(true);refreshRenderCameras();

@@ -6,7 +6,9 @@ bool Renderer::updatePick(int w, int h, quint64 version)
         return false;
     if (!pickProgram)
         pickProgram.reset(getShaderProgram(getShaderPath("pick.frag"), getShaderPath("triangle.vert"), {},
-                                           {{"INSTANCED_SCENE", "1"}}));
+                                           {{"INSTANCED_SCENE", "1"},{"PACKED_SURFACE_PDF","1"},
+                                            {"PICKING_PASS","1"},{"LEGACY_SAMPLER","1"},
+                                            {"MATERIAL_TEXTURE_POOL_COUNT",std::to_string(materialTexturePoolCapacity)}}));
     if (!pickProgram->isLinked())
         throw std::runtime_error("GPU picking shader could not link");
     // 拾取 pass 是整屏 BVH 遍历，和光栅化预览是两笔独立开销，所以单独计时。
@@ -67,7 +69,9 @@ bool Renderer::updatePick(int w, int h, quint64 version)
     glActiveTexture(GL_TEXTURE7);
     glBindTexture(GL_TEXTURE_BUFFER, materialTextureInfoTexture);
     p->setUniformValue("materialTextureInfo", 7);
+    p->setUniformValue("materialTextureInfoStride",4);
     p->setUniformValue("materialTextureCount", materialTextureLayerCount);
+    bindMaterialTextureInputs(p,6,7);
     glBindVertexArray(VAO);
     glDisable(GL_DEPTH_TEST);
     glViewport(0, 0, w, h);

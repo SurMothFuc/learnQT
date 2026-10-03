@@ -67,6 +67,8 @@ void learnQT::addRenderTask()
     settings.samples = outputSamples->value();
     settings.tileSize = outputTile->value();
     settings.bounces = outputBounces->value();
+    settings.sampleSeed=unsigned(editor->document.root["output"].toObject()["sampleSeed"].toDouble());
+    settings.rrMinDepth=outputRrMinDepth->value();
     settings.denoiseMode = DenoiseMode(outputDenoise->currentIndex());
     settings.denoise = settings.denoiseMode != DenoiseMode::None;
     settings.antialiasing = outputAntialiasing->isChecked();

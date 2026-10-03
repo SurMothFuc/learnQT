@@ -1,146 +1,4 @@
-#include "common.h"
-#include "MaterialTextureImage.h"
-#include "RasterEnvironment.h"
-#include <QGuiApplication>
-#include <QOffscreenSurface>
-#include <QOpenGLContext>
-#include <QOpenGLFunctions_3_3_Core>
-#include <QOpenGLShaderProgram>
-#include <QOpenGLFramebufferObject>
-#include <QFile>
-#include <QDir>
-#include <QFileInfo>
-#include <QRegularExpression>
-#include <QVector4D>
-#include <array>
-#include <cmath>
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-#include <vector>
-
-static void check(bool value, const std::string& text) {
-    if (!value) throw std::runtime_error(text);
-}
-static void checkNear(double actual, double expected, double tolerance, const std::string& name) {
-    std::cout << name << ": " << actual << " (expected " << expected << ")\n";
-    check(std::isfinite(actual) && std::abs(actual-expected) <= tolerance, name);
-}
-static QString read(const QString &path)
-{
-    QFile file(path);
-    check(file.open(QIODevice::ReadOnly), path.toStdString());
-    QString source = QString::fromUtf8(file.readAll());
-    QRegularExpression expression("#include\\s+\"([^\"]+)\"");
-    for (auto match = expression.match(source); match.hasMatch(); match = expression.match(source))
-        source.replace(match.capturedStart(), match.capturedLength(),
-                       read(QFileInfo(path).dir().filePath(match.captured(1))));
-    return source;
-}
-
-class Audit : public QOpenGLFunctions_3_3_Core {
-public:
-    QOpenGLContext context;
-    QOffscreenSurface surface;
-    std::unique_ptr<QOpenGLFramebufferObject> target;
-    QString modules;
-    GLuint vao = 0, hdr = 0, cache = 0;
-    GLuint triangleBuffer=0, triangleTexture=0, nodeBuffer=0, nodeTexture=0, lightBuffer=0, lightTexture=0;
-    int lightCount=0, analyticCount=0, triangleCount=0;
-    static constexpr int resolution = 256;
-    Audit() {
-        QSurfaceFormat format; format.setVersion(3,3); format.setProfile(QSurfaceFormat::CoreProfile);
-        context.setFormat(format); check(context.create(), "create GL context");
-        surface.setFormat(context.format()); surface.create();
-        check(context.makeCurrent(&surface), "make current"); initializeOpenGLFunctions();
-        std::cout << "OpenGL: " << glGetString(GL_RENDERER) << "\n";
-        QOpenGLFramebufferObjectFormat f; f.setInternalTextureFormat(GL_RGBA32F);
-        target.reset(new QOpenGLFramebufferObject(resolution,resolution,f));
-        check(target->isValid(), "float FBO");
-        glGenVertexArrays(1,&vao); glBindVertexArray(vao);
-        glGenTextures(1,&hdr); glGenTextures(1,&cache);
-        for (const char* name : {"defines","structs","uniforms","utils","bvh_material","hdr_utils","bsdf","light_sampling","medium","pathtrace"})
-            modules += read(QString::fromStdString(getShaderPath(std::string("include/")+name+".glsl"))) + "\n";
-        setGeometry({});
-        setLights({},0);
-    }
-    ~Audit() {
-        target.reset();
-        for (GLuint value : {hdr,cache,triangleTexture,nodeTexture,lightTexture}) glDeleteTextures(1,&value);
-        for (GLuint value : {triangleBuffer,nodeBuffer,lightBuffer}) glDeleteBuffers(1,&value);
-        glDeleteVertexArrays(1,&vao);
-        context.doneCurrent();
-    }
-    void image(GLuint id, int unit, int w, int h, const float* data) {
-        glActiveTexture(GL_TEXTURE0+unit); glBindTexture(GL_TEXTURE_2D,id);
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-        glTexImage2D(GL_TEXTURE_2D,0,GL_RGB32F,w,h,0,GL_RGB,GL_FLOAT,data);
-    }
-    void environment(int w, int h, const std::vector<float>& rgb) {
-        std::unique_ptr<float[]> c(calculateHdrCache(const_cast<float*>(rgb.data()),w,h));
-        double sum=0;
-        for(int i=0;i<w*h;++i) { check(std::isfinite(c[3*i+2]) && c[3*i+2]>=0,"finite HDR mass"); sum+=c[3*i+2]; }
-        checkNear(sum,1,1e-6,"CDF probability sum");
-        image(hdr,0,w,h,rgb.data()); image(cache,1,w,h,c.get());
-    }
-    void buffer(GLuint& buffer, GLuint& texture, int unit, GLenum format, const std::vector<float>& data) {
-        if (!buffer) glGenBuffers(1,&buffer);
-        if (!texture) glGenTextures(1,&texture);
-        glBindBuffer(GL_TEXTURE_BUFFER,buffer);
-        const std::vector<float> dummy(16,0);
-        const auto& actual=data.empty()?dummy:data;
-        glBufferData(GL_TEXTURE_BUFFER,actual.size()*sizeof(float),actual.data(),GL_STATIC_DRAW);
-        glActiveTexture(GL_TEXTURE0+unit); glBindTexture(GL_TEXTURE_BUFFER,texture); glTexBuffer(GL_TEXTURE_BUFFER,format,buffer);
-    }
-    void setLights(const std::vector<float>& data, int analytic) {
-        lightCount=int(data.size()/16); analyticCount=analytic;
-        buffer(lightBuffer,lightTexture,4,GL_RGBA32F,data);
-    }
-    void setGeometry(const std::vector<float>& data) {
-        triangleCount=int(data.size()/80);
-        buffer(triangleBuffer,triangleTexture,2,GL_RGBA32F,data);
-        // One leaf, reserved node zero. It is sufficient for all small analytic fixtures.
-        std::vector<float> nodes(24,0); nodes[15]=float(triangleCount);
-        buffer(nodeBuffer,nodeTexture,3,GL_RGB32F,nodes);
-    }
-    std::vector<float> run(const QString& body, bool environmentEnabled=true) {
-        QOpenGLShaderProgram program;
-        const char* vertex = "#version 330 core\nout vec3 pix; void main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2)*2.0-1.0;pix=vec3(p,0);gl_Position=vec4(p,0,1);}";
-        check(program.addShaderFromSourceCode(QOpenGLShader::Vertex,vertex),program.log().toStdString());
-        QString fragment="#version 330 core\nin vec3 pix;\nlayout(location=0) out vec4 outputColor;\n";
-        if(environmentEnabled) fragment+="#define USEENVIRONMENTMAP\n";
-        fragment+=modules+"\n"+body;
-        check(program.addShaderFromSourceCode(QOpenGLShader::Fragment,fragment),program.log().toStdString());
-        check(program.link(),program.log().toStdString()); program.bind();
-        program.setUniformValue("width",resolution); program.setUniformValue("height",resolution);
-        glUniform1ui(program.uniformLocation("frameCounter"),7); program.setUniformValue("hdrResolution",64);
-        program.setUniformValue("hdrMap",0); program.setUniformValue("hdrCache",1);
-        program.setUniformValue("triangles",2); program.setUniformValue("nodes",3); program.setUniformValue("lights",4);
-        program.setUniformValue("nTriangles",triangleCount); program.setUniformValue("nNodes",triangleCount>0?2:0);
-        program.setUniformValue("nLights",lightCount); program.setUniformValue("nAnalyticLights",analyticCount);
-        program.setUniformValue("materialTextureCount",0);
-        // Distinct sampler types need distinct units even when the test has no material images.
-        program.setUniformValue("materialTextures",5); program.setUniformValue("materialTextureInfo",6);
-        std::vector<float> sobol= getSobelRandomNumber(7,60);
-        program.setUniformValueArray("sobelNumber",sobol.data(),int(sobol.size()),1);
-        check(glGetError()==GL_NO_ERROR,"GL setup/uniform error");
-        target->bind(); glViewport(0,0,resolution,resolution); glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES,0,3);
-        std::vector<float> pixels(resolution*resolution*4);
-        glReadPixels(0,0,resolution,resolution,GL_RGBA,GL_FLOAT,pixels.data());
-        GLenum error=glGetError(); check(error==GL_NO_ERROR,"OpenGL draw/read error "+std::to_string(error));
-        for(float v:pixels) check(std::isfinite(v),"NaN/Inf pixel");
-        program.release(); target->release(); return pixels;
-    }
-    std::array<double,4> mean(const QString& body, bool env=true) {
-        auto pixels=run(body,env); std::array<double,4> sum{};
-        for(size_t i=0;i<pixels.size();++i) sum[i%4]+=pixels[i]/double(resolution*resolution);
-        return sum;
-    }
-};
+#include "LightingAudit.h"
 
 static void materialTextureUploadTests(Audit& a) {
     GLuint texture=0;a.glGenTextures(1,&texture);
@@ -283,6 +141,18 @@ void main(){
     a.setLights({},0);
     a.setGeometry(triangle(0));
     a.environment(7,5,std::vector<float>(7*5*3,1));
+    const auto whiteComponents=a.mean(R"(void main(){
+        Ray r;r.startPoint=vec3(0,0,1);r.direction=vec3(0,0,-1);HitResult h=hitBVH(r);
+        MediumStack m;m.size=0;vec3 direct=EstimateDirectLighting(h,vec3(1),1.0,m);
+        vec2 uv=CranleyPattersonRotation(vec2(sobelNumber[0],sobelNumber[1]));
+        BsdfSample s=SampleSurfaceBSDF(h,1.0,vec3(uv,rand()));
+        r.startPoint=OffsetRayOrigin(h.hitPoint,h.positionError,h.geometricNormal,s.direction);r.direction=s.direction;
+        HitResult next=hitBVH(r);
+        vec3 escaped=s.weight*InfiniteEmission(s.direction,h.hitPoint,s.delta,s.pdf);
+        outputColor=vec4(direct.r,escaped.r,s.weight.r,float(next.isHit));})");
+    std::cout<<"White HDR components: direct="<<whiteComponents[0]<<" bsdf="<<whiteComponents[1]
+             <<" weight="<<whiteComponents[2]<<" selfHit="<<whiteComponents[3]<<std::endl;
+    checkNear(whiteComponents[3],0,0,"oblique secondary rays do not re-hit the zero-coordinate plane");
     checkNear(a.mean(surfacePath)[0],29.0/28.0,.007,"full integrator white HDR MIS (analytic Disney diffuse integral)");
     auto sun1=light(3,-1,.6f,2,.5f),sun2=light(3,-1,.6f,2,.5f);sun1[12]=.5f;
     sun1.insert(sun1.end(),sun2.begin(),sun2.end());a.setLights(sun1,2);
@@ -518,7 +388,9 @@ void main() {
 
 int main(int argc,char** argv) {
     QGuiApplication app(argc,argv);
-    try { Audit audit; materialTextureUploadTests(audit); hdrTests(audit); analyticTests(audit); alphaDeltaTests(audit); standardInterfaceLightingTests(audit); mediumTests(audit); rasterEnvironmentTests(audit); std::cout<<"Lighting numerical tests passed\n"; }
+    try { Audit audit;
+        if(app.arguments().contains("--analytic-only")){analyticTests(audit);return 0;}
+        materialTextureUploadTests(audit); hdrTests(audit); analyticTests(audit); alphaDeltaTests(audit); standardInterfaceLightingTests(audit); mediumTests(audit); rasterEnvironmentTests(audit); std::cout<<"Lighting numerical tests passed\n"; }
     catch(const std::exception& error) { std::cerr<<error.what()<<"\n"; return 1; }
     return 0;
 }

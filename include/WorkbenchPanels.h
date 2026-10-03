@@ -99,6 +99,7 @@ class PreviewSettingsPanel : public QWidget
   private:
     QSpinBox *samples;
     QSpinBox *bounces;
+    QSpinBox *rrMinDepth;
     QSpinBox *tile;
     QCheckBox *tiled;
     QCheckBox *lowResolution;

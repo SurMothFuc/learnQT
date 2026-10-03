@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "RenderJob.h"
 #include <QApplication>
 #include <QDir>
 #include <QFile>
@@ -81,12 +82,101 @@ static void ground(const Scene &s)
     near(groundY, modelMin - .001f, "ground contact");
 }
 
+static void testGeneratedNormals()
+{
+    QTemporaryDir directory;
+    check(directory.isValid(), "Cannot create normal regression fixtures");
+    auto load = [&](const char *name, const QByteArray &obj, bool smooth) {
+        const QString path = directory.path() + "/" + name + ".obj";
+        write(path, obj);
+        std::vector<Triangle> triangles;
+        std::vector<TextureAsset> textures;
+        MeshLoader::readModel(path.toStdString(), triangles, textures, Material{},
+                              QMatrix4x4{}, smooth, false, nullptr, false);
+        check(triangles.size() == 2, "Normal fixture did not import both faces");
+        return triangles;
+    };
+    // No authored normals, as in Sibenik. Perpendicular wall/reveal faces must
+    // retain their planar normals even at their shared edge.
+    const QByteArray corner = "v 0 0 0\nv 1 0 0\nv 0 1 0\nv 0 0 1\nf 1 2 3\nf 1 3 4\n";
+    for (const auto &t : load("corner", corner, true))
+    {
+        const auto face = QVector3D::crossProduct(t.p2 - t.p1, t.p3 - t.p1).normalized();
+        for (const auto &normal : {t.n1, t.n2, t.n3})
+            check(QVector3D::dotProduct(face, normal) > .9999f,
+                  "Generated normals rounded a perpendicular wall edge");
+    }
+    // A shallow 30-degree bend must still interpolate smoothly across the edge.
+    const QByteArray curve = "v 0 0 0\nv 1 0 0\nv 0 1 0\nv 0 -0.8660254 0.5\nf 1 2 3\nf 2 1 4\n";
+    const QVector3D expected(0, .258819f, .965926f);
+    int shared = 0;
+    for (const auto &t : load("curve", curve, true))
+    {
+        const QVector3D positions[] = {t.p1, t.p2, t.p3};
+        const QVector3D normals[] = {t.n1, t.n2, t.n3};
+        for (int i = 0; i < 3; ++i)
+            if (positions[i].y() == 0 && positions[i].z() == 0)
+            {
+                check(QVector3D::dotProduct(normals[i], expected) > .9999f,
+                      "Generated normals stopped smoothing shallow curves");
+                ++shared;
+            }
+    }
+    check(shared == 4, "Curve fixture shared edge was not tested");
+    for (const auto &t : load("flat-curve", curve, false))
+    {
+        const auto face = QVector3D::crossProduct(t.p2 - t.p1, t.p3 - t.p1).normalized();
+        for (const auto &normal : {t.n1, t.n2, t.n3})
+            check(QVector3D::dotProduct(face, normal) > .9999f, "Explicit flat normals changed");
+    }
+    const QByteArray authored = "v 0 0 0\nv 1 0 0\nv 0 1 0\nv 0 0 1\n"
+                                "vn 0.5773503 0.5773503 0.5773503\nf 1//1 2//1 3//1\nf 1//1 3//1 4//1\n";
+    for (const auto &t : load("authored", authored, true))
+        for (const auto &normal : {t.n1, t.n2, t.n3})
+            check(QVector3D::dotProduct(normal, QVector3D(1, 1, 1).normalized()) > .9999f,
+                  "Crease limit replaced authored normals");
+}
+static void testSamplingSettings()
+{
+    auto document=SceneDocument::empty();auto settings=document.settings();
+    settings.sampleSeed=4294967295u;settings.rrMinDepth=7;document.captureSettings(settings);
+    auto copy=document;copy.root=QJsonDocument::fromJson(QJsonDocument(document.root).toJson()).object();
+    check(copy.settings().sampleSeed==settings.sampleSeed && copy.settings().rrMinDepth==7,
+          "Sampling settings did not survive JSON roundtrip");
+    RenderParams::instance().applySnapshot(settings);
+    check(RenderParams::instance().snapshot().sampleSeed==settings.sampleSeed &&
+          RenderParams::instance().snapshot().rrMinDepth==7,"Sampling settings missing from atomic snapshot");
+    QString error;check(document.validate(error,false),error);
+    const QJsonValue invalidSeeds[]={-1,1.5,4294967296.0,QString("42"),true};
+    for(const auto &value:invalidSeeds) {
+        auto invalid=document;auto render=invalid.root["render"].toObject();render["sampleSeed"]=value;invalid.root["render"]=render;
+        check(!invalid.validate(error,false),"Invalid sample seed accepted");
+        check(!RenderJobSettings::fromJson(QJsonObject{{"sampleSeed",value}}).valid(),"Invalid job seed accepted");
+    }
+    for(const QJsonValue value:{QJsonValue(-1),QJsonValue(65),QJsonValue(2.5)}) {
+        auto invalid=document;auto render=invalid.root["render"].toObject();render["rrMinDepth"]=value;invalid.root["render"]=render;
+        check(!invalid.validate(error,false),"Invalid RR depth accepted");
+        check(!RenderJobSettings::fromJson(QJsonObject{{"rrMinDepth",value}}).valid(),"Invalid job RR depth accepted");
+    }
+    const auto output=RenderJobSettings::fromJson(QJsonObject{{"sampleSeed",4294967295.0},{"rrMinDepth",9}});
+    check(output.valid() && output.sampleSeed==4294967295u && output.rrMinDepth==9,
+          "Formal sampling settings were not parsed");
+    RenderParams::instance().applySnapshot(SceneDocument::empty().settings());
+}
+
 void testEditor();
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
     try
     {
+        testGeneratedNormals();
+        testSamplingSettings();
+        if (app.arguments().contains("--normal-regression"))
+        {
+            std::cout << "Generated normals: hard edges, shallow curves, flat override and authored normals passed.\n";
+            return 0;
+        }
         testEditor();
         QTemporaryDir temporary(QCoreApplication::applicationDirPath() + "/scene-tests-XXXXXX");
         check(temporary.isValid(), "Cannot create test directory");

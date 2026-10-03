@@ -4,6 +4,7 @@
 #include <QSize>
 #include <QString>
 #include "DenoiseMode.h"
+#include <cmath>
 struct RenderJobSettings
 {
     QSize size{1920, 1080};
@@ -11,6 +12,9 @@ struct RenderJobSettings
     bool denoise = true;
     bool antialiasing = false;
     DenoiseMode denoiseMode = DenoiseMode::OIDN;
+    unsigned sampleSeed=0;
+    int rrMinDepth=3;
+    bool samplerSettingsValid=true;
     DenoiseMode effectiveDenoiseMode() const { return denoise ? denoiseMode : DenoiseMode::None; }
     static RenderJobSettings fromJson(const QJsonObject &o)
     {
@@ -23,13 +27,25 @@ struct RenderJobSettings
         s.denoiseMode = readDenoiseMode(o);
         s.denoise = s.denoiseMode != DenoiseMode::None;
         s.antialiasing = o["antialiasing"].toBool(false);
+        if(o.contains("sampleSeed")) {
+            const double seed=o["sampleSeed"].toDouble(-1);
+            s.samplerSettingsValid=o["sampleSeed"].isDouble() && std::isfinite(seed) && seed>=0 &&
+                seed<=4294967295.0 && std::floor(seed)==seed;
+            if(s.samplerSettingsValid)s.sampleSeed=unsigned(seed);
+        }
+        s.rrMinDepth=o["rrMinDepth"].toInt(3);
+        if(o.contains("rrMinDepth")) {
+            const double rr=o["rrMinDepth"].toDouble(-1);
+            s.samplerSettingsValid=s.samplerSettingsValid && o["rrMinDepth"].isDouble() &&
+                std::isfinite(rr) && rr>=0 && rr<=64 && std::floor(rr)==rr;
+        }
         return s;
     }
     bool valid() const
     {
-        return size.width() >= 16 && size.height() >= 16 && size.width() <= 16384 && size.height() <= 16384 &&
+        return samplerSettingsValid && size.width() >= 16 && size.height() >= 16 && size.width() <= 16384 && size.height() <= 16384 &&
                qint64(size.width()) * size.height() <= 67108864 && samples > 0 && samples <= 1000000 &&
-               tileSize >= 16 && tileSize <= 1024 && bounces > 0 && bounces <= 64;
+               tileSize >= 16 && tileSize <= 1024 && bounces > 0 && bounces <= 64 && rrMinDepth>=0 && rrMinDepth<=64;
     }
 };
 enum class RenderJobState

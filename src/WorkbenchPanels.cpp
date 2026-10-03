@@ -715,6 +715,9 @@ PreviewSettingsPanel::PreviewSettingsPanel(QWidget *p) : QWidget(p)
     };
     samples = spin(tr("预览 spp（0 无限）"), 0, 1000000, 0);
     bounces = spin(tr("预览反弹数"), 1, 64, 4);
+    rrMinDepth=spin(tr("RR 起始深度"),0,64,3);
+    rrMinDepth->setObjectName("previewRrMinDepth");
+    rrMinDepth->setToolTip(tr("从此散射深度开始随机终止低贡献路径；64 可用于有限深度下的关闭对照。"));
     tile = spin(tr("预览块大小"), 16, 1024, 128);
     tiled = new QCheckBox(tr("分块预览"));
     lowResolution = new QCheckBox(tr("降低预览分辨率"));
@@ -744,7 +747,7 @@ PreviewSettingsPanel::PreviewSettingsPanel(QWidget *p) : QWidget(p)
             return;
         emit changed(values());
     };
-    for (auto s : {samples, bounces, tile, idle})
+    for (auto s : {samples, bounces, rrMinDepth, tile, idle})
         connect(s, QOverload<int>::of(&QSpinBox::valueChanged), this, [publish](int) { publish(); });
     for (auto c : {tiled, lowResolution, antialiasing, rasterLock})
         connect(c, &QCheckBox::toggled, this, [publish](bool) { publish(); });
@@ -758,10 +761,12 @@ void PreviewSettingsPanel::setValues(const RenderParams::Snapshot &settings)
     syncing = true;
     originalSettings = settings;
     QSignalBlocker blockSamples(samples), blockBounces(bounces), blockTile(tile), blockIdle(idle);
+    QSignalBlocker blockRr(rrMinDepth);
     QSignalBlocker blockTiled(tiled), blockLow(lowResolution), blockDenoise(denoise);
     QSignalBlocker blockLock(rasterLock), blockInteraction(interaction), blockAA(antialiasing);
     samples->setValue(settings.maxRenderFrames);
     bounces->setValue(settings.maxBounces);
+    rrMinDepth->setValue(settings.rrMinDepth);
     tile->setValue(settings.tileSize);
     tiled->setChecked(settings.useTileRendering);
     lowResolution->setChecked(settings.renderLow);
@@ -777,6 +782,7 @@ RenderParams::Snapshot PreviewSettingsPanel::values() const
     RenderParams::Snapshot settings = originalSettings;
     settings.maxRenderFrames = samples->value();
     settings.maxBounces = bounces->value();
+    settings.rrMinDepth=rrMinDepth->value();
     settings.tileSize = tile->value();
     settings.useTileRendering = tiled->isChecked();
     settings.renderLow = lowResolution->isChecked();

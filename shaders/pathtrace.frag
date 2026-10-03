@@ -50,6 +50,7 @@ void main(void)
     if (any(greaterThanEqual(ivec2(gl_GlobalInvocationID.xy), traceTileSize))) return;
 #endif
     Ray ray;
+    if(samplerSeed!=0u)seed^=SamplerHash(samplerSeed);
     ray.startPoint = eye;
    // ray.startPoint = vec3(0, 0, 4);
 
@@ -57,9 +58,13 @@ void main(void)
     vec2 normalizedCoords = TRACE_PIXEL_COORD.xy / vec2(width,height);
     vec2 pixel = TRACE_PIXEL_COORD.xy;
     if (antialiasing) {
+        if(UnifiedSamplerEnabled()) pixel+=vec2(SampleDimension(0u),SampleDimension(1u))-.5;
+        else {
         uint aaSeed = uint(pixel.x)*1973u + uint(pixel.y)*9277u + 0x9e3779b9u;
+        aaSeed^=samplerSeed;
         vec2 rotation = vec2(wang_hash(aaSeed),wang_hash(aaSeed))*(1.0/4294967296.0);
         pixel += fract(aaSample+rotation)-.5;
+        }
     }
     if (realtimeGuides) seed = (uint(TRACE_PIXEL_COORD.x)*1973u + uint(TRACE_PIXEL_COORD.y)*9277u + sampleSequence*26699u) | 1u;
     ray.direction = CameraRayDirection(pixel);
@@ -70,9 +75,7 @@ void main(void)
     vec4 raw=vec4(color.render_color,Luminance(color.render_color)*Luminance(color.render_color));
     vec4 normal=vec4((color.normal_color+1.0)*.5,0);
     vec4 base=vec4(color.base_color,1);
-    bool valid=!any(isnan(raw)) && !any(isinf(raw)) &&
-               !any(isnan(normal)) && !any(isinf(normal)) &&
-               !any(isnan(base)) && !any(isinf(base));
+    bool valid=ValidTraceSample(raw,normal,base);
     float alpha=1.0/(float(frameCounter)+1.0);
     vec4 oldColor=texture(preRenderColor,normalizedCoords);
     vec4 oldNormal=texture(previousNormal,normalizedCoords), oldBase=texture(previousAlbedo,normalizedCoords);
@@ -81,7 +84,15 @@ void main(void)
     NormalResult=valid ? mix(oldNormal,normal,alpha) : oldNormal;
     BaseColorResult=valid ? mix(oldBase,base,alpha) : oldBase;
     // Normal alpha counts valid samples; albedo alpha records all accumulated path classes.
-    if(valid) { NormalResult.a=oldNormal.a+1.0; BaseColorResult.a=float(uint(oldBase.a) | (1u << uint(color.guideMaterial.y))); }
+    if(valid) NormalResult.a=oldNormal.a+1.0;
+    BaseColorResult.a=float(uint(oldBase.a) | (valid ? (1u << uint(color.guideMaterial.y)) : 0u) |
+        (pathDiagnosticFlags<<8));
+#ifdef TRACE_PROFILE
+    // A dedicated diagnostic variant reuses auxiliary RGB targets. Beauty and
+    // its second moment are unchanged. Denoising is forbidden by the caller.
+    NormalResult.rgb=mix(oldNormal.rgb,vec3(traversalNodeVisits,traversalTriangleTests,profileScatters),alpha);
+    BaseColorResult.rgb=mix(oldBase.rgb,vec3(profileTextureFetches,profileLightAttempts,profileInvalidLights),alpha);
+#endif
     if(guidesOnly) { RenderColorResult=oldColor; NormalResult=oldNormal; BaseColorResult=oldBase; }
     if(!valid) { raw=vec4(0); color.guideMaterial.w=0; }
 #ifdef COMPUTE_PATH

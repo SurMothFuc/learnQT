@@ -10,6 +10,7 @@ class Renderer;
 // Render-context-owned resources. No CPU image readback, scene mutation or UI access.
 class GpuDenoiser : protected QOpenGLFunctions_3_3_Core
 {
+    friend struct RendererDenoiseTestAccess;
 public:
     ~GpuDenoiser();
     void ensure(Renderer &renderer, QSize size);

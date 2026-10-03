@@ -51,6 +51,8 @@ public:
         bool computePathtrace = false;
         bool antialiasing = false;
         DenoiseMode denoiseMode = DenoiseMode::OIDN;
+        unsigned sampleSeed = 0;
+        int rrMinDepth=3;
         // The bool is retained for source compatibility with existing callers.
         DenoiseMode effectiveDenoiseMode() const { return denoise ? denoiseMode : DenoiseMode::None; }
 
@@ -67,6 +69,8 @@ public:
                    interactionIdleMs == other.interactionIdleMs &&
                    computePathtrace == other.computePathtrace &&
                    antialiasing == other.antialiasing &&
+                   sampleSeed == other.sampleSeed &&
+                   rrMinDepth == other.rrMinDepth &&
                    effectiveDenoiseMode() == other.effectiveDenoiseMode();
         }
 
@@ -90,6 +94,8 @@ public:
     RENDER_PARAMS_PARAM(ComputePathtrace, computePathtrace, bool, m_computePathtrace, false)
     RENDER_PARAMS_PARAM(Antialiasing, antialiasing, bool, m_antialiasing, false)
     RENDER_PARAMS_PARAM(DenoiseMode, denoiseMode, DenoiseMode, m_denoiseMode, DenoiseMode::OIDN)
+    RENDER_PARAMS_PARAM(SampleSeed, sampleSeed, unsigned, m_sampleSeed, 0)
+    RENDER_PARAMS_PARAM(RrMinDepth, rrMinDepth, int, m_rrMinDepth, 3)
 
 public:
     Snapshot snapshot() const;
@@ -100,6 +106,8 @@ public:
         setMaxBounces(s.maxBounces); setMaxRenderFrames(s.maxRenderFrames);
         setRasterLocked(s.rasterLocked); setInteractionIdleMs(s.interactionIdleMs);
         setAntialiasing(s.antialiasing); setDenoiseMode(s.denoiseMode);
+        setSampleSeed(s.sampleSeed);
+        setRrMinDepth(s.rrMinDepth);
     }
 
 public:

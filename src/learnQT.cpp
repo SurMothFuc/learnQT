@@ -705,6 +705,8 @@ QWidget *learnQT::createSettings()
     outputSamples = spin(tr("目标 spp"), 1, 1000000, 256);
     outputTile = spin(tr("Tile 大小"), 16, 1024, 128);
     outputBounces = spin(tr("反弹数"), 1, 64, 8);
+    outputRrMinDepth=spin(tr("RR 起始深度"),0,64,3);
+    outputRrMinDepth->setObjectName("outputRrMinDepth");
     outputDenoise = new QComboBox;
     outputDenoise->setObjectName("outputDenoiseMode");
     outputDenoise->addItems({tr("关闭"), tr("GPU 实时"), tr("OIDN")});
@@ -714,7 +716,7 @@ QWidget *learnQT::createSettings()
     outputAntialiasing->setObjectName("outputAntialiasing");
     form->addRow(outputAntialiasing);
     auto commitOutput = [this] { commitOutputSettings(); };
-    for (auto s : {outputWidth, outputHeight, outputSamples, outputTile, outputBounces})
+    for (auto s : {outputWidth, outputHeight, outputSamples, outputTile, outputBounces, outputRrMinDepth})
         connect(s, &QSpinBox::editingFinished, this, commitOutput);
     connect(outputDenoise, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [commitOutput] { commitOutput(); });
     connect(outputAntialiasing, &QCheckBox::toggled, this, [commitOutput] { commitOutput(); });
@@ -813,12 +815,15 @@ void learnQT::commitOutputSettings()
     if (m_restoring || m_loading)
         return;
     auto d = editor->document;
+    const auto previousOutput=d.root["output"].toObject();
     d.root["output"] =
         QJsonObject{{"width", outputWidth->value()},     {"height", outputHeight->value()},
                     {"samples", outputSamples->value()}, {"tileSize", outputTile->value()},
                     {"bounces", outputBounces->value()}, {"denoise", outputDenoise->currentIndex() != 0},
                     {"denoiseMode", denoiseModeName(DenoiseMode(outputDenoise->currentIndex()))},
-                    {"antialiasing", outputAntialiasing->isChecked()}};
+                    {"antialiasing", outputAntialiasing->isChecked()},
+                    {"sampleSeed",previousOutput["sampleSeed"].toDouble()},
+                    {"rrMinDepth",outputRrMinDepth->value()}};
     editor->submit(d, tr("输出设置"), EditorController::Display);
 }
 void learnQT::connectRenderThread()
@@ -1016,6 +1021,8 @@ void learnQT::startRender()
     settings.samples = outputSamples->value();
     settings.tileSize = outputTile->value();
     settings.bounces = outputBounces->value();
+    settings.rrMinDepth=outputRrMinDepth->value();
+    settings.sampleSeed=unsigned(editor->document.root["output"].toObject()["sampleSeed"].toDouble());
     settings.denoiseMode = DenoiseMode(outputDenoise->currentIndex());
     settings.denoise = settings.denoiseMode != DenoiseMode::None;
     settings.antialiasing = outputAntialiasing->isChecked();
@@ -1189,6 +1196,7 @@ void learnQT::restoreSceneControls()
     outputSamples->setValue(output.samples);
     outputTile->setValue(output.tileSize);
     outputBounces->setValue(output.bounces);
+    outputRrMinDepth->setValue(output.rrMinDepth);
     outputDenoise->setCurrentIndex(int(output.effectiveDenoiseMode()));
     outputAntialiasing->setChecked(output.antialiasing);
     m_restoring = false;

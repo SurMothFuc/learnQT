@@ -1,0 +1,163 @@
+{
+    "R-A02": {
+        "budgetAppliedBytes": 3145712,
+        "color": 0.2158203125,
+        "data": 0.501960813999176,
+        "fixtureTextureBytes": 11534320,
+        "layerLimitFallbacks": 7,
+        "minimumSamplerCapacityCovered": true
+    },
+    "R-C03": {
+        "afterVisibility": 0.6172142028808594,
+        "basis": "gamma(7) interpolation; gamma(3) affine transform; outward float rounding",
+        "beforeVisibility": 0.75,
+        "cases": [
+            {
+                "errorZ": 4.172326546758587e-12,
+                "scale": 9.999999747378752e-05,
+                "x": 0
+            },
+            {
+                "errorZ": 4.1723268395799096e-08,
+                "scale": 1,
+                "x": 0
+            },
+            {
+                "errorZ": 4.1723268395799096e-08,
+                "scale": 1,
+                "x": 10000
+            },
+            {
+                "errorZ": 4.1723268395799096e-08,
+                "scale": 1,
+                "x": -10000
+            },
+            {
+                "errorZ": 0.0004172326880507171,
+                "scale": 10000,
+                "x": 0
+            },
+            {
+                "errorZ": 0.0004172326880507171,
+                "scale": 10000,
+                "x": 10000
+            },
+            {
+                "errorZ": 0.0004172326880507171,
+                "scale": 10000,
+                "x": -10000
+            }
+        ]
+    },
+    "R-C04": {
+        "cases": [
+            {
+                "angleRadians": 0,
+                "integratedWeight": 0.7326436661074069,
+                "sampledWeight": 0.7324198092540541,
+                "side": 1,
+                "transmission": 0,
+                "validPdfMass": 0.9856915647450251
+            },
+            {
+                "angleRadians": 0,
+                "integratedWeight": 0.7507895637349975,
+                "sampledWeight": 0.7504189596302808,
+                "side": -1,
+                "transmission": 0,
+                "validPdfMass": 0.9856915832676236
+            },
+            {
+                "angleRadians": 0,
+                "integratedWeight": 0.4971065128205439,
+                "sampledWeight": 0.49703591364837507,
+                "side": 1,
+                "transmission": 0.6499999761581421,
+                "validPdfMass": 0.9725848216669253
+            },
+            {
+                "angleRadians": 0,
+                "integratedWeight": 1.0659160818564677,
+                "sampledWeight": 1.0651497731559831,
+                "side": -1,
+                "transmission": 0.6499999761581421,
+                "validPdfMass": 0.8065075788581058
+            },
+            {
+                "angleRadians": 0.6000000238418579,
+                "integratedWeight": 0.6684607048294751,
+                "sampledWeight": 0.6694888560949721,
+                "side": 1,
+                "transmission": 0,
+                "validPdfMass": 0.8953971441878821
+            },
+            {
+                "angleRadians": 0.6000000238418579,
+                "integratedWeight": 0.7220255300050716,
+                "sampledWeight": 0.7204153430099041,
+                "side": -1,
+                "transmission": 0,
+                "validPdfMass": 0.8953971637973694
+            },
+            {
+                "angleRadians": 0.6000000238418579,
+                "integratedWeight": 0.46607195322866357,
+                "sampledWeight": 0.4655276948017786,
+                "side": 1,
+                "transmission": 0.6499999761581421,
+                "validPdfMass": 0.9410724654645058
+            },
+            {
+                "angleRadians": 0.6000000238418579,
+                "integratedWeight": 0.8943829404788964,
+                "sampledWeight": 0.8933838479634275,
+                "side": -1,
+                "transmission": 0.6499999761581421,
+                "validPdfMass": 0.7016815004005033
+            },
+            {
+                "angleRadians": 1.100000023841858,
+                "integratedWeight": 0.5423520338753057,
+                "sampledWeight": 0.5439455509772415,
+                "side": 1,
+                "transmission": 0,
+                "validPdfMass": 0.6910167144449488
+            },
+            {
+                "angleRadians": 1.100000023841858,
+                "integratedWeight": 0.601378451511389,
+                "sampledWeight": 0.5996478794559152,
+                "side": -1,
+                "transmission": 0,
+                "validPdfMass": 0.6910167831085943
+            },
+            {
+                "angleRadians": 1.100000023841858,
+                "integratedWeight": 0.38959917908577313,
+                "sampledWeight": 0.3890177695716375,
+                "side": 1,
+                "transmission": 0.6499999761581421,
+                "validPdfMass": 0.8572498379608546
+            },
+            {
+                "angleRadians": 1.100000023841858,
+                "integratedWeight": 0.5229872719879287,
+                "sampledWeight": 0.5224320929885369,
+                "side": -1,
+                "transmission": 0.6499999761581421,
+                "validPdfMass": 0.5066338943285167
+            }
+        ],
+        "contract": "Sample/Eval/MIS share geometric-side validation; rejected directions are null probability mass",
+        "invalidBacksideEnergy": 0,
+        "limits": "No universal shading-normal energy compensation or terminator smoothing is claimed"
+    },
+    "R-Q03": {
+        "afterCoverage": 0.12510395050048828,
+        "beforeCoverage": 0.25,
+        "independentCutoffViews": true,
+        "limits": "Toksvig-style roughness approximation; two varying alpha sources and emissive Mask retain point semantics",
+        "referenceCoverage": 0.125,
+        "spp": 16
+    }
+}

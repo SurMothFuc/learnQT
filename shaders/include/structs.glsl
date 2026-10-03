@@ -52,6 +52,7 @@ struct Material {
     int normalTex;
     float normalScale;
     float normalMapFlipY;
+    vec4 tangent; // World authored tangent + handedness, projected onto the final shading normal.
 };
 // 光线
 struct Ray {
@@ -65,6 +66,7 @@ struct HitResult {
     int triangleIndex;
     float hitDistance;
     vec3 hitPoint;
+    vec3 positionError; // Component-wise reconstruction/affine-transform error bound.
     vec3 normal;
     vec3 geometricNormal; // Outward, determined by triangle winding.
     vec2 uv;

@@ -17,6 +17,7 @@ unsigned int grayCode(unsigned int i);
 float sobol(unsigned int d, unsigned int i);
 
 std::vector<float> getSobelRandomNumber(unsigned int frameCount, unsigned int maxBounce);
+std::vector<unsigned> getSobolBits(unsigned sampleIndex);
 
 std::string getResourcePath(const std::string& _relativePath);
 

@@ -4,6 +4,8 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
@@ -16,6 +18,7 @@
 #include <functional>
 #include <iostream>
 #include <limits>
+#include <map>
 #include <random>
 #include <stdexcept>
 
@@ -128,6 +131,9 @@ class Gpu : public QOpenGLFunctions_3_3_Core
     std::array<GLuint, 13> buffers{}, textures{};
     GLuint vao = 0, images = 0;
     QString modules;
+    QString extraDefines;
+    bool shadowAny=false,shadowEligible=false;
+    std::map<QString, std::unique_ptr<QOpenGLShaderProgram>> programs;
     int triangles = 0, nodes = 0, tops = 0;
     Gpu()
     {
@@ -148,7 +154,7 @@ class Gpu : public QOpenGLFunctions_3_3_Core
         glGenVertexArrays(1, &vao);
         const auto override = qEnvironmentVariable("TRAVERSAL_SHADER_DIR");
         for (const char *module : {"defines", "structs", "uniforms", "utils", "bvh_material", "hdr_utils",
-                                   "bsdf", "light_sampling", "medium", "pathtrace"})
+                                   "light_sampling", "medium"})
         {
             const auto relative = QString("include/%1.glsl").arg(module);
             modules += shaderSource(override.isEmpty()
@@ -175,6 +181,7 @@ class Gpu : public QOpenGLFunctions_3_3_Core
     }
     ~Gpu()
     {
+        programs.clear();
         target.reset();
         glDeleteBuffers(int(buffers.size()), buffers.data());
         glDeleteTextures(int(textures.size()), textures.data());
@@ -286,21 +293,30 @@ class Gpu : public QOpenGLFunctions_3_3_Core
             data.emplace_back(r.direction, 0);
         }
         upload(12, GL_RGBA32F, data);
-        QOpenGLShaderProgram program;
-        const char *vertex =
-            "#version 330 core\nout vec3 pix;void main(){vec2 "
-            "p=vec2((gl_VertexID<<1)&2,gl_VertexID&2)*2-1;pix=vec3(p,0);gl_Position=vec4(p,0,1);}";
-        require(program.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex), program.log().toStdString());
-        const auto fragment =
-            QString("#version 330 core\n#define INSTANCED_SCENE\nin vec3 pix;layout(location=0)out vec4 "
-                    "outputColor;\nuniform samplerBuffer testRays;uniform int testRayCount;\n") +
-            modules +
-            "\nvoid main(){int id=(int(gl_FragCoord.y)*64+int(gl_FragCoord.x))%testRayCount;Ray "
-            "r;r.startPoint=texelFetch(testRays,id*2).xyz;r.direction=texelFetch(testRays,id*2+1).xyz;" +
-            body + "}\n";
-        require(program.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment),
-                program.log().toStdString());
-        require(program.link(), program.log().toStdString());
+        // Fixtures change uniforms/buffers, not GLSL. Compile each body once so
+        // the transform matrix exercises traversal rather than shader compilation.
+        auto &cached = programs[extraDefines+"\n"+body];
+        if (!cached)
+        {
+            cached = std::make_unique<QOpenGLShaderProgram>();
+            auto &program = *cached;
+            const char *vertex =
+                "#version 330 core\nout vec3 pix;void main(){vec2 "
+                "p=vec2((gl_VertexID<<1)&2,gl_VertexID&2)*2-1;pix=vec3(p,0);gl_Position=vec4(p,0,1);}";
+            require(program.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex),
+                    program.log().toStdString());
+            const auto fragment =
+                QString("#version 330 core\n#define INSTANCED_SCENE\nin vec3 pix;layout(location=0)out vec4 "
+                        "outputColor;\nuniform samplerBuffer testRays;uniform int testRayCount;\n") +
+                extraDefines+"\n"+modules +
+                "\nvoid main(){int id=(int(gl_FragCoord.y)*64+int(gl_FragCoord.x))%testRayCount;Ray "
+                "r;r.startPoint=texelFetch(testRays,id*2).xyz;r.direction=texelFetch(testRays,id*2+1).xyz;" +
+                body + "}\n";
+            require(program.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment),
+                    program.log().toStdString());
+            require(program.link(), program.log().toStdString());
+        }
+        auto &program = *cached;
         program.bind();
         const char *samplers[] = {
             "hdrMap",        "hdrCache",         "triangles",           "nodes",
@@ -319,6 +335,8 @@ class Gpu : public QOpenGLFunctions_3_3_Core
         program.setUniformValue("nAnalyticLights", 0);
         program.setUniformValue("materialTextureCount", 2);
         program.setUniformValue("picking", picking);
+        program.setUniformValue("shadowAnyHit",shadowAny);
+        program.setUniformValue("shadowBinaryScene",shadowEligible);
         glUniform1ui(program.uniformLocation("frameCounter"), 7);
         const auto sobol = getSobelRandomNumber(7, 60);
         program.setUniformValueArray("sobelNumber", sobol.data(), int(sobol.size()), 1);
@@ -473,6 +491,7 @@ void normalsAndMedia(Gpu &gpu)
     instance.transform.scale(-2, .6f, 1.7f);
     f.instances = {instance};
     f.materials[0].normalTex = 1;
+    f.materials[0].anisotropic=.9f;
     f.prepare();
     gpu.scene(f);
     const auto normal = f.instances[0].inverse.transposed().mapVector(QVector3D(0, 0, 1)).normalized();
@@ -482,6 +501,27 @@ void normalsAndMedia(Gpu &gpu)
         gpu.run({{normal * 4, -normal}}, "HitResult h=hitBVH(r);outputColor=vec4(h.normal,1);");
     require(QVector3D::dotProduct(QVector3D(mapped[0], mapped[1], mapped[2]), expected) > .9999f,
             "Mirrored nonuniform normal-map tangent frame changed");
+    const auto authored=gpu.run({{normal*4,-normal}},
+        "HitResult h=hitBVH(r);outputColor=h.material.tangent;");
+    const auto projected=(tangent-expected*QVector3D::dotProduct(expected,tangent)).normalized();
+    require(QVector3D::dotProduct(QVector3D(authored[0],authored[1],authored[2]),projected)>.9999f &&
+            authored[3]==-1,"BSDF tangent did not follow mirrored nonuniform normal-mapped instance");
+    for(float rotation:{0.f,45.f,90.f})for(bool mirror:{false,true})for(bool mappedNormal:{false,true})
+    {
+        Fixture axes;axes.meshes={plane()};SceneInstance object;object.mesh=object.material=0;
+        object.transform.rotate(rotation,0,0,1);object.transform.rotate(27,0,1,0);
+        object.transform.scale(mirror?-2.f:2.f,.6f,1.7f);axes.instances={object};
+        axes.materials[0].anisotropic=.9f;axes.materials[0].normalTex=mappedNormal?1:-1;
+        axes.prepare();gpu.scene(axes);
+        const auto n=axes.instances[0].inverse.transposed().mapVector({0,0,1}).normalized();
+        const auto t=object.transform.mapVector({1,0,0}).normalized();
+        const auto shading=mappedNormal?(n+t).normalized():n;
+        const auto axis=(t-shading*QVector3D::dotProduct(shading,t)).normalized();
+        const auto values=gpu.run({{n*4,-n}},"HitResult h=hitBVH(r);outputColor=h.material.tangent;");
+        require(QVector3D::dotProduct({values[0],values[1],values[2]},axis)>.9999f &&
+                values[3]==(mirror?-1.f:1.f),"Rotated/nonuniform/normal-mapped BSDF author frame mismatch");
+    }
+    gpu.scene(f);
     f.instances.clear();
     f.materials[0].alphaMode = 1;
     f.materials[0].mediumtype = 1;
@@ -703,6 +743,97 @@ void sharedEdgesAndGaps(Gpu &gpu)
     }
     std::cout << "GPU shared edges/vertices, grazing/mirrored rays, real gaps and degenerates passed\n";
 }
+void boundedRayOrigins(Gpu &gpu)
+{
+    for(float scale:{.0001f,1.f,10000.f})for(float translation:{0.f,10000.f,-10000.f})
+    {
+        Fixture f;f.meshes={plane()};
+        SceneInstance a,b;a.mesh=b.mesh=0;a.material=b.material=0;
+        a.transform.translate(translation,0,.1f*scale);
+        a.transform.scale(scale,scale*.7f,scale*1.3f);
+        b.transform.translate(translation,0,(.1f+.0001f)*scale);
+        b.transform.scale(-scale,scale*.7f,scale*1.3f);
+        f.instances={a,b};f.prepare();gpu.scene(f);
+        const auto values=gpu.run({{{translation,0,(.1f+.00005f)*scale},{0,0,-1}}},
+            "HitResult h=hitBVH(r);r.startPoint=OffsetRayOrigin(h.hitPoint,h.positionError,h.geometricNormal,vec3(0,0,1));"
+            "r.direction=vec3(0,0,1);HitResult next=hitBVH(r);outputColor=vec4(float(next.isHit),float(next.triangleIndex),h.positionError.z,1);");
+        require(values[0]==1 && f.surfaceInstances.at(int(values[1]))==1u,
+                "Error-bound origin skipped adjacent instance or re-hit its source");
+    }
+    std::cout<<"GPU error-bound origins: scaled, far-origin, mirrored/nonuniform instances passed\n";
+    for(float scale:{.0001f,1.f,10000.f}) {
+        Fixture f;f.meshes={plane()};SceneInstance object;object.mesh=object.material=0;
+        object.transform.scale(-scale,scale*.7f,scale*1.3f);
+        f.instances={object};f.prepare();gpu.scene(f);
+        std::vector<TestRay> rays;
+        for(int i=0;i<128;++i) {
+            const float angle=float(i)*.213f;
+            const QVector3D direction=QVector3D(std::cos(angle),std::sin(angle),.2f+float(i%7)*.15f).normalized();
+            rays.push_back({{0,0,0},direction});
+            rays.push_back({-direction*(scale*.0001f),direction});
+        }
+        const auto values=gpu.run(rays,hitBody);
+        for(size_t i=0;i<rays.size();++i)
+            require((values[4*i]>0)==(i%2==1),
+                "Oblique zero-plane ray self-intersected or lost a nearby real hit: scale="+
+                    std::to_string(scale)+" ray="+std::to_string(i)+" t="+std::to_string(values[4*i+1]));
+    }
+    std::cout<<"GPU oblique zero-plane origins: no self hits; scaled nearby hits preserved\n";
+}
+void shadowAnyHitProfile(Gpu &gpu)
+{
+    auto mesh=std::make_shared<MeshGeometry>();
+    for(int i=0;i<128;++i) {
+        Triangle t;const float offset=i*.02f;
+        t.p1={-3,-3,offset};t.p2={3,-3,4+offset};t.p3={0,3,4+offset};
+        t.n1=t.n2=t.n3=QVector3D::crossProduct(t.p2-t.p1,t.p3-t.p1).normalized();
+        mesh->triangles.push_back(t);
+    }
+    mesh->build();Fixture f;f.meshes={mesh};SceneInstance instance;instance.mesh=0;instance.material=0;
+    f.instances={instance};f.prepare();gpu.scene(f);
+    std::vector<TestRay> rays;
+    for(int y=0;y<20;++y)for(int x=0;x<20;++x)rays.push_back({{(x+.3f)/20-.5f,(y+.6f)/20-.5f,-.1f},{0,0,1}});
+    gpu.extraDefines="#define TRACE_TRAVERSAL_PROFILE 1\n";
+    const auto closest=gpu.run(rays,"HitResult h=hitBVH(r,true);outputColor=vec4(float(h.isHit&&h.hitDistance<3.4),float(traversalNodeVisits),float(traversalTriangleTests),float(traversalEarlyExits));");
+    const auto any=gpu.run(rays,"HitResult h=hitBVH(r,true,3.4,true,-1);outputColor=vec4(float(h.isHit),float(traversalNodeVisits),float(traversalTriangleTests),float(traversalEarlyExits));");
+    double closestNodes=0,anyNodes=0,closestTriangles=0,anyTriangles=0;
+    for(int i=0;i<Gpu::size*Gpu::size;++i) {
+        require(closest[i*4]==any[i*4],"AnyHit visibility differs from nearest occlusion");
+        closestNodes+=closest[i*4+1];anyNodes+=any[i*4+1];
+        closestTriangles+=closest[i*4+2];anyTriangles+=any[i*4+2];
+        require(any[i*4+3]==any[i*4],"AnyHit did not record its early exit");
+    }
+    require(anyNodes<closestNodes && anyTriangles<closestTriangles,"AnyHit did not reduce overlap-fixture traversal");
+    const auto shortRay=gpu.run(rays,"HitResult h=hitBVH(r,true,.05,true,-1);outputColor=vec4(float(h.isHit),0,0,0);");
+    for(int i=0;i<Gpu::size*Gpu::size;++i)require(shortRay[i*4]==0,"Geometry beyond maxDistance cast a shadow");
+    Fixture alpha;alpha.meshes={plane()};alpha.instances={instance};alpha.prepare();
+    for(int mode:{2,3}) {
+        alpha.materials[0].alphaMode=mode;alpha.materials[0].opacity=mode==2?.4f:.25f;
+        gpu.scene(alpha);
+        const auto values=gpu.run({{{.21f,-.23f,-1},{0,0,1}}},"HitResult h=hitBVH(r,true,2.0,true,-1);outputColor=vec4(float(h.isHit),0,0,0);");
+        double fraction=0;for(int i=0;i<Gpu::size*Gpu::size;++i)fraction+=values[i*4]/(Gpu::size*Gpu::size);
+        require(mode==2?fraction==0:std::abs(fraction-.25)<.025,"AnyHit changed Mask/Blend alpha semantics");
+    }
+    alpha.materials[0].alphaMode=0;alpha.materials[0].opacity=1;gpu.scene(alpha);
+    const auto excluded=gpu.run({{{.21f,-.23f,-1},{0,0,1}}},"HitResult first=hitBVH(r);HitResult h=hitBVH(r,true,2.0,true,first.triangleIndex);outputColor=vec4(float(h.isHit),0,0,0);");
+    require(excluded[0]==0,"Target emitter surface self-occluded");
+    gpu.shadowAny=gpu.shadowEligible=true;
+    const auto medium=gpu.run({{{0,0,-1},{0,0,1}}},
+        "MediumStack m;m.size=1;m.entries[0].type=MEDIUM_ABSORB;m.entries[0].density=2;m.entries[0].color=vec3(0);m.entries[0].g=0;"
+        "outputColor=vec4(ShadowTransmittance(r.startPoint,vec3(0),r.direction,.05,m),1);");
+    require(std::abs(medium[0]-std::exp(-.1))<1e-5,"AnyHit bypassed medium attenuation");
+    gpu.shadowAny=gpu.shadowEligible=false;gpu.extraDefines.clear();
+    QJsonObject result{{"fixture","128 overlapping tilted occluders; not a general speedup claim"},
+        {"rays",Gpu::size*Gpu::size},{"closestNodeVisits",closestNodes},{"anyHitNodeVisits",anyNodes},
+        {"closestTriangleTests",closestTriangles},{"anyHitTriangleTests",anyTriangles},
+        {"visibilityEqual",true},{"maskBlendDistanceEmitterMediumCovered",true}};
+    const auto output=qEnvironmentVariable("LEARNQT_TRAVERSAL_REPORT");
+    if(!output.isEmpty()) {
+        QFile file(output);require(file.open(QIODevice::WriteOnly),"Cannot write traversal profile");
+        file.write(QJsonDocument(result).toJson());
+    }
+    std::cout<<"GPU AnyHit visits: nodes "<<closestNodes<<" -> "<<anyNodes<<", triangles "<<closestTriangles<<" -> "<<anyTriangles<<'\n';
+}
 } // namespace
 int main(int argc, char **argv)
 {
@@ -710,6 +841,7 @@ int main(int argc, char **argv)
     try
     {
         Gpu gpu;
+        if(app.arguments().contains("--shadow-profile")) {shadowAnyHitProfile(gpu);return 0;}
         randomized(gpu);
         tiesAndAlpha(gpu);
         normalsAndMedia(gpu);
@@ -718,6 +850,7 @@ int main(int argc, char **argv)
         islandEdgeHits(gpu);
         collapsedWorldEdges(gpu);
         sharedEdgesAndGaps(gpu);
+        boundedRayOrigins(gpu);
     }
     catch (const std::exception &error)
     {
