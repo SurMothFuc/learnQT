@@ -1175,7 +1175,9 @@ void Renderer::applyRefreshActions(int width, int height, const RenderParams::Sn
 
     if (programChanged) syncPathtraceUniforms();
 
-    if (actions.syncCameraUniforms)
+    // Initial media depend on boundary transforms, visibility and materials as
+    // well as the camera. Cached programs retain their old uniform values.
+    if (!programChanged && (actions.syncCameraUniforms || actions.syncMaterialBuffer || actions.syncSceneBuffers))
     {
         syncCameraUniforms();
     }

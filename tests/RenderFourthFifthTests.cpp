@@ -148,6 +148,40 @@ static void partialFilmTest() {
     check(stopped->samples==1 && stopped->beauty==before->beauty && stopped->sampleCount==before->sampleCount,
         "Stopped film mixed incomplete tiles into a complete snapshot");
 }
+static void initialMediaRefreshTest() {
+    auto document=SceneDocument::empty();Material medium;medium.alphaMode=Transparent;
+    medium.mediumtype=Emissive;medium.mediumDensity=1;medium.mediumColor={.3f,.4f,.5f};
+    auto material=SceneDocument::materialJson(medium);material["id"]="volume";
+    document.root["materials"]=QJsonArray{material};
+    QMatrix4x4 world;
+    document.root["models"]=QJsonArray{QJsonObject{{"id","box"},{"source",QString(RESOURCE_DIR)+"/models/quad.obj"},
+        {"material","volume"},{"normalize",false},{"smoothNormals",false},{"transform",sceneMatrixJson(world)}}};
+    document.root["camera"]=QJsonObject{{"position",QJsonArray{0,0,0}},{"target",QJsonArray{0,0,-1}},{"up",QJsonArray{0,1,0}},{"fov",45}};
+    QString error;auto scene=Scene::prepareDocument(document,error);check(bool(scene),error.toStdString());
+    check(initialMediaAt(*scene,scene->camera.position).properties.size()==1,"Refresh fixture must start inside a closed volume");
+    auto snapshot=scene->document.settings();snapshot.denoise=false;snapshot.useEnvironmentMap=false;snapshot.renderLow=false;
+    snapshot.maxRenderFrames=1;snapshot.maxBounces=2;snapshot.antialiasing=false;snapshot.useTileRendering=false;
+    Renderer reused(16,16,snapshot,nullptr,scene.get());reused.formal=true;reused.prepareJob({16,16},snapshot,kInitialSceneDirty);
+    reused.render(16,16,snapshot,0,1);const auto original=reused.linearResult(snapshot,false)->beauty;
+    auto compare=[&](SceneDirtyFlag dirty) {
+        reused.render(16,16,snapshot,toSceneDirtyFlags(dirty),1);
+        const auto updated=reused.linearResult(snapshot,false)->beauty;
+        auto freshScene=Scene::prepareDocument(scene->document,error);check(bool(freshScene),error.toStdString());
+        Renderer fresh(16,16,snapshot,nullptr,freshScene.get());fresh.formal=true;fresh.prepareJob({16,16},snapshot,kInitialSceneDirty);
+        fresh.render(16,16,snapshot,0,1);const auto expected=fresh.linearResult(snapshot,false)->beauty;
+        for(size_t i=0;i<expected.size();++i)checkNear(updated[i],expected[i],1e-6,"Updated initial media differ from a fresh renderer");
+        return updated;
+    };
+    auto changed=scene->document;auto materials=changed.root["materials"].toArray();auto m=materials[0].toObject();
+    m["mediumDensity"]=2;materials[0]=m;changed.root["materials"]=materials;
+    scene->applyEditorDocument(changed,true,true);
+    check(compare(SceneDirtyFlag::Material)!=original,"Material refresh fixture did not change volume radiance");
+    changed=scene->document;auto objects=changed.root["objects"].toArray();auto object=objects[0].toObject();
+    world.translate(0,0,-2);object["transform"]=sceneMatrixJson(world);objects[0]=object;changed.root["objects"]=objects;
+    scene->applyEditorDocument(changed,true,false);
+    check(initialMediaAt(*scene,scene->camera.position).properties.empty(),"Transformed volume must leave the camera");
+    compare(SceneDirtyFlag::Transform);compare(SceneDirtyFlag::SceneBuffers);
+}
 int main(int argc,char **argv) {
     QApplication app(argc,argv);
     try { initialTests();
@@ -169,7 +203,7 @@ int main(int argc,char **argv) {
         check(originalFile.open(QIODevice::ReadOnly) && originalFile.readAll()==bytes,"Failed export overwrote existing EXR");originalFile.close();
         result.beauty[0]=.001f;
         if(app.arguments().contains("--formats-only"))return 0;
-        Audit gpu;boundaryTests(gpu);clearcoatTests(gpu);materialMatrix(gpu);partialFilmTest();
+        Audit gpu;boundaryTests(gpu);clearcoatTests(gpu);materialMatrix(gpu);partialFilmTest();initialMediaRefreshTest();
         std::cout<<"Fourth/fifth batch foundations passed\n";return 0;
     } catch(const std::exception &e){std::cerr<<e.what()<<'\n';return 1;}
 }

@@ -6,21 +6,21 @@
         {
             "error": "",
             "id": 1,
-            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 1 · 相机 2-7.png",
+            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 1 · 相机 2-8.png",
             "samples": 512,
             "status": "完成"
         },
         {
             "error": "",
             "id": 2,
-            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 2 · 测试侧视角-6.png",
+            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 2 · 测试侧视角-7.png",
             "samples": 8,
             "status": "完成"
         },
         {
             "error": "",
             "id": 3,
-            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 3 · 测试侧视角-6.png",
+            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 3 · 测试侧视角-7.png",
             "samples": 8,
             "status": "完成"
         },
@@ -28,13 +28,13 @@
             "error": "",
             "id": 4,
             "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 4 · 相机 4.png",
-            "samples": 107,
+            "samples": 212,
             "status": "已停止"
         },
         {
             "error": "",
             "id": 5,
-            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 5 · 相机 4-6.png",
+            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 5 · 相机 4-7.png",
             "samples": 2,
             "status": "完成"
         },
@@ -48,21 +48,21 @@
         {
             "error": "",
             "id": 7,
-            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 7 · 相机 4-6.png",
+            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 7 · 相机 4-7.png",
             "samples": 2,
             "status": "完成"
         },
         {
             "error": "Cannot open device for writing: 拒绝访问。",
             "id": 8,
-            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 8 · 相机 4-6.png",
+            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 8 · 相机 4-7.png",
             "samples": 128,
             "status": "导出失败"
         },
         {
             "error": "",
             "id": 9,
-            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 9 · 相机 4-6.jpg",
+            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 9 · 相机 4-7.jpg",
             "samples": 2,
             "status": "完成"
         },
@@ -76,7 +76,7 @@
         {
             "error": "",
             "id": 11,
-            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 11 · 相机 4-5.jpg",
+            "output": "D:/program/learnQT/build/render-foundation/render-queue-regression/任务 11 · 相机 4-6.jpg",
             "samples": 2,
             "status": "完成"
         }
