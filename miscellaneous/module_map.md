@@ -14,6 +14,9 @@
 | 控制与任务 | [renderthread.cpp](../src/renderthread.cpp)、[RenderJob.h](../include/RenderJob.h)、[RenderRateTracker.h](../include/RenderRateTracker.h) | 版本队列、批次安全边界、暂停/停止、完整快照、真实完成速率。 |
 | 队列 / 构图 | [RenderQueueUi.cpp](../src/RenderQueueUi.cpp)、[RenderQueueThread.cpp](../src/RenderQueueThread.cpp)、[RenderQueueThread.h](../include/RenderQueueThread.h) | 来源相机／草稿／请求快照、独立运行时、串行控制、结果固定浏览、冻结元数据及自动导出。 |
 | 渲染调度 | [renderer.cpp](../src/renderer.cpp)、[renderer.h](../include/renderer.h) | 1–16 tile 批次、GPU 预算、每批绑定、按频率合成、资源上传。 |
+| 线性结果 / EXR | [RenderResult.h](../include/RenderResult.h)、[WorkbenchPanels.cpp](../src/WorkbenchPanels.cpp) | 不可变完整 Film、历史重曝光/曲线/guide AOV、CPU sRGB 与 HALF/FLOAT 原子 EXR；分离显示与线性输出。 |
+| 初始介质 / 接触 | [InitialMedia.h](../include/InitialMedia.h)、[MediumInterfaces.h](../include/MediumInterfaces.h)、[SceneGraph.cpp](../src/SceneGraph.cpp) | 按需闭合判定、CPU BLAS 内外、8 层身份/IOR、精确配对接触，不含任意交叠。 |
+| 诊断捕获 / OIDN 保护 | [PathDiagnosticCapture.h](../include/PathDiagnosticCapture.h)、[OidnConfidence.h](../include/OidnConfidence.h) | 可选事件/像素/首状态捕获，三路 RGBA/moments/策略掩码，raw 历史不变。 |
 | GPU 拾取 | [RendererPick.cpp](../src/RendererPick.cpp)、[pick.frag](../shaders/pick.frag) | 整数 ID/depth、PBO/fence、alpha 阈值和过期结果拒绝。 |
 | 预览降噪 | [RendererPreview.cpp](../src/RendererPreview.cpp)、[PreviewDenoiser.cpp](../src/PreviewDenoiser.cpp) | 三路完整快照、PBO 延迟映射、取消和版本/尺寸匹配。 |
 | 显示桥 | [texturebuffer.cpp](../src/texturebuffer.cpp) | 明确源 FBO、三槽所有权、未消费帧保护、跨上下文 fence。 |
@@ -24,7 +27,7 @@
 | 三角形精度 | [triangle_intersection.glsl](../shaders/include/triangle_intersection.glsl)、[utils.glsl](../shaders/include/utils.glsl) | 沿射线投影、共享边符号一致性、无重心 padding、表面重建和无效着色法线回退；实例/兼容路径共用。 |
 | 材质 / 光照 | [bvh_material.glsl](../shaders/include/bvh_material.glsl)、[light_sampling.glsl](../shaders/include/light_sampling.glsl)、[hdr_utils.glsl](../shaders/include/hdr_utils.glsl) | PBR/alpha、世界光源面积/PDF、环境旋转与强度。 |
 | 积分器 | [pathtrace.glsl](../shaders/include/pathtrace.glsl)、[medium.glsl](../shaders/include/medium.glsl)、[bsdf.glsl](../shaders/include/bsdf.glsl) | NEE/MIS、delta、介质栈、阴影精简材质路径。 |
-| 像素与后处理 | [pathtrace.frag](../shaders/pathtrace.frag)、[utils.glsl](../shaders/include/utils.glsl)、[historysave.frag](../shaders/historysave.frag)、[triangle.frag](../shaders/triangle.frag) | AA 像素抖动/中心、固定维度/种子、完整历史、曝光/tone mapping/gamma。 |
+| 像素与后处理 | [pathtrace.frag](../shaders/pathtrace.frag)、[utils.glsl](../shaders/include/utils.glsl)、[historysave.frag](../shaders/historysave.frag)、[triangle.frag](../shaders/triangle.frag) | AA 像素抖动/中心、固定维度/种子、完整历史、曝光/tone mapping/准确 sRGB。 |
 | 纹理视图 / 预算 | [MaterialTextureImage.h](../include/MaterialTextureImage.h)、[MaterialMaskTextures.h](../include/MaterialMaskTextures.h)、[MaterialTexturePlan.h](../include/MaterialTexturePlan.h)、[material_texture_sampling.glsl](../shaders/include/material_texture_sampling.glsl) | 线性颜色/data 视图、ray cone/mip、normal 方差、cutoff 覆盖率、2–4 池及预算。 |
 | 采样 / 诊断 / 发光权重 | [sampler.glsl](../shaders/include/sampler.glsl)、[common.cpp](../src/common.cpp)、[PathDiagnostics.h](../include/PathDiagnostics.h)、[EmissionTexturePower.h](../include/EmissionTexturePower.h)、[Scene.cpp](../src/Scene.cpp) | 固定维度、uint Sobol、seed、RR、异常位、UV/alpha 功率、HDR/非环境组概率。 |
 | 性能 / 图像比较 | [render_benchmark.py](../tools/render_benchmark.py)、[render_compare.py](../tools/render_compare.py)、[make_render_sampling_fixtures.py](../tools/make_render_sampling_fixtures.py) | 生产与插桩分离、固定 spp/多种子/参考、原始线性误差、tile/compute、可再生夹具。 |
@@ -46,7 +49,8 @@
 | [PreviewModeRegression.cpp](../tests/PreviewModeRegression.cpp)、[PresentationTests.cpp](../tests/PresentationTests.cpp) | 整图/分块来回切换、test_mis 黑屏回归、延迟消费和明确源 FBO。 |
 | [RendererBatchTests.cpp](../tests/RendererBatchTests.cpp) | 批次上限/中断、完整快照、同 spp 像素一致、预算失效、停止采样后的显示刷新；另提供可复现的离屏 benchmark CLI。 |
 | [RenderFoundationTests.cpp](../tests/RenderFoundationTests.cpp)、[RenderSecondBatchTests.cpp](../tests/RenderSecondBatchTests.cpp)、[RenderThirdBatchTests.cpp](../tests/RenderThirdBatchTests.cpp) | 三批数值/纹理/offset/AnyHit/采样/RR/光源概率/UV 功率；共用 LightingAudit 和 RenderEvidence。 |
-| [AntialiasingDenoiseTests.cpp](../tests/AntialiasingDenoiseTests.cpp)、[AaDenoiseUiRegression.cpp](../tests/AaDenoiseUiRegression.cpp) | 实际离屏 AA、compute、采样/二阶矩/特征；私有桌面持续运动及 preview/output RR 控件链路。 |
+| [RenderFourthFifthTests.cpp](../tests/RenderFourthFifthTests.cpp) | 初始嵌套/边界错配/精确接触、两侧 IOR、clearcoat 解析与互易性/连续材质矩阵、部分 tile Film、sRGB/HALF 原子失败、材质/边界变换/全量同步后结果与新建渲染器一致。 |
+| [AntialiasingDenoiseTests.cpp](../tests/AntialiasingDenoiseTests.cpp)、[AaDenoiseUiRegression.cpp](../tests/AaDenoiseUiRegression.cpp) | 实际离屏 AA、compute、采样/二阶矩/特征；私有桌面持续运动及 preview/output RR 控件链路、PNG/JPEG/EXR 队列、历史重曝光/曲线/深度及查看设置保留。 |
 | [CMakeLists.txt](../CMakeLists.txt)、[tests](../tests) | CTest 注册、Python 导入/转换契约、Qt 运行时路径。 |
 
-当前独立构建 build/render-foundation 注册 33 项，2026-10-03 全量通过；范围见 [2026-10-03 三批渲染验收](./render_batches_2026-10-03.md)。三批交付图像及 JSON 位于版本化 output/render-first-batch、output/render-second-batch、output/render-third-batch。原始线性大文件及临时日志仍位于未版本化 `build/`；可追溯的汇总与实际命令见 [工作台专题](./scene_workbench_v2.md) 和 [八页工作区验收](./workspace_ui.md)。旧 benchmark 副本不自动反映主代码，不把试验副本的结果当作正式版本验收。
+当前独立构建 build/render-foundation 注册 34 项。2026-10-03 最终全量 34/34（1015.18 秒），在初始介质更新补修和全部测试夹具修正之后执行；初跑 33/34 与随后定向复测保留历史时点。命令、故障经过与边界见 [2026-10-03 第四、五批渲染验收](./render_batches_4_5_2026-10-03.md)。第四/五批夹具由 [make_render_quality_fixtures.py](../tools/make_render_quality_fixtures.py) 生成，[render_quality_evidence.py](../tools/render_quality_evidence.py) 串行执行 GPU 对照、运动序列和独立 EXR 解码。交付位于 output/render-fourth-fifth/2026-10-03。三批交付图像及 JSON 位于版本化 output/render-first-batch、output/render-second-batch、output/render-third-batch。原始线性大文件及临时日志仍位于未版本化 `build/`；可追溯的汇总与实际命令见 [工作台专题](./scene_workbench_v2.md) 和 [八页工作区验收](./workspace_ui.md)。旧 benchmark 副本不自动反映主代码，不把试验副本的结果当作正式版本验收。

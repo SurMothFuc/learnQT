@@ -90,7 +90,7 @@ MTL、bin、图片等文件，不递归复制无关目录。HDR 和场景直接�
 
 ## 验证与复现
 
-当前纹理/采样改进与 33 项最终回归见 [2026-10-03 三批渲染验收](./render_batches_2026-10-03.md)；以下 2026-09 的 8/9 项为历史范围。
+当前介质/结果协议与 34 项测试覆盖见 [2026-10-03 第四、五批渲染验收](./render_batches_4_5_2026-10-03.md)；前三批纹理/采样改进见 [三批验收](./render_batches_2026-10-03.md)；以下 2026-09 的 8/9 项为历史范围。
 
 2026-09-04，代码基线 `6ee2661` 已通过 Release 构建与 8/8 CTest。
 这是固定基线的验收记录，不表示后来代码修改自动获得同样保证。
@@ -135,7 +135,9 @@ build\Release\learnQT.exe --scene my.scene.json --validate-scene
 - AO、height/displacement、clearcoat/transmission/sheen 等扩展贴图和多层纹理尚未贯通。
   读取部分扩展的标量不代表完整支持该 glTF 扩展。
 - FBX 已有内嵌图片小型夹具通过，不代表任意 DCC 导出的复杂 FBX 都已验收。
-- Blend 使用随机透过；基础 alpha 发光面、旧 Transparent 包围的均匀吸收/散射介质及嵌套透射率已在直接光阶段验证，复杂 alpha/玻璃/介质组合与 OIDN 辅助特征仍需专项验收。
+- Blend 使用随机透过；基础 alpha 发光面、旧 Transparent 包围的均匀吸收/散射介质及嵌套透射率已在直接光阶段验证，新增 Blend 面 + 闭合吸收玻璃 + 贴图发光的组合回归及 delta/粗糙透射 OIDN 实图比较；更广泛真实 Mask/Blend/体积资产仍待验收。
 - 发光选择已用 16×16 均匀面积 UV/alpha 功率估计，带保守支撑下限；估计近似只影响选灯概率。尚未实现发光纹理内部重要性分布及近距离立体角采样。
 - 当前已实现局部 BLAS/实例 TLAS、动态变换和局部材质编辑；v1 文档通过迁移进入同一运行时。
+- 闭合朝外边界支持初始正确嵌套身份/IOR 和精确配对接触；旧 Transparent fog IOR 保持 1，transmission 材质使用已有 IOR。Mask/Blend/open 边界不纳入具名初始化；未升级 v2 场景文件版本。
+- 会话 RenderResult 和 EXR 元数据独立于场景 JSON，不保存累积到场景文件。输出支持 PNG/JPEG 和线性 HALF/FLOAT EXR；normal/albedo 为 guide、depth.center 为中心几何距离，不能当作通用生产 AOV。
 - HDR PDF 一致性、delta 和基础 volume MIS 的实现及验证见 [direct_lighting.md](./direct_lighting.md)；OIDN 法线范围已修正；复杂介质与其他剩余项见 [to-do.md](./to-do.md)。
