@@ -70,7 +70,7 @@ flowchart LR
 | `MeshGeometry` / `SceneGraph` | 共享局部网格、BLAS、世界包围盒、TLAS SAH/refit、CPU 对照求交。 |
 | `RenderQueueThread` / `RenderQueueUi` | 不可变文档／相机／输出快照、独立工作线程与 GL 上下文、队列控制、结果固定浏览、自动导出及只读任务元数据；队列不跨会话恢复。 |
 | `RenderThread` | 消费候选场景/文档、正式任务状态机、批次完成 fence、统计和结果发布。 |
-| `Renderer` | GPU 表、shader、分块预算、历史帧、按需合成、拾取和 OIDN 读回。 |
+| `Renderer` | GPU 表、2–4 个材质纹理池及预算、shader 变体、固定维度采样、分块预算、历史帧、合成、拾取、GPU 降噪和 OIDN 读回；开发 profile 单独编译。 |
 | `PreviewDenoiser` | 单个独立 CPU 后台过滤任务，最多使用 4 个 CPU 线程并保留 UI 运行余量。 |
 | `TextureBuffer` | 三槽纹理的生产、消费和版本保护；GL 复制/绘制位于短元数据锁之外。 |
 
@@ -83,7 +83,7 @@ flowchart LR
 - 运行中的 Scene 由 Render Thread 修改；Load Worker 构建独立候选实例，几何通过只读共享资源缓存复用。
 - UI 的提交接口只更新短队列；GPU fence 完成后才应用最新文档及资源变动。没有覆盖整帧的 `m_frameMutex`。
 - `controlRevision` 标记新输入；批次在后续 tile 提交前检查编辑、拾取、暂停、停止、预览显隐和退出。已提交 GPU 工作完成后才能安全替换资源。
-- `RenderParams::Snapshot` 在一个批次内只读。`param_mutex` 仍用于部分旧同步函数，但不是 UI 等待整帧渲染的主要协议。
+- `RenderParams::Snapshot` 在一个批次内只读，包含 uint32 `sampleSeed` 和 0–64 的 `rrMinDepth`；预览与正式任务分别持有设置，提交快照不受后续编辑影响。`param_mutex` 仍用于部分旧同步函数，但不是 UI 等待整帧渲染的主要协议。
 - GPU 几何/材质/实例/加速表、PBO 和降噪上传纹理由 Render Thread 管理。UI 管理自身绘制资源及显示槽消费 fence。
 - OIDN 后台任务只拿图像副本。场景、相机或尺寸改变会取消旧任务，结果必须匹配累积版本与尺寸才可发布。
 - 显示槽具有 `writing`、`reading`、`pending` 状态以及 producer/consumer fence。未消费的当前版本图像不会被覆盖，旧场景版本可回收。
@@ -92,6 +92,10 @@ flowchart LR
 
 实例引用同源网格的局部 BLAS。变换只更新实例、TLAS 和灯光分布；材质更新不重建 BVH，组织变动不上传几何。撤销需要的缓存由文档及 undo 命令持有，清空历史后才可释放不再引用的资源。
 
+材质纹理按颜色/数据语义建立视图，颜色先解码到线性再缩放/生成 mip。纹理池按尺寸和格式分组，最低纹理单元能力使用两个池，容量允许时使用四个池；默认 512 MiB 材质纹理预算含 mip，超预算缩小池并报告，超层数明确回退常量。这是纹理容量估算，尚非完整场景预算或驱动显存测量。surface PDF 打包到材质 GPU buffer 的尾部，降低 sampler 单元压力。
+
 Qt 5 Widgets/Core/Gui/OpenGL 负责窗口、线程、JSON 和图像；OpenGL 3.3 Core 负责渲染和共享纹理；Assimp 负责 OBJ/glTF/GLB/FBX；OIDN 2.3.3 负责降噪。Eigen 仍为构建依赖。`.ui`/qrc 保留在工程中，当前工作台主要由代码构建。
 
 正式队列使用独立尺寸、反弹和采样预算；RenderQueueThread 拥有任务快照对应的运行时、离屏上下文和 Renderer，串行出图并执行最终降噪。编辑 Render Thread 保持独立，队列期间可继续编辑并使用光栅化预览。旧直接正式任务路径仍锁定编辑。预览降噪使用异步任务，正式最终降噪支持取消。见 [工作台专题](./scene_workbench_v2.md)。
+
+采样/光源 profile 不改变线程归属：应用访问计数写入专用辅助附件并离屏读回，不能同时用其作为降噪特征；生产计时使用未插桩变体。实际验收与边界见 [2026-10-03 三批渲染验收](./render_batches_2026-10-03.md)。

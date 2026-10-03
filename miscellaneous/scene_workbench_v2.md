@@ -1,6 +1,6 @@
 # 场景编辑工作台 v2
 
-本轮从 `master` 创建 `codex/scene-editor-workbench`，已有工作区、工具、场景和约 2.14 GB 导入资源先保存在 `3148f92`（`chore: snapshot workspace before scene editor redesign`）。本专题说明当前工作台及 v2 文档，并保留该阶段的实例渲染、交互修复与性能记录。2026-09-30 的八页界面操作及验证见 [工作区专题](./workspace_ui.md)；页面重组没有升级场景文件版本，也不是完整商业渲染器功能承诺。
+历史工作台阶段从 `master` 创建 `codex/scene-editor-workbench`，已有工作区、工具、场景和约 2.14 GB 导入资源先保存在 `3148f92`（`chore: snapshot workspace before scene editor redesign`）。本专题说明当前工作台及 v2 文档，并保留该阶段的实例渲染、交互修复与性能记录。2026-09-30 的八页界面操作及验证见 [工作区专题](./workspace_ui.md)；页面重组没有升级场景文件版本，也不是完整商业渲染器功能承诺。
 
 ## 工作台操作
 
@@ -31,9 +31,9 @@ Fusion 深蓝灰界面提供首页、场景、材质、照明、相机、渲染�
 | `objects` | 实例 ID、name、model、mesh、material、世界 transform、parent/order、visible/locked。 |
 | `groups` | 组织组 ID/name/parent/order；唯一根 ID 为 `root`。 |
 | `materials/textures/lights/hdr` | 材质、纹理槽/UV/sampler、sphere/sun 及 HDR。 |
-| `camera/cameras/activeCameraId/render` | 兼容相机、已保存相机列表／当前 ID、轨道/FOV、预览降噪/尺寸模式/分块/反弹/采样上限等。 |
+| `camera/cameras/activeCameraId/render` | 兼容相机、已保存相机列表／当前 ID、轨道/FOV、预览 AA/降噪/尺寸模式/分块/反弹/采样上限、sampleSeed 和 rrMinDepth 等。 |
 | `environment/display` | 环境强度/旋转，曝光及 tone mapping。 |
-| `output` | 正式输出宽高、采样、tile、反弹和降噪。 |
+| `output` | 正式输出宽高、采样、tile、反弹、降噪、sampleSeed 和 rrMinDepth。 |
 
 读取 v1 时在内存迁移并展开源节点，保持旧材质和取景；保存写 v2，原文件不自动升级。矩阵沿用行主序。GPU 缓存、选择和采样历史不写场景；八页及渲染两模式布局使用 workspaceV5/layout/ 和状态版本 5，其他应用偏好继续 V4。旧几何布局不直接恢复。
 
@@ -62,13 +62,13 @@ GPU 表面求交已共用沿射线投影的边函数，命中点按重心权重�
 
 ## 当前边界
 
-抗锯齿留待专题：主射线仍固定在像素中心，没有像素抖动、AA 重建滤波或三路辅助数据 AA 累积。修正随机种子的坐标范围不等于实现 AA。
+像素 AA 和三路辅助累积已实现，关闭 AA 保留中心射线；固定维度 Sobol/数字移位与 seed 已贯通，尚无通用重建滤波。预览与正式分别提供 RR 起始深度控件，seed 通过 JSON/开发 CLI 设置；默认 seed 0、RR 深度 3，加入队列冻结各自配置。实时 GPU 降噪与 GL 4.3 compute 已实现，能力不足仍回退 fragment。
 
-仍未完成 EXR、透明背景、动画、景深、持久队列、复杂介质/IOR 接触边界、完整纹理 LOD/MikkTSpace 等；广泛复杂玻璃/体积场景的 OIDN 对照仍需补充。更多材质/资源/性能后续项保留在 [待办](./to-do.md)。
+仍未完成 EXR、透明背景、动画、景深、持久队列、复杂介质/IOR 接触边界、ray differentials/EWA/MikkTSpace 等；广泛复杂玻璃/体积场景的 OIDN 对照仍需补充。更多材质/资源/性能后续项保留在 [待办](./to-do.md)。
 
 ## 验收记录
 
-当前八页界面、2026-09-30 构建、全量及定向复测、三档 DPI 见 [工作区验收](./workspace_ui.md)。以下 2026-09-06 数值保留为历史基线，不作为当前代码自动通过。
+当前渲染、采样与三批专项的最终 33/33 见 [2026-10-03 三批渲染验收](./render_batches_2026-10-03.md)。八页界面的历史 2026-09-30 构建、全量及定向复测、三档 DPI 见 [工作区验收](./workspace_ui.md)。以下 2026-09-06 数值保留为历史基线，不作为当前代码自动通过。
 
 2026-09-06，Windows / Qt 5.15.2 / OIDN 2.3.3 / Release，RTX 5070 Ti，驱动 610.88。版本为本记录所在提交，基于 `3148f92`。完整数值见 [版本化验收数据](./validation/scene_workbench_2026-09-06.json)；原始日志/图像在本机未版本化的 `build/render-batch-final/`。
 

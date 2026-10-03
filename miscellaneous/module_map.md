@@ -24,7 +24,10 @@
 | 三角形精度 | [triangle_intersection.glsl](../shaders/include/triangle_intersection.glsl)、[utils.glsl](../shaders/include/utils.glsl) | 沿射线投影、共享边符号一致性、无重心 padding、表面重建和无效着色法线回退；实例/兼容路径共用。 |
 | 材质 / 光照 | [bvh_material.glsl](../shaders/include/bvh_material.glsl)、[light_sampling.glsl](../shaders/include/light_sampling.glsl)、[hdr_utils.glsl](../shaders/include/hdr_utils.glsl) | PBR/alpha、世界光源面积/PDF、环境旋转与强度。 |
 | 积分器 | [pathtrace.glsl](../shaders/include/pathtrace.glsl)、[medium.glsl](../shaders/include/medium.glsl)、[bsdf.glsl](../shaders/include/bsdf.glsl) | NEE/MIS、delta、介质栈、阴影精简材质路径。 |
-| 像素与后处理 | [pathtrace.frag](../shaders/pathtrace.frag)、[utils.glsl](../shaders/include/utils.glsl)、[historysave.frag](../shaders/historysave.frag)、[triangle.frag](../shaders/triangle.frag) | 像素中心、全图 RNG、完整历史、曝光/tone mapping/gamma。 |
+| 像素与后处理 | [pathtrace.frag](../shaders/pathtrace.frag)、[utils.glsl](../shaders/include/utils.glsl)、[historysave.frag](../shaders/historysave.frag)、[triangle.frag](../shaders/triangle.frag) | AA 像素抖动/中心、固定维度/种子、完整历史、曝光/tone mapping/gamma。 |
+| 纹理视图 / 预算 | [MaterialTextureImage.h](../include/MaterialTextureImage.h)、[MaterialMaskTextures.h](../include/MaterialMaskTextures.h)、[MaterialTexturePlan.h](../include/MaterialTexturePlan.h)、[material_texture_sampling.glsl](../shaders/include/material_texture_sampling.glsl) | 线性颜色/data 视图、ray cone/mip、normal 方差、cutoff 覆盖率、2–4 池及预算。 |
+| 采样 / 诊断 / 发光权重 | [sampler.glsl](../shaders/include/sampler.glsl)、[common.cpp](../src/common.cpp)、[PathDiagnostics.h](../include/PathDiagnostics.h)、[EmissionTexturePower.h](../include/EmissionTexturePower.h)、[Scene.cpp](../src/Scene.cpp) | 固定维度、uint Sobol、seed、RR、异常位、UV/alpha 功率、HDR/非环境组概率。 |
+| 性能 / 图像比较 | [render_benchmark.py](../tools/render_benchmark.py)、[render_compare.py](../tools/render_compare.py)、[make_render_sampling_fixtures.py](../tools/make_render_sampling_fixtures.py) | 生产与插桩分离、固定 spp/多种子/参考、原始线性误差、tile/compute、可再生夹具。 |
 | 资源转换 | [convert_glslpt_scenes.py](../tools/convert_glslpt_scenes.py)、[resources/scenes](../resources/scenes) | 外部场景转换、55 个预设发现、派生灯光/贴图、来源信息。 |
 
 ## 验证入口
@@ -42,6 +45,8 @@
 | [InteractionRegression.cpp](../tests/InteractionRegression.cpp) | 空场景、连续滚轮、后台 OIDN、版本/尺寸失效、UI 延迟诊断。 |
 | [PreviewModeRegression.cpp](../tests/PreviewModeRegression.cpp)、[PresentationTests.cpp](../tests/PresentationTests.cpp) | 整图/分块来回切换、test_mis 黑屏回归、延迟消费和明确源 FBO。 |
 | [RendererBatchTests.cpp](../tests/RendererBatchTests.cpp) | 批次上限/中断、完整快照、同 spp 像素一致、预算失效、停止采样后的显示刷新；另提供可复现的离屏 benchmark CLI。 |
+| [RenderFoundationTests.cpp](../tests/RenderFoundationTests.cpp)、[RenderSecondBatchTests.cpp](../tests/RenderSecondBatchTests.cpp)、[RenderThirdBatchTests.cpp](../tests/RenderThirdBatchTests.cpp) | 三批数值/纹理/offset/AnyHit/采样/RR/光源概率/UV 功率；共用 LightingAudit 和 RenderEvidence。 |
+| [AntialiasingDenoiseTests.cpp](../tests/AntialiasingDenoiseTests.cpp)、[AaDenoiseUiRegression.cpp](../tests/AaDenoiseUiRegression.cpp) | 实际离屏 AA、compute、采样/二阶矩/特征；私有桌面持续运动及 preview/output RR 控件链路。 |
 | [CMakeLists.txt](../CMakeLists.txt)、[tests](../tests) | CTest 注册、Python 导入/转换契约、Qt 运行时路径。 |
 
-性能原始数据和截图位于未版本化 `build/`；可追溯的汇总与实际命令见 [工作台专题](./scene_workbench_v2.md) 和 [八页工作区验收](./workspace_ui.md)。旧 benchmark 副本不自动反映主代码，不把试验副本的结果当作正式版本验收。
+当前独立构建 build/render-foundation 注册 33 项，2026-10-03 全量通过；范围见 [2026-10-03 三批渲染验收](./render_batches_2026-10-03.md)。三批交付图像及 JSON 位于版本化 output/render-first-batch、output/render-second-batch、output/render-third-batch。原始线性大文件及临时日志仍位于未版本化 `build/`；可追溯的汇总与实际命令见 [工作台专题](./scene_workbench_v2.md) 和 [八页工作区验收](./workspace_ui.md)。旧 benchmark 副本不自动反映主代码，不把试验副本的结果当作正式版本验收。
