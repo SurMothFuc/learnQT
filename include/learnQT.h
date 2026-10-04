@@ -40,6 +40,7 @@ class learnQT : public QMainWindow
     void syncWorkspaceAvailability();
     void rememberScene(const QString &path);
     void configureWorkspaceRegression();
+    void configureMaterialRegression();
     void configureRenderQueueRegression();
     void configurePreviewPanelRegression();
     void configureRasterRegression();

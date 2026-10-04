@@ -14,6 +14,7 @@
 #include <QTabWidget>
 #include <QPushButton>
 #include <functional>
+class MaterialPreview;
 
 struct WorkspacePageDescription
 {
@@ -68,6 +69,12 @@ struct WorkspaceUi
     QStackedWidget *leftStack = nullptr, *rightStack = nullptr, *bottomStack = nullptr;
     QToolBar *rail = nullptr;
     QWidget *renderModes = nullptr;
+    QWidget *materialModes = nullptr;
+    MaterialPreview *materialPreview = nullptr;
+    bool materialBall = false;
+    bool batchMaterialEdit = false;
+    int materialBallView = -1;
+    QByteArray materialListSignature;
     QTabWidget *lightingTabs = nullptr;
     QWidget *environmentProperties = nullptr, *lightProperties = nullptr;
     QWidget *outputProperties = nullptr, *resultProperties = nullptr;

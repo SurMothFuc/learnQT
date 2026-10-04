@@ -115,6 +115,20 @@ void testEditor()
     editor.setMaterialField("roughness", .23);
     require(editor.node(b)["material"] == materialB, "Material edit changed unselected binding");
     require(editor.node(a)["material"] != materialB, "Shared material was not isolated");
+    {
+        EditorController atomicEditor;
+        atomicEditor.document = editor.document;
+        atomicEditor.select({a}, a);
+        atomicEditor.setMaterialFields(QJsonObject{{"alphaMode",Mask},{"opacity",.4},
+            {"mediumtype",Scatter},{"mediumDensity",.2}}, {a});
+        QJsonObject material;
+        for (auto v : atomicEditor.document.root["materials"].toArray())
+            if (v.toObject()["id"] == atomicEditor.node(a)["material"]) material = v.toObject();
+        require(material["alphaMode"].toInt()==Mask && material["opacity"].toDouble()==.4 &&
+            material["mediumtype"].toInt()==Scatter && material["mediumDensity"].toDouble()==.2,
+            "Atomic material patch evaluated relevance before enabling its mode");
+        require(atomicEditor.undo.count()==1, "Atomic material patch used multiple undo steps");
+    }
     auto initial = sceneMatrix(editor.node(a)["transform"]);
     QMatrix4x4 mirrored;
     mirrored.translate(2, .5, -1);
