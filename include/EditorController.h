@@ -51,6 +51,8 @@ class EditorController : public QObject
     void setFlag(const QString &id, const QString &flag, bool value);
     bool move(const QStringList &ids, const QString &parent, int row = -1);
     void setMaterialField(const QString &field, const QJsonValue &value, int mergeKey = -1);
+    void setMaterialFields(const QJsonObject &values, const QStringList &targets, int mergeKey = -1);
+    QVector3D materialEmissionHue(const QString &id) const;
     void setTransforms(const QMap<QString, QMatrix4x4> &transforms, bool final = true, int mergeKey = -1);
     void previewTransforms(const QMap<QString, QMatrix4x4> &transforms);
     void restorePreview();
@@ -68,6 +70,7 @@ class EditorController : public QObject
   private:
     friend class EditorCommand;
     QThread *worker = nullptr;
+    QMap<QString, QVector3D> emissionHues;
     void apply(const SceneDocument &next, Change change, std::shared_ptr<Scene> ready = {});
     void prepare(SceneDocument next, std::function<void(std::shared_ptr<Scene>)> completed);
     void refreshBounds(const Scene &scene);

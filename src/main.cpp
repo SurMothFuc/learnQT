@@ -53,7 +53,8 @@ int main(int argc, char *argv[])
 #ifdef SCENE_TESTING
     // UI regressions must not read or overwrite a person's workspace preferences.
     for (int i = 1; i + 1 < arguments.size(); ++i)
-        if (arguments[i].contains("-regression") && !arguments[i].startsWith("--regression-"))
+        if (arguments[i].startsWith("--") && arguments[i].endsWith("-regression") &&
+            !arguments[i + 1].startsWith("--"))
         {
             QFileInfo output(arguments[i + 1]);
             auto directory = output.suffix() == "png" ? output.absolutePath() : output.absoluteFilePath();

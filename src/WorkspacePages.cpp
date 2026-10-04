@@ -2,6 +2,8 @@
 #include "UiDiagnostics.h"
 #include "WorkspaceUi.h"
 #include "learnQT.h"
+#include "MaterialPreview.h"
+#include "MaterialUi.h"
 #include <QActionGroup>
 #include <QApplication>
 #include <QDirIterator>
@@ -271,10 +273,21 @@ void learnQT::setupWorkspace()
         return settingsRoot->findChild<QGroupBox *>(name);
     };
     w.rightStack = new QStackedWidget;
-    objectScroll->setParent(w.rightStack);
-    w.rightStack->addWidget(objectScroll);
-    w.rightPages[1] = objectScroll;
-    w.rightPages[2] = objectScroll;
+    auto objectPanel = new QWidget;
+    auto objectLayout = new QVBoxLayout(objectPanel);
+    objectLayout->setContentsMargins(0, 0, 0, 0);
+    auto heading = inspector->materialHeading();
+    heading->setContentsMargins(12, 8, 12, 4);
+    heading->setTextFormat(Qt::PlainText);
+    heading->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    objectLayout->addWidget(heading);
+    auto selectUsersHeader = inspector->findChild<QPushButton *>("selectMaterialUsers");
+    objectLayout->addWidget(selectUsersHeader);
+    objectLayout->addWidget(objectScroll, 1);
+    objectScroll->show();
+    w.rightStack->addWidget(objectPanel);
+    w.rightPages[1] = objectPanel;
+    w.rightPages[2] = objectPanel;
     auto lightContent = qobject_cast<QScrollArea *>(lightScroll)->widget();
     lightContent->layout()->addWidget(
         unavailable("其他光源", "保留专用光源和预设入口。", {"矩形灯 / 聚光灯 / IES", "色温 / 灯光预设"}));
@@ -692,10 +705,16 @@ void learnQT::setupWorkspace()
     w.materialFilter->addItems({"所选对象材质", "全部场景材质"});
     materialLayout->addWidget(w.materialFilter);
     w.materials = cards("workspaceMaterials", 48);
+    w.materials->setViewMode(QListView::ListMode);
+    w.materials->setFlow(QListView::TopToBottom);
+    w.materials->setGridSize(QSize());
+    w.materials->setWordWrap(false);
+    w.materials->setIconSize(QSize(32,32));
     materialLayout->addWidget(w.materials, 1);
-    w.materialContext = label("选择对象后编辑其材质。没有通用材质库。");
+    w.materialContext = label("选择材质以查看属性；编辑只影响所选对象。");
     materialLayout->addWidget(w.materialContext);
-    auto selectUsers = new QPushButton("选择使用此材质的对象");
+    auto selectUsers = new QPushButton("选择使用者");
+    selectUsers->setToolTip(tr("在场景中选择使用当前材质的对象"));
     materialLayout->addWidget(selectUsers);
     connect(selectUsers, &QPushButton::clicked, this, [this] {
         auto item = workspace->materials->currentItem();
@@ -713,8 +732,19 @@ void learnQT::setupWorkspace()
     connect(w.materialFilter, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             [this] { refreshWorkspace(); });
     connect(w.materials, &QListWidget::currentItemChanged, this, [this](QListWidgetItem *item) {
-        if (!workspace->refreshing && workspace->page == 2)
+        if (!workspace->refreshing && workspace->page == 2) {
+            workspace->batchMaterialEdit = false;
             inspector->browseMaterial(item ? item->data(Qt::UserRole).toString() : QString());
+        }
+    });
+    auto editAll = new QPushButton(tr("批量编辑所选对象"));
+    editAll->setObjectName("materialEditSelected");
+    materialLayout->addWidget(editAll);
+    connect(editAll, &QPushButton::clicked, this, [this] {
+        workspace->batchMaterialEdit = true;
+        QSignalBlocker block(workspace->materials);
+        workspace->materials->clearSelection(); workspace->materials->setCurrentRow(-1);
+        inspector->browseMaterial({});
     });
     auto lightListPanel = new QWidget;
     auto lightListLayout = column(lightListPanel);
@@ -1143,6 +1173,15 @@ void learnQT::setupWorkspace()
     views->addTab(w.home, "首页");
     views->addTab(w.resources, "资源");
     views->addTab(w.preferences, "设置");
+    w.materialPreview = new MaterialPreview;
+    w.materialPreview->stateChanged = [this] {
+        if (workspace->page == int(WorkspacePage::Material) && workspace->materialBall) {
+            statsLabel->setText(tr("材质球 · %1").arg(workspace->materialPreview->status()));
+            progress->setValue(workspace->materialPreview->samples()*100/64);
+        }
+    };
+    w.materialBallView = views->addTab(w.materialPreview, "材质球");
+    w.materialBall = settings.value("workspaceV5/materialEditor/ball", false).toBool();
     auto central = new QWidget;
     auto centralLayout = new QVBoxLayout(central);
     centralLayout->setContentsMargins(0, 0, 0, 0);
@@ -1174,9 +1213,55 @@ void learnQT::setupWorkspace()
         workspace->bottom->setVisible(!workspace->bottom->isVisible());
     });
     centralLayout->addWidget(w.renderModes);
+    w.materialModes = new QWidget;
+    w.materialModes->setObjectName("materialModeBar");
+    auto materialModeLayout = new QHBoxLayout(w.materialModes);
+    materialModeLayout->setContentsMargins(8, 4, 8, 4);
+    auto sceneMode = new QPushButton(tr("场景")); sceneMode->setObjectName("materialSceneMode");
+    auto ballMode = new QPushButton(tr("材质球")); ballMode->setObjectName("materialBallMode");
+    for (auto b : {sceneMode, ballMode}) { b->setCheckable(true); b->setAutoExclusive(true); materialModeLayout->addWidget(b); }
+    materialModeLayout->addStretch();
+    auto resetBall = new QPushButton(tr("重置视角")); resetBall->setObjectName("materialBallReset"); materialModeLayout->addWidget(resetBall);
+    auto retryBall = new QPushButton(tr("重试")); retryBall->setObjectName("materialBallRetry"); materialModeLayout->addWidget(retryBall);
+    connect(resetBall, &QPushButton::clicked, w.materialPreview, &MaterialPreview::resetView);
+    connect(retryBall, &QPushButton::clicked, w.materialPreview, &MaterialPreview::retry);
+    auto setMaterialMode = [this, sceneMode, ballMode, resetBall, retryBall](bool ball) {
+        auto &w = *workspace; w.materialBall = ball;
+        QSettings s(QSettings::defaultFormat(), QSettings::UserScope, "learnQT", "SceneWorkbench");
+        s.setValue("workspaceV5/materialEditor/ball", ball);
+        sceneMode->setChecked(!ball); ballMode->setChecked(ball); resetBall->setVisible(ball); retryBall->setVisible(ball);
+        if (w.page == int(WorkspacePage::Material)) {
+            const bool old = w.navigating; w.navigating = true;
+            views->setCurrentIndex(ball ? w.materialBallView : 0); w.navigating = old;
+            if (viewport->renderThread()) viewport->renderThread()->setPreviewVisible(!ball);
+        }
+    };
+    connect(sceneMode, &QPushButton::clicked, this, [setMaterialMode] { setMaterialMode(false); });
+    connect(ballMode, &QPushButton::clicked, this, [setMaterialMode] { setMaterialMode(true); });
+    setMaterialMode(w.materialBall);
+    centralLayout->addWidget(w.materialModes);
     centralLayout->addWidget(views, 1);
     setCentralWidget(central);
     w.renderModes->hide();
+    w.materialModes->hide();
+    inspector->materialRefreshed = [this] {
+        if (!workspace || !workspace->materialPreview || workspace->page != int(WorkspacePage::Material)) return;
+        const auto id = inspector->previewMaterialId();
+        if (!workspace->batchMaterialEdit) {
+            QSignalBlocker block(workspace->materials);
+            for (int i = 0; i < workspace->materials->count(); ++i)
+                if (workspace->materials->item(i)->data(Qt::UserRole).toString() == id)
+                    workspace->materials->setCurrentRow(i);
+        }
+        workspace->materialPreview->setMaterial(editor->document, inspector->previewMaterialId(), editor->cache);
+    };
+    auto previewAvailability = new QTimer(this);
+    previewAvailability->setInterval(100);
+    connect(previewAvailability, &QTimer::timeout, this, [this] {
+        workspace->materialPreview->setRenderingAllowed(!m_queueRunning && !m_activeQueueId && !editor->renderLocked,
+            tr("正式渲染期间暂停材质球预览"));
+    });
+    previewAvailability->start();
     inspector->openMaterialPage = [this] { navigateWorkspace(WorkspacePage::Material); };
     auto renderMenu = menuBar()->addMenu("渲染");
     renderMenu->addAction(renderAction);
@@ -1315,10 +1400,12 @@ void learnQT::applyWorkspaceLayout()
         : w.page == int(WorkspacePage::Lighting) ? "照明内容" : "场景相机");
     w.bottom->setWindowTitle(render ? "渲染队列" : "资源浏览器");
     w.renderModes->setVisible(render);
+    w.materialModes->setVisible(w.page == int(WorkspacePage::Material));
     w.compositionMode->setChecked(m_renderPreviewMode);
     w.resultsMode->setChecked(!m_renderPreviewMode);
     findChild<QToolButton *>("renderPrimary")->setVisible(render && m_renderPreviewMode);
-    views->setCurrentIndex(render ? (m_renderPreviewMode ? 0 : 1) : description.view);
+    views->setCurrentIndex(render ? (m_renderPreviewMode ? 0 : 1) :
+        w.page == int(WorkspacePage::Material) && w.materialBall ? w.materialBallView : description.view);
     if (render && !m_draftCamera.isEmpty()) {
         Camera draft;
         draft.restoreState(sceneVector(m_draftCamera["position"]), sceneVector(m_draftCamera["target"]),
@@ -1334,7 +1421,7 @@ void learnQT::applyWorkspaceLayout()
     w.activeLayoutKey = key;
     w.navigation[w.page]->setChecked(true);
     if (viewport->renderThread())
-        viewport->renderThread()->setPreviewVisible(description.preview || (render && m_renderPreviewMode));
+        viewport->renderThread()->setPreviewVisible((description.preview && !(w.page == int(WorkspacePage::Material) && w.materialBall)) || (render && m_renderPreviewMode));
     w.navigating = false;
     for (const auto &refresh : w.refreshers) refresh();
     w.refreshCamera();
@@ -1364,33 +1451,41 @@ void learnQT::refreshWorkspace()
         return;
     auto &w = *workspace;
     w.refreshing = true;
-    QString material =
-        w.materials->currentItem() ? w.materials->currentItem()->data(Qt::UserRole).toString() : QString();
-    w.materials->clear();
+    const QString material = inspector->previewMaterialId();
     QSet<QString> selectedMaterials;
-    for (auto id : editor->selectedModels())
-        selectedMaterials.insert(editor->node(id)["material"].toString());
-    for (auto v : editor->document.root["materials"].toArray())
-    {
-        auto m = v.toObject();
-        auto id = m["id"].toString(), name = m["name"].toString(id);
-        if (w.materialFilter->currentIndex() == 0 && !selectedMaterials.contains(id))
-            continue;
-        if (!name.contains(w.materialSearch->text(), Qt::CaseInsensitive) &&
-            !id.contains(w.materialSearch->text(), Qt::CaseInsensitive))
-            continue;
-        addCard(w.materials, name, "material", id);
-        if (id == material)
-            w.materials->setCurrentRow(w.materials->count() - 1);
+    QMap<QString,int> users;
+    for (auto id : editor->selectedModels()) selectedMaterials.insert(editor->node(id)["material"].toString());
+    for (auto v : editor->document.root["objects"].toArray()) ++users[v.toObject()["material"].toString()];
+    QJsonArray visible;
+    for (auto v : editor->document.root["materials"].toArray()) {
+        auto m=v.toObject();auto id=m["id"].toString(),name=materialDisplayName(editor->document,id);
+        if(w.materialFilter->currentIndex()==0 && !selectedMaterials.contains(id))continue;
+        if(!name.contains(w.materialSearch->text(),Qt::CaseInsensitive) && !id.contains(w.materialSearch->text(),Qt::CaseInsensitive))continue;
+        visible.append(QJsonObject{{"material",m},{"users",users.value(id)},{"displayName",name}});
     }
-    if (!w.materials->currentItem() && w.materials->count())
-        w.materials->setCurrentRow(0);
-    w.materialContext->setText(w.materials->count() ? "修改仅影响所选对象；共享材质按需隔离。"
-                                                    : "没有匹配材质。选择模型或切换至全部场景材质。");
-    if (w.page == 2)
-        inspector->browseMaterial(w.materials->currentItem()
-                                      ? w.materials->currentItem()->data(Qt::UserRole).toString()
-                                      : QString());
+    const auto materialSignature=QJsonDocument(visible).toJson(QJsonDocument::Compact);
+    if(materialSignature!=w.materialListSignature) {
+        w.materialListSignature=materialSignature;
+        QSignalBlocker block(w.materials); w.materials->clear();
+        for(auto v:visible) {
+            auto m=v.toObject()["material"].toObject();auto id=m["id"].toString();
+            const auto displayName=materialDisplayName(editor->document,id);
+            auto item=new QListWidgetItem(displayName+"\n"+tr("%1 个对象使用").arg(users.value(id)),w.materials);
+            item->setData(Qt::UserRole,id);item->setToolTip(displayName);
+            item->setSizeHint(QSize(1,64));
+            QPixmap icon(32,32);icon.fill(materialDisplayColor(sceneVector(m["baseColor"])));
+            QString texture=m["textures"].toObject()["baseColor"].toString();
+            if (!texture.isEmpty()) {
+                auto image=inspector->textureThumbnail(texture);
+                if(!image.isNull())icon=QPixmap::fromImage(image.scaled(32,32,Qt::KeepAspectRatio,Qt::SmoothTransformation));
+            }
+            item->setIcon(QIcon(icon));if(id==material)w.materials->setCurrentItem(item);
+        }
+        if(!w.materials->currentItem() && w.materials->count() && material.isEmpty() && !w.batchMaterialEdit)w.materials->setCurrentRow(0);
+    }
+    w.materialContext->setText(w.materials->count() ? tr("修改仅影响所选对象；共享材质按需隔离。") : tr("没有匹配材质。选择对象或查看全部场景材质。"));
+    if(w.page==2 && material.isEmpty() && w.materials->currentItem())
+        inspector->browseMaterial(w.materials->currentItem()->data(Qt::UserRole).toString());
     auto light = w.lights->currentItem() ? w.lights->currentItem()->data(Qt::UserRole).toString()
         : w.lightProperties->findChild<QComboBox *>()->currentData().toString();
     w.lights->clear();

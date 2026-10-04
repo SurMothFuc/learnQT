@@ -109,7 +109,9 @@ void learnQT::configureRenderQueueRegression()
             preferences.sync();
             outputWidth->setValue(96);
             outputHeight->setValue(54);
-            outputSamples->setValue(512);
+            // Keep the first job alive long enough for progress and cross-page
+            // actions; 512 samples can finish before the 100 ms UI timer fires.
+            outputSamples->setValue(8192);
             outputDenoise->setChecked(false);
             navigateWorkspace(WorkspacePage::Render);
             m_renderCameraChoice->setCurrentIndex(1);
@@ -259,7 +261,7 @@ void learnQT::configureRenderQueueRegression()
                 if (!workspace->resultProperties->isVisible() || workspace->outputProperties->isVisible() ||
                     !workspace->taskProperties->text().contains(m_renderQueue[0].cameraName) ||
                     !workspace->taskProperties->text().contains(m_renderQueue[0].request.outputPath) ||
-                    !statsLabel->text().contains("512 / 512 spp"))
+                    !statsLabel->text().contains("8192 / 8192 spp"))
                     return finish("Result inspector did not show selected task snapshot");
                 grab().save(output + "/result-page.png");
                 state->capturedUi = true;
@@ -377,13 +379,8 @@ void learnQT::configureRenderQueueRegression()
                 m_renderQueue[8].format != "jpg")
                 return finish("Export-failure fixtures were not captured");
             workspace->runQueue->trigger();
-            state->phase = 11;
-            return;
-        }
-        if (state->phase == 11)
-        {
-            if (m_renderQueue[7].status != tr("渲染中"))
-                return;
+            // Dispatch assigns the output path synchronously. Block it now:
+            // a 128-spp job may already be complete by the next UI timer tick.
             if (!QDir().mkpath(m_renderQueue[7].request.outputPath))
                 return finish("Could not block the first export output path");
             state->blockedExport = true;
