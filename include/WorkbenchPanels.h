@@ -12,6 +12,8 @@
 #include <QPixmap>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QSlider>
+#include <QToolButton>
 #include <QWidget>
 #include <functional>
 class MixedSpin : public QDoubleSpinBox
@@ -20,6 +22,7 @@ class MixedSpin : public QDoubleSpinBox
     explicit MixedSpin(QWidget *parent = nullptr);
     void showValue(double value, bool mixed = false);
     void resetMixed();
+    bool hasUncommittedText() const;
 };
 class ObjectInspector : public QWidget
 {
@@ -29,6 +32,10 @@ class ObjectInspector : public QWidget
     void setMaterialPage(bool enabled);
     void browseMaterial(const QString &id);
     std::function<void()> openMaterialPage;
+    std::function<void()> materialRefreshed;
+    QString previewMaterialId() const;
+    QLabel *materialHeading() const { return summary; }
+    QImage textureThumbnail(const QString &id) const { return textureImage(id); }
 
   private:
     EditorController *editor;
@@ -39,10 +46,22 @@ class ObjectInspector : public QWidget
     QComboBox *materialList;
     QPushButton *color, *emission, *mediumColor;
     QMap<QString, QPushButton *> textures;
+    QMap<QString, QWidget *> rows, rowLabels, bodies;
+    QMap<QString, QToolButton *> sections;
+    QMap<QString, QSlider *> sliders;
+    QMap<QString, QString> titles;
+    QSet<QString> initializedSections;
+    QPushButton *selectMaterialUsers = nullptr;
+    mutable QHash<QString, QImage> textureThumbnails;
+    void updateMaterialUi(const QList<QJsonObject> &definitions, bool enabled);
+    void commitMaterial(const QString &field, const QJsonValue &value, int key = -1);
+    QStringList materialTargets(const QString &field) const;
+    QImage textureImage(const QString &id, QString *name = nullptr) const;
     int epoch = 1;
     bool restoring = false;
     QString materialId() const;
     QString browsedMaterial;
+    QString pendingTextureObject, pendingTextureScope;
     QWidget *transformSection = nullptr;
     QWidget *materialSlotLabel = nullptr;
     QWidget *materialSection = nullptr;

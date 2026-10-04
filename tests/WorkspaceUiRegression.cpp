@@ -111,7 +111,9 @@ void learnQT::configureRenderQueueRegression()
             preferences.sync();
             outputWidth->setValue(96);
             outputHeight->setValue(54);
-            outputSamples->setValue(512);
+            // Keep the first job alive long enough for progress and cross-page
+            // actions; 512 samples can finish before the 100 ms UI timer fires.
+            outputSamples->setValue(8192);
             outputDenoise->setCurrentIndex(int(DenoiseMode::None));
             navigateWorkspace(WorkspacePage::Render);
             m_renderCameraChoice->setCurrentIndex(1);
@@ -262,7 +264,7 @@ void learnQT::configureRenderQueueRegression()
                 if (!workspace->resultProperties->isVisible() || workspace->outputProperties->isVisible() ||
                     !workspace->taskProperties->text().contains(m_renderQueue[0].cameraName) ||
                     !workspace->taskProperties->text().contains(m_renderQueue[0].request.outputPath) ||
-                    !statsLabel->text().contains("512 / 512 spp"))
+                    !statsLabel->text().contains("8192 / 8192 spp"))
                     return finish("Result inspector did not show selected task snapshot");
                 grab().save(output + "/result-page.png");
                 state->capturedUi = true;

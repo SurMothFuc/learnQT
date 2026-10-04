@@ -1,4 +1,6 @@
 #include "EditorController.h"
+#include "MaterialUi.h"
+#include <QDebug>
 #include "UiDiagnostics.h"
 #include <QElapsedTimer>
 #include <QFileInfo>
@@ -9,6 +11,16 @@
 
 namespace
 {
+QJsonObject materialRelevanceState(QJsonObject material, const QJsonObject &values)
+{
+    for (auto it = values.begin(); it != values.end(); ++it) {
+        if (it.key().startsWith("textures.")) {
+            auto textures = material["textures"].toObject();
+            textures[it.key().mid(9)] = it.value(); material["textures"] = textures;
+        } else material[it.key()] = it.value();
+    }
+    return material;
+}
 void replaceNode(SceneDocument &d, const QString &id, const std::function<void(QJsonObject &)> &fn)
 {
     for (auto key : {"groups", "objects"})
@@ -550,8 +562,23 @@ void EditorController::setMaterialField(const QString &field, const QJsonValue &
                 it = ids.erase(it);
             else
                 ++it;
-    if (ids.isEmpty())
-        return;
+    setMaterialFields(QJsonObject{{field, value}}, ids, key);
+}
+void EditorController::setMaterialFields(const QJsonObject &values, const QStringList &targets, int key)
+{
+    if (busy || renderLocked || values.isEmpty()) return;
+    auto editable = selectedModels(true);
+    QStringList ids;
+    for (const auto &id : targets) {
+        if (!editable.contains(id)) continue;
+        QJsonObject material;
+        for (auto v : document.root["materials"].toArray())
+            if (v.toObject()["id"] == node(id)["material"]) material = v.toObject();
+        const auto relevant = materialRelevanceState(material, values);
+        for (auto it = values.begin(); it != values.end(); ++it)
+            if (materialFieldApplicable(relevant, it.key())) { ids << id; break; }
+    }
+    if (ids.isEmpty()) return;
     auto d = document;
     auto mats = d.root["materials"].toArray();
     QMap<QString, QString> copies;
@@ -571,25 +598,41 @@ void EditorController::setMaterialField(const QString &field, const QJsonValue &
                     auto m = mats[j].toObject();
                     dest = shared ? sceneId() : source;
                     m["id"] = dest;
-                    if (field.startsWith("textures."))
+                    const auto relevant = materialRelevanceState(m, values);
+                    for (auto it = values.begin(); it != values.end(); ++it)
                     {
-                        auto t = m["textures"].toObject();
-                        QString slot = field.mid(9);
-                        if (value.isNull() || value.toString().isEmpty())
-                            t.remove(slot);
+                        const auto field = it.key(); const auto value = it.value();
+                        if (!materialFieldApplicable(relevant, field)) continue;
+                        if (field.startsWith("textures."))
+                        {
+                            auto t = m["textures"].toObject();
+                            QString slot = field.mid(9);
+                            if (value.isNull() || value.toString().isEmpty())
+                                t.remove(slot);
+                            else
+                                t[slot] = value;
+                            m["textures"] = t;
+                        }
+                        else if (field == "emissionStrength")
+                        {
+                            auto color = sceneVector(m["emissive"]);
+                            float peak = std::max({color.x(), color.y(), color.z()});
+                            color = peak > 0 ? emissionHue(color) : emissionHues.value(source, QVector3D(1,1,1));
+                            emissionHues[dest] = color;
+                            m["emissive"] = jsonVector(color * float(value.toDouble()));
+                        }
+                        else if (field == "emissionColor")
+                        {
+                            auto old = sceneVector(m["emissive"]);
+                            const float strength = std::max({old.x(), old.y(), old.z()});
+                            auto requested = sceneVector(value);
+                            auto hue = emissionHue(requested);
+                            emissionHues[dest] = hue;
+                            m["emissive"] = jsonVector(requested.lengthSquared() > 0 ? hue * strength : QVector3D());
+                        }
                         else
-                            t[slot] = value;
-                        m["textures"] = t;
+                            m[field] = value;
                     }
-                    else if (field == "emissionStrength")
-                    {
-                        auto color = sceneVector(m["emissive"]);
-                        float peak = std::max({color.x(), color.y(), color.z()});
-                        color = peak > 0 ? color / peak : QVector3D(1, 1, 1);
-                        m["emissive"] = jsonVector(color * float(value.toDouble()));
-                    }
-                    else
-                        m[field] = value;
                     if (shared)
                         mats.append(m);
                     else
@@ -602,6 +645,14 @@ void EditorController::setMaterialField(const QString &field, const QJsonValue &
     }
     d.root["materials"] = mats;
     submit(d, tr("编辑材质"), MaterialChange, key);
+}
+QVector3D EditorController::materialEmissionHue(const QString &id) const
+{
+    for (auto v : document.root["materials"].toArray()) if (v.toObject()["id"].toString() == id) {
+        auto c = sceneVector(v.toObject()["emissive"]);
+        if (c.lengthSquared() > 0) return emissionHue(c);
+    }
+    return emissionHues.value(id, QVector3D(1,1,1));
 }
 void EditorController::setTransforms(const QMap<QString, QMatrix4x4> &matrices, bool, int key)
 {

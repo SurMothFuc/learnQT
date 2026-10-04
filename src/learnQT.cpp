@@ -1,4 +1,5 @@
 #include "learnQT.h"
+#include "MaterialPreview.h"
 #include "UiDiagnostics.h"
 #include "WorkbenchStyle.h"
 #include "WorkspaceUi.h"
@@ -114,6 +115,7 @@ learnQT::learnQT(QWidget *parent) : QMainWindow(parent)
     configurePreviewRegression();
     configurePreviewModeRegression();
     configureWorkspaceRegression();
+    configureMaterialRegression();
     configureRenderQueueRegression();
     configurePreviewPanelRegression();
     configureLargeScenePreviewRegression();
@@ -231,6 +233,8 @@ void learnQT::setupWorkbench()
     auto navigationHint =
         new QLabel(tr("  Alt + 左键  环绕    ·    中键  平移    ·    滚轮  缩放    ·    F  定位所选"));
     navigationHint->setObjectName("muted");
+    navigationHint->setWordWrap(true);
+    navigationHint->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
     navigationHint->setMinimumHeight(28);
     editorLayout->addWidget(navigationHint);
     views->addTab(editorPage, WorkbenchStyle::icon("scene"), tr("编辑视口"));
@@ -965,6 +969,11 @@ void learnQT::connectRenderThread()
                                     .arg(item.request.settings.samples));
             progress->setValue(item.request.settings.samples > 0
                                    ? int(100. * item.samples / item.request.settings.samples) : 0);
+            return;
+        }
+        if (workspace->page == int(WorkspacePage::Material) && workspace->materialBall) {
+            statsLabel->setText(tr("材质球 · %1").arg(workspace->materialPreview->status()));
+            progress->setValue(workspace->materialPreview->samples()*100/64);
             return;
         }
         // 光栅化交互预览不累积采样，只显示帧耗时，避免把静态的 spp 当成卡住。
