@@ -302,6 +302,7 @@ void learnQT::configureSceneRegression()
     struct State
     {
         int stage = 0, frames = 0;
+        bool capturePrepared = false;
         QImage before;
         RenderStats stats;
         QElapsedTimer time;
@@ -336,10 +337,32 @@ void learnQT::configureSceneRegression()
             return;
         }
         viewport->update();
+        if (!state->capturePrepared)
+        {
+            if (m_sceneDirty)
+            {
+                fail("Dirty state leaked before capture setup");
+                return;
+            }
+            // Compare the same stopped raw accumulation on both visits. Counting
+            // repaint events alone can capture different spp or denoiser history.
+            auto settings = Scene::getInstance().document.settings();
+            settings.maxRenderFrames = 8;
+            settings.useTileRendering = false;
+            settings.renderLow = false;
+            settings.denoise = false;
+            applyPreviewSettingsForTesting(settings);
+            // Establish the fixture settings as the clean baseline. Subsequent
+            // camera/material edits must still trigger the real dirty-state path.
+            editor->undo.setClean();
+            state->capturePrepared = true;
+            state->frames = 0;
+            return;
+        }
         // A private-desktop frame pump can repaint the same incomplete tile many
         // times. Wait for this scene's completed PT rounds before comparing images.
         if (state->stats.version != viewport->sceneVersion() || state->stats.rasterActive ||
-            state->stats.samples < 4)
+            state->stats.samples != 8)
         {
             state->frames = 0;
             return;
@@ -358,7 +381,8 @@ void learnQT::configureSceneRegression()
         {
             if (scene.textures.size() != 4 || m_sceneDirty)
             {
-                fail("Initial bedroom state is wrong");
+                fail(QString("Initial bedroom state is wrong: textures=%1 dirty=%2 clean=%3")
+                         .arg(scene.textures.size()).arg(m_sceneDirty).arg(editor->undo.isClean()));
                 return;
             }
             state->before = viewport->grabFramebuffer();
@@ -384,6 +408,7 @@ void learnQT::configureSceneRegression()
                 return;
             }
             state->stage = 1;
+            state->capturePrepared = false;
             state->frames = 0;
         }
         else if (state->stage == 1)
@@ -401,6 +426,7 @@ void learnQT::configureSceneRegression()
             answerDialog(QMessageBox::Ok);
             beginSceneLoad(bad.fileName());
             state->stage = 2;
+            state->capturePrepared = false;
             state->frames = 0;
         }
         else if (state->stage == 2)
@@ -441,6 +467,7 @@ void learnQT::configureSceneRegression()
             answerDialog(QMessageBox::Save);
             select(bedroom);
             state->stage = 3;
+            state->capturePrepared = false;
             state->frames = 0;
         }
         else
@@ -477,6 +504,11 @@ void learnQT::configureSceneRegression()
                                   std::abs(qBlue(p) - qBlue(q));
                 }
             difference /= 64 * 64 * 3;
+            QFile captureReport(output + "/roundtrip-capture.json");
+            if (captureReport.open(QIODevice::WriteOnly))
+                captureReport.write(QJsonDocument(QJsonObject{{"samplesPerVisit", 8},
+                    {"denoise", false}, {"width", after.width()}, {"height", after.height()},
+                    {"dpi", viewport->devicePixelRatioF()}, {"meanPixelDifference", difference}}).toJson());
             if (difference > 18)
             {
                 fail(QString("Bedroom pixels changed after roundtrip: %1").arg(difference));

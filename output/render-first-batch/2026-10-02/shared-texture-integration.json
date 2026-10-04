@@ -1,0 +1,23 @@
+{
+  "width": 96,
+  "height": 64,
+  "totalSpp": 18,
+  "sameImageTwoRolesVsSeparateImageCopiesMaxAbsError": 0.0,
+  "diagnostics": {
+    "boundaryLimit": 0,
+    "bvhOverflow": 0,
+    "countMeaning": "affected pixels accumulated since reset; rejectedSamples counts sample events",
+    "firstAffectedPixel": [],
+    "firstFlags": 0,
+    "height": 64,
+    "invalidRay": 0,
+    "mediumOverflow": 0,
+    "nonFinite": 0,
+    "rejected": 0,
+    "rejectedSamples": 0,
+    "samples": 18,
+    "validSamples": 110592,
+    "version": 2,
+    "width": 96
+  }
+}

@@ -338,6 +338,8 @@ void Scene::adoptPrepared(Scene &s)
     SWAP(nodes_encoded);
     SWAP(lights_encoded);
     SWAP(lightPowerSum);
+    SWAP(environmentLuminanceIntegral);
+    SWAP(finiteIrradianceEstimate);
     SWAP(hdrRes);
     SWAP(cache);
     SWAP(hdrResolution);

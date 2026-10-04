@@ -4,7 +4,15 @@ uniform samplerBuffer instanceTable;
 uniform samplerBuffer materialTable;
 uniform samplerBuffer topNodes;
 uniform usamplerBuffer surfaceTable;
+#ifdef PACKED_SURFACE_PDF
+uniform int surfacePdfOffset;
+float InstanceSurfacePdf(int surface) {
+    return texelFetch(materialTable,surfacePdfOffset+surface/4)[surface%4];
+}
+#else
 uniform samplerBuffer surfacePdfTable;
+float InstanceSurfacePdf(int surface) {return texelFetch(surfacePdfTable,surface).r;}
+#endif
 uniform int nTopNodes;
 uniform bool picking;
 mat4 InstanceMatrix(int instance,int start) {
@@ -22,7 +30,7 @@ vec4 FetchTriangleVector(int address) {
     if(field==13) return vec4(texelFetch(triangles,geometry*11+7).xy,texelFetch(materialTable,material+6).zw);
     if(field==14) return texelFetch(materialTable,material+7);
     if(field==15) return texelFetch(materialTable,material+8);
-    if(field==16) return vec4(texelFetch(materialTable,material+9).xy,texelFetch(surfacePdfTable,surface).r,0);
+    if(field==16) return vec4(texelFetch(materialTable,material+9).xy,InstanceSurfacePdf(surface),0);
     vec4 tangent=texelFetch(triangles,geometry*11+field-9);mat3 world=mat3(InstanceMatrix(instance,0));
     return vec4(world*tangent.xyz,tangent.w*sign(determinant(world)));
 }

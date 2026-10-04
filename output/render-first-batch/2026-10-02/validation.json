@@ -1,0 +1,209 @@
+{
+  "date": "2026-10-02",
+  "baselineCommit": "ab008e5",
+  "build": "Release; Visual Studio 2022 x64; Qt 5.15.2",
+  "tests": {
+    "background_failure_exit_status": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "1/30 Test  #1: background_failure_exit_status ..........   Passed    0.16 sec"
+    },
+    "renderer_batch_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "2/30 Test  #2: renderer_batch_regression ...............   Passed    7.80 sec"
+    },
+    "environment_sphere_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "3/30 Test  #3: environment_sphere_regression ...........   Passed   29.06 sec"
+    },
+    "aa_denoise_ui_regression": {
+      "status": "Passed",
+      "log": "ctest-ui-repaired.log",
+      "resultLine": "1/2 Test  #4: aa_denoise_ui_regression .........   Passed   29.96 sec"
+    },
+    "aa_denoise_compute_regression": {
+      "status": "Passed",
+      "log": "ctest-repaired.log",
+      "resultLine": "2/6 Test  #5: aa_denoise_compute_regression ....   Passed   23.60 sec"
+    },
+    "aa_denoise_regression": {
+      "status": "Passed",
+      "log": "ctest-repaired.log",
+      "resultLine": "3/6 Test  #6: aa_denoise_regression ............   Passed   20.24 sec"
+    },
+    "denoise_stationary_convergence": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "7/30 Test  #7: denoise_stationary_convergence ..........   Passed   10.65 sec"
+    },
+    "display_buffer_handoff_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "8/30 Test  #8: display_buffer_handoff_regression .......   Passed    0.94 sec"
+    },
+    "bvh_sah_scale_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "9/30 Test  #9: bvh_sah_scale_regression ................   Passed    0.03 sec"
+    },
+    "instanced_traversal_regression": {
+      "status": "Passed",
+      "log": "ctest-repaired.log",
+      "resultLine": "4/6 Test #10: instanced_traversal_regression ...   Passed   40.59 sec"
+    },
+    "render_foundation_regression": {
+      "status": "Passed",
+      "log": "ctest-repaired.log",
+      "resultLine": "5/6 Test #11: render_foundation_regression .....   Passed   16.31 sec"
+    },
+    "lighting_numerical_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "12/30 Test #12: lighting_numerical_regression ...........   Passed  254.17 sec"
+    },
+    "workspace_pages_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "13/30 Test #13: workspace_pages_regression ..............   Passed   33.06 sec"
+    },
+    "render_queue_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "14/30 Test #14: render_queue_regression .................   Passed   88.99 sec"
+    },
+    "scene_ui_switch_regression": {
+      "status": "Passed",
+      "log": "ctest-scene-final.log",
+      "resultLine": "1/1 Test #15: scene_ui_switch_regression .......   Passed   52.81 sec"
+    },
+    "scene_roundtrip_and_package": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "16/30 Test #16: scene_roundtrip_and_package .............   Passed    9.52 sec"
+    },
+    "workbench_ui_and_render_job": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "17/30 Test #17: workbench_ui_and_render_job .............   Passed   19.58 sec"
+    },
+    "preview_interaction_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "18/30 Test #18: preview_interaction_regression ..........   Passed   38.79 sec"
+    },
+    "preview_mode_switch_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "19/30 Test #19: preview_mode_switch_regression ..........   Passed   43.22 sec"
+    },
+    "preview_mis_mode_switch_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "20/30 Test #20: preview_mis_mode_switch_regression ......   Passed   31.17 sec"
+    },
+    "preview_panel_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "21/30 Test #21: preview_panel_regression ................   Passed    9.24 sec"
+    },
+    "raster_preview_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "22/30 Test #22: raster_preview_regression ...............   Passed   38.22 sec"
+    },
+    "unit_middle_mouse_orbit_target": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "23/30 Test #23: unit_middle_mouse_orbit_target ..........   Passed    0.05 sec"
+    },
+    "unit_finite_analytic_lights": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "24/30 Test #24: unit_finite_analytic_lights .............   Passed    0.04 sec"
+    },
+    "unit_texture_rendering_support": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "25/30 Test #25: unit_texture_rendering_support ..........   Passed    0.05 sec"
+    },
+    "glslpt_conversion": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "26/30 Test #26: glslpt_conversion .......................   Passed    0.83 sec"
+    },
+    "gpu_render_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "27/30 Test #27: gpu_render_regression ...................   Passed   14.02 sec"
+    },
+    "import_fbx_embedded_texture": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "28/30 Test #28: import_fbx_embedded_texture .............   Passed    0.57 sec"
+    },
+    "import_gltf_tangent_sampler_transform": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "29/30 Test #29: import_gltf_tangent_sampler_transform ...   Passed    0.59 sec"
+    },
+    "background_ui_regression": {
+      "status": "Passed",
+      "log": "ctest-final.log",
+      "resultLine": "30/30 Test #30: background_ui_regression ................   Passed   16.51 sec"
+    }
+  },
+  "verificationMeaning": "30 registered tests passed across initial suite and targeted repair reruns, not a single clean 30-test rerun",
+  "ui": "private Windows desktop; inputDesktopWindows=0; inspected actual viewport and settings PNGs",
+  "gpu": "real QOffscreenSurface OpenGL; serialized GPU runs",
+  "foundationReport": "report.json",
+  "sharedTextureIntegration": "shared-texture-integration.json",
+  "sceneRoundtrip": {
+    "denoise": false,
+    "dpi": 2,
+    "height": 480,
+    "meanPixelDifference": 0,
+    "samplesPerVisit": 8,
+    "width": 640
+  },
+  "limitations": [
+    "R-C01 is an initial material/PDF matrix, not exhaustive physical validation; existing Disney diffuse 29/28 retained.",
+    "Diagnostic event counts are affected pixels; rejectedSamples are sample events; first pixel is scan order in lower-left GL coordinates. Full first-fault ray/bounce state is deferred.",
+    "Ray cone is approximate; EWA, ray differentials, alpha coverage minification and emissive footprint/MIS matching are deferred.",
+    "Current color input remains QImage RGBA8; HDR/high-bit-depth color upload is deferred.",
+    "Lantern allocated-resource estimate rose from 375200200 to 531787540 bytes; estimates exclude driver overhead and are not actual VRAM readings.",
+    "Short benchmark fps values are not performance claims."
+  ],
+  "commands": [
+    "cmake --build build/render-foundation --config Release --target learnQT render_foundation_tests aa_denoise_tests renderer_batch_tests traversal_tests lighting_tests presentation_tests bvh_build_tests scene_tests background_failure_tests --parallel 2 -- /p:CL_MPCount=2 /verbosity:quiet",
+    "ctest --test-dir build/render-foundation -C Release -j 1 --output-on-failure",
+    "ctest --test-dir build/render-foundation -C Release -j 1 --output-on-failure -R '^(aa_denoise_ui_regression|aa_denoise_compute_regression|aa_denoise_regression|instanced_traversal_regression|scene_ui_switch_regression|render_foundation_regression)$'",
+    "ctest --test-dir build/render-foundation -C Release -j 1 --output-on-failure -R '^(aa_denoise_ui_regression|scene_ui_switch_regression)$'",
+    "ctest --test-dir build/render-foundation -C Release -j 1 --output-on-failure -R '^scene_ui_switch_regression$'",
+    "render_foundation_tests.exe build/render-foundation/evidence --baseline build/render-foundation/baseline-shaders --lod-baseline build/render-foundation/q01-shaders",
+    "aa_denoise_tests.exe --benchmark resources/scenes/lantern.scene.json build/render-foundation/evidence/Q01-lantern-{before,after}.json 400 300 64 none --aa --diagnostics",
+    "aa_denoise_tests.exe --benchmark build/render-foundation/fixture/checker.scene.json build/render-foundation/evidence/Q02-checker-{before,after}.json 480 320 64 none --aa --diagnostics",
+    "aa_denoise_tests.exe --benchmark build/render-foundation/fixture/{shared-gray,split-gray}.scene.json build/render-foundation/evidence/{shared-gray,split-gray}.json 96 64 16 none --aa --diagnostics"
+  ],
+  "imageProvenance": {
+    "R-C01-comparison.png": "Actual GLSL BSDF calibration, old snapshot vs current; identical pixels required; numerical validation only.",
+    "R-C05-comparison.png": "QPainter diagnostic panel from controlled GPU fault flags; left represents absence of diagnostic markers; not a beauty-render comparison.",
+    "R-C02-comparison.png": "Actual GLSL anisotropic BSDF response with authored X/Y tangents; old snapshot vs current.",
+    "R-Q01-comparison.png": "Actual GPU black/white texture interpolation; encoded sRGB old view vs linear corrected view.",
+    "R-Q01-lantern-comparison.png": "Actual renderer; Lantern, 400x300, 66 total spp, AA on, denoise off; HEAD shader snapshot vs Q01 shader snapshot.",
+    "R-Q02-comparison.png": "Actual GPU 512x512 checker texture sampling against exact linear 0.5 mean; Q01 snapshot vs current.",
+    "R-Q02-checker-comparison.png": "Actual renderer; oblique checker, 480x320, 66 total spp, AA on, denoise off; Q01 snapshot vs current."
+  },
+  "baselineUsage": "Runtime shader overrides/snapshots isolate each change; same release renderer harness; snapshots retained in build/render-foundation.",
+  "evidenceRoot": "D:\\program\\learnQT\\build\\render-foundation",
+  "imageSha256": {
+    "R-C01-comparison.png": "f3893f78ae7b9115ce9f2fe4283edf22610763cd9f62b935a9f4f59036768aed",
+    "R-C02-comparison.png": "fe3bd74bf2169b51f26fe8eefe52002082921d7b526ce748e34cc1fa43a9b11d",
+    "R-C05-comparison.png": "88d84c17c01686044d90d8f9269b9a48b4b86c9b8320c8f05afad8ff23fef9ef",
+    "R-Q01-comparison.png": "c5e513f176f56d2e22a9c6ed22a009b0ef750067eb57370ee0a0e8a325895661",
+    "R-Q01-lantern-comparison.png": "146c707a995a4e50dca8383f7ee38b7c0d8cac91e09cfbb9cf3719361862455b",
+    "R-Q02-checker-comparison.png": "789cede2f23978f35d6e674012092c2922c22362d995078794f373b30e986cf9",
+    "R-Q02-comparison.png": "f2af2f1e0ce5b12008e75577c16925dee2212083096cd0ffa2ffd0d19828a4d5"
+  }
+}

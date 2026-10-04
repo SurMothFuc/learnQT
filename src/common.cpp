@@ -207,6 +207,16 @@ std::vector<float> getSobelRandomNumber(unsigned int frameCount, unsigned int ma
     }
     return res;
 }
+std::vector<unsigned> getSobolBits(unsigned sampleIndex)
+{
+    std::vector<unsigned> result(V.size()/32,0u);
+    const unsigned index=grayCode(sampleIndex);
+    for(size_t d=0;d<result.size();++d) {
+        unsigned bits=index;
+        for(unsigned j=0;bits;bits>>=1,++j)if(bits&1u)result[d]^=V[d*32+j];
+    }
+    return result;
+}
 std::string getResourcePath(const std::string& _relativePath) {
     QString relativePath = QString::fromStdString(_relativePath);
 #ifdef RESOURCE_DIR
@@ -221,6 +231,8 @@ std::string getResourcePath(const std::string& _relativePath) {
 // 添加着色器路径获取函数声明
 std::string getShaderPath(const std::string& _shaderName) {
     QString shaderName= QString::fromStdString(_shaderName);
+    const QString overrideRoot=qEnvironmentVariable("LEARNQT_SHADER_DIR");
+    if(!overrideRoot.isEmpty())return QDir(overrideRoot).filePath(shaderName).toStdString();
 #ifdef SHADER_DIR
     return QDir(SHADER_DIR).filePath(shaderName).toStdString();
 #else

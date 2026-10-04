@@ -231,7 +231,10 @@ int BackgroundTestSession::launchIfNeeded(int argc, char **argv)
         return failed("get child result");
     std::cerr << "Background audit: inputDesktopWindows=0 privateWindowsPeak=" << maximumPrivateWindows
               << " checks=" << checks << " exitCode=" << exitCode << "\n";
-    return int(exitCode);
+    // Windows exception statuses have the high bit set. Do not let their
+    // signed conversion collide with launchIfNeeded's negative "run here"
+    // result and cause the supervisor to start an app on the input desktop.
+    return exitCode <= 0x7fffffffu ? int(exitCode) : 125;
 #else
     std::cerr << "Background UI testing needs a verified isolated display on this platform.\n";
     return 125;

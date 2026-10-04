@@ -9,15 +9,15 @@
 | 模型导入 | Assimp 读取 OBJ、glTF/GLB、FBX；处理节点变换、外部图片与可解码的内嵌图片 | `src/Mesh.cpp` |
 | 几何属性 | UV0、顶点法线、导入切线及 handedness；无 authored tangent 时使用 Assimp fallback | `include/Mesh.h`, `src/Mesh.cpp` |
 | 编码 | 当前使用几何 11 vec4、材质 10 vec4、实例 9 vec4 分表；旧 20 vec4 布局仅在兼容/数值测试路径保留 | `SceneEncoding.cpp`, `scene_access.glsl` |
-| 纹理资源 | `GL_TEXTURE_2D_ARRAY` 加 sampler/UV 元数据 TBO；统一 RGBA 像素和尺寸，生成 mipmap，重载和释放资源 | `Renderer::uploadMaterialTextures()` |
+| 纹理资源 | `GL_TEXTURE_2D_ARRAY` 加 sampler/UV 元数据 TBO；颜色/数据视图按尺寸与格式分为 2–4 池，线性颜色 mip、默认 512 MiB 预算与降尺寸报告，重载和释放资源 | `Renderer::uploadMaterialTextures()` |
 | 材质采样 | base color、metallic、roughness、normal、emissive、opacity；颜色贴图转线性，标量贴图按通道读取 | `shaders/include/bvh_material.glsl` |
 | 法线贴图 | TBN 和切线 handedness，`normalScale`、`normalMapFlipY`；支持场景文件中的 Y 方向约定 | `ApplyNormalMap()` |
 | UV / sampler | 读取 Assimp 提供的 glTF sampler、`KHR_texture_transform`，保存缩放、偏移、旋转、wrap 和 filter 元数据 | `TextureAsset`, `TransformMaterialUV()` |
 | Alpha | `Opaque / Mask / Blend`，保留旧 `Transparent`；base color alpha、opacity、cutoff 进入 BVH 命中筛选，阴影复用该筛选并沿介质段计算透射率 | `RejectAlphaIntersection()`, `ShadowTransmittance()` |
-| 发光 | CPU 以面积、emissive 常量和贴图平均值建选择分布；GPU 在实际采样点读取发光贴图，乘 Mask/Blend 覆盖率并用于双面发光/MIS；材质修改同步更新两侧选择概率 | `Scene::applyEditorDocument()`, `Scene::buildLightData()`, `light_sampling.glsl` |
+| 发光 | CPU 以世界面积、emissive 常量及三角形 UV/alpha 区域功率估计建选择分布；GPU 在实际采样点读取发光贴图，乘 Mask/Blend 覆盖率并用于双面发光/MIS；材质修改同步更新两侧选择概率 | `Scene::applyEditorDocument()`, `Scene::buildLightData()`, `light_sampling.glsl` |
 
 `Renderer::baseColorTex` 仍是 OIDN 的 albedo 辅助输出，不是导入贴图；
-导入贴图使用 `materialTextureArray` / `materialTextureInfoTexture`。
+导入贴图使用 `materialTextureArray` / `materialTextureExtraArrays` 和 `materialTextureInfoTexture`，同一源图片可建颜色与数据视图。
 QImage 上传时进行垂直翻转，与 Assimp 导入后的 UV 约定对齐；Lantern 发光区有关键像素回归。
 
 ## 场景文件与入口
@@ -25,7 +25,7 @@ QImage 上传时进行垂直翻转，与 Assimp 导入后的 UV 约定对齐；L
 - 无参数建立空文档并默认显示欢迎首页，可在设置中关闭欢迎页；卧室预设：[bedroom.scene.json](../resources/scenes/bedroom.scene.json)。
 - 路灯场景：[lantern.scene.json](../resources/scenes/lantern.scene.json)。
 - 两者均通过 `Scene::prepareScene()` / `buildDocument()` 加载，不按预设名称分派硬编码构建函数。
-- 首页与资源页提供场景预设，场景页对象树仍保留场景列表；文件菜单提供打开、保存、另存为、导出便携包。成功打开/保存的文件加入本机最近项目，可再次打开文件以重载。九页布局见 [工作区专题](./workspace_ui.md)。
+- 首页与资源页提供场景预设，场景页对象树仍保留场景列表；文件菜单提供打开、保存、另存为、导出便携包。成功打开/保存的文件加入本机最近项目，可再次打开文件以重载。八页布局见 [工作区专题](./workspace_ui.md)。
 - 工作台导入会追加模型并保留源尺寸、位置及节点变换；有单独指定缩放入口。
   CLI `--model` 保留独立场景适配能力；加载既有文档不重新按全场景包围盒缩放。
 
@@ -40,7 +40,7 @@ QImage 上传时进行垂直翻转，与 Assimp 导入后的 UV 约定对齐；L
 | `lights` | 稳定 ID、`sphere` / `sun` 类型、位置或方向、半径及 radiance |
 | `hdr` | 环境 HDR 路径 |
 | `camera` | `position`、`target`、`up`、垂直视场角 `fov`（度） |
-| `render` | `denoise`, `renderLow`, `useTileRendering`, `tileSize`, `useEnvironmentMap`, `maxBounces`, `maxRenderFrames` |
+| `render` | `denoise`, `renderLow`, `useTileRendering`, `tileSize`, `useEnvironmentMap`, `maxBounces`, `maxRenderFrames`, `sampleSeed`, `rrMinDepth`；v2 还含 AA/降噪模式等 |
 | `portable`, `credits` | 便携包边界标记和资源来源说明 |
 
 不保存 GPU 纹理编号、三角形/BVH 缓存、累计帧或降噪历史。
@@ -90,6 +90,8 @@ MTL、bin、图片等文件，不递归复制无关目录。HDR 和场景直接�
 
 ## 验证与复现
 
+当前介质/结果协议与 34 项测试覆盖见 [2026-10-03 第四、五批渲染验收](./render_batches_4_5_2026-10-03.md)；前三批纹理/采样改进见 [三批验收](./render_batches_2026-10-03.md)；以下 2026-09 的 8/9 项为历史范围。
+
 2026-09-04，代码基线 `6ee2661` 已通过 Release 构建与 8/8 CTest。
 这是固定基线的验收记录，不表示后来代码修改自动获得同样保证。
 2026-09-05 的直接光采样阶段保留这 8 项并新增 `lighting_numerical_regression`，9/9 通过；实际 GPU 数值结果及本轮截图位置见 [direct_lighting.md](./direct_lighting.md)。
@@ -127,13 +129,15 @@ build\Release\learnQT.exe --scene my.scene.json --validate-scene
 
 - 只保存 UV0；请求 UV1/UV2 的材质槽会警告并跳过，不错误套用 UV0。每种槽只读第 0 张纹理。
 - 已导入 authored tangent，但未集成独立的参考 MikkTSpace 生成器；复杂模型接缝仍需专项验证。
-- 已保存 min/mag filter 元数据并生成 mipmap，但当前 shader 显式采样 LOD 0，
-  仅按 magFilter 选择 nearest/linear；尚无 ray differentials、自动 LOD 或完整 minification 行为。
-- GPU 数组单边上限当前为 2048，并受硬件层数限制；超出层数的贴图回退为常量。
+- ray cone 驱动 mip/minFilter/三线性；颜色先解码再过滤，normal 方差近似增加粗糙度。尚无 ray differentials、EWA 或斜视各向异性过滤。
+- 非发光 Mask 的单个变化 alpha 源按 cutoff 保持 mip 覆盖率；两个同时变化的源仍回退点语义，发光 Mask 保留点采样以匹配 NEE。
+- GPU 池单边上限仍为 2048、受硬件层数限制；超层数回退常量。预算会缩小池，LEARNQT_TEXTURE_BUDGET_MB 可设置开发预算；尚无完整场景预算/流式加载或重资产广泛验收。
 - AO、height/displacement、clearcoat/transmission/sheen 等扩展贴图和多层纹理尚未贯通。
   读取部分扩展的标量不代表完整支持该 glTF 扩展。
 - FBX 已有内嵌图片小型夹具通过，不代表任意 DCC 导出的复杂 FBX 都已验收。
-- Blend 使用随机透过；基础 alpha 发光面、旧 Transparent 包围的均匀吸收/散射介质及嵌套透射率已在直接光阶段验证，复杂 alpha/玻璃/介质组合与 OIDN 辅助特征仍需专项验收。
-- 发光贴图的选择权重使用整张图片平均值，尚未做按三角形 UV 覆盖区域的功率估计或重要性分布。
+- Blend 使用随机透过；基础 alpha 发光面、旧 Transparent 包围的均匀吸收/散射介质及嵌套透射率已在直接光阶段验证，新增 Blend 面 + 闭合吸收玻璃 + 贴图发光的组合回归及 delta/粗糙透射 OIDN 实图比较；更广泛真实 Mask/Blend/体积资产仍待验收。
+- 发光选择已用 16×16 均匀面积 UV/alpha 功率估计，带保守支撑下限；估计近似只影响选灯概率。尚未实现发光纹理内部重要性分布及近距离立体角采样。
 - 当前已实现局部 BLAS/实例 TLAS、动态变换和局部材质编辑；v1 文档通过迁移进入同一运行时。
+- 闭合朝外边界支持初始正确嵌套身份/IOR 和精确配对接触；旧 Transparent fog IOR 保持 1，transmission 材质使用已有 IOR。Mask/Blend/open 边界不纳入具名初始化；未升级 v2 场景文件版本。
+- 会话 RenderResult 和 EXR 元数据独立于场景 JSON，不保存累积到场景文件。输出支持 PNG/JPEG 和线性 HALF/FLOAT EXR；normal/albedo 为 guide、depth.center 为中心几何距离，不能当作通用生产 AOV。
 - HDR PDF 一致性、delta 和基础 volume MIS 的实现及验证见 [direct_lighting.md](./direct_lighting.md)；OIDN 法线范围已修正；复杂介质与其他剩余项见 [to-do.md](./to-do.md)。

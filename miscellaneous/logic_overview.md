@@ -16,10 +16,10 @@ Load Worker 用 Assimp / SceneAssets 解析依赖，准备候选 Scene。单网�
 | --- | --- |
 | 共享网格几何 | 每三角形 11 个 vec4：位置、法线、UV、切线/handedness；不携带完整材质。 |
 | 材质表 | 每材质 10 个 vec4，含已有 PBR、alpha、介质和六类纹理索引。 |
-| 实例表 | 每实例 9 个 vec4：世界矩阵、逆矩阵、材质/BLAS/逻辑 surface 偏移与可见性。 |
+| 实例表 | 每实例 9 个 vec4：世界矩阵、逆矩阵、材质/BLAS/逻辑 surface 偏移与状态；info.w 为 0 隐藏、1 可见普通/不支持边界、2 可见受支持闭合边界。 |
 | BLAS / TLAS | 独立节点表；索引 0 占位。BLAS 描述局部三角形，TLAS 叶子指向实例。 |
-| surface 引用/PDF | 逻辑 surface 映射到几何三角形和实例，PDF 独立保存，区分共享网格的多个发光实例。 |
-| 纹理 | GL_TEXTURE_2D_ARRAY 与 sampler/UV 元数据；OIDN `baseColorTex` 是辅助图而非导入贴图。 |
+| surface 引用/PDF | 逻辑 surface 映射到几何三角形和实例；CPU PDF 独立保存，GPU 打包至材质 buffer 尾部，后接稀疏精确接触三角形记录，区分共享网格的多个发光实例。 |
+| 纹理 | 2–4 个按尺寸/格式分组的 GL_TEXTURE_2D_ARRAY、颜色/数据及 cutoff 派生视图与 sampler/UV 元数据；OIDN `baseColorTex` 是辅助图。 |
 
 BLAS 在唯一源网格准备时构建并缓存。TLAS 用 BLAS 遍历代价加权 SAH；变换中 refit，结束时重建 TLAS。递归构建先保存子节点 ID 再写父节点，避免 vector 扩容导致引用失效，并有深度保护。GPU 近节点优先遍历，缓存射线逆方向和子节点进入距离，平行射线单独处理。
 
@@ -27,9 +27,9 @@ BLAS 在唯一源网格准备时构建并缓存。TLAS 用 BLAS 遍历代价加�
 
 实例和兼容 GPU 路径共用 `triangle_intersection.glsl`：按射线主轴投影并剪切顶点，以固定操作数顺序计算有向边，使共享边的反向符号保持一致。实例路径每条局部射线只准备一次投影；不添加重心坐标 padding 或固定行列式 epsilon 去填补真实缝隙。求交距离保留原始射线参数，命中点改用顶点和重心权重在表面重建，减少长射线相减误差。
 
-插值和 normal map 处理后均执行 `ValidShadingNormal`：只有着色法线与朝向几何法线同侧、且面向入射方向时才保留，否则回退到朝向几何法线。介质内外仍由绕序几何法线决定。新增 GPU 回归覆盖掠射平滑/贴图法线、镜像变换、长射线表面重建、island 边缘夹具、共享边/顶点及真实缝隙；这不代表所有极端尺度或所有 GPU 均已验证。
+散射使用作者切线和 handedness，在 normal map 后重建各向异性坐标架。插值和 normal map 处理后均执行 `ValidShadingNormal`：只有着色法线与朝向几何法线同侧、且面向入射方向时才保留，否则回退到朝向几何法线。介质内外仍由绕序几何法线决定。新增 GPU 回归覆盖掠射平滑/贴图法线、镜像变换、长射线表面重建、island 边缘夹具、共享边/顶点及真实缝隙；这不代表所有极端尺度或所有 GPU 均已验证。
 
-变换更新实例、TLAS 和世界发光面积/PDF，已有 BLAS 不重建、几何不上传。材质改动更新材质/绑定/灯光，不重建 BVH。分组、排序和改名不上传几何。阴影仍执行最近命中和分段透射率，但仅加载必要的 alpha/介质数据；它不是已完成的二值 AnyHit 快速路径。
+变换更新实例、TLAS 和世界发光面积/PDF，已有 BLAS 不重建、几何不上传。材质改动更新材质/绑定/灯光，不重建 BVH。分组、排序和改名不上传几何。二值阴影使用带 maxDistance 的 AnyHit，遇有效遮挡即退出，保留 Opaque/Mask/Blend、解析球及目标排除；含 Transparent/介质时保留有序最近命中和分段透射率。射线使用重心 gamma(7)、仿射 gamma(3) 误差传播、几何法线出射侧偏移及向外浮点舍入；阴影两端处理，小三角形求交容差沿射线投影而非固定世界 epsilon。极端薄壁与散射点邻近面的广泛场景仍待扩展。
 
 旧 20 vec4 三角形布局只保留在兼容/数值测试路径。活动渲染和拾取使用 `INSTANCED_SCENE` 分表路径。
 
@@ -43,28 +43,36 @@ EditorController 统一树、属性面板及视口命令。选择组时展开后
 
 首页最近文件来自成功打开或保存的路径，按大小写不敏感路径去重，默认保留 12 项、可设置 1–50 项。资源页、底部浏览器和 HDR 列表共用模型；目录签名变化才重建，搜索过滤与页面 UI 状态独立。偏好使用 QSettings 的明确格式构造；回归入口改用输出目录内的 INI，避免读取或修改个人工作区配置。
 
-GPU ID/depth pass 遵循 Mask cutoff、Blend 拾取阈值 0.5，玻璃选前表面。PBO 结果必须同时匹配请求号和场景/相机版本。轮廓、包围框、坐标轴只在显示层；选中轮廓 shader 只在存在选择时启用，操纵器叠加仅在编辑变化时更新。
+GPU ID/depth pass 以 PICKING_PASS 裁掉 beauty 材质/法线/TBN 工作，遵循点采样 Mask cutoff、Blend 拾取阈值 0.5，玻璃选前表面。PBO 结果必须同时匹配请求号和场景/相机版本。轮廓、包围框、坐标轴只在显示层；选中轮廓 shader 只在存在选择时启用，操纵器叠加仅在编辑变化时更新。
 
 旋转将屏幕向下的 Y 换成向上的坐标后求角度，再考虑轴朝向；滚轮每格按比例改变正轨道距离，近限值包含远离世界原点时的浮点精度余量，避免穿过环绕中心翻转。
 
 ## 采样、光照与累积
 
-主射线固定经过像素中心。随机种子和 Cranley-Patterson rotation 使用全图 `gl_FragCoord`，切换 tile 布局或提交批次不改变同像素同 spp 的随机序列。这不是像素抗锯齿。
+AA 开启时采用固定相机维度的像素内抖动，关闭时经过中心。维度 0/1 为相机、2/3 为镜头预留（尚无景深），之后每个真实散射分配 12 维：光源选择/位置、BSDF、自由程/HG、RR 和预留。前 120 维使用既有 Sobol 矩阵的数字移位；更深维度和可变 alpha/边界事件使用独立 counter hash。这不是完整 Owen scrambling。sampleSeed 与像素/sampleIndex 共同决定样本，tile/整图/compute 在已验收容差内一致。
 
-积分器处理表面/均匀介质 NEE、BSDF/phase 命中 MIS、delta、球/太阳盘以及 HDR；连续 PDF 使用每单位立体角，delta 使用概率质量。Mask 按 cutoff，Blend 随机透过；透明边界不计散射深度。最多 8 层均匀介质，阴影边界最多 128 层；RR 从第 3 次真实散射后开始。具体测度与限制见 [direct_lighting.md](./direct_lighting.md)。
+积分器统一表面/均匀介质 NEE、BSDF/phase 命中 MIS、delta、球/太阳盘/HDR。连续 PDF 为每单位立体角，delta 使用质量；几何半球与着色法线出射事件必须一致，不合法事件返回零贡献，粗糙折射 PDF 与宏观事件方向同步。清漆 Smith G 的完整因子补齐 4·NdotL·NdotV 分母，底层采用互易的单次 Fresnel 衰减，并同步 delta 基底。四类连续材质/双角度的 sample-eval RGB、PDF 质量、clearcoat 解析项及 BTDF eta² 互易性已核对。此契约及近似薄层不等于普遍白炉守恒、完整 shading-normal 补偿或多次微表面散射；29/28 旧 Disney 基线仍验证兼容估计器一致性。
 
-发光网格的世界面积随实例矩阵变化，CPU light CDF 和 surface PDF 同时更新。HDR 强度与旋转用于采样方向、辐射度及 PDF 回查；黑 HDR 的分布回退仍有效。发光贴图选择权重仍按整图平均值估计。
+最多 8 层均匀介质，阴影最多 128 边界；边界不计真实散射深度。RR 从 rrMinDepth（默认 3）起按 max(throughput × etaScale) 决定存活率，上限 1、下限 0.05。eta 是入射/出射 IOR 比，透射时 etaScale 除以 eta²，仅用于 RR。介质栈还保存 IOR 与实例身份；材质 transmission > 0 使用其 IOR，其余旧 fog 边界保持 1。相机、边界材质/变换、场景更新均重新上传初始栈，复用同一 shader 也不能跳过。相机位置由三条非轴向 CPU BLAS 射线一致判定，按出口距离外到内初始化；朝外闭合拓扑按需缓存。退出必须匹配栈顶，反射不改栈，透射更新栈。精确同顶点三角形、相反朝外法线的接触配对允许直接切换；不模糊合并薄缝。已知具名边界内接受偏移后的正近距离交点，普通射线仍保留保守 deltaT。
 
-每个 tile 写本轮 beauty、normal、albedo；只有一整轮完成才更新 `preRenderColorTex` 并增加 spp。正式输出、暂停、停止始终取最后完整轮次。预览可以显示当前部分轮次，合成频率与采样推进分离，批次不能跨完整轮次。
+发光选择采用世界面积 × 16×16 均匀面积重心点的 UV 区域发光亮度/Mask/Blend 覆盖率估计，共享 mesh/material 缓存；小支撑下限防止漏采的亮岛失去全部选择质量。实际 NEE 辐射度仍在采样点读取；近似只影响 proposal。HDR 按精确 texel 立体角积分亮度，与场景包围盒中心的非环境光 irradiance proxy 比较，组概率取最近 1/16 并保留双组支撑，选择/PDF/MIS 共享概率。这是全局估计，尚无空间 Light Tree 或发光纹理内部重要性采样。详见直接光专题。
+
+每个 tile 累积 beauty、normal、albedo 和有效样本/二阶矩；只有整轮完成才更新历史并增加 spp，正式输出/暂停/停止取完整轮次。NaN/Inf、无效射线、BVH/介质栈/边界超限和边界错配用 PathDiagnostics 标记；致命异常整样本丢弃，不污染有效计数/beauty。可选 TRACE_DIAGNOSTICS 专用附件逐完整轮次统计事件次数与受影响像素，保存首次 sampleIndex/像素/depth/stage、所属路径的 origin/direction/throughput/eta/etaScale/mediumCount。首事件按样本和像素顺序选取，不声称 GPU 时间顺序；尚无完整栈/阴影重放状态。正常生产无额外诊断读回。预览可显示部分轮次，合成与采样推进分离。
+
+## 材质纹理与过滤
+
+颜色视图先 sRGB 解码再插值、缩放和生成 mip，数据视图保持线性；同图不同用途可以并存。ray cone footprint 驱动光追 minification，保留各 minFilter/mip/三线性语义，斜视 EWA/各向异性及 ray differentials 未实现。过滤后的 normal 方差近似增加 roughness；Mask 按材质 cutoff 建覆盖率视图，两个同时变化的 alpha 源及发光 Mask 点采样契约仍有边界。
 
 ## OIDN 与颜色处理
 
-预览 OIDN 是单项 CPU 后台任务，PBO fence 完成后才读三路同版本/同尺寸的图像。法线解码到 `[-1,1]`，albedo 线性；辅助预过滤只影响任务副本，不能写回渲染历史。旧结果在编辑、尺寸切换后失效。空场景不降噪。
+预览支持 GPU 实时重投影/身份匹配/时域矩和空间过滤；静止时回接无偏累积，复杂路径按保护规则处理。Lantern 实际相机/对象连续运动、显露、材质/照明变动及停手 96 spp 序列已与 512 spp 参考比较；运动期超出邻域 3σ 的陈旧辐射度保守拒绝，静止 raw 累积不变。更广泛玻璃/体积和多设备质量仍未验收。预览 OIDN 是单项 CPU 后台任务，同一 fence 完成后才读三路 RGBA 同版本/同尺寸图像，提取 RGB、有效计数、二阶矩及策略掩码。OIDN 普通表面取首特征，delta 链取后续非 delta 特征，粗糙透射混合 albedo；体积回退整图 beauty-only。普通/delta 由 3 倍亮度标准误差限制滤波位移，粗糙透射/体积绕过标量限制；细纹理夹具中 raw 仍优于过滤结果，不能泛化降噪收益。法线解码到 `[-1,1]`，albedo 线性；辅助预过滤只影响任务副本，不能写回渲染历史。旧结果在编辑、尺寸切换后失效。空场景不降噪。
 
-正式任务在最终完整轮次同步降噪，可取消。OIDN 始终处理曝光和 tone mapping 前的线性 HDR 数据。随后 `triangle.frag` 应用曝光、旧曲线/ACES 近似/线性裁切和 gamma；PNG/JPEG 与 ResultView 使用一致结果，不包含编辑叠加。
+正式任务在最终完整轮次同步降噪，可取消。OIDN 始终处理曝光和 tone mapping 前的线性 HDR 数据。随后 GPU/CPU 显示应用曝光、旧曲线/ACES 近似/线性裁切和准确 sRGB 分段编码；ACES 大值计算避免中间溢出。工作空间为 scene-linear Rec.709 D65，data/alpha 不走颜色变换，尚无 OCIO 或完整 ACES。RenderResult 保存顶端行序的浮点 beauty、同版本同 spp 降噪图、guide normal/albedo、中心几何距离 depth.center、无偏亮度样本方差及有效计数。结果页可重曝光/切 AOV，PNG/JPEG 显示输出与 EXR 线性输出分离，不含编辑叠加。EXR HALF 四舍六入五取偶、超过 65504 失败建议 FLOAT，原子写失败保留旧文件。
 
 ## 当前边界
 
-导入只读取 UV0 和每槽第一张纹理；有 authored tangent 与 Assimp fallback，未接独立参考 MikkTSpace。纹理数组单边上限 2048、受硬件层数限制；保存 sampler/minFilter 并生成 mipmap，但 shader 仍以 LOD 0 为主，缺射线 footprint 与完整缩小过滤。AO、位移及扩展贴图未全部贯通。
+导入只读 UV0/每槽首张纹理；作者切线及 Assimp fallback 已接通，未集成参考 MikkTSpace。缺失法线的平滑生成采用 60° crease，显式作者法线保留。材质纹理池默认 512 MiB，可用 LEARNQT_TEXTURE_BUDGET_MB 调整；单边仍限 2048，超层数回退常量，缺少完整场景预算 UI、流式加载、压缩与重资产/多设备验证。AO、位移及扩展贴图未全部贯通。
 
-介质只覆盖均匀、闭合且正确嵌套边界；初始多层介质、非真空相邻 IOR、复杂相交体积和折射焦散仍有限制。抗锯齿与 AA×OIDN 联合验收、EXR、透明背景、动画、景深及持久渲染队列延后；会话内独立队列已实现。性能预算是调度估计，极重单块/整图仍可能影响输入响应。
+介质支持均匀、朝外闭合、正确嵌套边界及精确配对三角形接触，容量 8；Mask/Blend/open 边界不纳入具名初始化，歧义计数尚无 UI 警告。任意相交、不同网格剖分接触、裁剪体积、完整物理能量补偿、完整异常栈重放、复杂降噪泛化和焦散仍待实现。Film 只在会话保存，EXR 为无压缩 scanline；normal/albedo 是降噪 guide，depth 为像素中心最近几何距离（背景 0），非 AA 平均/透明覆盖 AOV。标量 variance 不是完整 RGB 协方差。生产分解通道、OCIO/AgX、透明背景、动画、景深、checkpoint 和持久队列仍为后续项。
+
+profile 计数覆盖 node/triangle/scatter/material-texel/light-attempt/invalid-light，生产与插桩计时分离；寄存器/spill/带宽/occupancy 需要外部硬件工具。GL 4.3 compute 可回退 fragment，尚非 wavefront/硬件 RT。批次预算非硬实时；第四/五批实际验证与逐项图像见 [2026-10-03 第四、五批渲染验收](./render_batches_4_5_2026-10-03.md)；前三批验收记录保留原范围。

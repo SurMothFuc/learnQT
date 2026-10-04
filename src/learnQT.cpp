@@ -118,7 +118,9 @@ learnQT::learnQT(QWidget *parent) : QMainWindow(parent)
     configureMaterialRegression();
     configureRenderQueueRegression();
     configurePreviewPanelRegression();
+    configureLargeScenePreviewRegression();
     configureRasterRegression();
+    configureAaDenoiseRegression();
     // 回归入口可关闭交互回退，避免默认的光栅化回退改变既有预览用例的判断。
     if (QCoreApplication::arguments().contains(QStringLiteral("--no-interaction-fallback")))
         connect(viewport, &GLWidget::renderThreadReady, this, [this] {
@@ -244,6 +246,18 @@ void learnQT::setupWorkbench()
     resultTools->addAction(tr("适应窗口"), resultView, &ResultView::fit);
     resultTools->addAction(tr("1:1"), resultView, &ResultView::actualSize);
     resultTools->addAction(tr("导出图片…"), this, &learnQT::saveGLImage);
+    auto resultExposure=new QDoubleSpinBox;resultExposure->setObjectName("resultExposure");
+    resultExposure->setRange(-24,24);resultExposure->setDecimals(2);resultExposure->setPrefix(tr("曝光 "));
+    resultExposure->setEnabled(false);resultTools->addWidget(resultExposure);
+    auto resultTonemap=new QComboBox;resultTonemap->setObjectName("resultTonemap");resultTonemap->addItems({tr("旧曲线"),tr("ACES 近似"),tr("线性裁切")});resultTonemap->setEnabled(false);resultTools->addWidget(resultTonemap);
+    connect(resultTonemap,qOverload<int>(&QComboBox::currentIndexChanged),this,[this](int value){resultView->resultTonemap=value;resultView->refreshLinearDisplay();});
+    connect(resultExposure,qOverload<double>(&QDoubleSpinBox::valueChanged),this,[this](double value){resultView->resultExposure=float(value);resultView->refreshLinearDisplay();});
+    auto resultChannel=new QComboBox;resultChannel->setObjectName("resultChannel");
+    for(const auto &pair:QVector<QPair<QString,QString>>{{tr("图像"),"beauty"},{tr("法线"),"normal"},{tr("反照率"),"albedo"},{tr("深度"),"depth"},{tr("方差"),"variance"},{tr("有效采样"),"sampleCount"}})resultChannel->addItem(pair.first,pair.second);
+    resultChannel->setEnabled(false);resultTools->addWidget(resultChannel);
+    connect(resultChannel,qOverload<int>(&QComboBox::currentIndexChanged),this,[this,resultChannel](int index){resultView->channel=resultChannel->itemData(index).toString();resultView->refreshLinearDisplay();});
+    auto resultDenoised=new QCheckBox(tr("降噪"));resultDenoised->setChecked(true);resultDenoised->setObjectName("resultDenoised");resultDenoised->setEnabled(false);resultTools->addWidget(resultDenoised);
+    connect(resultDenoised,&QCheckBox::toggled,this,[this](bool value){resultView->useDenoised=value;resultView->refreshLinearDisplay();});
     resultLayout->addWidget(resultTools);
     resultLayout->addWidget(resultView);
     views->addTab(results, tr("渲染结果"));
@@ -707,13 +721,21 @@ QWidget *learnQT::createSettings()
     outputSamples = spin(tr("目标 spp"), 1, 1000000, 256);
     outputTile = spin(tr("Tile 大小"), 16, 1024, 128);
     outputBounces = spin(tr("反弹数"), 1, 64, 8);
-    outputDenoise = new QCheckBox(tr("正式出图降噪"));
-    outputDenoise->setChecked(true);
-    form->addRow(outputDenoise);
+    outputRrMinDepth=spin(tr("RR 起始深度"),0,64,3);
+    outputRrMinDepth->setObjectName("outputRrMinDepth");
+    outputDenoise = new QComboBox;
+    outputDenoise->setObjectName("outputDenoiseMode");
+    outputDenoise->addItems({tr("关闭"), tr("GPU 实时"), tr("OIDN")});
+    outputDenoise->setCurrentIndex(int(DenoiseMode::OIDN));
+    form->addRow(tr("正式出图降噪"), outputDenoise);
+    outputAntialiasing = new QCheckBox(tr("抗锯齿"));
+    outputAntialiasing->setObjectName("outputAntialiasing");
+    form->addRow(outputAntialiasing);
     auto commitOutput = [this] { commitOutputSettings(); };
-    for (auto s : {outputWidth, outputHeight, outputSamples, outputTile, outputBounces})
+    for (auto s : {outputWidth, outputHeight, outputSamples, outputTile, outputBounces, outputRrMinDepth})
         connect(s, &QSpinBox::editingFinished, this, commitOutput);
-    connect(outputDenoise, &QCheckBox::toggled, this, [commitOutput] { commitOutput(); });
+    connect(outputDenoise, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [commitOutput] { commitOutput(); });
+    connect(outputAntialiasing, &QCheckBox::toggled, this, [commitOutput] { commitOutput(); });
     form = section(tr("色彩管理"), "displaySection");
     auto exposure = new MixedSpin;
     exposure->setRange(-16, 16);
@@ -809,10 +831,15 @@ void learnQT::commitOutputSettings()
     if (m_restoring || m_loading)
         return;
     auto d = editor->document;
+    const auto previousOutput=d.root["output"].toObject();
     d.root["output"] =
         QJsonObject{{"width", outputWidth->value()},     {"height", outputHeight->value()},
                     {"samples", outputSamples->value()}, {"tileSize", outputTile->value()},
-                    {"bounces", outputBounces->value()}, {"denoise", outputDenoise->isChecked()}};
+                    {"bounces", outputBounces->value()}, {"denoise", outputDenoise->currentIndex() != 0},
+                    {"denoiseMode", denoiseModeName(DenoiseMode(outputDenoise->currentIndex()))},
+                    {"antialiasing", outputAntialiasing->isChecked()},
+                    {"sampleSeed",previousOutput["sampleSeed"].toDouble()},
+                    {"rrMinDepth",outputRrMinDepth->value()}};
     editor->submit(d, tr("输出设置"), EditorController::Display);
 }
 void learnQT::connectRenderThread()
@@ -862,6 +889,9 @@ void learnQT::connectRenderThread()
                     taskLabel->setText(tr("任务 %1 · %2").arg(id).arg(renderJobText(state)));
                     refreshRenderQueue();
                 });
+        connect(m_queueWorker,&RenderQueueThread::jobLinearResult,this,[this](quint64 id,RenderResultPtr result){
+            for(auto &item:m_renderQueue)if(item.request.id==id)item.linear=std::move(result);
+        });
         connect(m_queueWorker, &RenderQueueThread::jobProgress, this,
                 [this](quint64 id, int samples, int target, double seconds, QImage image) {
                     for (auto &item : m_renderQueue)
@@ -874,7 +904,7 @@ void learnQT::connectRenderThread()
                                 item.result = image;
                                 if (workspace->page == int(WorkspacePage::Render) &&
                                     !m_renderPreviewMode && m_viewedTaskId == id)
-                                    resultView->setImage(image);
+                                    if(item.linear)resultView->setResult(item.linear);else resultView->setImage(image);
                             }
                             break;
                         }
@@ -892,7 +922,7 @@ void learnQT::connectRenderThread()
                             {
                                 item.result = image;
                                 if (m_viewedTaskId == id)
-                                    resultView->setImage(image);
+                                    if(item.linear)resultView->setResult(item.linear);else resultView->setImage(image);
                             }
                             item.samples = rendered ? item.request.settings.samples : item.samples;
                             item.error = error;
@@ -967,6 +997,7 @@ void learnQT::connectRenderThread()
             progress->setValue(int(100. * workspace->taskSamples / workspace->taskTarget));
         }
     });
+    connect(thread,&RenderThread::linearResultReady,this,[this](RenderResultPtr result){resultView->setResult(std::move(result));});
     connect(thread, &RenderThread::resultReady, this, [this](QImage im, bool final) {
         if (im.isNull())
             return;
@@ -1015,7 +1046,11 @@ void learnQT::startRender()
     settings.samples = outputSamples->value();
     settings.tileSize = outputTile->value();
     settings.bounces = outputBounces->value();
-    settings.denoise = outputDenoise->isChecked();
+    settings.rrMinDepth=outputRrMinDepth->value();
+    settings.sampleSeed=unsigned(editor->document.root["output"].toObject()["sampleSeed"].toDouble());
+    settings.denoiseMode = DenoiseMode(outputDenoise->currentIndex());
+    settings.denoise = settings.denoiseMode != DenoiseMode::None;
+    settings.antialiasing = outputAntialiasing->isChecked();
     if (!settings.valid())
     {
         QMessageBox::warning(this, tr("输出设置"), tr("请使用有效设置；单张图最多 6710 万像素。"));
@@ -1186,7 +1221,9 @@ void learnQT::restoreSceneControls()
     outputSamples->setValue(output.samples);
     outputTile->setValue(output.tileSize);
     outputBounces->setValue(output.bounces);
-    outputDenoise->setChecked(output.denoise);
+    outputRrMinDepth->setValue(output.rrMinDepth);
+    outputDenoise->setCurrentIndex(int(output.effectiveDenoiseMode()));
+    outputAntialiasing->setChecked(output.antialiasing);
     m_restoring = false;
     syncPreviewControls(settings);
     inspector->refresh();
@@ -1267,11 +1304,17 @@ void learnQT::saveGLImage()
     }
     QString selectedFilter;
     auto path = QFileDialog::getSaveFileName(this, tr("导出渲染结果"), QString(),
-                                             tr("PNG (*.png);;JPEG (*.jpg *.jpeg)"), &selectedFilter);
+                                             tr("PNG (*.png);;JPEG (*.jpg *.jpeg);;OpenEXR FLOAT (*.exr);;OpenEXR HALF (*.exr)"), &selectedFilter);
     if (path.isEmpty())
         return;
     if (QFileInfo(path).suffix().isEmpty())
-        path += selectedFilter.startsWith("JPEG") ? ".jpg" : ".png";
+        path += selectedFilter.startsWith("OpenEXR")?".exr":selectedFilter.startsWith("JPEG") ? ".jpg" : ".png";
+    if(QFileInfo(path).suffix().compare("exr",Qt::CaseInsensitive)==0) {
+        QString error;
+        if(!resultView->linear || !resultView->linear->writeExr(path,selectedFilter.contains("HALF"),error))
+            QMessageBox::critical(this,tr("导出失败"),error.isEmpty()?tr("此结果没有线性数据，请重新渲染。"):error);
+        return;
+    }
     QImageWriter writer(path);
     writer.setQuality(95);
     if (!writer.write(image.convertToFormat(QImage::Format_RGB32)))

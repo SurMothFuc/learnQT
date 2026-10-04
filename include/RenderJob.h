@@ -3,11 +3,19 @@
 #include <QMetaType>
 #include <QSize>
 #include <QString>
+#include "DenoiseMode.h"
+#include <cmath>
 struct RenderJobSettings
 {
     QSize size{1920, 1080};
     int samples = 256, tileSize = 128, bounces = 8;
     bool denoise = true;
+    bool antialiasing = false;
+    DenoiseMode denoiseMode = DenoiseMode::OIDN;
+    unsigned sampleSeed=0;
+    int rrMinDepth=3;
+    bool samplerSettingsValid=true;
+    DenoiseMode effectiveDenoiseMode() const { return denoise ? denoiseMode : DenoiseMode::None; }
     static RenderJobSettings fromJson(const QJsonObject &o)
     {
         RenderJobSettings s;
@@ -16,13 +24,28 @@ struct RenderJobSettings
         s.tileSize = o["tileSize"].toInt(128);
         s.bounces = o["bounces"].toInt(8);
         s.denoise = o["denoise"].toBool(true);
+        s.denoiseMode = readDenoiseMode(o);
+        s.denoise = s.denoiseMode != DenoiseMode::None;
+        s.antialiasing = o["antialiasing"].toBool(false);
+        if(o.contains("sampleSeed")) {
+            const double seed=o["sampleSeed"].toDouble(-1);
+            s.samplerSettingsValid=o["sampleSeed"].isDouble() && std::isfinite(seed) && seed>=0 &&
+                seed<=4294967295.0 && std::floor(seed)==seed;
+            if(s.samplerSettingsValid)s.sampleSeed=unsigned(seed);
+        }
+        s.rrMinDepth=o["rrMinDepth"].toInt(3);
+        if(o.contains("rrMinDepth")) {
+            const double rr=o["rrMinDepth"].toDouble(-1);
+            s.samplerSettingsValid=s.samplerSettingsValid && o["rrMinDepth"].isDouble() &&
+                std::isfinite(rr) && rr>=0 && rr<=64 && std::floor(rr)==rr;
+        }
         return s;
     }
     bool valid() const
     {
-        return size.width() >= 16 && size.height() >= 16 && size.width() <= 16384 && size.height() <= 16384 &&
+        return samplerSettingsValid && size.width() >= 16 && size.height() >= 16 && size.width() <= 16384 && size.height() <= 16384 &&
                qint64(size.width()) * size.height() <= 67108864 && samples > 0 && samples <= 1000000 &&
-               tileSize >= 16 && tileSize <= 1024 && bounces > 0 && bounces <= 64;
+               tileSize >= 16 && tileSize <= 1024 && bounces > 0 && bounces <= 64 && rrMinDepth>=0 && rrMinDepth<=64;
     }
 };
 enum class RenderJobState
@@ -65,6 +88,8 @@ struct RenderStats
     quint64 allocatedBytes = 0, geometryUploadBytes = 0;
     quint64 version = 0, accumulationVersion = 0, denoisedVersion = 0;
     double normalMinimum = 0, normalMaximum = 0;
+    quint64 oidnProtectedPixels=0;
+    QString oidnGuidePolicy;
     QSize auxiliarySize;
     int blasBuilds = 0, samples = 0, target = 0;
     bool tiled = false;
@@ -85,6 +110,11 @@ struct RenderStats
     int pickPasses = 0;
     // 单次拾取重绘的最长耗时：确认补绘不是零成本，也不是每帧都在跑。
     double pickMaxMs = 0;
+    double realtimeDenoiseMs = 0, historyAcceptance = 0;
+    quint64 denoiseRounds = 0, denoiseBytes = 0, publishedFrames = 0, completedRounds = 0;
+    double completedFps = 0, publishedFps = 0;
+    int rasterSamples = 1;
+    QString denoiseMode, denoiseError;
     // 最近一个统计窗口（约 200 ms）的渲染循环分解，单位为毫秒。
     int frames = 0, ticks = 0;
     double windowMs = 0, boundaryWaitMs = 0, loopMs = 0, cadenceSleepMs = 0, tailMs = 0,

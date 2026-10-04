@@ -1,0 +1,55 @@
+{
+    "budgetBytes": 536870912,
+    "bytes": 16,
+    "capacity": 4,
+    "compositeMaskPointFallbacks": 0,
+    "downscaled": false,
+    "missingViews": 0,
+    "placements": [
+    ],
+    "pools": [
+        {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 0,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+        },
+        {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 1,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+        },
+        {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 2,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+        },
+        {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 3,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+        }
+    ],
+    "sources": 0,
+    "unusedSources": 0,
+    "views": 0
+}

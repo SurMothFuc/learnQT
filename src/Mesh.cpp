@@ -670,6 +670,11 @@ void MeshLoader::readModel(std::string filepath, std::vector<Triangle> &triangle
     }
     if (smoothNormal)
     {
+        // Missing authored normals need a crease limit: Assimp's 175-degree
+        // default blends perpendicular walls and window reveals into dark bands.
+        // GenSmoothNormals leaves authored normals intact and still smooths
+        // gently tessellated curves (domes, cylinders, etc.).
+        importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 60.0f);
         flags |= aiProcess_GenSmoothNormals;
     }
 

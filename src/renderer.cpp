@@ -1,6 +1,14 @@
+#include "OidnAuxiliary.h"
+#include "OidnConfidence.h"
 #include "renderer.h"
 
 #include "MaterialTextureImage.h"
+#include "MaterialMaskTextures.h"
+#include "MaterialTexturePlan.h"
+#include <cstring>
+#include "PathDiagnostics.h"
+#include "InitialMedia.h"
+#include "MediumInterfaces.h"
 #include <QDebug>
 #include <QDir>
 #include <QFile>
@@ -20,6 +28,24 @@ extern QMutex param_mutex;
 
 namespace
 {
+std::vector<int> textureViewSignature(const Scene &scene)
+{
+    std::set<int> indices;
+    for(const auto &material:scene.materials)
+        for(int index:{material.baseColorTex,material.emissiveTex})
+            if(index>=0 && index<int(scene.textures.size())) indices.insert(index);
+    for(const auto &material:scene.materials)
+        for(int index:{material.normalTex,material.metallicTex,material.roughnessTex,material.opacityTex})
+            if(index>=0 && index<int(scene.textures.size())) indices.insert(int(scene.textures.size())+index);
+    std::vector<int> result(indices.begin(),indices.end());
+    for(const auto &m:scene.materials) {
+        result.insert(result.end(),{m.alphaMode,m.baseColorTex,m.opacityTex});
+        for(float value:{m.opacity,m.alphaCutoff,m.emissive.x(),m.emissive.y(),m.emissive.z()}) {
+            int bits;std::memcpy(&bits,&value,sizeof(bits));result.push_back(bits);
+        }
+    }
+    return result;
+}
 int clampMaxBounces(int maxBounces)
 {
     return std::max(0, std::min(maxBounces, static_cast<int>(MAX_BOUNCES_LIMIT)));
@@ -242,12 +268,19 @@ GLuint Renderer::bindData(std::vector<GLuint> colorAttachments)
 // 路径追踪只画全屏四边形，它的 FBO 没有也不需要深度附件。
 // 光栅化交互预览需要深度测试，所以单独建一个只含「RenderColorTex + 深度」的 FBO，
 // 颜色靶与路径追踪共用，但绝不改动 pathtrace_fbo 本身，避免影响既有预览行为。
-void Renderer::ensureDepthAttachment()
+void Renderer::ensureDepthAttachment(bool antialiasing)
 {
     if (!pathtrace_fbo || render_width <= 0 || render_height <= 0)
         return;
-    if (rasterFbo && rasterDepthSize == QSize(render_width, render_height))
+    GLint maximumSamples = 1;
+    glGetIntegerv(GL_MAX_SAMPLES, &maximumSamples);
+    const int requestedSamples = antialiasing ? std::max(1, std::min(4, maximumSamples)) : 1;
+    if (rasterFbo && rasterDepthSize == QSize(render_width, render_height) && rasterSampleRequest == requestedSamples)
         return;
+    glDeleteFramebuffers(1, &multisampleFbo);
+    glDeleteRenderbuffers(1, &multisampleColor);
+    glDeleteRenderbuffers(1, &multisampleDepth);
+    multisampleFbo = multisampleColor = multisampleDepth = 0;
     if (!rasterFbo)
         glGenFramebuffers(1, &rasterFbo);
     if (depthRenderbuffer)
@@ -263,6 +296,27 @@ void Renderer::ensureDepthAttachment()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     if (status != GL_FRAMEBUFFER_COMPLETE)
         throw std::runtime_error("Raster preview framebuffer is incomplete");
+    rasterSampleRequest = requestedSamples;
+    multisampleCount = 1;
+    for (int candidate=requestedSamples; candidate>1; candidate/=2) {
+        glGenFramebuffers(1, &multisampleFbo); glBindFramebuffer(GL_FRAMEBUFFER, multisampleFbo);
+        glGenRenderbuffers(1, &multisampleColor); glBindRenderbuffer(GL_RENDERBUFFER, multisampleColor);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, candidate, GL_RGBA32F, render_width, render_height);
+        GLint actual=0; glGetRenderbufferParameteriv(GL_RENDERBUFFER,GL_RENDERBUFFER_SAMPLES,&actual);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, multisampleColor);
+        glGenRenderbuffers(1, &multisampleDepth); glBindRenderbuffer(GL_RENDERBUFFER, multisampleDepth);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, candidate, GL_DEPTH_COMPONENT24, render_width, render_height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, multisampleDepth);
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE && glGetError()==GL_NO_ERROR) {
+            multisampleCount=actual; break;
+        }
+        glDeleteFramebuffers(1, &multisampleFbo); glDeleteRenderbuffers(1, &multisampleColor); glDeleteRenderbuffers(1, &multisampleDepth);
+        multisampleFbo = multisampleColor = multisampleDepth = 0;
+        while (glGetError()!=GL_NO_ERROR) {}
+    }
+    if (antialiasing && multisampleCount<4) qWarning()<<"Raster MSAA actual samples:"<<multisampleCount;
+    stats.rasterSamples = multisampleCount;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     rasterDepthSize = QSize(render_width, render_height);
 }
 
@@ -321,6 +375,7 @@ void Renderer::submitGpuBoundary()
 }
 void Renderer::pollGpuTimers()
 {
+    if (gpuDenoiser.ready()) { gpuDenoiser.poll(); stats.realtimeDenoiseMs=gpuDenoiser.milliseconds; stats.historyAcceptance=gpuDenoiser.acceptance; }
     if (rasterTimerQuery && rasterTimerPending)
     {
         GLint ready = 0;
@@ -373,6 +428,11 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot &snaps
                       SceneDirtyFlags dirtyFlags, int maxTiles, const std::function<bool()> &interrupted)
 {
     const RefreshActions actions = resolveRefreshActions(width, height, snapshot, dirtyFlags);
+    const bool resetHistory = (dirtyFlags & (toSceneDirtyFlags(SceneDirtyFlag::Material) | toSceneDirtyFlags(SceneDirtyFlag::SceneBuffers))) ||
+        actions.resizeTargets || actions.rebuildShader || actions.refreshDenoisePolicy ||
+        snapshot.antialiasing != m_lastAppliedSnapshot.antialiasing || snapshot.maxBounces != m_lastAppliedSnapshot.maxBounces;
+    if (resetHistory) { gpuDenoiser.invalidate(); realtimeFailed = false; stats.denoiseError.clear(); }
+    if (actions.resizeTargets || actions.rebuildShader || snapshot.antialiasing != m_lastAppliedSnapshot.antialiasing) previewSequence=0;
     applyRefreshActions(width, height, snapshot, actions);
 
     // 交互回退决策：进入或离开光栅化时重置累积，避免两种模式的画面互相残留。
@@ -389,7 +449,8 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot &snaps
         if (!m_rasterInstancesUploaded)
             uploadRasterInstances();
         // Resize the depth attachment only when the render resolution changes.
-        ensureDepthAttachment();
+        ensureDepthAttachment(snapshot.antialiasing);
+        gpuDenoiser.invalidate();
         if (renderRasterPreview(snapshot))
             return;
         // 光栅化资源不可用时回到路径追踪，本帧不再重复重置累积。
@@ -397,10 +458,13 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot &snaps
         m_rasterRequested = false;
     }
 
+    prepareRealtime(snapshot);
     const bool previewChanged = pollPreviewDenoise(snapshot);
     stats.batchTiles = 0;
     if (!samplingActive(snapshot))
     {
+        refreshRealtimeGuides(snapshot);
+        if (snapshot.effectiveDenoiseMode()==DenoiseMode::Realtime) realtimeDenoise(snapshot,true);
         performDenoising(snapshot, true);
         compositePreview(snapshot, previewChanged || actions.refreshDenoisePolicy || actions.refreshDisplay,
                          actions.refreshDisplay);
@@ -415,7 +479,7 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot &snaps
             : 1;
     stats.batchLimit = limit;
     const auto initialRound = frameCounter;
-    bindPathtraceInputs(clampMaxBounces(snapshot.maxBounces));
+    bindPathtraceInputs(clampMaxBounces(snapshot.maxBounces), snapshot);
     QElapsedTimer submission;
     submission.start();
     for (int step = 0; step < limit; ++step)
@@ -446,14 +510,20 @@ void Renderer::render(int width, int height, const RenderParams::Snapshot &snaps
         if (frameCounter != initialRound)
             break;
     }
+    if (frameCounter != initialRound) {
+        refreshRealtimeGuides(snapshot);
+        ++previewSequence;
+        if (snapshot.effectiveDenoiseMode() == DenoiseMode::Realtime) realtimeDenoise(snapshot, false);
+    }
     const bool finished = !samplingActive(snapshot);
     if (!formal)
         performDenoising(snapshot, finished);
-    compositePreview(snapshot, true, finished || actions.refreshDisplay);
+    compositePreview(snapshot, frameCounter != initialRound, finished || actions.refreshDisplay);
 }
 
 void Renderer::compositePreview(const RenderParams::Snapshot &snapshot, bool changed, bool force)
 {
+    if (!m_rasterActive && !frameCounter) return;
     displayDirty |= changed;
     // A new raster image remains pending until the throttled composite consumes it.
     const bool needed = m_rasterActive ? rasterNeedsComposite : displayDirty;
@@ -494,6 +564,13 @@ void Renderer::init(int width, int height, const RenderParams::Snapshot &snapsho
     m_viewportX = 0;
     m_viewportY = 0;
     initializeOpenGLFunctions();
+    GLint textureUnits=16;glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,&textureUnits);
+    auto computeFunctions=QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_4_3_Core>();
+    if(computeFunctions && computeFunctions->initializeOpenGLFunctions()) {
+        GLint computeUnits=16;glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS,&computeUnits);
+        textureUnits=std::min(textureUnits,computeUnits);
+    }
+    materialTexturePoolCapacity=textureUnits>=18?4:textureUnits>=17?3:2;
 
     qDebug() << reinterpret_cast<const char *>(glGetString(GL_VERSION));
 
@@ -503,15 +580,17 @@ void Renderer::init(int width, int height, const RenderParams::Snapshot &snapsho
     RenderColorTex = getTextureRGB32F(render_width, render_height);
     normal_texture = getTextureRGB32F(render_width, render_height);
     baseColorTex = getTextureRGB32F(render_width, render_height);
+    previousNormalTex = getTextureRGB32F(render_width, render_height);
+    previousAlbedoTex = getTextureRGB32F(render_width, render_height);
     batchTextureSettings.insert(batchTextureSettings.end(),
-                                {preRenderColorTex, RenderColorTex, normal_texture, baseColorTex});
+                                {preRenderColorTex, RenderColorTex, normal_texture, baseColorTex, previousNormalTex, previousAlbedoTex});
 
     pathtrace_fbo = bindData(std::vector<GLuint>{RenderColorTex, normal_texture, baseColorTex});
     ensureDepthAttachment();
 
     historysave_program.reset(
         getShaderProgram(getShaderPath("historysave.frag"), getShaderPath("triangle.vert")));
-    historysave_fbo = bindData(std::vector<GLuint>{preRenderColorTex});
+    historysave_fbo = bindData(std::vector<GLuint>{preRenderColorTex, previousNormalTex, previousAlbedoTex});
 
     RenderColorTexfiltered = getTextureRGB32F(render_width, render_height);
     batchTextureSettings.push_back(RenderColorTexfiltered);
@@ -560,11 +639,15 @@ void Renderer::initOIDN()
 
 void Renderer::uninit()
 {
+    gpuDenoiser.release();
     glDeleteFramebuffers(1, &m_fbo);
     glDeleteFramebuffers(1, &pathtrace_fbo);
     glDeleteFramebuffers(1, &historysave_fbo);
     glDeleteRenderbuffers(1, &depthRenderbuffer);
     glDeleteFramebuffers(1, &rasterFbo);
+    glDeleteFramebuffers(1, &multisampleFbo);
+    glDeleteRenderbuffers(1, &multisampleColor);glDeleteRenderbuffers(1, &multisampleDepth);
+    multisampleFbo=multisampleColor=multisampleDepth=0;multisampleCount=1;rasterSampleRequest=0;
 
     glDeleteTextures(1, &m_texture);
     for (auto &perTex : batchTextureSettings)
@@ -579,6 +662,8 @@ void Renderer::uninit()
     glDeleteTextures(1, &nodesTextureBuffer);
     glDeleteTextures(1, &lightsTextureBuffer);
     glDeleteTextures(1, &materialTextureArray);
+    glDeleteTextures(int(materialTextureExtraArrays.size()),materialTextureExtraArrays.data());
+    materialTextureExtraArrays={};
     glDeleteTextures(1, &materialTextureInfoTexture);
 
     if (VAO)
@@ -655,11 +740,11 @@ void Renderer::ensureDenoisePbos()
     const QSize size(render_width, render_height);
     if (denoisePboSize == size)
         return;
-    const size_t bufferSize = size_t(render_width) * render_height * 3 * sizeof(float);
+    const size_t pixels=size_t(render_width)*render_height;
     for (int i = 0; i < 3; ++i)
     {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
-        glBufferData(GL_PIXEL_PACK_BUFFER, static_cast<GLsizeiptr>(bufferSize), nullptr, GL_STREAM_READ);
+        glBufferData(GL_PIXEL_PACK_BUFFER, static_cast<GLsizeiptr>(pixels*4*sizeof(float)), nullptr, GL_STREAM_READ);
     }
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     denoisePboSize = size;
@@ -667,6 +752,10 @@ void Renderer::ensureDenoisePbos()
 
 void Renderer::adjustSize()
 {
+    if(rasterDepthSize!=QSize(render_width,render_height)) {
+        glDeleteFramebuffers(1,&multisampleFbo);glDeleteRenderbuffers(1,&multisampleColor);glDeleteRenderbuffers(1,&multisampleDepth);
+        multisampleFbo=multisampleColor=multisampleDepth=0;multisampleCount=1;rasterSampleRequest=0;
+    }
     while (glGetError() != GL_NO_ERROR)
     {
     }
@@ -733,10 +822,13 @@ void Renderer::updateTileGrid(int tileSize)
     tilesY = (render_height + safeTileSize - 1) / safeTileSize;
 }
 
-void Renderer::bindPathtraceInputs(int maxBounces)
+void Renderer::bindPathtraceInputs(int maxBounces, const RenderParams::Snapshot &snapshot)
 {
     const unsigned int sobolBounceCount = static_cast<unsigned int>(std::max(1, maxBounces));
-    const auto sobelNumber = getSobelRandomNumber(frameCounter, sobolBounceCount);
+    const unsigned sequence = formal || snapshot.effectiveDenoiseMode() != DenoiseMode::Realtime ? frameCounter : previewSequence;
+    const auto sobelNumber = getSobelRandomNumber(sequence, sobolBounceCount);
+    const auto sampleBits=getSobolBits(sequence);
+    if(sampleBits.size()!=120)throw std::runtime_error("Unexpected Sobol dimension table");
 
     pathtrace_program->bind();
     {
@@ -745,6 +837,26 @@ void Renderer::bindPathtraceInputs(int maxBounces)
         const GLint sobelLocation = pathtrace_program->uniformLocation("sobelNumber");
         glUniform1fv(sobelLocation, static_cast<GLsizei>(sobolBounceCount * 2u), sobelNumber.data());
         pathtrace_program->setUniformValue("maxBounces", maxBounces);
+        glUniform1ui(pathtrace_program->uniformLocation("sampleSequence"), sequence);
+        pathtrace_program->setUniformValue("useUnifiedSampler",!qEnvironmentVariableIsSet("LEARNQT_LEGACY_SAMPLER"));
+        glUniform1ui(pathtrace_program->uniformLocation("samplerSeed"),snapshot.sampleSeed);
+        glUniform1ui(pathtrace_program->uniformLocation("samplerIndex"),sequence);
+        pathtrace_program->setUniformValue("useEtaScaleRR",!qEnvironmentVariableIsSet("LEARNQT_LEGACY_RR"));
+        pathtrace_program->setUniformValue("rrMinDepth",snapshot.rrMinDepth);
+        pathtrace_program->setUniformValue("legacyOidnGuides",qEnvironmentVariableIsSet("LEARNQT_LEGACY_OIDN_GUIDES"));
+        pathtrace_program->setUniformValue("correctClearcoat",!qEnvironmentVariableIsSet("LEARNQT_LEGACY_CLEARCOAT"));
+        glUniform4uiv(pathtrace_program->uniformLocation("samplerSobol"),int(sampleBits.size()/4),sampleBits.data());
+        // R2 low-discrepancy sequence is independent of the path's Sobol dimensions.
+        pathtrace_program->setUniformValue("aaSample", QVector2D(float(std::fmod((sequence+.5)*.7548776662466927,1.0)),
+                                                               float(std::fmod((sequence+.5)*.5698402909980532,1.0))));
+        pathtrace_program->setUniformValue("antialiasing", snapshot.antialiasing);
+        pathtrace_program->setUniformValue("realtimeGuides", realtimeAttached && !realtimeFailed);
+        pathtrace_program->setUniformValue("previousNormal", 13);
+        glActiveTexture(GL_TEXTURE13); glBindTexture(GL_TEXTURE_2D, previousNormalTex);
+        pathtrace_program->setUniformValue("previousAlbedo", 14);
+        glActiveTexture(GL_TEXTURE14); glBindTexture(GL_TEXTURE_2D, previousAlbedoTex);
+        pathtrace_program->setUniformValue("reprojectionTable", 15);
+        glActiveTexture(GL_TEXTURE15); glBindTexture(GL_TEXTURE_BUFFER, gpuDenoiser.transformTexture());
 
         pathtrace_program->setUniformValue("triangles", 0);
         pathtrace_program->setUniformValue("nodes", 1);
@@ -753,6 +865,7 @@ void Renderer::bindPathtraceInputs(int maxBounces)
         pathtrace_program->setUniformValue("lights", 5);
         pathtrace_program->setUniformValue("materialTextures", 6);
         pathtrace_program->setUniformValue("materialTextureInfo", 7);
+        pathtrace_program->setUniformValue("materialTextureInfoStride",4);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_BUFFER, trianglesTextureBuffer);
@@ -780,6 +893,7 @@ void Renderer::bindPathtraceInputs(int maxBounces)
         glBindTexture(GL_TEXTURE_BUFFER, materialTextureInfoTexture);
 
         bindInstanceBuffers(pathtrace_program.get());
+        bindMaterialTextureInputs(pathtrace_program.get(),6,7);
     }
     pathtrace_program->release();
 }
@@ -795,6 +909,8 @@ void Renderer::renderTile(int tileX, int tileY, int tileWidth, int tileHeight, i
         gl->glBindImageTexture(0, RenderColorTex, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
         gl->glBindImageTexture(1, normal_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
         gl->glBindImageTexture(2, baseColorTex, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+        if (realtimeAttached && !realtimeFailed)
+            for (int i=0; i<5; ++i) gl->glBindImageTexture(3+i, gpuDenoiser.sample(i), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
         // Includes image writes, following sampler reads/history blits, and target reuse.
         gl->glMemoryBarrier(GL_ALL_BARRIER_BITS);
         gl->glDispatchCompute((tileWidth + 7) / 8, (tileHeight + 7) / 8, 1);
@@ -836,7 +952,10 @@ bool Renderer::rebuildPathtraceProgram(const RenderParams::Snapshot &snapshot)
     if (snapshot.computePathtrace && !compute)
         fallback = tr("当前设备不支持计算着色器，使用兼容路径追踪");
     const auto baseKey = std::to_string(capacity) + ":" + std::to_string(media) + ":" +
-                         std::to_string(snapshot.useEnvironmentMap);
+                         std::to_string(snapshot.useEnvironmentMap)+":"+std::to_string(materialTexturePoolCapacity)+
+                         (qEnvironmentVariableIsSet("LEARNQT_TRACE_PROFILE")?":profile":":beauty")+
+                         (qEnvironmentVariableIsSet("LEARNQT_TRACE_DIAGNOSTICS")?":diagnostics":":plain")+
+                         (qEnvironmentVariableIsSet("LEARNQT_LEGACY_SAMPLER")?":legacy":":unified");
     if (compute && failedComputePrograms.count(baseKey))
     {
         compute = false;
@@ -845,6 +964,20 @@ bool Renderer::rebuildPathtraceProgram(const RenderParams::Snapshot &snapshot)
     std::unordered_map<std::string, std::string> defines{{"INSTANCED_SCENE", "1"},
         {"MAX_BOUNCES_LIMIT", std::to_string(MAX_BOUNCES_LIMIT)},
         {"BVH_STACK_CAPACITY", std::to_string(capacity)}};
+    defines.emplace("MATERIAL_TEXTURE_POOL_COUNT",std::to_string(materialTexturePoolCapacity));
+    defines.emplace("PACKED_SURFACE_PDF","1");
+    defines.emplace(qEnvironmentVariableIsSet("LEARNQT_LEGACY_SAMPLER")?"LEGACY_SAMPLER":"UNIFIED_SAMPLER","1");
+    if(qEnvironmentVariableIsSet("LEARNQT_TRACE_PROFILE")) {
+        if(snapshot.effectiveDenoiseMode()!=DenoiseMode::None)
+            throw std::runtime_error("Trace profiling requires denoising disabled");
+        defines.emplace("TRACE_PROFILE","1");
+        defines.emplace("TRACE_TRAVERSAL_PROFILE","1");
+    }
+    if(qEnvironmentVariableIsSet("LEARNQT_TRACE_DIAGNOSTICS")) {
+        if(snapshot.effectiveDenoiseMode()!=DenoiseMode::None || qEnvironmentVariableIsSet("LEARNQT_TRACE_PROFILE"))
+            throw std::runtime_error("Event capture requires denoising/profile disabled");
+        defines.emplace("TRACE_DIAGNOSTICS","1");
+    }
     if (!media) defines.emplace("NO_PARTICIPATING_MEDIA", "1");
     if (snapshot.useEnvironmentMap) defines.emplace("USEENVIRONMENTMAP", "");
     auto select = [&](bool useCompute) {
@@ -931,7 +1064,8 @@ Renderer::RefreshActions Renderer::resolveRefreshActions(int width, int height,
     const bool renderLowChanged = snapshot.renderLow != m_lastAppliedSnapshot.renderLow;
     const bool tileModeChanged = snapshot.useTileRendering != m_lastAppliedSnapshot.useTileRendering;
     const bool tileSizeChanged = snapshot.tileSize != m_lastAppliedSnapshot.tileSize;
-    const bool denoiseChanged = snapshot.denoise != m_lastAppliedSnapshot.denoise;
+    const bool denoiseChanged = snapshot.effectiveDenoiseMode() != m_lastAppliedSnapshot.effectiveDenoiseMode();
+    const bool aaChanged = snapshot.antialiasing != m_lastAppliedSnapshot.antialiasing;
     const bool maxBouncesChanged = snapshot.maxBounces != m_lastAppliedSnapshot.maxBounces;
     const bool sizeChanged = width != m_width || height != m_height;
 
@@ -962,7 +1096,8 @@ Renderer::RefreshActions Renderer::resolveRefreshActions(int width, int height,
         actions.resetAccumulation = true;
     }
 
-    if (maxBouncesChanged)
+    if (maxBouncesChanged || aaChanged || snapshot.sampleSeed!=m_lastAppliedSnapshot.sampleSeed ||
+        snapshot.rrMinDepth!=m_lastAppliedSnapshot.rrMinDepth)
     {
         actions.resetAccumulation = true;
     }
@@ -978,7 +1113,7 @@ Renderer::RefreshActions Renderer::resolveRefreshActions(int width, int height,
         actions.resetAccumulation = true;
     }
 
-    if (hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::Material))
+    if (hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::Material) || hasSceneDirtyFlag(dirtyFlags, SceneDirtyFlag::Transform))
     {
         actions.syncMaterialBuffer = true;
         actions.resetAccumulation = true;
@@ -1026,6 +1161,7 @@ void Renderer::applyRefreshActions(int width, int height, const RenderParams::Sn
     {
         invalidatePreviewDenoise();
         m_forceDenoiseRefresh = true;
+        m_hasDenoisedFrame=false; stats.denoisedVersion=0; stats.denoisedSamples=0; stats.oidnMs=0;
     }
 
     if (actions.syncSceneBuffers)
@@ -1039,7 +1175,9 @@ void Renderer::applyRefreshActions(int width, int height, const RenderParams::Sn
 
     if (programChanged) syncPathtraceUniforms();
 
-    if (actions.syncCameraUniforms)
+    // Initial media depend on boundary transforms, visibility and materials as
+    // well as the camera. Cached programs retain their old uniform values.
+    if (!programChanged && (actions.syncCameraUniforms || actions.syncMaterialBuffer || actions.syncSceneBuffers))
     {
         syncCameraUniforms();
     }
@@ -1076,6 +1214,7 @@ void Renderer::clearTexture(GLuint texture)
 
 void Renderer::resetAccumulation()
 {
+    diagnosticCapture.reset({render_width,render_height});
     estimatedTileMs = 0;
     firstComposite = displayDirty = true;
     const auto &instances = m_scene.instances;
@@ -1094,8 +1233,10 @@ void Renderer::resetAccumulation()
     clearTexture(RenderColorTex);
     clearTexture(normal_texture);
     clearTexture(baseColorTex);
+    clearTexture(previousNormalTex);
+    clearTexture(previousAlbedoTex);
     clearTexture(RenderColorTexfiltered);
-    clearTexture(m_texture);
+    // The published image stays visible until a complete replacement is available.
 
     lasttime = clock();
     lastframeCounter = 0;
@@ -1252,124 +1393,113 @@ void Renderer::uploadHdrTextures(bool recreateResources)
 
 void Renderer::uploadMaterialTextures(bool recreateResources)
 {
-    constexpr int maxTextureDimension = 2048;
-    const auto &sourceTextures = m_scene.textures;
-
-    GLint hardwareMaxSize = 1;
-    GLint hardwareMaxLayers = 1;
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &hardwareMaxSize);
-    glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &hardwareMaxLayers);
-
-    const int layerCount = std::min(static_cast<int>(sourceTextures.size()), hardwareMaxLayers);
-    int textureWidth = 1;
-    int textureHeight = 1;
-    for (int i = 0; i < layerCount; ++i)
-    {
-        textureWidth = std::max(textureWidth, sourceTextures[i].width);
-        textureHeight = std::max(textureHeight, sourceTextures[i].height);
+    Q_UNUSED(recreateResources);
+    const auto mask=planMaterialMaskTextures(m_scene.textures,m_scene.materials);
+    materialTextureSourceOverrides=mask.materialSources;
+    GLint maxSize=1,maxLayers=1;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE,&maxSize);glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS,&maxLayers);
+    quint64 budget=512ull*1024*1024;
+    const auto setting=qEnvironmentVariable("LEARNQT_TEXTURE_BUDGET_MB");
+    if(!setting.isEmpty()) {
+        bool valid=false;const auto mb=setting.toULongLong(&valid);
+        if(!valid||mb==0||mb>16384)throw std::invalid_argument("Invalid LEARNQT_TEXTURE_BUDGET_MB");
+        budget=mb*1024*1024;
     }
-    textureWidth = std::min(textureWidth, std::min(hardwareMaxSize, maxTextureDimension));
-    textureHeight = std::min(textureHeight, std::min(hardwareMaxSize, maxTextureDimension));
-
-    if (static_cast<int>(sourceTextures.size()) > layerCount)
-    {
-        qWarning() << "Material texture count exceeds GL_MAX_ARRAY_TEXTURE_LAYERS; extra textures use scalar "
-                      "fallbacks:"
-                   << sourceTextures.size() << hardwareMaxLayers;
-    }
-
-    if (recreateResources && materialTextureArray != 0)
-    {
-        glDeleteTextures(1, &materialTextureArray);
-        materialTextureArray = 0;
-    }
-    if (recreateResources && materialTextureInfoTexture != 0)
-    {
-        glDeleteTextures(1, &materialTextureInfoTexture);
-        materialTextureInfoTexture = 0;
-    }
-    if (recreateResources && materialTextureInfoBuffer != 0)
-    {
-        glDeleteBuffers(1, &materialTextureInfoBuffer);
-        materialTextureInfoBuffer = 0;
-    }
-    if (materialTextureArray == 0)
-    {
-        glGenTextures(1, &materialTextureArray);
-    }
-
-    glBindTexture(GL_TEXTURE_2D_ARRAY, materialTextureArray);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // Per-material wrap is applied in the shader; clamp here keeps an exact
-    // coordinate of 1.0 on the edge for clamp/mirror modes.
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    const int allocatedLayers = std::max(1, layerCount);
-    textureArrayBytes = 0;
-    for (int w = textureWidth, h = textureHeight;; w = std::max(1, w / 2), h = std::max(1, h / 2))
-    {
-        textureArrayBytes += quint64(w) * h * allocatedLayers * 4;
-        if (w == 1 && h == 1)
-            break;
-    }
-    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, textureWidth, textureHeight, allocatedLayers, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, nullptr);
-
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    if (layerCount == 0)
-    {
-        const unsigned char white[] = {255, 255, 255, 255};
-        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, white);
-    }
-    else
-    {
-        for (int layer = 0; layer < layerCount; ++layer)
-        {
-            const QImage image =
-                prepareMaterialTextureImage(sourceTextures[layer].image, QSize(textureWidth, textureHeight));
-            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, textureWidth, textureHeight, 1, GL_RGBA,
-                            GL_UNSIGNED_BYTE, image.constBits());
+    const auto plan=planMaterialTextures(mask,m_scene.materials,materialTexturePoolCapacity,
+        std::min(maxSize,2048),maxLayers,budget);
+    uploadedTextureViewSignature=textureViewSignature(m_scene);
+    glDeleteTextures(1,&materialTextureArray);
+    glDeleteTextures(int(materialTextureExtraArrays.size()),materialTextureExtraArrays.data());
+    materialTextureExtraArrays={};glGenTextures(1,&materialTextureArray);
+    if(materialTexturePoolCapacity>1)glGenTextures(materialTexturePoolCapacity-1,materialTextureExtraArrays.data());
+    auto texture=[&](int pool){return pool==0?materialTextureArray:materialTextureExtraArrays[pool-1];};
+    for(int i=0;i<int(plan.pools.size());++i) {
+        const auto &pool=plan.pools[i];glBindTexture(GL_TEXTURE_2D_ARRAY,texture(i));
+        glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+        glTexImage3D(GL_TEXTURE_2D_ARRAY,0,pool.floating?GL_RGBA16F:GL_RGBA8,
+            pool.size.width(),pool.size.height(),std::max(1,pool.layers),0,GL_RGBA,GL_FLOAT,nullptr);
+        if(pool.layers==0) {
+            const float white[]={1,1,1,1};
+            glTexSubImage3D(GL_TEXTURE_2D_ARRAY,0,0,0,0,1,1,1,GL_RGBA,GL_FLOAT,white);
         }
     }
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-
-    std::vector<QVector4D> textureInfo(static_cast<size_t>(std::max(1, layerCount)) * 3u);
-    textureInfo[0] = QVector4D(1.0f, 1.0f, 0.0f, 0.0f);
-    textureInfo[1] = QVector4D(0.0f, 0.0f, 0.0f, 0.0f);
-    textureInfo[2] = QVector4D(9987.0f, 9729.0f, 0.0f, 0.0f);
-    for (int layer = 0; layer < layerCount; ++layer)
-    {
-        const TextureAsset &source = sourceTextures[layer];
-        textureInfo[static_cast<size_t>(layer) * 3u] =
-            QVector4D(source.uvScale.x(), source.uvScale.y(), source.uvOffset.x(), source.uvOffset.y());
-        textureInfo[static_cast<size_t>(layer) * 3u + 1u] = QVector4D(
-            source.uvRotation, static_cast<float>(source.wrapS), static_cast<float>(source.wrapT), 0.0f);
-        textureInfo[static_cast<size_t>(layer) * 3u + 2u] =
-            QVector4D(static_cast<float>(source.minFilter), static_cast<float>(source.magFilter), 0.0f, 0.0f);
+    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+    for(const auto &view:plan.views) {
+        const auto &pool=plan.pools[view.placement.pool];const auto &asset=mask.textures[view.source];
+        glBindTexture(GL_TEXTURE_2D_ARRAY,texture(view.placement.pool));
+        const auto pixels=prepareMaterialTexturePixels(asset.image,pool.size,view.color);
+        glTexSubImage3D(GL_TEXTURE_2D_ARRAY,0,0,0,view.placement.layer,pool.size.width(),pool.size.height(),1,
+            GL_RGBA,GL_FLOAT,pixels.data());
     }
-
-    if (materialTextureInfoBuffer == 0)
-    {
-        glGenBuffers(1, &materialTextureInfoBuffer);
+    for(int i=0;i<int(plan.pools.size());++i) {
+        glBindTexture(GL_TEXTURE_2D_ARRAY,texture(i));glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
     }
-    glBindBuffer(GL_TEXTURE_BUFFER, materialTextureInfoBuffer);
-    glBufferData(GL_TEXTURE_BUFFER, static_cast<GLsizeiptr>(textureInfo.size() * sizeof(QVector4D)),
-                 textureInfo.data(), GL_STATIC_DRAW);
-    if (materialTextureInfoTexture == 0)
-    {
-        glGenTextures(1, &materialTextureInfoTexture);
+    for(const auto &view:plan.views)if(mask.recipes[view.source].channel>=0) {
+        const auto &pool=plan.pools[view.placement.pool];
+        const auto chain=prepareMaskTextureMips(mask.textures[view.source].image,pool.size,view.color,mask.recipes[view.source]);
+        glBindTexture(GL_TEXTURE_2D_ARRAY,texture(view.placement.pool));
+        for(int level=0;level<int(chain.size());++level)
+            glTexSubImage3D(GL_TEXTURE_2D_ARRAY,level,0,0,view.placement.layer,chain[level].size.width(),chain[level].size.height(),1,
+                GL_RGBA,GL_FLOAT,chain[level].pixels.data());
     }
-    glBindTexture(GL_TEXTURE_BUFFER, materialTextureInfoTexture);
-    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialTextureInfoBuffer);
-    glBindTexture(GL_TEXTURE_BUFFER, 0);
-
-    materialTextureLayerCount = layerCount;
-    qDebug() << "Uploaded material texture array:" << materialTextureLayerCount << "layers at" << textureWidth
-             << "x" << textureHeight;
+    glPixelStorei(GL_UNPACK_ALIGNMENT,4);glBindTexture(GL_TEXTURE_2D_ARRAY,0);
+    materialTextureLayerCount=int(mask.textures.size());textureArrayBytes=plan.bytes;
+    std::vector<QVector4D> info(size_t(std::max(1,materialTextureLayerCount))*5);
+    for(int i=0;i<materialTextureLayerCount;++i) {
+        const auto &asset=mask.textures[i];const auto data=plan.data[i],color=plan.color[i];
+        const auto recipe=mask.recipes[i];
+        bool downscaled=false;
+        if(data.pool>=0) {const auto size=plan.pools[data.pool].size;downscaled=asset.image.width()>size.width()||asset.image.height()>size.height();}
+        info[i*5]=QVector4D(asset.uvScale.x(),asset.uvScale.y(),asset.uvOffset.x(),asset.uvOffset.y());
+        info[i*5+1]=QVector4D(asset.uvRotation,asset.wrapS,asset.wrapT,0);
+        info[i*5+2]=QVector4D(asset.minFilter,asset.magFilter,color.layer,1);
+        info[i*5+3]=QVector4D(recipe.cutoff,recipe.channel,recipe.channel>=0&&data.pool>=0?1:0,downscaled?1:0);
+        info[i*5+4]=QVector4D(data.pool,data.layer,color.pool,color.layer);
+    }
+    if(!materialTextureInfoBuffer)glGenBuffers(1,&materialTextureInfoBuffer);
+    glBindBuffer(GL_TEXTURE_BUFFER,materialTextureInfoBuffer);
+    glBufferData(GL_TEXTURE_BUFFER,info.size()*sizeof(QVector4D),info.data(),GL_STATIC_DRAW);
+    if(!materialTextureInfoTexture)glGenTextures(1,&materialTextureInfoTexture);
+    glBindTexture(GL_TEXTURE_BUFFER,materialTextureInfoTexture);
+    glTexBuffer(GL_TEXTURE_BUFFER,GL_RGBA32F,materialTextureInfoBuffer);
+    glBindTexture(GL_TEXTURE_BUFFER,0);glBindBuffer(GL_TEXTURE_BUFFER,0);
+    QJsonArray pools,sources;
+    for(int i=0;i<int(plan.pools.size());++i) {
+        const auto &pool=plan.pools[i];
+        pools.append(QJsonObject{{"pool",i},{"width",pool.size.width()},{"height",pool.size.height()},
+            {"requestedWidth",pool.requested.width()},{"requestedHeight",pool.requested.height()},
+            {"layers",pool.layers},{"format",pool.floating?"RGBA16F":"RGBA8"},{"bytes",double(materialPoolBytes(pool))}});
+    }
+    for(int i=0;i<int(mask.textures.size());++i) {
+        const auto data=plan.data[i],color=plan.color[i];
+        sources.append(QJsonObject{{"source",i},{"path",QString::fromStdString(mask.textures[i].sourcePath)},
+            {"dataPool",data.pool},{"dataLayer",data.layer},{"colorPool",color.pool},{"colorLayer",color.layer}});
+    }
+    textureResourceReport=QJsonObject{{"bytes",double(plan.bytes)},{"budgetBytes",double(budget)},
+        {"capacity",materialTexturePoolCapacity},{"sources",materialTextureLayerCount},{"views",int(plan.views.size())},
+        {"unusedSources",plan.unusedSources},{"missingViews",plan.missingViews},{"downscaled",plan.reduced},
+        {"compositeMaskPointFallbacks",mask.compositePointFallbacks},{"pools",pools},{"placements",sources}};
+    if(plan.reduced)qWarning()<<"Texture budget applied:"<<textureResourceReport;
+    if(plan.missingViews)qWarning()<<"Texture layer capacity exceeded; scalar fallback views:"<<plan.missingViews;
+    if(mask.compositePointFallbacks)qWarning()<<"Composite Mask point fallbacks:"<<mask.compositePointFallbacks;
+    if(glGetError()!=GL_NO_ERROR)throw std::runtime_error("Material texture pool allocation/upload failed");
+}
+void Renderer::bindMaterialTextureInputs(QOpenGLShaderProgram *program,int unit,int infoUnit)
+{
+    program->setUniformValue("materialTextures",unit);glActiveTexture(GL_TEXTURE0+unit);
+    glBindTexture(GL_TEXTURE_2D_ARRAY,materialTextureArray);
+    const int units[]={12,16,17};
+    for(int i=1;i<materialTexturePoolCapacity;++i) {
+        program->setUniformValue(("materialTextures"+std::to_string(i)).c_str(),units[i-1]);
+        glActiveTexture(GL_TEXTURE0+units[i-1]);glBindTexture(GL_TEXTURE_2D_ARRAY,materialTextureExtraArrays[i-1]);
+    }
+    program->setUniformValue("materialTextureInfo",infoUnit);glActiveTexture(GL_TEXTURE0+infoUnit);
+    glBindTexture(GL_TEXTURE_BUFFER,materialTextureInfoTexture);
+    program->setUniformValue("materialTextureInfoStride",5);
+    program->setUniformValue("materialTextureCount",materialTextureLayerCount);
 }
 
 void Renderer::syncCameraUniforms()
@@ -1389,6 +1519,15 @@ void Renderer::syncCameraUniforms()
     pathtrace_program->setUniformValue("view", inverseView);
     pathtrace_program->setUniformValue("eye", eye);
     pathtrace_program->setUniformValue("cameraFov", fov);
+    const bool boundaries=!qEnvironmentVariableIsSet("LEARNQT_LEGACY_MEDIA");
+    const auto initial=boundaries?initialMediaAt(m_scene,eye):InitialMediumState{};
+    pathtrace_program->setUniformValue("useBoundaryMedia",boundaries);
+    pathtrace_program->setUniformValue("initialMediumCount",int(initial.properties.size()));
+    if(!initial.properties.empty()) {
+        pathtrace_program->setUniformValueArray("initialMediumProperties",initial.properties.data(),int(initial.properties.size()));
+        pathtrace_program->setUniformValueArray("initialMediumColors",initial.colors.data(),int(initial.colors.size()));
+        pathtrace_program->setUniformValueArray("initialMediumIdentity",initial.identity.data(),int(initial.identity.size()));
+    }
     pathtrace_program->release();
 }
 
@@ -1412,37 +1551,58 @@ void Renderer::uploadInstanceBuffers(bool topology)
         glTexBuffer(GL_TEXTURE_BUFFER, format, instanceBuffers[i]);
     };
     upload(0, GL_RGBA32F, scene.instanceData.data(), scene.instanceData.size() * sizeof(QVector4D));
-    upload(1, GL_RGBA32F, scene.materialData.data(), scene.materialData.size() * sizeof(QVector4D));
+    auto materialData=scene.materialData;
+    for(int i=0;i<int(materialTextureSourceOverrides.size());++i) {
+        materialData[i*10+6].setZ(materialTextureSourceOverrides[i][0]);
+        materialData[i*10+7].setW(materialTextureSourceOverrides[i][1]);
+    }
+    surfacePdfOffset=int(materialData.size());
+    materialData.resize(materialData.size()+(scene.surfacePdfs.size()+3)/4);
+    for(size_t i=0;i<scene.surfacePdfs.size();++i)materialData[surfacePdfOffset+i/4][int(i%4)]=scene.surfacePdfs[i];
+    const auto contacts=mediumContactData(scene);mediumContactOffset=int(materialData.size());mediumContactCount=int(contacts.size()/3);
+    materialData.insert(materialData.end(),contacts.begin(),contacts.end());
+    upload(1, GL_RGBA32F, materialData.data(), materialData.size() * sizeof(QVector4D));
     upload(2, GL_RGB32F, scene.tlasData.data(), scene.tlasData.size() * sizeof(BVHNode_encoded));
     if (topology)
         upload(3, GL_RG32UI, scene.surfaces.data(), scene.surfaces.size() * sizeof(SurfaceReference));
-    upload(4, GL_R32F, scene.surfacePdfs.data(), scene.surfacePdfs.size() * sizeof(float));
 }
 void Renderer::bindInstanceBuffers(QOpenGLShaderProgram *program)
 {
     const char *names[] = {"instanceTable", "materialTable", "topNodes", "surfaceTable", "surfacePdfTable"};
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < 4; ++i)
     {
         glActiveTexture(GL_TEXTURE8 + i);
         glBindTexture(GL_TEXTURE_BUFFER, instanceTextures[i]);
         program->setUniformValue(names[i], 8 + i);
     }
     program->setUniformValue("nTopNodes", int(m_scene.tlas.size()));
+    program->setUniformValue("surfacePdfOffset",surfacePdfOffset);
+    const bool binary=std::none_of(m_scene.materials.begin(),m_scene.materials.end(),[](const Material &m) {
+        return m.alphaMode==Transparent || m.mediumtype!=None;
+    });
+    program->setUniformValue("shadowBinaryScene",binary);
+    program->setUniformValue("mediumContactOffset",mediumContactOffset);
+    program->setUniformValue("mediumContactCount",mediumContactCount);
+    program->setUniformValue("shadowAnyHit",!qEnvironmentVariableIsSet("LEARNQT_DISABLE_ANYHIT"));
     program->setUniformValue("picking", false);
     auto env = m_scene.document.root["environment"].toObject();
     program->setUniformValue("environmentIntensity", float(env["intensity"].toDouble(1)));
+    program->setUniformValue("usePowerLightGroups",!qEnvironmentVariableIsSet("LEARNQT_LEGACY_LIGHT_GROUPS"));
+    program->setUniformValue("environmentSelectProbability",m_scene.environmentSelectionProbability());
     program->setUniformValue("environmentRotation", float(env["rotation"].toDouble() * PI / 180));
 }
 
 void Renderer::syncMaterialBuffer()
 {
     QMutexLocker lock(&param_mutex);
+    if(textureViewSignature(m_scene)!=uploadedTextureViewSignature) uploadMaterialTextures(false);
     // 材质脏路径只重传三角形编码缓冲，不触碰 BVH / HDR 资源。
     uploadInstanceBuffers(false);
     // 光栅化预览从 instance/material 表读取，材质编辑后实例属性必须重传。
     m_rasterInstancesUploaded = false;
     uploadLightBuffer(tboLights == 0 || lightsTextureBuffer == 0);
     pathtrace_program->bind();
+    pathtrace_program->setUniformValue("materialTextureCount",materialTextureLayerCount);
     pathtrace_program->setUniformValue("nLights",
                                        static_cast<int>(m_scene.lights_encoded.size()));
     pathtrace_program->setUniformValue(
@@ -1469,10 +1629,10 @@ void Renderer::syncSceneBuffers()
         uploadNodeBuffer(tbo1 == 0 || nodesTextureBuffer == 0);
         uploadedMeshes = meshKeys;
     }
+    uploadMaterialTextures(materialTextureArray == 0 || materialTextureInfoTexture == 0);
     uploadInstanceBuffers(true);
     uploadLightBuffer(tboLights == 0 || lightsTextureBuffer == 0);
     uploadHdrTextures(hdrMap == 0 || hdrCache == 0);
-    uploadMaterialTextures(materialTextureArray == 0 || materialTextureInfoTexture == 0);
     // 场景或几何变化后光栅化的顶点缓冲与实例属性都要重建。
     m_rasterGeometryUploaded = false;
     m_rasterInstancesUploaded = false;
@@ -1570,6 +1730,8 @@ void Renderer::processHistorySaving(const RenderParams::Snapshot &snapshot)
     {
         nowChunkedCount = 0;
         frameCounter++;
+        ++stats.completedRounds;
+        if(qEnvironmentVariableIsSet("LEARNQT_TRACE_DIAGNOSTICS"))collectPathDiagnostics();
 
         historysave_program->bind();
         {
@@ -1580,6 +1742,10 @@ void Renderer::processHistorySaving(const RenderParams::Snapshot &snapshot)
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, RenderColorTex);
             historysave_program->setUniformValue("RenderColor", 0);
+            glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, normal_texture);
+            historysave_program->setUniformValue("NormalColor", 1);
+            glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, baseColorTex);
+            historysave_program->setUniformValue("BaseColor", 2);
 
             glViewport(m_viewportX, m_viewportY, render_width, render_height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1598,6 +1764,11 @@ void Renderer::processHistorySaving(const RenderParams::Snapshot &snapshot)
 
 void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool forceCurrentFrame)
 {
+    if (snapshot.effectiveDenoiseMode() != DenoiseMode::OIDN) {
+        if (formal && forceCurrentFrame && snapshot.effectiveDenoiseMode() == DenoiseMode::Realtime)
+            realtimeDenoise(snapshot, true);
+        return;
+    }
     if (!formal)
     {
         requestPreviewDenoise(snapshot, forceCurrentFrame);
@@ -1639,8 +1810,8 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
     const bool refreshAuxiliaryBuffers = true; // A fresh, matching complete-frame snapshot for each denoise.
 
     // 使用 PBO 异步读取数据；降噪只在完整累计帧上触发。
-    const GLenum formats[] = {GL_RGB, GL_RGB, GL_RGB};
-    const GLuint textures[] = {normal_texture, baseColorTex, RenderColorTex};
+    const GLenum formats[] = {GL_RGBA, GL_RGBA, GL_RGBA};
+    const GLuint textures[] = {previousNormalTex, previousAlbedoTex, preRenderColorTex};
     float *srcPtrs[3] = {nullptr, nullptr, nullptr};
 
     for (int i = refreshAuxiliaryBuffers ? 0 : 2; i < 3; i++)
@@ -1666,21 +1837,25 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
             throw std::runtime_error("OIDN auxiliary readback failed");
         }
 
-    if (refreshAuxiliaryBuffers)
-    {
-        auto *normals = static_cast<float *>(oidnNormalBuf.getData());
-        stats.normalMinimum = 1;
-        stats.normalMaximum = -1;
-        for (size_t i = 0; i < oidnNormalBuf.getSize() / sizeof(float); ++i)
-        {
-            normals[i] = srcPtrs[0][i] * 2.0f - 1.0f;
-            stats.normalMinimum = std::min(stats.normalMinimum, double(normals[i]));
-            stats.normalMaximum = std::max(stats.normalMaximum, double(normals[i]));
-        }
-        stats.auxiliarySize = QSize(render_width, render_height);
-        std::memcpy(oidnAlbedoBuf.getData(), srcPtrs[1], oidnAlbedoBuf.getSize());
+    const size_t pixels=size_t(render_width)*render_height;
+    std::vector<float> packedNormals(pixels*3),secondMoment(pixels),counts(pixels);
+    std::vector<unsigned char> confidenceEligible(pixels);bool auxiliarySafe=true;
+    auto *albedo=static_cast<float*>(oidnAlbedoBuf.getData());
+    auto *raw=static_cast<float*>(oidnColorBuf.getData());
+    for(size_t p=0;p<pixels;++p) {
+        for(int c=0;c<3;++c){packedNormals[p*3+c]=srcPtrs[0][p*4+c];raw[p*3+c]=srcPtrs[2][p*4+c];}
+        secondMoment[p]=srcPtrs[2][p*4+3];counts[p]=srcPtrs[0][p*4+3];
+        for(int c=0;c<3;++c)albedo[p*3+c]=srcPtrs[1][p*4+c];
+        const unsigned flags=unsigned(srcPtrs[1][p*4+3]);confidenceEligible[p]=(flags&128u)==0u;
+        if((flags&64u)!=0u)auxiliarySafe=false;
     }
-    std::memcpy(oidnColorBuf.getData(), srcPtrs[2], oidnColorBuf.getSize());
+    stats.normalMinimum=1;stats.normalMaximum=-1;
+    decodeOidnNormals(static_cast<float*>(oidnNormalBuf.getData()),packedNormals.data(),packedNormals.size(),stats.normalMinimum,stats.normalMaximum);
+    const std::vector<float> confidenceAlbedo(albedo,albedo+pixels*3);
+    const auto *decodedNormal=static_cast<const float*>(oidnNormalBuf.getData());
+    const std::vector<float> confidenceNormal(decodedNormal,decodedNormal+pixels*3);
+    stats.auxiliarySize={render_width,render_height};
+
 
     for (int i = refreshAuxiliaryBuffers ? 0 : 2; i < 3; i++)
     {
@@ -1698,7 +1873,16 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
     oidnMainFilter.setProgressMonitorFunction(progress, cancel);
     if (denoising)
         denoising();
-    if (refreshAuxiliaryBuffers)
+    if(qEnvironmentVariableIsSet("LEARNQT_LEGACY_OIDN_GUIDES"))auxiliarySafe=true;
+    if(auxiliarySafe) {
+        oidnMainFilter.setImage("albedo",oidnAlbedoBuf,oidn::Format::Float3,render_width,render_height);
+        oidnMainFilter.setImage("normal",oidnNormalBuf,oidn::Format::Float3,render_width,render_height);
+        oidnMainFilter.set("cleanAux",true);
+    } else {
+        oidnMainFilter.unsetImage("albedo");oidnMainFilter.unsetImage("normal");oidnMainFilter.set("cleanAux",false);
+    }
+    oidnMainFilter.commit();
+    if (refreshAuxiliaryBuffers && auxiliarySafe)
     {
         oidnAlbedoFilter.execute();
         oidnNormalFilter.execute();
@@ -1713,6 +1897,11 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
     if (error != oidn::Error::None)
         throw std::runtime_error(errorMessage ? errorMessage : "OIDN failed");
 
+    stats.oidnGuidePolicy=auxiliarySafe?QStringLiteral("surface/delta guides"):QStringLiteral("beauty-only volume fallback");
+    stats.oidnProtectedPixels=0;
+    if(!qEnvironmentVariableIsSet("LEARNQT_LEGACY_OIDN_GUIDES"))
+        stats.oidnProtectedPixels=protectOidnOutput(raw,static_cast<float*>(oidnOutputBuf.getData()),pixels,secondMoment,counts,&confidenceEligible,
+            render_width,confidenceAlbedo.data(),confidenceNormal.data());
     glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, render_width, render_height, GL_RGB, GL_FLOAT,
                     oidnOutputBuf.getData());
@@ -1734,18 +1923,19 @@ void Renderer::compositeToScreen(const RenderParams::Snapshot &snapshot)
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
         glActiveTexture(GL_TEXTURE5);
-        if (!m_rasterActive && snapshot.denoise && m_hasDenoisedFrame)
+        if (!m_rasterActive && snapshot.effectiveDenoiseMode() != DenoiseMode::None && m_hasDenoisedFrame)
         {
-            glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
+            glBindTexture(GL_TEXTURE_2D, snapshot.effectiveDenoiseMode() == DenoiseMode::Realtime ? gpuDenoiser.output() : RenderColorTexfiltered);
         }
         else
         {
-            glBindTexture(GL_TEXTURE_2D, formal ? preRenderColorTex : RenderColorTex);
+            glBindTexture(GL_TEXTURE_2D, m_rasterActive ? RenderColorTex : preRenderColorTex);
         }
         m_program->setUniformValue("texPass1", 5);
         auto display = m_scene.document.root["display"].toObject();
         m_program->setUniformValue("exposure", float(display["exposure"].toDouble()));
         m_program->setUniformValue("tonemap", display["tonemap"].toInt());
+        m_program->setUniformValue("legacyGamma",qEnvironmentVariableIsSet("LEARNQT_LEGACY_GAMMA"));
         glActiveTexture(GL_TEXTURE6);
 
         // 渲染到屏幕尺寸，所以这里使用窗口尺寸。
@@ -1773,6 +1963,7 @@ void Renderer::rebuildRasterProgram(const RenderParams::Snapshot &snapshot)
 {
     std::unordered_map<std::string, std::string> defines;
     defines.insert({"INSTANCED_SCENE", "1"});
+    defines.insert({"MATERIAL_TEXTURE_POOL_COUNT",std::to_string(materialTexturePoolCapacity)});
     if (snapshot.useEnvironmentMap)
         defines.insert({"USEENVIRONMENTMAP", ""});
     try
@@ -1817,7 +2008,8 @@ bool Renderer::renderRasterPreview(const RenderParams::Snapshot &snapshot)
         glBeginQuery(GL_TIME_ELAPSED, rasterTimerQuery);
 
     // 光栅化写进专用 FBO（颜色靶与路径追踪共用 RenderColorTex），不触碰 pathtrace_fbo。
-    glBindFramebuffer(GL_FRAMEBUFFER, rasterFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, multisampleFbo ? multisampleFbo : rasterFbo);
+    glEnable(GL_MULTISAMPLE);
     glViewport(0, 0, render_width, render_height);
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
@@ -1853,10 +2045,12 @@ bool Renderer::renderRasterPreview(const RenderParams::Snapshot &snapshot)
     glBindTexture(GL_TEXTURE_2D_ARRAY, materialTextureArray);
 
     raster_program->setUniformValue("materialTextureInfo", 6);
+    raster_program->setUniformValue("materialTextureInfoStride",4);
     glActiveTexture(GL_TEXTURE6);
     glBindTexture(GL_TEXTURE_BUFFER, materialTextureInfoTexture);
 
     raster_program->setUniformValue("materialTextureCount", materialTextureLayerCount);
+    bindMaterialTextureInputs(raster_program.get(),5,6);
     raster_program->setUniformValue("materialTable", 8);
     glActiveTexture(GL_TEXTURE8);
     glBindTexture(GL_TEXTURE_BUFFER, instanceTextures[1]);
@@ -1917,6 +2111,10 @@ bool Renderer::renderRasterPreview(const RenderParams::Snapshot &snapshot)
     }
     glBindVertexArray(0);
     raster_program->release();
+    if (multisampleFbo) {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, multisampleFbo); glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rasterFbo);
+        glBlitFramebuffer(0,0,render_width,render_height,0,0,render_width,render_height,GL_COLOR_BUFFER_BIT,GL_NEAREST);
+    }
     if (rasterTimed)
     {
         glEndQuery(GL_TIME_ELAPSED);
@@ -2058,6 +2256,42 @@ void Renderer::releaseRasterResources()
     rasterBackgroundProgram.reset();
 }
 
+QJsonObject Renderer::pathDiagnostics()
+{
+    if(!completeRound()) throw std::runtime_error("Diagnostics require a complete sample round");
+    std::vector<float> normal(size_t(render_width)*render_height*4), albedo(normal.size());
+    glBindBuffer(GL_PIXEL_PACK_BUFFER,0);
+    glBindTexture(GL_TEXTURE_2D,previousNormalTex);
+    glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA,GL_FLOAT,normal.data());
+    glBindTexture(GL_TEXTURE_2D,previousAlbedoTex);
+    glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA,GL_FLOAT,albedo.data());
+    if(glGetError()!=GL_NO_ERROR) throw std::runtime_error("Diagnostic readback failed");
+    auto result=summarizePathDiagnostics(normal,albedo,render_width,frameCounter,stats.accumulationVersion);
+    if(qEnvironmentVariableIsSet("LEARNQT_TRACE_DIAGNOSTICS"))result["capture"]=diagnosticCapture.json();
+    return result;
+}
+QJsonObject Renderer::traceProfile()
+{
+    if(!qEnvironmentVariableIsSet("LEARNQT_TRACE_PROFILE") || !completeRound())
+        throw std::runtime_error("Trace profile requires its diagnostic variant and a complete round");
+    std::vector<float> a(size_t(render_width)*render_height*4),b(a.size());
+    glBindBuffer(GL_PIXEL_PACK_BUFFER,0);
+    glBindTexture(GL_TEXTURE_2D,previousNormalTex);glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA,GL_FLOAT,a.data());
+    glBindTexture(GL_TEXTURE_2D,previousAlbedoTex);glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA,GL_FLOAT,b.data());
+    if(glGetError()!=GL_NO_ERROR)throw std::runtime_error("Trace profile readback failed");
+    double values[6]={};
+    for(size_t i=0;i<a.size();i+=4)for(int c=0;c<3;++c) {
+        values[c]+=a[i+c]/double(render_width*render_height);
+        values[c+3]+=b[i+c]/double(render_width*render_height);
+    }
+    QJsonObject result{{"samples",int(frameCounter)},{"pixels",render_width*render_height},
+        {"basis","Per pixel per sample averages. Instrumented diagnostic shader; not production timing."},
+        {"hardwareCounters","Registers, spills, bandwidth and occupancy require an external hardware profiler; unavailable here."}};
+    const char *names[]={"nodeVisits","triangleTests","scatters","materialTexelFetches","lightAttempts","invalidLightSamples"};
+    for(int i=0;i<6;++i)result[names[i]]=values[i];
+    result["invalidLightFraction"]=values[4]>0?values[5]/values[4]:0;
+    return result;
+}
 QImage Renderer::result(const RenderParams::Snapshot &snapshot)
 {
     if (!frameCounter)
@@ -2094,21 +2328,87 @@ quint64 Renderer::allocatedBytes() const
 {
     const auto &s = m_scene;
     quint64 bytes = textureArrayBytes + quint64(m_width) * m_height * 16 +
-                    quint64(render_width) * render_height * 5 * 16 +
-                    quint64(denoisePboSize.width()) * denoisePboSize.height() * 3 * 12 +
+                    quint64(render_width) * render_height * 7 * 16 +
+                    quint64(denoisePboSize.width()) * denoisePboSize.height() * 12 * sizeof(float) +
                     quint64(pickSize.width()) * pickSize.height() * 8;
     bytes += s.geometryData.size() * sizeof(QVector4D) + s.nodes_encoded.size() * sizeof(BVHNode_encoded) +
              s.instanceData.size() * sizeof(QVector4D) + s.materialData.size() * sizeof(QVector4D) +
+             quint64(mediumContactCount)*3*sizeof(QVector4D) +
              s.tlasData.size() * sizeof(BVHNode_encoded) + s.surfaces.size() * sizeof(SurfaceReference) +
-             s.surfacePdfs.size() * sizeof(float) + s.lights_encoded.size() * sizeof(Light_encoded) +
-             std::max(1, materialTextureLayerCount) * 3 * sizeof(QVector4D) +
+             ((s.surfacePdfs.size()+3)/4) * sizeof(QVector4D) + s.lights_encoded.size() * sizeof(Light_encoded) +
+             std::max(1, materialTextureLayerCount) * 5 * sizeof(QVector4D) +
              quint64(s.hdrRes.width) * s.hdrRes.height * 24;
     if (oidnColorBuf)
         bytes += oidnColorBuf.getSize() + oidnAlbedoBuf.getSize() + oidnNormalBuf.getSize() +
                  oidnOutputBuf.getSize();
-    bytes += previewDenoiser.allocatedBytes();
+    bytes += previewDenoiser.allocatedBytes() + gpuDenoiser.allocatedBytes();
+    if (multisampleFbo) bytes += quint64(render_width)*render_height*multisampleCount*20;
     bytes += quint64(rasterVertexCount) * 8 * sizeof(float) +
              quint64(rasterInstanceCount) * 5 * sizeof(QVector4D) +
              quint64(rasterDepthSize.width()) * rasterDepthSize.height() * 4;
     return bytes;
+}
+
+void Renderer::collectPathDiagnostics() {
+    std::array<std::vector<float>,5> values;
+    glBindBuffer(GL_PIXEL_PACK_BUFFER,0);
+    for(int i=0;i<5;++i) {
+        values[i].resize(size_t(render_width)*render_height*4);
+        glBindTexture(GL_TEXTURE_2D,gpuDenoiser.sample(i));
+        glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA,GL_FLOAT,values[i].data());
+    }
+    if(glGetError()!=GL_NO_ERROR)throw std::runtime_error("Event capture readback failed");
+    diagnosticCapture.append(values,frameCounter-1);
+}
+
+RenderResultPtr Renderer::linearResult(const RenderParams::Snapshot &snapshot,bool includeDepth) {
+    if(!frameCounter)throw std::runtime_error("Linear result requires a completed sample round");
+    if(qEnvironmentVariableIsSet("LEARNQT_TRACE_PROFILE") || qEnvironmentVariableIsSet("LEARNQT_TRACE_DIAGNOSTICS"))
+        throw std::runtime_error("Instrumented auxiliary images are not render-result guides");
+    auto result=std::make_shared<RenderResult>();result->size={render_width,render_height};
+    result->samples=frameCounter;result->version=stats.accumulationVersion;
+    auto actualDocument=m_scene.document;actualDocument.captureCamera(m_scene.camera);
+    result->settings={{"camera",actualDocument.root["camera"]},{"environment",m_scene.document.root["environment"]},
+        {"hdr",m_scene.document.root["hdr"]},{"width",render_width},{"height",render_height},{"targetSamples",snapshot.maxRenderFrames},
+        {"useEnvironmentMap",snapshot.useEnvironmentMap},{"tileSize",snapshot.tileSize},{"tiled",snapshot.useTileRendering},
+        {"algorithmVersion","render-quality-v1"},{"oidnGuidePolicy",stats.oidnGuidePolicy},
+        {"oidnProtectedPixels",double(stats.oidnProtectedPixels)},{"sampleSeed",double(snapshot.sampleSeed)},{"rrMinDepth",snapshot.rrMinDepth},
+        {"maxBounces",snapshot.maxBounces},{"antialiasing",snapshot.antialiasing},
+        {"denoiseMode",denoiseModeName(snapshot.effectiveDenoiseMode())},
+        {"exposure",m_scene.document.root["display"].toObject()["exposure"]},{"tonemap",m_scene.document.root["display"].toObject()["tonemap"]},
+        {"sceneName",m_scene.document.root["name"]},{"backend",stats.pathtraceBackend}};
+    const size_t pixels=size_t(render_width)*render_height;
+    std::vector<float> raw(pixels*4),normal(raw.size()),base(raw.size());
+    glBindBuffer(GL_PIXEL_PACK_BUFFER,0);
+    auto read=[&](GLuint texture,std::vector<float> &data){glBindTexture(GL_TEXTURE_2D,texture);glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA,GL_FLOAT,data.data());};
+    read(preRenderColorTex,raw);read(previousNormalTex,normal);read(previousAlbedoTex,base);
+    result->beauty.resize(pixels*3);result->normal.resize(pixels*3);result->albedo.resize(pixels*3);
+    result->variance.resize(pixels);result->sampleCount.resize(pixels);
+    std::vector<float> filtered;
+    if(m_hasDenoisedFrame && stats.denoisedVersion==stats.accumulationVersion && m_lastDenoisedFrameCounter==frameCounter) {
+        filtered.resize(raw.size());GLuint texture=snapshot.effectiveDenoiseMode()==DenoiseMode::Realtime?gpuDenoiser.output():RenderColorTexfiltered;
+        read(texture,filtered);result->denoised.resize(pixels*3);
+    }
+    for(int y=0;y<render_height;++y)for(int x=0;x<render_width;++x) {
+        const size_t source=size_t(y)*render_width+x,dest=size_t(render_height-1-y)*render_width+x;
+        for(int c=0;c<3;++c) {
+            result->beauty[dest*3+c]=raw[source*4+c];
+            result->normal[dest*3+c]=normal[source*4+c]*2-1;
+            result->albedo[dest*3+c]=base[source*4+c];
+            if(!filtered.empty())result->denoised[dest*3+c]=filtered[source*4+c];
+        }
+        const double count=normal[source*4+3];
+        const double luminance=raw[source*4]*.212671+raw[source*4+1]*.715160+raw[source*4+2]*.072169;
+        result->sampleCount[dest]=float(count);
+        result->variance[dest]=count>1?float(std::max(0.,double(raw[source*4+3])-luminance*luminance)*count/(count-1)):0;
+    }
+    if(includeDepth) {
+        updatePick(render_width,render_height,stats.accumulationVersion);
+        std::vector<float> depth(pixels);glBindTexture(GL_TEXTURE_2D,pickTextures[1]);glGetTexImage(GL_TEXTURE_2D,0,GL_RED,GL_FLOAT,depth.data());
+        result->depth.resize(pixels);
+        for(int y=0;y<render_height;++y)for(int x=0;x<render_width;++x)
+            result->depth[size_t(render_height-1-y)*render_width+x]=depth[size_t(y)*render_width+x];
+    }
+    if(glGetError()!=GL_NO_ERROR)throw std::runtime_error("Linear render result readback failed");
+    return result;
 }

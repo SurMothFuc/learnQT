@@ -21,7 +21,7 @@ bool Renderer::pollPreviewDenoise(const RenderParams::Snapshot &snapshot)
     bool changed = false;
     if (previewDenoiser.take(result))
     {
-        if (!formal && snapshot.denoise && result.version == stats.accumulationVersion &&
+        if (!formal && snapshot.effectiveDenoiseMode() == DenoiseMode::OIDN && result.version == stats.accumulationVersion &&
             result.size == QSize(render_width, render_height))
         {
             if (!result.error.isEmpty())
@@ -42,6 +42,8 @@ bool Renderer::pollPreviewDenoise(const RenderParams::Snapshot &snapshot)
                 stats.normalMinimum = result.normalMinimum;
                 stats.normalMaximum = result.normalMaximum;
                 stats.oidnMs = result.milliseconds;
+                stats.oidnProtectedPixels=result.protectedPixels;
+                stats.oidnGuidePolicy=result.usedAuxiliary?QStringLiteral("surface/delta guides"):QStringLiteral("beauty-only volume fallback");
                 stats.denoisedSamples = int(result.samples);
                 changed = true;
             }
@@ -57,7 +59,7 @@ bool Renderer::pollPreviewDenoise(const RenderParams::Snapshot &snapshot)
         throw std::runtime_error("Preview OIDN readback fence failed");
     glDeleteSync(denoiseReadbackFence);
     denoiseReadbackFence = nullptr;
-    if (formal || !snapshot.denoise || previewSnapshot.version != stats.accumulationVersion ||
+    if (formal || snapshot.effectiveDenoiseMode() != DenoiseMode::OIDN || previewSnapshot.version != stats.accumulationVersion ||
         previewSnapshot.size != QSize(render_width, render_height))
     {
         previewSnapshot = {};
@@ -77,10 +79,23 @@ bool Renderer::pollPreviewDenoise(const RenderParams::Snapshot &snapshot)
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
             throw std::runtime_error("Preview OIDN auxiliary readback failed");
         }
-        std::memcpy(destinations[i]->data(), source, values * sizeof(float));
+        const auto *input=static_cast<const float*>(source);
+        for(size_t p=0;p<values/3;++p)for(int c=0;c<3;++c)(*destinations[i])[p*3+c]=input[p*4+c];
+        if(i==1) {
+            previewSnapshot.confidenceEligible.resize(values/3);
+            for(size_t p=0;p<values/3;++p) {
+                const unsigned flags=unsigned(input[p*4+3]);previewSnapshot.confidenceEligible[p]=(flags&128u)==0u;
+                if((flags&64u)!=0u)previewSnapshot.useAuxiliary=false;
+            }
+        }else {
+            auto &scalar=i==0?previewSnapshot.sampleCounts:previewSnapshot.secondMoment;scalar.resize(values/3);
+            for(size_t p=0;p<values/3;++p)scalar[p]=input[p*4+3];
+        }
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
     }
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    if(qEnvironmentVariableIsSet("LEARNQT_LEGACY_OIDN_GUIDES"))previewSnapshot.useAuxiliary=true;
+    previewSnapshot.confidence=!qEnvironmentVariableIsSet("LEARNQT_LEGACY_OIDN_GUIDES");
     previewDenoiser.start(std::move(previewSnapshot));
     previewSnapshot = {};
     return changed;
@@ -88,7 +103,7 @@ bool Renderer::pollPreviewDenoise(const RenderParams::Snapshot &snapshot)
 
 void Renderer::requestPreviewDenoise(const RenderParams::Snapshot &snapshot, bool force)
 {
-    if (!snapshot.denoise || formal || previewDenoiseFailed || previewDenoiser.busy() ||
+    if (snapshot.effectiveDenoiseMode() != DenoiseMode::OIDN || formal || previewDenoiseFailed || previewDenoiser.busy() ||
         denoiseReadbackFence || !completeRound() || m_lastDenoisedFrameCounter == frameCounter)
         return;
     if (!previewHasGeometry)
@@ -101,16 +116,101 @@ void Renderer::requestPreviewDenoise(const RenderParams::Snapshot &snapshot, boo
     previewSnapshot.version = stats.accumulationVersion;
     previewSnapshot.samples = frameCounter;
     stats.previewDenoiseSamples = int(frameCounter);
-    const GLuint textures[] = {normal_texture, baseColorTex, RenderColorTex};
+    const GLuint textures[] = {previousNormalTex, previousAlbedoTex, preRenderColorTex};
     for (int i = 0; i < 3; ++i)
     {
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[i]);
         glBindTexture(GL_TEXTURE_2D, textures[i]);
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, nullptr);
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, nullptr);
     }
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     denoiseReadbackFence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     if (!denoiseReadbackFence)
         throw std::runtime_error("Preview OIDN readback fence creation failed");
     glFlush();
+}
+
+void Renderer::prepareRealtime(const RenderParams::Snapshot &snapshot)
+{
+    const bool requested = qEnvironmentVariableIsSet("LEARNQT_TRACE_DIAGNOSTICS") ||
+        (snapshot.effectiveDenoiseMode() == DenoiseMode::Realtime &&
+                           (previewHasGeometry || !m_scene.lights_encoded.empty()));
+    stats.denoiseMode = denoiseModeName(snapshot.effectiveDenoiseMode());
+    if (requested && !realtimeFailed)
+    {
+        try
+        {
+            if (!realtimeAttached) realtimeNeedsGuides = roundInProgress() || (!samplingActive(snapshot) && frameCounter > 0);
+            gpuDenoiser.ensure(*this, {render_width, render_height});
+            if (!roundInProgress()) gpuDenoiser.prepare(m_scene);
+            glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
+            realtimeAttached = true; // Also detach partially attached guides on framebuffer failure.
+            for (int i=0; i<5; ++i)
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3+i, GL_TEXTURE_2D, gpuDenoiser.sample(i), 0);
+            const GLenum attachments[] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2,GL_COLOR_ATTACHMENT3,
+                                          GL_COLOR_ATTACHMENT4,GL_COLOR_ATTACHMENT5,GL_COLOR_ATTACHMENT6,GL_COLOR_ATTACHMENT7};
+            glDrawBuffers(8, attachments);
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+                throw std::runtime_error("GPU denoiser guide framebuffer failed");
+            realtimeAttached = true;
+            gpuDenoiser.poll();
+            stats.realtimeDenoiseMs = gpuDenoiser.milliseconds;
+            stats.historyAcceptance = gpuDenoiser.acceptance;
+            stats.denoiseBytes = gpuDenoiser.allocatedBytes();
+        }
+        catch (const std::exception &e)
+        {
+            realtimeFailed = true; stats.denoiseError = QString::fromUtf8(e.what());
+            qWarning() << "GPU denoiser:" << stats.denoiseError;
+            if (formal) throw;
+        }
+    }
+    if (!requested || realtimeFailed)
+    {
+        stats.realtimeDenoiseMs = 0;
+        stats.historyAcceptance = 0;
+        stats.denoiseBytes = 0;
+    }
+    if ((!requested || realtimeFailed) && realtimeAttached)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, pathtrace_fbo);
+        for (int i=0; i<5; ++i) glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT3+i,GL_TEXTURE_2D,0,0);
+        const GLenum attachments[] = {GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2};
+        glDrawBuffers(3, attachments); realtimeAttached=false;
+        gpuDenoiser.release(); stats.denoiseBytes=0;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER,0);
+}
+void Renderer::refreshRealtimeGuides(const RenderParams::Snapshot &snapshot)
+{
+    if (!realtimeNeedsGuides || !frameCounter || roundInProgress() || realtimeFailed) return;
+    bindPathtraceInputs(std::min(int(MAX_BOUNCES_LIMIT),snapshot.maxBounces), snapshot);
+    pathtrace_program->bind(); pathtrace_program->setUniformValue("guidesOnly",true); pathtrace_program->release();
+    renderFullImage(snapshot.maxBounces);
+    pathtrace_program->bind(); pathtrace_program->setUniformValue("guidesOnly",false); pathtrace_program->release();
+    realtimeNeedsGuides=false;
+}
+void Renderer::realtimeDenoise(const RenderParams::Snapshot &snapshot, bool final)
+{
+    if (!frameCounter || realtimeFailed || !gpuDenoiser.ready())
+    {
+        if (formal && realtimeFailed) throw std::runtime_error(stats.denoiseError.toStdString());
+        return;
+    }
+    if (m_hasDenoisedFrame && m_lastDenoisedFrameCounter == frameCounter && !m_forceDenoiseRefresh) return;
+    try
+    {
+        if (formal && cancel && cancel->load()) throw std::runtime_error("Render stopped before GPU denoising");
+        gpuDenoiser.filter(VAO,m_scene,preRenderColorTex,frameCounter,final || formal,previousNormalTex,previousAlbedoTex);
+        m_hasDenoisedFrame=true; m_lastDenoisedFrameCounter=frameCounter; m_forceDenoiseRefresh=false;
+        stats.denoisedVersion=stats.accumulationVersion;
+        stats.denoisedSamples=int(frameCounter); stats.auxiliarySize={render_width,render_height};
+        stats.denoiseRounds=gpuDenoiser.rounds;
+    }
+    catch (const std::exception &e)
+    {
+        realtimeFailed=true; m_hasDenoisedFrame=false;
+        stats.denoiseError=QString::fromUtf8(e.what()); qWarning() << "GPU denoiser:" << stats.denoiseError;
+        if (formal) throw;
+    }
 }

@@ -835,11 +835,11 @@ void PerformancePanel::drawChart(QPainter &p)
                tr("光栅化完成帧率  ·  最近 60 秒") : tr("整图采样速率  ·  最近 60 秒"));
     p.setPen(QColor("#b4bed0"));
     const QStringList details = {
-        s.rasterActive ? tr("光栅化 %1 ms").arg(s.rasterMs, 0, 'f', 1) :
-            tr("光追 %1 ms  ·  OIDN %2 ms").arg(s.gpuMs, 0, 'f', 1).arg(s.oidnMs, 0, 'f', 1),
+        s.rasterActive ? tr("光栅化 %1 ms · %2× MSAA").arg(s.rasterMs, 0, 'f', 1).arg(s.rasterSamples) :
+            tr("光追 %1 ms · 降噪 %2 ms").arg(s.gpuMs, 0, 'f', 1).arg(s.denoiseMode=="realtime" ? s.realtimeDenoiseMs : s.oidnMs, 0, 'f', 1),
         tr("上传 %1  ·  BLAS %2  ·  TLAS %3 ms").arg(s.uploadMs, 0, 'f', 1).arg(s.blasMs, 0, 'f', 1).arg(s.tlasMs, 0, 'f', 2),
         tr("渲染资源  %1 MiB").arg(s.allocatedBytes / 1048576., 0, 'f', 1),
-        tr("历史 %1 ms  ·  合成 %2 ms").arg(s.gpuHistoryMs, 0, 'f', 1).arg(s.gpuCompositeMs, 0, 'f', 1)
+        s.denoiseMode=="realtime" ? tr("GPU 历史接受 %1% · %2 轮").arg(s.historyAcceptance*100,0,'f',1).arg(s.denoiseRounds) : tr("完成 %1 fps · 发布 %2 fps").arg(s.completedFps,0,'f',1).arg(s.publishedFps,0,'f',1)
     };
     for (int i = 0; i < details.size(); ++i)
         p.drawText(QRect(14, height() - 82 + i * 19, width() - 28, 19),
@@ -863,14 +863,22 @@ PreviewSettingsPanel::PreviewSettingsPanel(QWidget *p) : QWidget(p)
     };
     samples = spin(tr("预览 spp（0 无限）"), 0, 1000000, 0);
     bounces = spin(tr("预览反弹数"), 1, 64, 4);
+    rrMinDepth=spin(tr("RR 起始深度"),0,64,3);
+    rrMinDepth->setObjectName("previewRrMinDepth");
+    rrMinDepth->setToolTip(tr("从此散射深度开始随机终止低贡献路径；64 可用于有限深度下的关闭对照。"));
     tile = spin(tr("预览块大小"), 16, 1024, 128);
     tiled = new QCheckBox(tr("分块预览"));
     lowResolution = new QCheckBox(tr("降低预览分辨率"));
     lowResolution->setObjectName("previewLowResolution");
-    denoise = new QCheckBox(tr("预览降噪"));
+    denoise = new QComboBox;
+    denoise->addItems({tr("关闭"), tr("GPU 实时"), tr("OIDN")});
+    denoise->setObjectName("previewDenoiseMode");
+    antialiasing = new QCheckBox(tr("抗锯齿"));
+    antialiasing->setObjectName("previewAntialiasing");
     layout->addRow(tiled);
     layout->addRow(lowResolution);
-    layout->addRow(denoise);
+    layout->addRow(tr("预览降噪"), denoise);
+    layout->addRow(antialiasing);
     interaction = new QComboBox;
     interaction->addItems({tr("保持路径追踪"), tr("光栅化"), tr("降低分辨率路径追踪")});
     interaction->setObjectName("interactionMode");
@@ -887,10 +895,11 @@ PreviewSettingsPanel::PreviewSettingsPanel(QWidget *p) : QWidget(p)
             return;
         emit changed(values());
     };
-    for (auto s : {samples, bounces, tile, idle})
+    for (auto s : {samples, bounces, rrMinDepth, tile, idle})
         connect(s, QOverload<int>::of(&QSpinBox::valueChanged), this, [publish](int) { publish(); });
-    for (auto c : {tiled, lowResolution, denoise, rasterLock})
+    for (auto c : {tiled, lowResolution, antialiasing, rasterLock})
         connect(c, &QCheckBox::toggled, this, [publish](bool) { publish(); });
+    connect(denoise, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [publish](int) { publish(); });
     connect(interaction, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             [publish](int) { publish(); });
 }
@@ -900,14 +909,17 @@ void PreviewSettingsPanel::setValues(const RenderParams::Snapshot &settings)
     syncing = true;
     originalSettings = settings;
     QSignalBlocker blockSamples(samples), blockBounces(bounces), blockTile(tile), blockIdle(idle);
+    QSignalBlocker blockRr(rrMinDepth);
     QSignalBlocker blockTiled(tiled), blockLow(lowResolution), blockDenoise(denoise);
-    QSignalBlocker blockLock(rasterLock), blockInteraction(interaction);
+    QSignalBlocker blockLock(rasterLock), blockInteraction(interaction), blockAA(antialiasing);
     samples->setValue(settings.maxRenderFrames);
     bounces->setValue(settings.maxBounces);
+    rrMinDepth->setValue(settings.rrMinDepth);
     tile->setValue(settings.tileSize);
     tiled->setChecked(settings.useTileRendering);
     lowResolution->setChecked(settings.renderLow);
-    denoise->setChecked(settings.denoise);
+    denoise->setCurrentIndex(int(settings.effectiveDenoiseMode()));
+    antialiasing->setChecked(settings.antialiasing);
     interaction->setCurrentIndex(qBound(0, settings.interactionMode, 2));
     rasterLock->setChecked(settings.rasterLocked);
     idle->setValue(settings.interactionIdleMs);
@@ -918,10 +930,13 @@ RenderParams::Snapshot PreviewSettingsPanel::values() const
     RenderParams::Snapshot settings = originalSettings;
     settings.maxRenderFrames = samples->value();
     settings.maxBounces = bounces->value();
+    settings.rrMinDepth=rrMinDepth->value();
     settings.tileSize = tile->value();
     settings.useTileRendering = tiled->isChecked();
     settings.renderLow = lowResolution->isChecked();
-    settings.denoise = denoise->isChecked();
+    settings.denoiseMode = DenoiseMode(denoise->currentIndex());
+    settings.denoise = settings.denoiseMode != DenoiseMode::None;
+    settings.antialiasing = antialiasing->isChecked();
     settings.interactionMode = interaction->currentIndex();
     settings.rasterLocked = rasterLock->isChecked();
     settings.interactionIdleMs = idle->value();
@@ -938,6 +953,9 @@ ResultView::ResultView(QWidget *p) : QGraphicsView(p), canvas(this)
 }
 void ResultView::setImage(const QImage &im)
 {
+    linear.reset();
+    for(const char *name:{"resultExposure","resultChannel","resultDenoised","resultTonemap"})
+        if(auto control=window()->findChild<QWidget*>(name))control->setEnabled(false);
     if (im.isNull())
     {
         image = {};
@@ -986,4 +1004,44 @@ void ResultView::drawForeground(QPainter *p, const QRectF &)
     p->drawText(viewport()->rect().adjusted(24, 24, -24, -24), Qt::AlignCenter | Qt::TextWordWrap,
                 tr("尚无渲染结果\n\n调整构图和输出后加入队列，再点击“运行队列”。\n结果会显示在这里。"));
     p->restore();
+}
+
+void ResultView::setResult(RenderResultPtr result) {
+    if(!result || !result->valid()){setImage({});return;}
+    for(auto it=displayStates.begin();it!=displayStates.end();)if(it->first.expired())it=displayStates.erase(it);else ++it;
+    const auto saved=displayStates.find(std::weak_ptr<const RenderResult>(result));
+    if(saved!=displayStates.end()) {
+        resultExposure=saved->second.exposure;resultTonemap=saved->second.tonemap;useDenoised=saved->second.denoised;channel=saved->second.channel;
+    }else {resultExposure=float(result->settings["exposure"].toDouble());resultTonemap=result->settings["tonemap"].toInt(1);useDenoised=!result->denoised.empty();channel="beauty";}
+    linear=std::move(result);
+    if(auto control=window()->findChild<QDoubleSpinBox*>("resultExposure")) {QSignalBlocker block(control);control->setValue(resultExposure);}
+    if(auto control=window()->findChild<QComboBox*>("resultChannel")) {QSignalBlocker block(control);control->setCurrentIndex(control->findData(channel));}
+    if(auto control=window()->findChild<QComboBox*>("resultTonemap")) {QSignalBlocker block(control);control->setCurrentIndex(resultTonemap);}
+    if(auto control=window()->findChild<QCheckBox*>("resultDenoised")) {QSignalBlocker block(control);control->setChecked(useDenoised);}
+    refreshLinearDisplay();
+}
+void ResultView::refreshLinearDisplay() {
+    if(!linear)return;
+    auto result=linear;displayStates[std::weak_ptr<const RenderResult>(result)]={resultExposure,resultTonemap,useDenoised,channel};QImage displayed;
+    if(channel=="beauty")displayed=result->display(resultExposure,resultTonemap,useDenoised);
+    else {
+        const auto &values=channel=="normal"?result->normal:channel=="albedo"?result->albedo:
+            channel=="depth"?result->depth:channel=="variance"?result->variance:result->sampleCount;
+        const bool rgb=channel=="normal"||channel=="albedo";
+        if(values.empty())return;
+        displayed=QImage(result->size,QImage::Format_RGB32);
+        float maximum=rgb?1:std::max(1e-6f,*std::max_element(values.begin(),values.end()));
+        for(int y=0;y<result->size.height();++y)for(int x=0;x<result->size.width();++x) {
+            const size_t p=size_t(y)*result->size.width()+x;int bytes[3];
+            for(int c=0;c<3;++c) {
+                float v=rgb?values[p*3+c]:values[p]/maximum;
+                if(channel=="normal")v=v*.5f+.5f;
+                bytes[c]=qRound(255*encodeDisplaySrgb(v));
+            }
+            displayed.setPixel(x,y,qRgb(bytes[0],bytes[1],bytes[2]));
+        }
+    }
+    setImage(displayed);linear=std::move(result);
+    for(const char *name:{"resultExposure","resultChannel","resultDenoised","resultTonemap"})
+        if(auto control=window()->findChild<QWidget*>(name))control->setEnabled(name!=QStringLiteral("resultDenoised") || !linear->denoised.empty());
 }

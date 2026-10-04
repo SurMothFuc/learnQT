@@ -9,6 +9,7 @@
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QPainter>
+#include <QDebug>
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QThread>
@@ -88,7 +89,9 @@ protected:
                     r=std::move(pending);hasPending=false;cancel=false;
                 }
                 try {
+                    QElapsedTimer requestClock;requestClock.start();
                     if (!scene) { QString error;scene=Scene::prepareDocument(studioDocument(),error);if(!scene)throw std::runtime_error(error.toStdString()); }
+                    const auto prepareMs=requestClock.elapsed();
                     if (cancel || !running) continue;
                     auto mat=findDefinition(r.source.root["materials"].toArray(),r.material);
                     if (mat.isEmpty()) throw std::runtime_error("材质不存在");
@@ -124,24 +127,30 @@ protected:
                     scene->applyEditorDocument(next,false,true);
                     scene->camera.restoreState(r.eye,{0,1.02f,0},{0,1,0},38);
                     auto settings=scene->document.settings();settings.denoise=false;settings.renderLow=false;
-                    settings.useTileRendering=true;settings.tileSize=64;settings.maxRenderFrames=64;settings.maxBounces=8;
+                    settings.useTileRendering=true;settings.tileSize=128;settings.maxRenderFrames=64;settings.maxBounces=8;
                     settings.rasterLocked=false;settings.computePathtrace=false;
                     SceneDirtyFlags dirty=SceneDirtyFlag::Camera|SceneDirtyFlag::Material;
                     if(texturesChanged) dirty=kInitialSceneDirty;
                     if (!renderer) { renderer.reset(new Renderer(384,384,settings,nullptr,scene.get()));renderer->formal=true;renderer->cancel=&cancel; }
                     renderer->prepareJob(QSize(384,384),settings,dirty);
+                    const auto setupMs=requestClock.elapsed();
                     QElapsedTimer update;update.start();int published=0;
                     while(running && !cancel && renderer->samples()<64) {
                         if(!renderer->waitForGpuBoundary()) continue;
-                        renderer->render(384,384,settings,0,1,[this] {return !running || cancel.load();});
+                        // Reuse the renderer's measured GPU/CPU budget (at most 16 tiles),
+                        // rather than paying a driver submission and OS timer tick per tile.
+                        renderer->render(384,384,settings,0,16,[this] {return !running || cancel.load();});
                         if(renderer->completeRound() && renderer->samples()>published && (update.elapsed()>=200 || renderer->samples()==64)) {
                             post(r.version,renderer->result(settings),renderer->samples(),{});published=renderer->samples();update.restart();
                         }
                         renderer->submitGpuBoundary();
-                        msleep(1);
                     }
                     // Never mutate or release resources while a cancelled batch is in flight.
-                    while(!renderer->waitForGpuBoundary()) msleep(1);
+                    while(!renderer->waitForGpuBoundary()) {}
+                    if(qEnvironmentVariableIsSet("LEARNQT_PROFILE_MATERIAL_PREVIEW"))
+                        qInfo()<<"Material preview timing:"<<"version"<<r.version<<"prepareMs"<<prepareMs
+                               <<"setupMs"<<setupMs<<"totalMs"<<requestClock.elapsed()<<"samples"<<renderer->samples()
+                               <<"gpuTileMs"<<renderer->stats.gpuMs<<"batchLimit"<<renderer->stats.batchLimit;
                 } catch(const std::exception &e) { post(r.version,{},0,QString::fromUtf8(e.what()));renderer.reset();scene.reset();textureSignature.clear(); }
             }
         } catch(const std::exception &e) { post(0,{},0,QString::fromUtf8(e.what())); }

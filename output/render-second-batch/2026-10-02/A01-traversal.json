@@ -1,0 +1,10 @@
+{
+    "anyHitNodeVisits": 33936,
+    "anyHitTriangleTests": 49816,
+    "closestNodeVisits": 131072,
+    "closestTriangleTests": 524288,
+    "fixture": "128 overlapping tilted occluders; not a general speedup claim",
+    "maskBlendDistanceEmitterMediumCovered": true,
+    "rays": 4096,
+    "visibilityEqual": true
+}

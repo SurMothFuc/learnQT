@@ -1,0 +1,302 @@
+{
+  "fragment": {
+    "aa": true,
+    "backend": "兼容路径追踪",
+    "binaryShadowScene": true,
+    "bounces": 4,
+    "bytes": 9285448,
+    "compute": false,
+    "device": "NVIDIA GeForce RTX 5070 Ti/PCIe/SSE2",
+    "filteredTailRms": 0,
+    "fps": 1812.8411469619332,
+    "gpuDenoiseMs": 0,
+    "gpuTraceMs": 0.06272,
+    "height": 192,
+    "historyAcceptance": 0,
+    "mode": "none",
+    "oidnMs": 0,
+    "preview": false,
+    "rawTailRms": 0,
+    "seconds": 0.0353037,
+    "shadowAnyHitEnabled": true,
+    "spp": 64,
+    "totalSpp": 66,
+    "width": 256,
+    "textureResources": {
+      "budgetBytes": 536870912,
+      "bytes": 2796212,
+      "capacity": 4,
+      "compositeMaskPointFallbacks": 0,
+      "downscaled": false,
+      "missingViews": 0,
+      "placements": [
+        {
+          "colorLayer": -1,
+          "colorPool": -1,
+          "dataLayer": -1,
+          "dataPool": -1,
+          "path": "D:/program/learnQT/build/render-second-batch/fixture/sparse-mask.png",
+          "source": 0
+        },
+        {
+          "colorLayer": 0,
+          "colorPool": 0,
+          "dataLayer": 0,
+          "dataPool": 0,
+          "path": "D:/program/learnQT/build/render-second-batch/fixture/sparse-mask.png",
+          "source": 1
+        }
+      ],
+      "pools": [
+        {
+          "bytes": 2796200,
+          "format": "RGBA16F",
+          "height": 512,
+          "layers": 1,
+          "pool": 0,
+          "requestedHeight": 512,
+          "requestedWidth": 512,
+          "width": 512
+        },
+        {
+          "bytes": 4,
+          "format": "RGBA8",
+          "height": 1,
+          "layers": 0,
+          "pool": 1,
+          "requestedHeight": 1,
+          "requestedWidth": 1,
+          "width": 1
+        },
+        {
+          "bytes": 4,
+          "format": "RGBA8",
+          "height": 1,
+          "layers": 0,
+          "pool": 2,
+          "requestedHeight": 1,
+          "requestedWidth": 1,
+          "width": 1
+        },
+        {
+          "bytes": 4,
+          "format": "RGBA8",
+          "height": 1,
+          "layers": 0,
+          "pool": 3,
+          "requestedHeight": 1,
+          "requestedWidth": 1,
+          "width": 1
+        }
+      ],
+      "sources": 2,
+      "unusedSources": 1,
+      "views": 1
+    },
+    "mean": 0.04533879364714721
+  },
+  "compute": {
+    "aa": true,
+    "backend": "计算着色器路径追踪",
+    "binaryShadowScene": true,
+    "bounces": 4,
+    "bytes": 9285448,
+    "compute": true,
+    "device": "NVIDIA GeForce RTX 5070 Ti/PCIe/SSE2",
+    "filteredTailRms": 0,
+    "fps": 2021.1973067545887,
+    "gpuDenoiseMs": 0,
+    "gpuTraceMs": 0.048608,
+    "height": 192,
+    "historyAcceptance": 0,
+    "mode": "none",
+    "oidnMs": 0,
+    "preview": false,
+    "rawTailRms": 0,
+    "seconds": 0.0316644,
+    "shadowAnyHitEnabled": true,
+    "spp": 64,
+    "totalSpp": 66,
+    "width": 256,
+    "textureResources": {
+      "budgetBytes": 536870912,
+      "bytes": 2796212,
+      "capacity": 4,
+      "compositeMaskPointFallbacks": 0,
+      "downscaled": false,
+      "missingViews": 0,
+      "placements": [
+        {
+          "colorLayer": -1,
+          "colorPool": -1,
+          "dataLayer": -1,
+          "dataPool": -1,
+          "path": "D:/program/learnQT/build/render-second-batch/fixture/sparse-mask.png",
+          "source": 0
+        },
+        {
+          "colorLayer": 0,
+          "colorPool": 0,
+          "dataLayer": 0,
+          "dataPool": 0,
+          "path": "D:/program/learnQT/build/render-second-batch/fixture/sparse-mask.png",
+          "source": 1
+        }
+      ],
+      "pools": [
+        {
+          "bytes": 2796200,
+          "format": "RGBA16F",
+          "height": 512,
+          "layers": 1,
+          "pool": 0,
+          "requestedHeight": 512,
+          "requestedWidth": 512,
+          "width": 512
+        },
+        {
+          "bytes": 4,
+          "format": "RGBA8",
+          "height": 1,
+          "layers": 0,
+          "pool": 1,
+          "requestedHeight": 1,
+          "requestedWidth": 1,
+          "width": 1
+        },
+        {
+          "bytes": 4,
+          "format": "RGBA8",
+          "height": 1,
+          "layers": 0,
+          "pool": 2,
+          "requestedHeight": 1,
+          "requestedWidth": 1,
+          "width": 1
+        },
+        {
+          "bytes": 4,
+          "format": "RGBA8",
+          "height": 1,
+          "layers": 0,
+          "pool": 3,
+          "requestedHeight": 1,
+          "requestedWidth": 1,
+          "width": 1
+        }
+      ],
+      "sources": 2,
+      "unusedSources": 1,
+      "views": 1
+    },
+    "mean": 0.04533879364714721
+  },
+  "budget": {
+    "aa": true,
+    "backend": "兼容路径追踪",
+    "binaryShadowScene": true,
+    "bounces": 4,
+    "bytes": 7188296,
+    "compute": false,
+    "device": "NVIDIA GeForce RTX 5070 Ti/PCIe/SSE2",
+    "filteredTailRms": 0,
+    "fps": 2305.550251989438,
+    "gpuDenoiseMs": 0,
+    "gpuTraceMs": 0.048672,
+    "height": 192,
+    "historyAcceptance": 0,
+    "mode": "none",
+    "oidnMs": 0,
+    "preview": false,
+    "rawTailRms": 0,
+    "seconds": 0.0277591,
+    "shadowAnyHitEnabled": true,
+    "spp": 64,
+    "totalSpp": 66,
+    "width": 256,
+    "textureResources": {
+      "budgetBytes": 1048576,
+      "bytes": 699060,
+      "capacity": 4,
+      "compositeMaskPointFallbacks": 0,
+      "downscaled": true,
+      "missingViews": 0,
+      "placements": [
+        {
+          "colorLayer": -1,
+          "colorPool": -1,
+          "dataLayer": -1,
+          "dataPool": -1,
+          "path": "D:/program/learnQT/build/render-second-batch/fixture/sparse-mask.png",
+          "source": 0
+        },
+        {
+          "colorLayer": 0,
+          "colorPool": 0,
+          "dataLayer": 0,
+          "dataPool": 0,
+          "path": "D:/program/learnQT/build/render-second-batch/fixture/sparse-mask.png",
+          "source": 1
+        }
+      ],
+      "pools": [
+        {
+          "bytes": 699048,
+          "format": "RGBA16F",
+          "height": 256,
+          "layers": 1,
+          "pool": 0,
+          "requestedHeight": 512,
+          "requestedWidth": 512,
+          "width": 256
+        },
+        {
+          "bytes": 4,
+          "format": "RGBA8",
+          "height": 1,
+          "layers": 0,
+          "pool": 1,
+          "requestedHeight": 1,
+          "requestedWidth": 1,
+          "width": 1
+        },
+        {
+          "bytes": 4,
+          "format": "RGBA8",
+          "height": 1,
+          "layers": 0,
+          "pool": 2,
+          "requestedHeight": 1,
+          "requestedWidth": 1,
+          "width": 1
+        },
+        {
+          "bytes": 4,
+          "format": "RGBA8",
+          "height": 1,
+          "layers": 0,
+          "pool": 3,
+          "requestedHeight": 1,
+          "requestedWidth": 1,
+          "width": 1
+        }
+      ],
+      "sources": 2,
+      "unusedSources": 1,
+      "views": 1
+    },
+    "mean": 0.04533879364714721
+  },
+  "computeVsFragment": {
+    "rawRgbMse": 0.0,
+    "rawRgbMaxAbs": 0.0,
+    "meanBefore": 0.04533879364714721,
+    "meanAfter": 0.04533879364714721
+  },
+  "budgetVsNative": {
+    "rawRgbMse": 0.0,
+    "rawRgbMaxAbs": 0.0,
+    "meanBefore": 0.04533879364714721,
+    "meanAfter": 0.04533879364714721
+  }
+}

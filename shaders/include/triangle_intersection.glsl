@@ -42,10 +42,30 @@ bool IntersectTriangle(TriangleRay ray, vec3 a, vec3 b, vec3 c,
         max(edges.x, max(edges.y, edges.z)) > 0.0) return false;
     float determinant = edges.x + edges.y + edges.z;
     if (determinant == 0.0) return false;
-    distance = dot(edges, vec3(AxisSelect(pa, z), AxisSelect(pb, z), AxisSelect(pc, z)) * ray.shear.z) / determinant;
+    vec3 projectedZ = vec3(AxisSelect(pa, z), AxisSelect(pb, z), AxisSelect(pc, z));
+    vec3 depth = projectedZ * ray.shear.z;
+    distance = dot(edges, depth) / determinant;
     bary = edges / determinant;
     // Do not re-test bary.y+bary.z <= 1: rounding could reject an accepted edge.
-    // No determinant epsilon or barycentric padding that could hide thin geometry
-    // or close real gaps. The distance remains the original (possibly local) ray t.
-    return distance > 0.0;
+    // Bound the rounding in this ray-aligned projection (pbrt's triangle t bound).
+    // A point exactly on a plane can otherwise produce a small positive t after
+    // cancellation for an oblique secondary ray. This scales with the operands,
+    // rather than imposing a scene-wide near-distance epsilon.
+    float maxZ=maxComponent(abs(depth));
+    float maxX=max(abs(aa.x),max(abs(bb.x),abs(cc.x)));
+    float maxY=max(abs(aa.y),max(abs(bb.y),abs(cc.y)));
+    float deltaZ=FloatGamma(3.0)*maxZ;
+    // Instance rays deliberately retain their non-unit local direction so t
+    // stays in world units. Shear-coordinate error uses unscaled vertex z;
+    // using depth here would mix local coordinates with world ray distance.
+    float maxProjectedZ=maxComponent(abs(projectedZ));
+    float deltaX=FloatGamma(5.0)*(maxX+maxProjectedZ);
+    float deltaY=FloatGamma(5.0)*(maxY+maxProjectedZ);
+    float deltaE=2.0*(FloatGamma(2.0)*maxX*maxY+deltaY*maxX+deltaX*maxY);
+    float maxE=maxComponent(abs(edges));
+    float deltaT=3.0*(FloatGamma(3.0)*maxE*maxZ+deltaE*maxZ+deltaZ*maxE)/abs(determinant);
+    // A robustly offset ray inside a named closed boundary may immediately
+    // exit an adjacent face at a corner. Discarding that positive hit loses
+    // the boundary identity. The conservative t bound remains the default.
+    return distance > (allowNearBoundaryHit?0.0:deltaT);
 }

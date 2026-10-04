@@ -1,6 +1,6 @@
 # 场景编辑工作台 v2
 
-本轮从 `master` 创建 `codex/scene-editor-workbench`，已有工作区、工具、场景和约 2.14 GB 导入资源先保存在 `3148f92`（`chore: snapshot workspace before scene editor redesign`）。本专题说明当前工作台及 v2 文档，并保留该阶段的实例渲染、交互修复与性能记录。2026-09-30 的八页界面操作及验证见 [工作区专题](./workspace_ui.md)；页面重组没有升级场景文件版本，也不是完整商业渲染器功能承诺。
+历史工作台阶段从 `master` 创建 `codex/scene-editor-workbench`，已有工作区、工具、场景和约 2.14 GB 导入资源先保存在 `3148f92`（`chore: snapshot workspace before scene editor redesign`）。本专题说明当前工作台及 v2 文档，并保留该阶段的实例渲染、交互修复与性能记录。2026-09-30 的八页界面操作及验证见 [工作区专题](./workspace_ui.md)；页面重组没有升级场景文件版本，也不是完整商业渲染器功能承诺。
 
 ## 工作台操作
 
@@ -31,9 +31,9 @@ Fusion 深蓝灰界面提供首页、场景、材质、照明、相机、渲染�
 | `objects` | 实例 ID、name、model、mesh、material、世界 transform、parent/order、visible/locked。 |
 | `groups` | 组织组 ID/name/parent/order；唯一根 ID 为 `root`。 |
 | `materials/textures/lights/hdr` | 材质、纹理槽/UV/sampler、sphere/sun 及 HDR。 |
-| `camera/cameras/activeCameraId/render` | 兼容相机、已保存相机列表／当前 ID、轨道/FOV、预览降噪/尺寸模式/分块/反弹/采样上限等。 |
+| `camera/cameras/activeCameraId/render` | 兼容相机、已保存相机列表／当前 ID、轨道/FOV、预览 AA/降噪/尺寸模式/分块/反弹/采样上限、sampleSeed 和 rrMinDepth 等。 |
 | `environment/display` | 环境强度/旋转，曝光及 tone mapping。 |
-| `output` | 正式输出宽高、采样、tile、反弹和降噪。 |
+| `output` | 正式输出宽高、采样、tile、反弹、降噪、sampleSeed 和 rrMinDepth。 |
 
 读取 v1 时在内存迁移并展开源节点，保持旧材质和取景；保存写 v2，原文件不自动升级。矩阵沿用行主序。GPU 缓存、选择和采样历史不写场景；八页及渲染两模式布局使用 workspaceV5/layout/ 和状态版本 5，其他应用偏好继续 V4。旧几何布局不直接恢复。
 
@@ -47,9 +47,9 @@ GPU 表面求交已共用沿射线投影的边函数，命中点按重心权重�
 
 预览采用有界批量提交、每批资源绑定、约 16 ms 合成、三槽消费保护。小块不会被偷偷放大，块 FPS 仍统计实际 tile 完成数。Camera 小块的 GPU 执行效率损失还存在；较大块通常更高效，但单块耗时与交互响应需要权衡，约 8 ms 的批次预算不是硬上限。
 
-正式输出默认 1920×1080、256 spp、128×128 tile、8 次反弹，独立于窗口。会话队列捕获文档、相机及输出快照，由独立 RenderQueueThread 串行渲染，允许继续编辑并临时光栅化预览。暂停／停止保留完整轮次语义，历史结果固定浏览，终态元数据不被预览覆盖。PNG／JPEG 输出不透明且无编辑叠加，JPEG 质量 95。旧直接正式任务回归路径仍保留编辑锁定。
+正式输出默认 1920×1080、256 spp、128×128 tile、8 次反弹，独立于窗口。会话队列捕获文档、相机及输出快照，由独立 RenderQueueThread 串行渲染，允许继续编辑并临时光栅化预览。暂停／停止保留完整轮次语义，历史结果固定浏览，终态元数据不被预览覆盖。PNG／JPEG 显示输出不透明且无编辑叠加，JPEG 质量 95。队列保存不可变线性 RenderResult；结果工具栏支持历史重曝光、曲线、raw/denoised 和基础 AOV，查看设置在会话内保留。自动队列可选 FLOAT EXR，手动支持 HALF/FLOAT EXR，线性通道与元数据不烘焙显示变换。旧直接正式任务回归路径仍保留编辑锁定。
 
-新场景默认 ACES 近似、曝光 0、环境强度 1、旋转 0°；v1 旧曲线保留。OIDN 在线性 HDR 上运行，法线恢复 `[-1,1]`、albedo 线性；预览后台过滤并拒绝旧版本/旧尺寸，正式任务最终轮次过滤且支持取消。
+新场景默认 ACES 近似、曝光 0、环境强度 1、旋转 0°；v1 旧曲线保留，显示编码采用准确 sRGB。工作空间为线性 Rec.709 D65，尚无完整 OCIO/ACES 管线。OIDN 在线性 HDR 上运行，法线恢复 `[-1,1]`、albedo 线性；预览后台过滤并拒绝旧版本/旧尺寸，正式任务最终轮次过滤且支持取消。
 
 ## 2026-09-06 渲染基础修复与验收范围
 
@@ -62,13 +62,13 @@ GPU 表面求交已共用沿射线投影的边函数，命中点按重心权重�
 
 ## 当前边界
 
-抗锯齿留待专题：主射线仍固定在像素中心，没有像素抖动、AA 重建滤波或三路辅助数据 AA 累积。修正随机种子的坐标范围不等于实现 AA。
+像素 AA 和三路辅助累积已实现，关闭 AA 保留中心射线；固定维度 Sobol/数字移位与 seed 已贯通，尚无通用重建滤波。预览与正式分别提供 RR 起始深度控件，seed 通过 JSON/开发 CLI 设置；默认 seed 0、RR 深度 3，加入队列冻结各自配置。实时 GPU 降噪与 GL 4.3 compute 已实现，能力不足仍回退 fragment。
 
-仍未完成 EXR、透明背景、动画、景深、持久队列、复杂介质/IOR 接触边界、完整纹理 LOD/MikkTSpace 等；广泛复杂玻璃/体积场景的 OIDN 对照仍需补充。更多材质/资源/性能后续项保留在 [待办](./to-do.md)。
+EXR 已支持无压缩 HALF/FLOAT 与 basic guide/AOV；Film 仅会话持有，无 checkpoint/reopen/persistent queue。介质已支持闭合朝外正确嵌套身份、初始多层及精确配对三角形接触的两侧 IOR，任意相交/不同剖分/裁剪边界未支持。透明背景、动画、景深、ray differentials/EWA/MikkTSpace、生产分解 AOV 与广泛复杂玻璃/体积 OIDN 对照仍需补充。更多材质/资源/性能后续项保留在 [待办](./to-do.md)。
 
 ## 验收记录
 
-当前八页界面、2026-09-30 构建、全量及定向复测、三档 DPI 见 [工作区验收](./workspace_ui.md)。以下 2026-09-06 数值保留为历史基线，不作为当前代码自动通过。
+当前第四/五批最终完整构建、34/34 全量（1015.18 秒）与逐项前后图见 [2026-10-03 第四、五批渲染验收](./render_batches_4_5_2026-10-03.md)；测试夹具与介质更新补修前的初跑/定向记录保留原时点。前三批历史最终 33/33 见 [三批验收](./render_batches_2026-10-03.md)。八页界面的历史 2026-09-30 构建、全量及定向复测、三档 DPI 见 [工作区验收](./workspace_ui.md)。以下 2026-09-06 数值保留为历史基线，不作为当前代码自动通过。
 
 2026-09-06，Windows / Qt 5.15.2 / OIDN 2.3.3 / Release，RTX 5070 Ti，驱动 610.88。版本为本记录所在提交，基于 `3148f92`。完整数值见 [版本化验收数据](./validation/scene_workbench_2026-09-06.json)；原始日志/图像在本机未版本化的 `build/render-batch-final/`。
 

@@ -1,0 +1,67 @@
+{
+    "boundaryLimit": 0,
+    "boundaryMismatch": 0,
+    "bvhOverflow": 0,
+    "capture": {
+        "capturedRounds": 8,
+        "eventCounts": {
+            "boundaryLimit": 0,
+            "boundaryMismatch": 0,
+            "bvhOverflow": 0,
+            "invalidRay": 0,
+            "mediumOverflow": 71970,
+            "nonFinite": 0,
+            "rejected": 71785
+        },
+        "firstEvent": {
+            "depth": 1,
+            "eta": 0.6666666865348816,
+            "etaScale": 1,
+            "flags": 16,
+            "imagePixel": [
+                107,
+                143
+            ],
+            "mediumCount": 8,
+            "pixel": [
+                107,
+                0
+            ],
+            "rayDirection": [
+                -0.43882235884666443,
+                0.6450116038322449,
+                0.625615656375885
+            ],
+            "rayOrigin": [
+                -0.8051176071166992,
+                -1.0999990701675415,
+                -0.383368581533432
+            ],
+            "sampleIndex": 0,
+            "stage": 2,
+            "surface": 99,
+            "throughput": [
+                0.28516295552253723,
+                0.7216243743896484,
+                0.9534030556678772
+            ]
+        },
+        "stateMeaning": "First event by sample index then framebuffer pixel order; owning path state before the failing operation. Stage 0 initialization, 1 traversal, 2 medium, 3 surface, 4 sample validation."
+    },
+    "countMeaning": "affected pixels accumulated since reset; rejectedSamples counts sample events",
+    "firstAffectedPixel": [
+        93,
+        0
+    ],
+    "firstFlags": 18,
+    "height": 144,
+    "invalidRay": 0,
+    "mediumOverflow": 16882,
+    "nonFinite": 0,
+    "rejected": 16882,
+    "rejectedSamples": 71785,
+    "samples": 8,
+    "validSamples": 149399,
+    "version": 2,
+    "width": 192
+}

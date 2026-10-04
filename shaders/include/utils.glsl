@@ -1,6 +1,56 @@
 #ifndef TRACE_PIXEL_COORD
 #define TRACE_PIXEL_COORD gl_FragCoord
 #endif
+// Per-sample flags. Stored in the albedo auxiliary alpha, separate from path classes.
+const uint DIAG_NONFINITE=1u, DIAG_REJECTED=2u, DIAG_INVALID_RAY=4u;
+const uint DIAG_BVH_OVERFLOW=8u, DIAG_MEDIUM_OVERFLOW=16u, DIAG_BOUNDARY_LIMIT=32u;
+const uint DIAG_BOUNDARY_MISMATCH=64u;
+uint pathDiagnosticFlags=0u;
+#ifdef TRACE_DIAGNOSTICS
+vec4 diagnosticCounts0=vec4(0),diagnosticCounts1=vec4(0);
+vec4 diagnosticOrigin=vec4(0),diagnosticDirection=vec4(0),diagnosticThroughput=vec4(0);
+vec3 diagnosticRayOrigin=vec3(0),diagnosticRayDirection=vec3(0),diagnosticWeight=vec3(1);
+int diagnosticDepth=0,diagnosticMediumCount=0,diagnosticSurface=-1,diagnosticStage=0;
+float diagnosticEta=1.0,diagnosticEtaScale=1.0;
+#endif
+void RaisePathDiagnostic(uint flags) {
+    pathDiagnosticFlags|=flags;
+#ifdef TRACE_DIAGNOSTICS
+    for(int c=0;c<7;++c)if((flags&(1u<<uint(c)))!=0u) {
+        if(c<4)diagnosticCounts0[c]+=1.0;else diagnosticCounts1[c-4]+=1.0;
+    }
+    if(diagnosticCounts1.w==0.0) {
+        uint meta=flags|(uint(diagnosticMediumCount)<<8)|(uint(diagnosticDepth)<<12)|(uint(diagnosticStage)<<19);
+        diagnosticCounts1.w=float(meta);
+        diagnosticOrigin=vec4(diagnosticRayOrigin,float(diagnosticSurface));
+        diagnosticDirection=vec4(diagnosticRayDirection,diagnosticEta);
+        diagnosticThroughput=vec4(diagnosticWeight,diagnosticEtaScale);
+    }
+#endif
+}
+#ifdef TRACE_TRAVERSAL_PROFILE
+uint traversalNodeVisits=0u,traversalTriangleTests=0u,traversalEarlyExits=0u;
+#endif
+#ifdef TRACE_PROFILE
+uint profileScatters=0u,profileTextureFetches=0u,profileLightAttempts=0u,profileInvalidLights=0u;
+#endif
+bool ValidTraceSample(vec4 beauty,vec4 normal,vec4 albedo) {
+    bool valid=!any(isnan(beauty))&&!any(isinf(beauty)) &&
+        !any(isnan(normal))&&!any(isinf(normal))&&!any(isnan(albedo))&&!any(isinf(albedo));
+    if(!valid)RaisePathDiagnostic(DIAG_NONFINITE|DIAG_REJECTED);
+    return valid;
+}
+float rayConeWidth=0.0,rayConeSpread=0.0;
+bool allowNearBoundaryHit=false;
+vec2 materialEvaluationFootprint=vec2(0);
+bool FiniteRay(vec3 origin,vec3 direction) {
+    bool finite=!any(isnan(origin)) && !any(isinf(origin)) &&
+        !any(isnan(direction)) && !any(isinf(direction));
+    if(!finite) RaisePathDiagnostic(DIAG_NONFINITE);
+    bool valid=finite && any(notEqual(direction,vec3(0)));
+    if(!valid) RaisePathDiagnostic(DIAG_INVALID_RAY);
+    return valid;
+}
 // 返回 vec3 中最大的分量（r/g/b 中的最大值）
 float maxComponent(vec3 v) {
     return max(max(v.r, v.g), v.b);
@@ -21,12 +71,14 @@ uint wang_hash(inout uint seed) {
 float rand() {
    return min(float(wang_hash(seed)) * (1.0 / 4294967296.0), 0.99999994);
 }
+#include "sampler.glsl"
 
 vec2 CranleyPattersonRotation(vec2 p) {
     uint pseed = uint(
         uint(TRACE_PIXEL_COORD.x) * uint(1973) +
         uint(TRACE_PIXEL_COORD.y) * uint(9277) +
         uint(114514/1919) * uint(26699)) | uint(1);
+    pseed^=samplerSeed;
     
     float u = float(wang_hash(pseed)) / 4294967296.0;
     float v = float(wang_hash(pseed)) / 4294967296.0;
@@ -76,7 +128,20 @@ vec3 ToWorld(vec3 X, vec3 Y, vec3 Z, vec3 V)
 {
     return V.x * X + V.y * Y + V.z * Z;
 }
-float RayEpsilon(vec3 p) { return max(1e-5, 2e-6 * maxComponent(abs(p))); }
+float FloatGamma(float operations) {
+    float e=operations*5.960464477539063e-8;
+    return e/(1.0-e);
+}
+float NextFloatAway(float value, float direction) {
+    if(direction==0.0 || isinf(value))return value;
+    // Avoid denormals: many GPU arithmetic units flush them to zero.
+    if(value==0.0)return direction>0.0?1.1754943508222875e-38:-1.1754943508222875e-38;
+    uint bits=floatBitsToUint(value);
+    bits=(value>0.0)==(direction>0.0)?bits+1u:bits-1u;
+    return uintBitsToFloat(bits);
+}
+// Kept for source-compatible analytic/test callers; surface rays use positionError.
+float RayEpsilon(vec3 p) { return FloatGamma(3.0)*maxComponent(abs(p)); }
 // Keep valid smooth/mapped normals. BSDF sampling assumes the incident direction
 // lies above the shading surface; flipping an invalid normal could change sides.
 vec3 ValidShadingNormal(vec3 shading, vec3 facingGeometry, vec3 incoming) {
@@ -84,5 +149,15 @@ vec3 ValidShadingNormal(vec3 shading, vec3 facingGeometry, vec3 incoming) {
         ? shading : facingGeometry;
 }
 vec3 OffsetRayOrigin(vec3 p, vec3 normal, vec3 direction) {
-    return p + normal * (dot(normal, direction) >= 0.0 ? RayEpsilon(p) : -RayEpsilon(p));
+    vec3 error=FloatGamma(3.0)*abs(p);
+    float d=dot(abs(normal),error);
+    vec3 offset=normal*(dot(normal,direction)>=0.0?d:-d);
+    vec3 result=p+offset;
+    return vec3(NextFloatAway(result.x,offset.x),NextFloatAway(result.y,offset.y),NextFloatAway(result.z,offset.z));
+}
+vec3 OffsetRayOrigin(vec3 p, vec3 error, vec3 normal, vec3 direction) {
+    float d=dot(abs(normal),error);
+    vec3 offset=normal*(dot(normal,direction)>=0.0?d:-d);
+    vec3 result=p+offset;
+    return vec3(NextFloatAway(result.x,offset.x),NextFloatAway(result.y,offset.y),NextFloatAway(result.z,offset.z));
 }

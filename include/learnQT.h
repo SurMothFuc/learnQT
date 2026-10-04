@@ -43,7 +43,9 @@ class learnQT : public QMainWindow
     void configureMaterialRegression();
     void configureRenderQueueRegression();
     void configurePreviewPanelRegression();
+    void configureLargeScenePreviewRegression();
     void configureRasterRegression();
+    void configureAaDenoiseRegression();
     EditorController *editor;
     GLWidget *viewport;
     SceneTreeModel *treeModel;
@@ -61,8 +63,9 @@ class learnQT : public QMainWindow
     QStringList m_sessionScenes;
     QSet<QString> expanded;
     bool syncingSelection = false;
-    QCheckBox *outputDenoise;
-    QSpinBox *outputWidth, *outputHeight, *outputSamples, *outputTile, *outputBounces;
+    QComboBox *outputDenoise;
+    QCheckBox *outputAntialiasing;
+    QSpinBox *outputWidth, *outputHeight, *outputSamples, *outputTile, *outputBounces, *outputRrMinDepth;
     PreviewSettingsPanel *previewChromePanel = nullptr, *previewDetailPanel = nullptr;
     QDialog *previewDialog = nullptr;
     QAction *renderAction, *pauseAction, *stopAction, *undoAction, *redoAction;
@@ -79,6 +82,7 @@ class learnQT : public QMainWindow
         int samples = 0;
         double seconds = 0;
         QImage result;
+        RenderResultPtr linear;
     };
     QVector<QueueItem> m_renderQueue;
     RenderQueueThread *m_queueWorker = nullptr;

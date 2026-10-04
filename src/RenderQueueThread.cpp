@@ -53,6 +53,7 @@ RenderQueueThread::RenderQueueThread(QOpenGLContext *shared, QObject *parent) : 
     context->create();
     context->moveToThread(this);
     qRegisterMetaType<RenderJobState>();
+    qRegisterMetaType<RenderResultPtr>();
 }
 
 RenderQueueThread::~RenderQueueThread()
@@ -132,6 +133,10 @@ void RenderQueueThread::run()
             snapshot.maxRenderFrames = job.settings.samples;
             snapshot.maxBounces = job.settings.bounces;
             snapshot.denoise = job.settings.denoise;
+            snapshot.denoiseMode = job.settings.denoiseMode;
+            snapshot.antialiasing = job.settings.antialiasing;
+            snapshot.sampleSeed=job.settings.sampleSeed;
+            snapshot.rrMinDepth=job.settings.rrMinDepth;
             Renderer renderer(job.settings.size.width(), job.settings.size.height(), snapshot, nullptr, scene.get());
             renderer.cancel = &cancel;
             renderer.formal = true;
@@ -177,18 +182,25 @@ void RenderQueueThread::run()
                 if (cancel || !running)
                     throw std::runtime_error("Render stopped before final denoising");
                 renderer.finishDenoise(snapshot);
-                result = renderer.result(snapshot);
+                if(cancel || !running) throw std::runtime_error("Render stopped during final denoising");
+                auto linear=renderer.linearResult(snapshot);
+                emit jobLinearResult(job.id,linear);
+                result=linear->display(float(linear->settings["exposure"].toDouble()),linear->settings["tonemap"].toInt(1));
                 rendered = !result.isNull();
                 if (rendered)
                 {
-                    QImageWriter writer(job.outputPath);
-                    writer.setQuality(95);
-                    if (!writer.write(result.convertToFormat(QImage::Format_RGB32)))
-                        error = writer.errorString();
+                    if(QFileInfo(job.outputPath).suffix().compare("exr",Qt::CaseInsensitive)==0)
+                        linear->writeExr(job.outputPath,false,error);
+                    else {
+                        QImageWriter writer(job.outputPath);writer.setQuality(95);
+                        if(!writer.write(result.convertToFormat(QImage::Format_RGB32)))error=writer.errorString();
+                    }
                 }
             }
-            else if (renderer.samples() > 0)
-                result = renderer.result(snapshot);
+            else if (renderer.samples() > 0) {
+                emit jobLinearResult(job.id,renderer.linearResult(snapshot));
+                result=renderer.result(snapshot);
+            }
         }
         catch (const std::exception &e)
         {

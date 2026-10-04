@@ -25,10 +25,14 @@
 #include "Scene.h"
 #include "SceneDirty.h"
 #include "RasterEnvironment.h"
+#include "GpuDenoiser.h"
+#include "PathDiagnosticCapture.h"
+#include "RenderResult.h"
 #include <atomic>
 
 class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
 {
+    friend struct RendererDenoiseTestAccess;
     Q_OBJECT
   public:
     explicit Renderer(int width, int height, const RenderParams::Snapshot &initialSnapshot,
@@ -55,6 +59,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     {
         return int(chunkedRenderingCount);
     }
+    bool roundInProgress() const { return nowChunkedCount != 0; }
     bool completeRound() const
     {
         return nowChunkedCount == 0 && frameCounter > 0;
@@ -73,6 +78,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     RenderStats stats;
     std::function<void()> denoising;
     QImage result(const RenderParams::Snapshot &snapshot);
+    RenderResultPtr linearResult(const RenderParams::Snapshot &snapshot,bool includeDepth=true);
     void finishDenoise(const RenderParams::Snapshot &snapshot);
     void prepareJob(QSize size, const RenderParams::Snapshot &snapshot, SceneDirtyFlags dirty = 0);
     // Wait for the preceding tile/frame with a 1 ms timeout so the caller can recheck shutdown.
@@ -80,6 +86,11 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     void submitGpuBoundary();
     void pollGpuTimers();
     quint64 allocatedBytes() const;
+    // Explicit diagnostic readback at a completed GPU boundary; never used every frame.
+    QJsonObject pathDiagnostics();
+    QImage diagnosticImage() const { return diagnosticCapture.image(); }
+    QJsonObject traceProfile();
+    QJsonObject textureResources() const { return textureResourceReport; }
     // 返回本次调用是否真的重绘了拾取缓冲；只有版本或尺寸变化才会重绘。
     bool updatePick(int width, int height, quint64 version);
     // 最近一次拾取 pass 的 GPU 执行耗时，用于区分拾取与光栅化预览的开销。
@@ -143,7 +154,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     void updateSizeParam();
     void calResolution(bool renderLow);
     void updateTileGrid(int tileSize);
-    void bindPathtraceInputs(int maxBounces);
+    void bindPathtraceInputs(int maxBounces, const RenderParams::Snapshot &snapshot);
     void compositePreview(const RenderParams::Snapshot &snapshot, bool changed, bool force);
     void renderTile(int tileX, int tileY, int tileWidth, int tileHeight, int maxBounces); // 渲染单个块
     void renderFullImage(int maxBounces);                                                 // 渲染完整图像
@@ -184,11 +195,12 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     QStringList uploadedMeshes;
     void uploadHdrTextures(bool recreateResources);
     void uploadMaterialTextures(bool recreateResources);
+    void bindMaterialTextureInputs(QOpenGLShaderProgram *program,int textureUnit,int infoUnit);
 
     // 光栅化交互预览：几何按 mesh 分组上传，实例参数按实例步进的属性缓冲提供。
     bool renderRasterPreview(const RenderParams::Snapshot &snapshot);
     void rebuildRasterProgram(const RenderParams::Snapshot &snapshot);
-    void ensureDepthAttachment();
+    void ensureDepthAttachment(bool antialiasing = false);
     void uploadRasterGeometry();
     void uploadRasterInstances();
     void releaseRasterResources();
@@ -215,6 +227,9 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     bool pollPreviewDenoise(const RenderParams::Snapshot &snapshot);
     void requestPreviewDenoise(const RenderParams::Snapshot &snapshot, bool force);
     void invalidatePreviewDenoise();
+    void prepareRealtime(const RenderParams::Snapshot &snapshot);
+    void realtimeDenoise(const RenderParams::Snapshot &snapshot, bool final);
+    void refreshRealtimeGuides(const RenderParams::Snapshot &snapshot);
     void ensureDenoisePbos();
 
     /**
@@ -253,6 +268,7 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
 
     unsigned m_texture = 0;
     unsigned preRenderColorTex = 0;
+    unsigned previousNormalTex = 0, previousAlbedoTex = 0;
     unsigned RenderColorTex = 0;
     unsigned normal_texture = 0;
     unsigned baseColorTex = 0;
@@ -274,6 +290,9 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     GLuint nodesTextureBuffer = 0;
     GLuint lightsTextureBuffer = 0;
     GLuint materialTextureArray = 0;
+    std::array<GLuint,3> materialTextureExtraArrays{};
+    int materialTexturePoolCapacity=2,surfacePdfOffset=0,mediumContactOffset=0,mediumContactCount=0;
+    QJsonObject textureResourceReport;
     GLuint materialTextureInfoBuffer = 0;
     GLuint materialTextureInfoTexture = 0;
     GLuint hdrMap = 0;
@@ -282,6 +301,8 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     GLuint VAO = 0;
     GLuint EBO = 0;
     int materialTextureLayerCount = 0;
+    std::vector<int> uploadedTextureViewSignature;
+    std::vector<std::array<int,2>> materialTextureSourceOverrides;
 
     std::unique_ptr<QOpenGLShaderProgram> m_program = nullptr;
     std::shared_ptr<QOpenGLShaderProgram> pathtrace_program;
@@ -301,6 +322,8 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     // 光栅化预览专用 FBO：颜色靶复用 RenderColorTex，另带自己的深度附件。
     GLuint rasterFbo = 0;
     GLuint depthRenderbuffer = 0;
+    GLuint multisampleFbo = 0, multisampleColor = 0, multisampleDepth = 0;
+    int multisampleCount = 1, rasterSampleRequest = 0;
     QSize rasterDepthSize;
     std::vector<RasterDrawRange> rasterRanges;      // 下标与 Scene::meshes 对齐
     std::vector<int> rasterInstanceMesh;            // 每条实例属性对应的 mesh 下标
@@ -366,6 +389,11 @@ class Renderer : public QObject, protected QOpenGLFunctions_3_3_Core
     quint64 pickVersion = ~quint64(0), pickRequest = 0, readVersion = 0;
     std::unique_ptr<QOpenGLShaderProgram> pickProgram;
     unsigned int m_lastDenoisedFrameCounter = 0;
+    GpuDenoiser gpuDenoiser;
+    PathDiagnosticCapture diagnosticCapture;
+    void collectPathDiagnostics();
+    bool realtimeFailed = false, realtimeAttached = false, realtimeNeedsGuides = false;
+    unsigned previewSequence = 0;
 };
 
 #endif // RENDERER_H

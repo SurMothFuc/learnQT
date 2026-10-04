@@ -34,6 +34,7 @@ void learnQT::configureRenderQueueRegression()
         QElapsedTimer pauseCheck;
         int pausedSamples = 0;
         bool blockedExport = false;
+        QMetaObject::Connection exportPause;
     };
     auto state = std::make_shared<State>();
     state->clock.start();
@@ -41,6 +42,7 @@ void learnQT::configureRenderQueueRegression()
     timer->setInterval(100);
     auto finish = [this, timer, state, output](const QString &error) {
         timer->stop();
+        QObject::disconnect(state->exportPause);
         if (!error.isEmpty())
             grab().save(output + "/failure.png");
         QJsonArray tasks;
@@ -112,7 +114,7 @@ void learnQT::configureRenderQueueRegression()
             // Keep the first job alive long enough for progress and cross-page
             // actions; 512 samples can finish before the 100 ms UI timer fires.
             outputSamples->setValue(8192);
-            outputDenoise->setChecked(false);
+            outputDenoise->setCurrentIndex(int(DenoiseMode::None));
             navigateWorkspace(WorkspacePage::Render);
             m_renderCameraChoice->setCurrentIndex(1);
             auto add = findChild<QToolButton *>("renderPrimary");
@@ -129,7 +131,8 @@ void learnQT::configureRenderQueueRegression()
             outputSettings["width"] = outputWidth->value();
             outputSettings["height"] = outputHeight->value();
             outputSettings["samples"] = outputSamples->value();
-            outputSettings["denoise"] = outputDenoise->isChecked();
+            outputSettings["denoise"] = outputDenoise->currentIndex() != 0;
+            outputSettings["denoiseMode"] = denoiseModeName(DenoiseMode(outputDenoise->currentIndex()));
             next.root["output"] = outputSettings;
             auto camera = next.root["camera"].toObject();
             camera["position"] = QJsonArray{2.5, 1.2, 5.0};
@@ -370,7 +373,7 @@ void learnQT::configureRenderQueueRegression()
             outputSamples->setValue(2);
             {
                 const QSignalBlocker block(outputDenoise);
-                outputDenoise->setChecked(true);
+                outputDenoise->setCurrentIndex(int(DenoiseMode::OIDN));
             }
             m_renderFormat->setCurrentIndex(1);
             if (!m_renderPreviewMode) workspace->compositionMode->click();
@@ -378,12 +381,29 @@ void learnQT::configureRenderQueueRegression()
             if (m_renderQueue.size() != 9 || !m_renderQueue[8].request.settings.denoise ||
                 m_renderQueue[8].format != "jpg")
                 return finish("Export-failure fixtures were not captured");
+            // Stop at the worker's rendering boundary. A 100-ms UI poll can miss
+            // the entire small task on a fast GPU, so the fault must be installed
+            // before sampling is allowed to finish.
+            const auto blockedId = m_renderQueue[7].request.id;
+            auto worker = m_queueWorker;
+            state->exportPause = connect(worker, &RenderQueueThread::jobState, worker,
+                [worker, blockedId](quint64 id, RenderJobState status) {
+                    if (id == blockedId && status == RenderJobState::Rendering)
+                        worker->pauseCurrent(true);
+                }, Qt::DirectConnection);
             workspace->runQueue->trigger();
-            // Dispatch assigns the output path synchronously. Block it now:
-            // a 128-spp job may already be complete by the next UI timer tick.
+            state->phase = 11;
+            return;
+        }
+        if (state->phase == 11)
+        {
+            if (m_renderQueue[7].status != tr("已暂停"))
+                return;
             if (!QDir().mkpath(m_renderQueue[7].request.outputPath))
                 return finish("Could not block the first export output path");
             state->blockedExport = true;
+            QObject::disconnect(state->exportPause);
+            m_queueWorker->pauseCurrent(false);
             state->phase = 12;
             return;
         }
@@ -532,7 +552,7 @@ void learnQT::configureWorkspaceRegression()
                 outputWidth->setValue(32);
                 outputHeight->setValue(32);
                 outputSamples->setValue(1);
-                outputDenoise->setChecked(false);
+                outputDenoise->setCurrentIndex(int(DenoiseMode::None));
                 navigateWorkspace(WorkspacePage::Render);
                 workspace->compositionMode->click();
                 auto start = findChild<QToolButton *>("renderPrimary");
@@ -763,7 +783,7 @@ void learnQT::configureWorkspaceRegression()
             outputWidth->setValue(320);
             outputHeight->setValue(180);
             outputSamples->setValue(1000000);
-            outputDenoise->setChecked(false);
+            outputDenoise->setCurrentIndex(int(DenoiseMode::None));
             workspace->compositionMode->click();
             auto start = findChild<QToolButton *>("renderPrimary");
             if (!start || !start->isVisible())

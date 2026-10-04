@@ -10,6 +10,7 @@ float blasDistances[BVH_STACK_CAPACITY];
 Material ShadowMaterial(int surface)
 {
     Material m;
+    m.tangent=vec4(0);
     m.emissive = vec3(0);
     m.baseColor = vec3(0);
     m.subsurface = 0;
@@ -38,7 +39,8 @@ Material ShadowMaterial(int surface)
     int instance = int(texelFetch(surfaceTable, surface).y);
     int address = int(texelFetch(instanceTable, instance * 9 + 8).x) * 10;
     vec4 medium = texelFetch(materialTable, address + 2), params = texelFetch(materialTable, address + 4);
-    m.alphaMode = int(texelFetch(materialTable, address + 3).w);
+    vec4 surfaceParams=texelFetch(materialTable,address+3);
+    m.alphaMode=int(surfaceParams.w);m.IOR=surfaceParams.y;m.transmission=surfaceParams.z;
     m.mediumColor = medium.xyz;
     m.mediumAnisotropy = clamp(medium.w, -.9, .9);
     m.mediumtype = int(params.x);
@@ -79,13 +81,18 @@ bool BoundsHit(Ray r, vec3 reciprocal, vec3 lo, vec3 hi, float limit)
 {
     return BoundsDistance(r, reciprocal, lo, hi, limit) >= 0;
 }
-HitResult hitBVH(Ray ray, bool shadowOnly)
+HitResult hitBVH(Ray ray, bool shadowOnly,float distanceLimit,bool anyHit,int excludedSurface)
 {
+    BeginAlphaQuery();
     HitResult res;
     res.isHit = false;
     res.isInside = false;
     res.triangleIndex = -1;
-    res.hitDistance = INF;
+    res.hitDistance = distanceLimit;
+    // NaN rays can make the slab min/max operations accept every node, turning
+    // a numerical error into an exhaustive traversal of a large scene.
+    if (!FiniteRay(ray.startPoint,ray.direction))
+        return res;
     if (nTopNodes <= 1)
         return res;
     vec3 worldReciprocal = 1.0 / ray.direction;
@@ -97,7 +104,7 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
 #endif
     int sp = 0;
     BVHNode topRoot = TopNode(1);
-    float topEntry = BoundsDistance(ray, worldReciprocal, topRoot.AA, topRoot.BB, INF);
+    float topEntry = BoundsDistance(ray, worldReciprocal, topRoot.AA, topRoot.BB, distanceLimit);
     if (topEntry < 0)
         return res;
     topDistances[sp] = topEntry;
@@ -106,6 +113,9 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
     while (sp > 0)
     {
         int nodeIndex = stack[--sp];
+#ifdef TRACE_TRAVERSAL_PROFILE
+        ++traversalNodeVisits;
+#endif
         if (topDistances[sp] > res.hitDistance)
             continue;
         BVHNode top = TopNode(nodeIndex);
@@ -152,6 +162,7 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
                     stack[sp++] = top.right;
                 }
             }
+            else RaisePathDiagnostic(DIAG_BVH_OVERFLOW);
             continue;
         }
         int instance = top.index;
@@ -182,6 +193,9 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
         while (bp > 0)
         {
             int blasIndex = bs[--bp];
+#ifdef TRACE_TRAVERSAL_PROFILE
+            ++traversalNodeVisits;
+#endif
             if (blasDistances[bp] > res.hitDistance)
                 continue;
             BVHNode n = getBVHNode(blasIndex);
@@ -228,24 +242,37 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
                         bs[bp++] = n.right;
                     }
                 }
+                else RaisePathDiagnostic(DIAG_BVH_OVERFLOW);
                 continue;
             }
             for (int i = n.index; i < n.index + n.n; ++i)
             {
+#ifdef TRACE_TRAVERSAL_PROFILE
+                ++traversalTriangleTests;
+#endif
                 vec3 p1 = texelFetch(triangles, i * 11).xyz, p2 = texelFetch(triangles, i * 11 + 1).xyz,
                      p3 = texelFetch(triangles, i * 11 + 2).xyz;
                 vec3 candidate;
                 float d;
                 if (!IntersectTriangle(triangleRay, p1, p2, p3, candidate, d) || d > res.hitDistance)
                     continue;
+                vec3 face = cross(p2 - p1, p3 - p1);
+                if (all(equal(face, vec3(0))) || any(isnan(face)) || any(isinf(face)))
+                    continue;
                 // Logical surface order is independent of BVH traversal order.
                 int surface = i + int(info.z);
+                if(surface==excludedSurface)continue;
                 if (d == res.hitDistance && res.triangleIndex >= 0 && surface > res.triangleIndex)
                     continue;
                 vec2 uv = vec2(0);
                 if (instanceAlphaMode == ALPHA_MODE_MASK || instanceAlphaMode == ALPHA_MODE_BLEND)
                 {
                     uv = InterpolateTriangleUV(surface, candidate);
+                    if(instanceAlphaMode==ALPHA_MODE_MASK && materialTextureInfoStride>=4) {
+                        mat3 normalMatrix=transpose(mat3(inverse));
+                        vec3 worldFace=normalize(normalMatrix*(face/maxComponent(abs(face))));
+                        SetTriangleFootprint(surface,ray,d,worldFace);
+                    }
                     if (RejectAlphaIntersection(surface, uv))
                         continue;
                 }
@@ -254,9 +281,20 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
                 res.hitDistance = d;
                 res.uv = uv;
                 bary = candidate;
+                if(anyHit && shadowOnly) {
+#ifdef TRACE_TRAVERSAL_PROFILE
+                    ++traversalEarlyExits;
+#endif
+                    return res;
+                }
             }
         }
     }
+    // ID/depth picking needs alpha filtering and nearest traversal, but no
+    // beauty material, normal-map or tangent reconstruction.
+#ifdef PICKING_PASS
+    return res;
+#endif
     if (res.isHit)
     {
         res.uv = InterpolateTriangleUV(res.triangleIndex, bary);
@@ -264,10 +302,21 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
         int instance = int(selected.y), g = int(selected.x) * 11;
         mat4 world = InstanceMatrix(instance, 0);
         mat3 normals = transpose(mat3(InstanceMatrix(instance, 4)));
-        vec3 a = (world * vec4(texelFetch(triangles, g).xyz, 1)).xyz;
-        vec3 b = (world * vec4(texelFetch(triangles, g + 1).xyz, 1)).xyz;
-        vec3 c = (world * vec4(texelFetch(triangles, g + 2).xyz, 1)).xyz;
-        res.geometricNormal = normalize(cross(b - a, c - a)) * sign(determinant(mat3(world)));
+        vec3 localA = texelFetch(triangles, g).xyz;
+        vec3 localAB = texelFetch(triangles, g + 1).xyz - localA;
+        vec3 localAC = texelFetch(triangles, g + 2).xyz - localA;
+        // Transform the local face normal, rather than subtracting separately
+        // rounded world vertices. Tiny faces can collapse after a translation.
+        vec3 localGeometry = cross(localAB, localAC);
+        vec3 geometry = normals * (localGeometry / maxComponent(abs(localGeometry)));
+        float geometryScale = maxComponent(abs(geometry));
+        if (!(geometryScale > 0.0) || any(isnan(geometry)) || any(isinf(geometry)))
+        {
+            res.isHit = false;
+            res.hitDistance = INF;
+            return res;
+        }
+        res.geometricNormal = normalize(geometry / geometryScale);
         vec3 normal = bary.x * (normals * texelFetch(triangles, g + 3).xyz) +
                       bary.y * (normals * texelFetch(triangles, g + 4).xyz) +
                       bary.z * (normals * texelFetch(triangles, g + 5).xyz);
@@ -280,21 +329,28 @@ HitResult hitBVH(Ray ray, bool shadowOnly)
         res.viewDir = ray.direction;
         // Reconstruct on the triangle, avoiding cancellation along long rays.
         // Keep hitDistance as the original ray parameter for traversal/light ordering.
-        res.hitPoint = a + bary.y * (b - a) + bary.z * (c - a);
+        ReconstructSurfacePoint(res.triangleIndex,bary,res.hitPoint,res.positionError);
         if (shadowOnly)
             res.material = ShadowMaterial(res.triangleIndex);
         else
         {
             materialEvaluationUV = res.uv;
+            SetTriangleFootprint(res.triangleIndex,ray,res.hitDistance,res.geometricNormal);
             res.material = getMaterial(res.triangleIndex);
             res.normal = ApplyNormalMap(res.triangleIndex, res.uv, bary, res.normal, res.material);
             res.normal = ValidShadingNormal(res.normal, facingGeometry, ray.direction);
+            if(res.material.anisotropic>0.0)
+                res.material.tangent=BsdfTangent(res.triangleIndex,bary,res.normal);
         }
     }
     return res;
 }
 
+HitResult hitBVH(Ray ray,bool shadowOnly)
+{
+    return hitBVH(ray,shadowOnly,INF,false,-1);
+}
 HitResult hitBVH(Ray ray)
 {
-    return hitBVH(ray, false);
+    return hitBVH(ray,false,INF,false,-1);
 }

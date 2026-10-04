@@ -1,0 +1,660 @@
+{
+  "date": "2026-10-02",
+  "device": "NVIDIA GeForce RTX 5070 Ti/PCIe/SSE2",
+  "build": "build/render-foundation Release, MSVC /parallel 2",
+  "fullSuite": "31/32 initially passed. The lighting failure was repaired; affected tests rerun separately. No claim of a fresh full-suite 32/32 run.",
+  "checks": [
+    {
+      "log": "build\\render-second-batch\\ctest-final.log",
+      "passed": [
+        "background_failure_exit_status",
+        "renderer_batch_regression",
+        "environment_sphere_regression",
+        "aa_denoise_ui_regression",
+        "aa_denoise_compute_regression",
+        "aa_denoise_regression",
+        "denoise_stationary_convergence",
+        "display_buffer_handoff_regression",
+        "bvh_sah_scale_regression",
+        "instanced_traversal_regression",
+        "shadow_anyhit_regression",
+        "render_second_batch_regression",
+        "render_foundation_regression",
+        "workspace_pages_regression",
+        "render_queue_regression",
+        "scene_ui_switch_regression",
+        "scene_roundtrip_and_package",
+        "workbench_ui_and_render_job",
+        "preview_interaction_regression",
+        "preview_mode_switch_regression",
+        "preview_mis_mode_switch_regression",
+        "preview_panel_regression",
+        "raster_preview_regression",
+        "unit_middle_mouse_orbit_target",
+        "unit_finite_analytic_lights",
+        "unit_texture_rendering_support",
+        "glslpt_conversion",
+        "gpu_render_regression",
+        "import_fbx_embedded_texture",
+        "import_gltf_tangent_sampler_transform",
+        "background_ui_regression"
+      ],
+      "summary": [
+        "97% tests passed, 1 tests failed out of 32"
+      ]
+    },
+    {
+      "log": "build\\render-second-batch\\ctest-repair.log",
+      "passed": [
+        "aa_denoise_compute_regression",
+        "shadow_anyhit_regression",
+        "render_second_batch_regression",
+        "render_foundation_regression",
+        "lighting_numerical_regression",
+        "gpu_render_regression"
+      ],
+      "summary": [
+        "100% tests passed, 0 tests failed out of 6"
+      ]
+    },
+    {
+      "log": "build\\render-second-batch\\ctest-oblique.log",
+      "passed": [
+        "instanced_traversal_regression"
+      ],
+      "summary": [
+        "100% tests passed, 0 tests failed out of 1"
+      ]
+    },
+    {
+      "log": "build\\render-second-batch\\ctest-compute-final.log",
+      "passed": [
+        "aa_denoise_compute_regression",
+        "shadow_anyhit_regression",
+        "lighting_numerical_regression"
+      ],
+      "summary": [
+        "100% tests passed, 0 tests failed out of 3"
+      ]
+    }
+  ],
+  "commandFiles": [
+    "build/render-second-batch/verify-final.ps1",
+    "build/render-second-batch/time-final.ps1"
+  ],
+  "imageProvenance": "Real QOffscreenSurface GPU readbacks, not generated images. Panels use the same dimensions, scene/camera and spp per pair.",
+  "baselineProvenance": "C03 compares first-batch shaders. Later stage snapshots include the final triangle-distance correction and GLSL keyword rename to isolate their own changes. A02 uses saved pre-pooling CPU binary plus its shader snapshot. A01 uses current binary with AnyHit explicitly disabled/enabled.",
+  "tasks": {
+    "R-C03": "Interpolation/affine position errors, outward offsets, finite-light endpoints and ray-aligned intersection-distance bounds; legacy/instanced scaled, mirrored and near-origin cases.",
+    "R-C04": "Geometric/shading normal event agreement and null samples; 12 sample/eval/quadrature cases; invalid microfacet refraction and wrong-side sample rejection.",
+    "R-Q03": "Averaged-normal roughness compensation and per-cutoff Mask coverage mips; production native/budget/compute Mask integration.",
+    "R-A02": "2-4 size/format pools, packed emitter PDFs, material texture budget and allocation diagnostics.",
+    "R-A01": "Bounded early occlusion query for binary scenes; Mask/Blend filtering, target exclusion, ordered medium/transparent fallback."
+  },
+  "limits": [
+    "Normal roughness compensation is an approximation; universal shading-normal energy compensation and shadow-terminator smoothing are not implemented.",
+    "Two independently varying alpha sources and emissive Mask materials retain point alpha evaluation to preserve existing MIS support.",
+    "Budget applies to material textures, configured by LEARNQT_TEXTURE_BUDGET_MB (default 512); no new GUI budget controls or streaming.",
+    "Allocated bytes are estimated resource sizes, not a driver VRAM measurement.",
+    "AnyHit overlap-fixture visit reduction does not guarantee a general scene FPS improvement."
+  ],
+  "pools": {
+    "grid": {
+      "rawRgbMse": 0.0,
+      "rawRgbMaxAbs": 0.0,
+      "meanBefore": 0.008651113662788413,
+      "meanAfter": 0.008651113662788413,
+      "beforeAllocatedBytes": 113498500,
+      "afterAllocatedBytes": 24369844,
+      "spp": 34
+    },
+    "lantern": {
+      "rawRgbMse": 1.1061468908042533e-06,
+      "rawRgbMaxAbs": 0.017980515956878662,
+      "meanBefore": 0.11069495196266893,
+      "meanAfter": 0.11065856023968176,
+      "beforeAllocatedBytes": 531787540,
+      "afterAllocatedBytes": 487048532,
+      "spp": 34
+    }
+  },
+  "anyHit": {
+    "rawRgbMse": 0.0,
+    "rawRgbMaxAbs": 0.0,
+    "meanBefore": 0.11068705138650625,
+    "meanAfter": 0.11068705138650625,
+    "sameSpp": 66
+  },
+  "anyHitTiming": {
+    "closest": {
+      "fps": [
+        312.12258137460185,
+        281.93628249995544,
+        283.14978618695466
+      ],
+      "completedSpp": [
+        625,
+        565,
+        567
+      ],
+      "seconds": [
+        2.0024184,
+        2.0039989,
+        2.0024737
+      ],
+      "medianFps": 283.14978618695466
+    },
+    "anyhit": {
+      "fps": [
+        292.06043444314133,
+        289.1035667341158,
+        292.39463559306404
+      ],
+      "completedSpp": [
+        585,
+        579,
+        585
+      ],
+      "seconds": [
+        2.0030101,
+        2.0027425,
+        2.0007207
+      ],
+      "medianFps": 292.06043444314133
+    },
+    "scope": "Final shaders. Three paired 2-second, 400x300 Lantern runs, AA on, denoise off; completed spp, not viewport redraws. Scene-specific timings do not prove a general speedup."
+  },
+  "mask": {
+    "fragment": {
+      "aa": true,
+      "backend": "兼容路径追踪",
+      "binaryShadowScene": true,
+      "bounces": 4,
+      "bytes": 9285448,
+      "compute": false,
+      "device": "NVIDIA GeForce RTX 5070 Ti/PCIe/SSE2",
+      "filteredTailRms": 0,
+      "fps": 1812.8411469619332,
+      "gpuDenoiseMs": 0,
+      "gpuTraceMs": 0.06272,
+      "height": 192,
+      "historyAcceptance": 0,
+      "mode": "none",
+      "oidnMs": 0,
+      "preview": false,
+      "rawTailRms": 0,
+      "seconds": 0.0353037,
+      "shadowAnyHitEnabled": true,
+      "spp": 64,
+      "totalSpp": 66,
+      "width": 256,
+      "textureResources": {
+        "budgetBytes": 536870912,
+        "bytes": 2796212,
+        "capacity": 4,
+        "compositeMaskPointFallbacks": 0,
+        "downscaled": false,
+        "missingViews": 0,
+        "placements": [
+          {
+            "colorLayer": -1,
+            "colorPool": -1,
+            "dataLayer": -1,
+            "dataPool": -1,
+            "path": "D:/program/learnQT/build/render-second-batch/fixture/sparse-mask.png",
+            "source": 0
+          },
+          {
+            "colorLayer": 0,
+            "colorPool": 0,
+            "dataLayer": 0,
+            "dataPool": 0,
+            "path": "D:/program/learnQT/build/render-second-batch/fixture/sparse-mask.png",
+            "source": 1
+          }
+        ],
+        "pools": [
+          {
+            "bytes": 2796200,
+            "format": "RGBA16F",
+            "height": 512,
+            "layers": 1,
+            "pool": 0,
+            "requestedHeight": 512,
+            "requestedWidth": 512,
+            "width": 512
+          },
+          {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 1,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+          },
+          {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 2,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+          },
+          {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 3,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+          }
+        ],
+        "sources": 2,
+        "unusedSources": 1,
+        "views": 1
+      },
+      "mean": 0.04533879364714721
+    },
+    "compute": {
+      "aa": true,
+      "backend": "计算着色器路径追踪",
+      "binaryShadowScene": true,
+      "bounces": 4,
+      "bytes": 9285448,
+      "compute": true,
+      "device": "NVIDIA GeForce RTX 5070 Ti/PCIe/SSE2",
+      "filteredTailRms": 0,
+      "fps": 2021.1973067545887,
+      "gpuDenoiseMs": 0,
+      "gpuTraceMs": 0.048608,
+      "height": 192,
+      "historyAcceptance": 0,
+      "mode": "none",
+      "oidnMs": 0,
+      "preview": false,
+      "rawTailRms": 0,
+      "seconds": 0.0316644,
+      "shadowAnyHitEnabled": true,
+      "spp": 64,
+      "totalSpp": 66,
+      "width": 256,
+      "textureResources": {
+        "budgetBytes": 536870912,
+        "bytes": 2796212,
+        "capacity": 4,
+        "compositeMaskPointFallbacks": 0,
+        "downscaled": false,
+        "missingViews": 0,
+        "placements": [
+          {
+            "colorLayer": -1,
+            "colorPool": -1,
+            "dataLayer": -1,
+            "dataPool": -1,
+            "path": "D:/program/learnQT/build/render-second-batch/fixture/sparse-mask.png",
+            "source": 0
+          },
+          {
+            "colorLayer": 0,
+            "colorPool": 0,
+            "dataLayer": 0,
+            "dataPool": 0,
+            "path": "D:/program/learnQT/build/render-second-batch/fixture/sparse-mask.png",
+            "source": 1
+          }
+        ],
+        "pools": [
+          {
+            "bytes": 2796200,
+            "format": "RGBA16F",
+            "height": 512,
+            "layers": 1,
+            "pool": 0,
+            "requestedHeight": 512,
+            "requestedWidth": 512,
+            "width": 512
+          },
+          {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 1,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+          },
+          {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 2,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+          },
+          {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 3,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+          }
+        ],
+        "sources": 2,
+        "unusedSources": 1,
+        "views": 1
+      },
+      "mean": 0.04533879364714721
+    },
+    "budget": {
+      "aa": true,
+      "backend": "兼容路径追踪",
+      "binaryShadowScene": true,
+      "bounces": 4,
+      "bytes": 7188296,
+      "compute": false,
+      "device": "NVIDIA GeForce RTX 5070 Ti/PCIe/SSE2",
+      "filteredTailRms": 0,
+      "fps": 2305.550251989438,
+      "gpuDenoiseMs": 0,
+      "gpuTraceMs": 0.048672,
+      "height": 192,
+      "historyAcceptance": 0,
+      "mode": "none",
+      "oidnMs": 0,
+      "preview": false,
+      "rawTailRms": 0,
+      "seconds": 0.0277591,
+      "shadowAnyHitEnabled": true,
+      "spp": 64,
+      "totalSpp": 66,
+      "width": 256,
+      "textureResources": {
+        "budgetBytes": 1048576,
+        "bytes": 699060,
+        "capacity": 4,
+        "compositeMaskPointFallbacks": 0,
+        "downscaled": true,
+        "missingViews": 0,
+        "placements": [
+          {
+            "colorLayer": -1,
+            "colorPool": -1,
+            "dataLayer": -1,
+            "dataPool": -1,
+            "path": "D:/program/learnQT/build/render-second-batch/fixture/sparse-mask.png",
+            "source": 0
+          },
+          {
+            "colorLayer": 0,
+            "colorPool": 0,
+            "dataLayer": 0,
+            "dataPool": 0,
+            "path": "D:/program/learnQT/build/render-second-batch/fixture/sparse-mask.png",
+            "source": 1
+          }
+        ],
+        "pools": [
+          {
+            "bytes": 699048,
+            "format": "RGBA16F",
+            "height": 256,
+            "layers": 1,
+            "pool": 0,
+            "requestedHeight": 512,
+            "requestedWidth": 512,
+            "width": 256
+          },
+          {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 1,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+          },
+          {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 2,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+          },
+          {
+            "bytes": 4,
+            "format": "RGBA8",
+            "height": 1,
+            "layers": 0,
+            "pool": 3,
+            "requestedHeight": 1,
+            "requestedWidth": 1,
+            "width": 1
+          }
+        ],
+        "sources": 2,
+        "unusedSources": 1,
+        "views": 1
+      },
+      "mean": 0.04533879364714721
+    },
+    "computeVsFragment": {
+      "rawRgbMse": 0.0,
+      "rawRgbMaxAbs": 0.0,
+      "meanBefore": 0.04533879364714721,
+      "meanAfter": 0.04533879364714721
+    },
+    "budgetVsNative": {
+      "rawRgbMse": 0.0,
+      "rawRgbMaxAbs": 0.0,
+      "meanBefore": 0.04533879364714721,
+      "meanAfter": 0.04533879364714721
+    }
+  },
+  "background": "Initial full-suite private-desktop UI audit inputDesktopWindows=0; actual screenshots visually checked. No input to user desktop.",
+  "sources": [
+    "https://pbr-book.org/4ed/Shapes/Managing_Rounding_Error",
+    "https://pbr-book.org/3ed-2018/Materials/BSDFs"
+  ],
+  "sourceSha256": {
+    "shaders\\denoise_accept.frag": "0c3c39800cee7ba943798d37f09f89ee3ee492854e27d0d5b20dcd3ef0fab27f",
+    "shaders\\denoise_spatial.frag": "ace70f230be8b55cea82128aa94db0f76fe371233bbae7b5b32a4428047627c8",
+    "shaders\\denoise_temporal.frag": "4c220a5ff1ed19294fcf940f615bbfbff2100b953ba1d5b1e9cad8186794abe3",
+    "shaders\\historysave.frag": "67d0f4e38fc87f26b610d0fc6fb7d9d8750c6323d60157564f502beb117cfd7b",
+    "shaders\\mixframe.frag": "28a0df93bf29831d708bd576045c73e87177f8fa43b28784b79eb0ba7d905dcb",
+    "shaders\\pathtrace.frag": "4067a00922ff8b0a2d21b60e1b3761ccf014229747ad69d38b33be55b3f50360",
+    "shaders\\pick.frag": "542d624b935dbf777b511e86cda1241686439b18c6bfa8993cf4a9c4df860e03",
+    "shaders\\raster.frag": "29381e897a0ce91fb4ba4af844f62b66e036ac4f04502c30fa5f91d097e7e495",
+    "shaders\\raster.vert": "61e3ebe9332106d871e5cb316563ea7924f1dcf78fd7ccd9caade8c7762cf735",
+    "shaders\\raster_background.frag": "c2e046047d7665be0de60fcd9cd216964dbf0b12df2727ba783061c6140f0bf9",
+    "shaders\\triangle.frag": "127cecd0c49f1d6412ac513622026ab32a6a8caa43685b3a2f17d0d940b70ec7",
+    "shaders\\triangle.vert": "ab3d958bedaaae06dd1cc33526066bf9e069f2f965d131d94d914e9c0cb1c1a3",
+    "shaders\\include\\bsdf.glsl": "bd5c9786cd7eb38c3108ab3ecc7b0ed8ef8dea6b3f48d0692c0c8f63dea2e198",
+    "shaders\\include\\bvh_instances.glsl": "0519cd6f1764643d0a0d7268c2dc1ba22911d7859b8571955006b8fc1d936e0d",
+    "shaders\\include\\bvh_material.glsl": "4466d395e7cfbebb0ea264cf76e3bf54df4028c6916cf07d695da02ae50d0928",
+    "shaders\\include\\camera_ray.glsl": "884f61f28089ca1efdce143f8c3bace6e8e250b7995590e311d8a433353ef462",
+    "shaders\\include\\defines.glsl": "2bb07c47a7a459748c9e86ca13deceeef17dbf92350c9b57cf90314690b7b69f",
+    "shaders\\include\\hdr_utils.glsl": "885455a3b6643b856b7522ed15f75709b1d7e627aa42af9c716dec2c3e680d99",
+    "shaders\\include\\light_sampling.glsl": "f50628937dfcb3963220ff5e31630fe609861b2e630c262c6da7a77e8718d23f",
+    "shaders\\include\\material_texture_sampling.glsl": "1cc382e9aa58692a298d5857ebc378384040f5d73700471d6506bc4ef9e13c5f",
+    "shaders\\include\\medium.glsl": "28d840605ddd14ff0734a12ce4d556bcb58b13740330edd1179917929d82e5cf",
+    "shaders\\include\\pathtrace.glsl": "d14cf2fc6998eb86e593a52f85b615e088fae489cab811093b4ab3df9921c5c1",
+    "shaders\\include\\raster_environment.glsl": "561e634c207ceb57eb70dc8679618533e244e62418cc67c19c321a4cdccd6c57",
+    "shaders\\include\\scene_access.glsl": "939dd5286f7638f37aebc3f18063d5a58436dcf515e741167e9e41d44ecde5b9",
+    "shaders\\include\\structs.glsl": "2892055abd1e320b4dbc78675301221af5e40c022345ee06bf5261fae077b5a4",
+    "shaders\\include\\triangle_intersection.glsl": "329624da4eb867125e02ec4590e474e229441c00e3021e6ba2e15719cd60e067",
+    "shaders\\include\\uniforms.glsl": "277772e30d87a75d3c9a9fe20879e85da3662e1a8d6bd04027f4997adf3ec270",
+    "shaders\\include\\utils.glsl": "71c9a6a95019f163195b8b71f60f6203e19cc9b52ff3351d318b2c1d119ee44e",
+    "include\\MaterialMaskTextures.h": "f63f83b376089f8dea48c1e75854bf38cbdb3f2c46fff37c49b055e3563aca44",
+    "include\\MaterialTextureImage.h": "6d1dad6ade578c3357a1ef0b4dd8f744d7cc58d4e924e923f795ff15078b567b",
+    "include\\MaterialTexturePlan.h": "c36c6d417375b15e8a0b467c4d6bd64367c4d755eba15a6d07f798bcfe68b551",
+    "build\\render-second-batch\\A02-before-bin\\aa_denoise_tests.exe": "5503d9f5868387b06bc05b18fb8d2efee50cf7605f704c9ff0e0f202661c6fce"
+  },
+  "shaderSnapshotSha256": {
+    "baseline-shaders": {
+      "denoise_accept.frag": "0c3c39800cee7ba943798d37f09f89ee3ee492854e27d0d5b20dcd3ef0fab27f",
+      "denoise_spatial.frag": "ace70f230be8b55cea82128aa94db0f76fe371233bbae7b5b32a4428047627c8",
+      "denoise_temporal.frag": "4c220a5ff1ed19294fcf940f615bbfbff2100b953ba1d5b1e9cad8186794abe3",
+      "historysave.frag": "67d0f4e38fc87f26b610d0fc6fb7d9d8750c6323d60157564f502beb117cfd7b",
+      "mixframe.frag": "28a0df93bf29831d708bd576045c73e87177f8fa43b28784b79eb0ba7d905dcb",
+      "pathtrace.frag": "4067a00922ff8b0a2d21b60e1b3761ccf014229747ad69d38b33be55b3f50360",
+      "pick.frag": "542d624b935dbf777b511e86cda1241686439b18c6bfa8993cf4a9c4df860e03",
+      "raster.frag": "29381e897a0ce91fb4ba4af844f62b66e036ac4f04502c30fa5f91d097e7e495",
+      "raster.vert": "61e3ebe9332106d871e5cb316563ea7924f1dcf78fd7ccd9caade8c7762cf735",
+      "raster_background.frag": "c2e046047d7665be0de60fcd9cd216964dbf0b12df2727ba783061c6140f0bf9",
+      "triangle.frag": "127cecd0c49f1d6412ac513622026ab32a6a8caa43685b3a2f17d0d940b70ec7",
+      "triangle.vert": "ab3d958bedaaae06dd1cc33526066bf9e069f2f965d131d94d914e9c0cb1c1a3",
+      "include\\bsdf.glsl": "acb50762c5110bded21ef0cfbe552502287c6906f78d3d42c44e58dcb0ecb95f",
+      "include\\bvh_instances.glsl": "b5ca361ea6c1eab58588bc3be51ab37f395a30dfe04da86378f96c32edf5b6fa",
+      "include\\bvh_material.glsl": "7504afb89bccc3b7943e0d75816e0135bb141c3206c426311d91b1987d828d30",
+      "include\\camera_ray.glsl": "884f61f28089ca1efdce143f8c3bace6e8e250b7995590e311d8a433353ef462",
+      "include\\defines.glsl": "2bb07c47a7a459748c9e86ca13deceeef17dbf92350c9b57cf90314690b7b69f",
+      "include\\hdr_utils.glsl": "885455a3b6643b856b7522ed15f75709b1d7e627aa42af9c716dec2c3e680d99",
+      "include\\light_sampling.glsl": "731f437e53b439816868398180630c000b5e3c359854ea5cf6360bf2f62a871f",
+      "include\\material_texture_sampling.glsl": "a86e07464c6460f74e6f3c18892277755f25b28748a7cfed4aca25e1ca9f34b8",
+      "include\\medium.glsl": "5c0c1c22bcf90755bc3b66a2f0781d1e71c5e583359f396b1a868b4958f30ecb",
+      "include\\pathtrace.glsl": "634d2972373690023ea7227add609d7f96719a5c07c9d1d5e9b74fcc092526c0",
+      "include\\raster_environment.glsl": "561e634c207ceb57eb70dc8679618533e244e62418cc67c19c321a4cdccd6c57",
+      "include\\scene_access.glsl": "3f8151b3e6e98cecb3b46dc1a4be5b5d09191d60c13929cb64a2670e617c921e",
+      "include\\structs.glsl": "c8bfdfecbd01d561f88a27bee69eaf368225286a3162d30b4f7bbd825004929b",
+      "include\\triangle_intersection.glsl": "56106631a80b77b6e29e3550b12d7c721f08cdbecc1233775acd64971a21dd4f",
+      "include\\uniforms.glsl": "3950d1c255230b28d6b1295fc2c98b72eb791a7c1bc7e57f9a0cc1571254cece",
+      "include\\utils.glsl": "5b05e664caaa7d04721c144e25bb1f73af5c2ccc6a7192f2635ee29cbc8a1b94"
+    },
+    "C04-before-shaders": {
+      "denoise_accept.frag": "0c3c39800cee7ba943798d37f09f89ee3ee492854e27d0d5b20dcd3ef0fab27f",
+      "denoise_spatial.frag": "ace70f230be8b55cea82128aa94db0f76fe371233bbae7b5b32a4428047627c8",
+      "denoise_temporal.frag": "4c220a5ff1ed19294fcf940f615bbfbff2100b953ba1d5b1e9cad8186794abe3",
+      "historysave.frag": "67d0f4e38fc87f26b610d0fc6fb7d9d8750c6323d60157564f502beb117cfd7b",
+      "mixframe.frag": "28a0df93bf29831d708bd576045c73e87177f8fa43b28784b79eb0ba7d905dcb",
+      "pathtrace.frag": "4067a00922ff8b0a2d21b60e1b3761ccf014229747ad69d38b33be55b3f50360",
+      "pick.frag": "542d624b935dbf777b511e86cda1241686439b18c6bfa8993cf4a9c4df860e03",
+      "raster.frag": "29381e897a0ce91fb4ba4af844f62b66e036ac4f04502c30fa5f91d097e7e495",
+      "raster.vert": "61e3ebe9332106d871e5cb316563ea7924f1dcf78fd7ccd9caade8c7762cf735",
+      "raster_background.frag": "c2e046047d7665be0de60fcd9cd216964dbf0b12df2727ba783061c6140f0bf9",
+      "triangle.frag": "127cecd0c49f1d6412ac513622026ab32a6a8caa43685b3a2f17d0d940b70ec7",
+      "triangle.vert": "ab3d958bedaaae06dd1cc33526066bf9e069f2f965d131d94d914e9c0cb1c1a3",
+      "include\\bsdf.glsl": "acb50762c5110bded21ef0cfbe552502287c6906f78d3d42c44e58dcb0ecb95f",
+      "include\\bvh_instances.glsl": "2b393d27363dcb7039f710b1ddf1c4f8ab6c443c7fbf06efeef72a38e0779061",
+      "include\\bvh_material.glsl": "5d2878e290e94de8cac33f4b89653642240b99f72c9d5b8e1825689c00aba338",
+      "include\\camera_ray.glsl": "884f61f28089ca1efdce143f8c3bace6e8e250b7995590e311d8a433353ef462",
+      "include\\defines.glsl": "2bb07c47a7a459748c9e86ca13deceeef17dbf92350c9b57cf90314690b7b69f",
+      "include\\hdr_utils.glsl": "885455a3b6643b856b7522ed15f75709b1d7e627aa42af9c716dec2c3e680d99",
+      "include\\light_sampling.glsl": "f50628937dfcb3963220ff5e31630fe609861b2e630c262c6da7a77e8718d23f",
+      "include\\material_texture_sampling.glsl": "a86e07464c6460f74e6f3c18892277755f25b28748a7cfed4aca25e1ca9f34b8",
+      "include\\medium.glsl": "9100206cffe7242a58887a3f47831dd0069786611819a74b65db28cfbfdd5a4e",
+      "include\\pathtrace.glsl": "12806b0d341d2db2e8e8c0b7e14d7a258e2c37e3bf1431b36a3c51aa8a32c560",
+      "include\\raster_environment.glsl": "561e634c207ceb57eb70dc8679618533e244e62418cc67c19c321a4cdccd6c57",
+      "include\\scene_access.glsl": "3f8151b3e6e98cecb3b46dc1a4be5b5d09191d60c13929cb64a2670e617c921e",
+      "include\\structs.glsl": "2892055abd1e320b4dbc78675301221af5e40c022345ee06bf5261fae077b5a4",
+      "include\\triangle_intersection.glsl": "329624da4eb867125e02ec4590e474e229441c00e3021e6ba2e15719cd60e067",
+      "include\\uniforms.glsl": "3950d1c255230b28d6b1295fc2c98b72eb791a7c1bc7e57f9a0cc1571254cece",
+      "include\\utils.glsl": "017219cb6bc1c99d7266eac1f435bece999ecfdf6b8608ab30fabfc24ee73061"
+    },
+    "Q03-before-shaders": {
+      "denoise_accept.frag": "0c3c39800cee7ba943798d37f09f89ee3ee492854e27d0d5b20dcd3ef0fab27f",
+      "denoise_spatial.frag": "ace70f230be8b55cea82128aa94db0f76fe371233bbae7b5b32a4428047627c8",
+      "denoise_temporal.frag": "4c220a5ff1ed19294fcf940f615bbfbff2100b953ba1d5b1e9cad8186794abe3",
+      "historysave.frag": "67d0f4e38fc87f26b610d0fc6fb7d9d8750c6323d60157564f502beb117cfd7b",
+      "mixframe.frag": "28a0df93bf29831d708bd576045c73e87177f8fa43b28784b79eb0ba7d905dcb",
+      "pathtrace.frag": "4067a00922ff8b0a2d21b60e1b3761ccf014229747ad69d38b33be55b3f50360",
+      "pick.frag": "542d624b935dbf777b511e86cda1241686439b18c6bfa8993cf4a9c4df860e03",
+      "raster.frag": "29381e897a0ce91fb4ba4af844f62b66e036ac4f04502c30fa5f91d097e7e495",
+      "raster.vert": "61e3ebe9332106d871e5cb316563ea7924f1dcf78fd7ccd9caade8c7762cf735",
+      "raster_background.frag": "c2e046047d7665be0de60fcd9cd216964dbf0b12df2727ba783061c6140f0bf9",
+      "triangle.frag": "127cecd0c49f1d6412ac513622026ab32a6a8caa43685b3a2f17d0d940b70ec7",
+      "triangle.vert": "ab3d958bedaaae06dd1cc33526066bf9e069f2f965d131d94d914e9c0cb1c1a3",
+      "include\\bsdf.glsl": "bd5c9786cd7eb38c3108ab3ecc7b0ed8ef8dea6b3f48d0692c0c8f63dea2e198",
+      "include\\bvh_instances.glsl": "2b393d27363dcb7039f710b1ddf1c4f8ab6c443c7fbf06efeef72a38e0779061",
+      "include\\bvh_material.glsl": "5d2878e290e94de8cac33f4b89653642240b99f72c9d5b8e1825689c00aba338",
+      "include\\camera_ray.glsl": "884f61f28089ca1efdce143f8c3bace6e8e250b7995590e311d8a433353ef462",
+      "include\\defines.glsl": "2bb07c47a7a459748c9e86ca13deceeef17dbf92350c9b57cf90314690b7b69f",
+      "include\\hdr_utils.glsl": "885455a3b6643b856b7522ed15f75709b1d7e627aa42af9c716dec2c3e680d99",
+      "include\\light_sampling.glsl": "f50628937dfcb3963220ff5e31630fe609861b2e630c262c6da7a77e8718d23f",
+      "include\\material_texture_sampling.glsl": "a86e07464c6460f74e6f3c18892277755f25b28748a7cfed4aca25e1ca9f34b8",
+      "include\\medium.glsl": "9100206cffe7242a58887a3f47831dd0069786611819a74b65db28cfbfdd5a4e",
+      "include\\pathtrace.glsl": "d14cf2fc6998eb86e593a52f85b615e088fae489cab811093b4ab3df9921c5c1",
+      "include\\raster_environment.glsl": "561e634c207ceb57eb70dc8679618533e244e62418cc67c19c321a4cdccd6c57",
+      "include\\scene_access.glsl": "3f8151b3e6e98cecb3b46dc1a4be5b5d09191d60c13929cb64a2670e617c921e",
+      "include\\structs.glsl": "2892055abd1e320b4dbc78675301221af5e40c022345ee06bf5261fae077b5a4",
+      "include\\triangle_intersection.glsl": "329624da4eb867125e02ec4590e474e229441c00e3021e6ba2e15719cd60e067",
+      "include\\uniforms.glsl": "3950d1c255230b28d6b1295fc2c98b72eb791a7c1bc7e57f9a0cc1571254cece",
+      "include\\utils.glsl": "017219cb6bc1c99d7266eac1f435bece999ecfdf6b8608ab30fabfc24ee73061"
+    },
+    "A02-before-shaders": {
+      "denoise_accept.frag": "0c3c39800cee7ba943798d37f09f89ee3ee492854e27d0d5b20dcd3ef0fab27f",
+      "denoise_spatial.frag": "ace70f230be8b55cea82128aa94db0f76fe371233bbae7b5b32a4428047627c8",
+      "denoise_temporal.frag": "4c220a5ff1ed19294fcf940f615bbfbff2100b953ba1d5b1e9cad8186794abe3",
+      "historysave.frag": "67d0f4e38fc87f26b610d0fc6fb7d9d8750c6323d60157564f502beb117cfd7b",
+      "mixframe.frag": "28a0df93bf29831d708bd576045c73e87177f8fa43b28784b79eb0ba7d905dcb",
+      "pathtrace.frag": "4067a00922ff8b0a2d21b60e1b3761ccf014229747ad69d38b33be55b3f50360",
+      "pick.frag": "542d624b935dbf777b511e86cda1241686439b18c6bfa8993cf4a9c4df860e03",
+      "raster.frag": "29381e897a0ce91fb4ba4af844f62b66e036ac4f04502c30fa5f91d097e7e495",
+      "raster.vert": "61e3ebe9332106d871e5cb316563ea7924f1dcf78fd7ccd9caade8c7762cf735",
+      "raster_background.frag": "c2e046047d7665be0de60fcd9cd216964dbf0b12df2727ba783061c6140f0bf9",
+      "triangle.frag": "127cecd0c49f1d6412ac513622026ab32a6a8caa43685b3a2f17d0d940b70ec7",
+      "triangle.vert": "ab3d958bedaaae06dd1cc33526066bf9e069f2f965d131d94d914e9c0cb1c1a3",
+      "include\\bsdf.glsl": "bd5c9786cd7eb38c3108ab3ecc7b0ed8ef8dea6b3f48d0692c0c8f63dea2e198",
+      "include\\bvh_instances.glsl": "106a89d7c6f86b086e4b13a3400ab377eb25f540df8a3a6fcc0bb31ec5d25b4b",
+      "include\\bvh_material.glsl": "4466d395e7cfbebb0ea264cf76e3bf54df4028c6916cf07d695da02ae50d0928",
+      "include\\camera_ray.glsl": "884f61f28089ca1efdce143f8c3bace6e8e250b7995590e311d8a433353ef462",
+      "include\\defines.glsl": "2bb07c47a7a459748c9e86ca13deceeef17dbf92350c9b57cf90314690b7b69f",
+      "include\\hdr_utils.glsl": "885455a3b6643b856b7522ed15f75709b1d7e627aa42af9c716dec2c3e680d99",
+      "include\\light_sampling.glsl": "f50628937dfcb3963220ff5e31630fe609861b2e630c262c6da7a77e8718d23f",
+      "include\\material_texture_sampling.glsl": "b95cbc65265792443a4a47f109d1a169fcb1d04b4f0e9a0cfe240906cfb07e3e",
+      "include\\medium.glsl": "9100206cffe7242a58887a3f47831dd0069786611819a74b65db28cfbfdd5a4e",
+      "include\\pathtrace.glsl": "d14cf2fc6998eb86e593a52f85b615e088fae489cab811093b4ab3df9921c5c1",
+      "include\\raster_environment.glsl": "561e634c207ceb57eb70dc8679618533e244e62418cc67c19c321a4cdccd6c57",
+      "include\\scene_access.glsl": "3f8151b3e6e98cecb3b46dc1a4be5b5d09191d60c13929cb64a2670e617c921e",
+      "include\\structs.glsl": "2892055abd1e320b4dbc78675301221af5e40c022345ee06bf5261fae077b5a4",
+      "include\\triangle_intersection.glsl": "329624da4eb867125e02ec4590e474e229441c00e3021e6ba2e15719cd60e067",
+      "include\\uniforms.glsl": "80ffe97119b2a0e1f514ba86f72ba6f58081bdb39dfc9f3f8c5e8e58a3116a30",
+      "include\\utils.glsl": "017219cb6bc1c99d7266eac1f435bece999ecfdf6b8608ab30fabfc24ee73061"
+    },
+    "A01-before-shaders": {
+      "denoise_accept.frag": "0c3c39800cee7ba943798d37f09f89ee3ee492854e27d0d5b20dcd3ef0fab27f",
+      "denoise_spatial.frag": "ace70f230be8b55cea82128aa94db0f76fe371233bbae7b5b32a4428047627c8",
+      "denoise_temporal.frag": "4c220a5ff1ed19294fcf940f615bbfbff2100b953ba1d5b1e9cad8186794abe3",
+      "historysave.frag": "67d0f4e38fc87f26b610d0fc6fb7d9d8750c6323d60157564f502beb117cfd7b",
+      "mixframe.frag": "28a0df93bf29831d708bd576045c73e87177f8fa43b28784b79eb0ba7d905dcb",
+      "pathtrace.frag": "4067a00922ff8b0a2d21b60e1b3761ccf014229747ad69d38b33be55b3f50360",
+      "pick.frag": "542d624b935dbf777b511e86cda1241686439b18c6bfa8993cf4a9c4df860e03",
+      "raster.frag": "29381e897a0ce91fb4ba4af844f62b66e036ac4f04502c30fa5f91d097e7e495",
+      "raster.vert": "61e3ebe9332106d871e5cb316563ea7924f1dcf78fd7ccd9caade8c7762cf735",
+      "raster_background.frag": "c2e046047d7665be0de60fcd9cd216964dbf0b12df2727ba783061c6140f0bf9",
+      "triangle.frag": "127cecd0c49f1d6412ac513622026ab32a6a8caa43685b3a2f17d0d940b70ec7",
+      "triangle.vert": "ab3d958bedaaae06dd1cc33526066bf9e069f2f965d131d94d914e9c0cb1c1a3",
+      "include\\bsdf.glsl": "bd5c9786cd7eb38c3108ab3ecc7b0ed8ef8dea6b3f48d0692c0c8f63dea2e198",
+      "include\\bvh_instances.glsl": "106a89d7c6f86b086e4b13a3400ab377eb25f540df8a3a6fcc0bb31ec5d25b4b",
+      "include\\bvh_material.glsl": "4466d395e7cfbebb0ea264cf76e3bf54df4028c6916cf07d695da02ae50d0928",
+      "include\\camera_ray.glsl": "884f61f28089ca1efdce143f8c3bace6e8e250b7995590e311d8a433353ef462",
+      "include\\defines.glsl": "2bb07c47a7a459748c9e86ca13deceeef17dbf92350c9b57cf90314690b7b69f",
+      "include\\hdr_utils.glsl": "885455a3b6643b856b7522ed15f75709b1d7e627aa42af9c716dec2c3e680d99",
+      "include\\light_sampling.glsl": "f50628937dfcb3963220ff5e31630fe609861b2e630c262c6da7a77e8718d23f",
+      "include\\material_texture_sampling.glsl": "1cc382e9aa58692a298d5857ebc378384040f5d73700471d6506bc4ef9e13c5f",
+      "include\\medium.glsl": "9100206cffe7242a58887a3f47831dd0069786611819a74b65db28cfbfdd5a4e",
+      "include\\pathtrace.glsl": "d14cf2fc6998eb86e593a52f85b615e088fae489cab811093b4ab3df9921c5c1",
+      "include\\raster_environment.glsl": "561e634c207ceb57eb70dc8679618533e244e62418cc67c19c321a4cdccd6c57",
+      "include\\scene_access.glsl": "939dd5286f7638f37aebc3f18063d5a58436dcf515e741167e9e41d44ecde5b9",
+      "include\\structs.glsl": "2892055abd1e320b4dbc78675301221af5e40c022345ee06bf5261fae077b5a4",
+      "include\\triangle_intersection.glsl": "329624da4eb867125e02ec4590e474e229441c00e3021e6ba2e15719cd60e067",
+      "include\\uniforms.glsl": "1cb021cc908ede93607adf385b1dbaf9106b375c734fc26d94814393c0a2d91d",
+      "include\\utils.glsl": "017219cb6bc1c99d7266eac1f435bece999ecfdf6b8608ab30fabfc24ee73061"
+    }
+  }
+}

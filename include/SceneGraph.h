@@ -7,6 +7,7 @@
 #include <QMap>
 #include <QString>
 #include <memory>
+#include <mutex>
 
 QMatrix4x4 sceneMatrix(const QJsonValue &value);
 QJsonArray sceneMatrixJson(const QMatrix4x4 &matrix);
@@ -37,6 +38,9 @@ struct MeshGeometry
     double traversalCost = 1;
     int maximumDepth = 0;
     void build();
+    bool closedBoundary() const;
+    mutable std::mutex boundaryMutex;
+    mutable int boundaryStatus=-1;
 };
 
 int bvhMaximumDepth(const std::vector<BVHNode> &nodes);

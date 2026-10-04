@@ -106,7 +106,12 @@ SceneDocument SceneDocument::model(const QString &path)
                                                                         32 / (PI * .0001)}}}}}};
     Camera c(QVector3D(0, .35f, 4.5f));
     d.captureCamera(c);
-    d.captureSettings(RenderParams::Snapshot());
+    auto settings = RenderParams::Snapshot();
+    settings.antialiasing = true;
+    settings.denoiseMode = DenoiseMode::Realtime;
+    d.captureSettings(settings);
+    d.root["output"] = QJsonObject{{"width",1920},{"height",1080},{"samples",256},{"tileSize",128},
+                                  {"antialiasing",true},{"denoiseMode","oidn"},{"denoise",true}};
     return d;
 }
 SceneDocument SceneDocument::empty()
@@ -125,11 +130,15 @@ SceneDocument SceneDocument::empty()
         {"hdr", ""},
         {"environment", QJsonObject{{"intensity", 1.0}, {"rotation", 0.0}}},
         {"display", QJsonObject{{"exposure", 0.0}, {"tonemap", 1}}},
-        {"output", QJsonObject{{"width", 1920}, {"height", 1080}, {"samples", 256}, {"tileSize", 128}}}};
+        {"output", QJsonObject{{"width", 1920}, {"height", 1080}, {"samples", 256}, {"tileSize", 128},
+                              {"antialiasing", true}, {"denoiseMode", "oidn"}, {"denoise", true}}}};
     Camera camera(QVector3D(4, 3, 6));
     d.captureCamera(camera);
     d.migrate();
-    d.captureSettings(RenderParams::Snapshot());
+    auto settings = RenderParams::Snapshot();
+    settings.antialiasing = true;
+    settings.denoiseMode = DenoiseMode::Realtime;
+    d.captureSettings(settings);
     return d;
 }
 void SceneDocument::migrate()
@@ -340,6 +349,8 @@ bool SceneDocument::validate(QString &error, bool checkFiles) const
     if (!root["render"].isObject())
         return fail("Missing render settings.");
     auto render = root["render"].toObject();
+    if (!validDenoiseSettings(render) || !validDenoiseSettings(root["output"].toObject()))
+        return fail("Invalid antialiasing or denoiser mode.");
     for (auto key : {"denoise", "renderLow", "useTileRendering", "useEnvironmentMap", "rasterLocked"})
         if (render.contains(key) && !render[key].isBool())
             return fail("Invalid render toggle.");
@@ -347,6 +358,16 @@ bool SceneDocument::validate(QString &error, bool checkFiles) const
         if (render.contains(key) && (!render[key].isDouble() || render[key].toInt(-1) < 0))
             return fail("Invalid render setting.");
     const auto s = settings();
+    for(const auto &o : {render,root["output"].toObject()})
+        if(o.contains("rrMinDepth") && (!o["rrMinDepth"].isDouble() ||
+            o["rrMinDepth"].toDouble()<0 || o["rrMinDepth"].toDouble()>64 ||
+            std::floor(o["rrMinDepth"].toDouble())!=o["rrMinDepth"].toDouble()))
+            return fail("Invalid RR minimum depth.");
+    for(const auto &o : {render,root["output"].toObject()})
+        if(o.contains("sampleSeed") && (!o["sampleSeed"].isDouble() ||
+            !std::isfinite(o["sampleSeed"].toDouble()) || o["sampleSeed"].toDouble()<0 ||
+            o["sampleSeed"].toDouble()>4294967295.0 || std::floor(o["sampleSeed"].toDouble())!=o["sampleSeed"].toDouble()))
+            return fail("Invalid sample seed.");
     for (auto v : root["objects"].toArray())
         for (auto key : {"visible", "locked"})
         {
@@ -565,7 +586,11 @@ void SceneDocument::restoreCamera(Camera &c) const
 }
 void SceneDocument::captureSettings(const RenderParams::Snapshot &s)
 {
-    root["render"] = QJsonObject{{"denoise", s.denoise},
+    root["render"] = QJsonObject{{"denoise", s.effectiveDenoiseMode() != DenoiseMode::None},
+                                 {"sampleSeed",double(s.sampleSeed)},
+                                 {"rrMinDepth",s.rrMinDepth},
+                                 {"denoiseMode", denoiseModeName(s.effectiveDenoiseMode())},
+                                 {"antialiasing", s.antialiasing},
                                  {"renderLow", s.renderLow},
                                  {"interactionMode", s.interactionMode},
                                  {"useTileRendering", s.useTileRendering},
@@ -584,12 +609,20 @@ RenderParams::Snapshot SceneDocument::settings() const
     if (o.contains(#name))                                                                                   \
         s.name = o[#name].toVariant().value<decltype(s.name)>();
     SETTING(denoise)
+    SETTING(antialiasing)
+    if(o.contains("sampleSeed")) {
+        const double seed=o["sampleSeed"].toDouble(-1);
+        if(std::isfinite(seed) && seed>=0 && seed<=4294967295.0)s.sampleSeed=unsigned(seed);
+    }
+    if(o.contains("rrMinDepth"))s.rrMinDepth=o["rrMinDepth"].toInt(3);
     SETTING(renderLow)
     SETTING(interactionMode)
     SETTING(useTileRendering)
     SETTING(tileSize) SETTING(useEnvironmentMap) SETTING(maxBounces) SETTING(maxRenderFrames)
     SETTING(rasterLocked) SETTING(interactionIdleMs)
 #undef SETTING
+    s.denoiseMode = readDenoiseMode(o);
+    s.denoise = s.denoiseMode != DenoiseMode::None;
     // Persistent preview resolution and the temporary interaction strategy are independent.
     return s;
 }

@@ -26,10 +26,22 @@ void learnQT::configureRegressionCapture()
         }
     }
 
-    const bool regressionDenoise = arguments.contains(QStringLiteral("--regression-denoise"));
+    DenoiseMode mode=arguments.contains(QStringLiteral("--regression-denoise")) ? DenoiseMode::OIDN : DenoiseMode::None;
+    const int modeArgument=arguments.indexOf("--denoiser");
+    if (modeArgument>=0) {
+        const QString name=arguments.value(modeArgument+1);
+        if (name!="none" && name!="oidn" && name!="realtime") {
+            qCritical() << "--denoiser requires none, oidn or realtime"; QTimer::singleShot(0, [] { QCoreApplication::exit(2); }); return;
+        }
+        mode=readDenoiseMode(QJsonObject{{"denoiseMode",name}});
+    }
+    const bool regressionDenoise=mode!=DenoiseMode::None;
     RenderParams::instance().setDenoise(regressionDenoise);
     auto captureSettings = editor->document.settings();
     captureSettings.denoise = regressionDenoise;
+    captureSettings.denoiseMode=mode;
+    if(arguments.contains("--aa")) captureSettings.antialiasing=true;
+    if(arguments.contains("--no-aa")) captureSettings.antialiasing=false;
     captureSettings.useTileRendering = false;
     captureSettings.renderLow = false;
     captureSettings.maxRenderFrames = m_regressionTargetFrames;

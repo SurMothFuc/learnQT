@@ -19,6 +19,7 @@ struct LightSample {
     vec3 radiance;
     float pdf;
     int triangleIndex;
+    vec3 point, positionError, normal;
 };
 
 LightSample InvalidLightSample()
@@ -32,6 +33,7 @@ LightSample InvalidLightSample()
     lightSample.radiance = vec3(0.0);
     lightSample.pdf = 0.0;
     lightSample.triangleIndex = -1;
+    lightSample.point=lightSample.positionError=lightSample.normal=vec3(0);
     return lightSample;
 }
 
@@ -59,7 +61,7 @@ EncodedLight GetEncodedLight(int index)
 float EnvSelectPdf()
 {
 #ifdef USEENVIRONMENTMAP
-    return nLights > 0 ? 0.5 : 1.0;
+    return nLights > 0 ? (usePowerLightGroups?environmentSelectProbability:0.5) : 1.0;
 #else
     return 0.0;
 #endif
@@ -68,7 +70,7 @@ float EnvSelectPdf()
 float FiniteLightSelectPdf()
 {
 #ifdef USEENVIRONMENTMAP
-    return nLights > 0 ? 0.5 : 0.0;
+    return nLights > 0 ? 1.0-EnvSelectPdf() : 0.0;
 #else
     return nLights > 0 ? 1.0 : 0.0;
 #endif
@@ -152,7 +154,8 @@ LightSample SampleTriangleLight(EncodedLight light, vec3 origin, float xi1, floa
     float area = TriangleArea(triangle);
     if (area <= 0.0) return lightSample;
     vec3 bary = SampleTriangleBarycentric(xi1, xi2);
-    vec3 lightPoint = bary.x * triangle.p1 + bary.y * triangle.p2 + bary.z * triangle.p3;
+    vec3 lightPoint,pointError;
+    ReconstructSurfacePoint(light.triangleIndex,bary,lightPoint,pointError);
     vec3 toLight = lightPoint - origin;
     float dist2 = dot(toLight, toLight);
     if (dist2 <= EPS) {
@@ -172,6 +175,7 @@ LightSample SampleTriangleLight(EncodedLight light, vec3 origin, float xi1, floa
     lightSample.delta = false;
     lightSample.direction = L;
     lightSample.distance = distance;
+    lightSample.point=lightPoint;lightSample.positionError=pointError;lightSample.normal=lightNormal;
     vec2 lightUV = bary.x * triangle.uv1 + bary.y * triangle.uv2 + bary.z * triangle.uv3;
     materialEvaluationUV = lightUV;
     Material lightMaterial = getMaterial(light.triangleIndex);
@@ -261,6 +265,9 @@ LightSample SampleSphereLight(EncodedLight light, vec3 origin, float xi1, float 
     if (lightSample.distance >= INF) return lightSample;
     lightSample.valid = true;
     lightSample.direction = L;
+    lightSample.point=origin+lightSample.distance*L;
+    lightSample.normal=normalize(lightSample.point-light.positionOrDirection);
+    lightSample.positionError=FloatGamma(7.0)*(abs(origin)+abs(lightSample.distance*L));
     lightSample.lightIndex = light.index;
     lightSample.radiance = light.color;
     lightSample.pdf = finitePdf * light.selectPdf / (TWO_PI * SphereConeWidth(light, origin));

@@ -1,4 +1,11 @@
 
+void DisneyFrame(vec3 N,Material m,out vec3 T,out vec3 B) {
+    // Retain the old isotropic frame/sequence; authored axes matter only for anisotropy.
+    vec3 projected=m.tangent.xyz-N*dot(N,m.tangent.xyz);
+    if(m.anisotropic>0.0 && dot(projected,projected)>1e-12) {
+        T=normalize(projected);B=cross(N,T)*(m.tangent.w<0.0?-1.0:1.0);
+    } else Onb(N,T,B);
+}
 float SchlickFresnel(float u) {
     float m = clamp(1-u, 0.0, 1.0);
     float m2 = m*m;
@@ -82,10 +89,10 @@ vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Materia
 {
     delta = false;
     vec3 L;
+    bool transmissionEvent=false;
 
-    // TODO: Tangent and bitangent should be calculated from mesh (provided, the mesh has proper uvs)
     vec3 T, B;
-    Onb(N, T, B);
+    DisneyFrame(N,material,T,B);
 
     // Transform to shading space to simplify operations (NDotL = L.z; NDotV = V.z; NDotH = H.z)
     V = ToLocal(T, B, N, V);
@@ -162,6 +169,7 @@ vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Materia
         }
         else // Transmission
         {
+            transmissionEvent=true;
             L = normalize(refract(-V, H, eta));
         }
     }
@@ -176,6 +184,9 @@ vec3 DisneySample(float xi_1, float xi_2, float xi_3, vec3 V, vec3 N, in Materia
         L = normalize(reflect(-V, H));
     }
 
+    // A sampled facet event must also have the intended macro-surface side.
+    // Keep the rejected probability as null mass instead of evaluating another lobe.
+    if(transmissionEvent ? L.z>=0.0 : L.z<=0.0)return vec3(0);
     L = ToWorld(T, B, N, L);
     V = ToWorld(T, B, N, V);
 
@@ -246,6 +257,7 @@ vec3 EvalMicrofacetRefraction(vec3 baseColor, float ax,float ay, float eta, vec3
 
     float LDotH = dot(L, H);
     float VDotH = dot(V, H);
+    if(VDotH<=0.0 || LDotH>=0.0)return vec3(0);
 
     float D = GTR2Aniso(H.z, H.x, H.y, ax, ay);
     float G1 = SmithGAniso(abs(V.z), V.x, V.y, ax, ay);
@@ -278,7 +290,7 @@ vec3 EvalClearcoat(float clearcoatRoughness, vec3 V, vec3 L, vec3 H, out float p
     float jacobian = 1.0 / (4.0 * VDotH);
 
     pdf = D * H.z * jacobian;
-    return vec3(F) * D * G;
+    return vec3(F) * D * G / (correctClearcoat?max(4.0*L.z*V.z,1e-20):1.0);
 }
 vec3 SampleHG(vec3 V, float g, float r1, float r2)
 {
@@ -313,9 +325,8 @@ vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float
     pdf = 0.0;
     vec3 f = vec3(0.0);
 
-    // TODO: Tangent and bitangent should be calculated from mesh (provided, the mesh has proper uvs)
     vec3 T, B;
-    Onb(N, T, B);
+    DisneyFrame(N,material,T,B);
 
     // Transform to shading space to simplify operations (NDotL = L.z; NDotV = V.z; NDotH = H.z)
     V = ToLocal(T, B, N, V);
@@ -411,6 +422,14 @@ vec3 DisneyEval(vec3 V, vec3 N, vec3 L, in Material material,float eta,out float
         }
     }
 
+    // Thin-coat attenuation is a reciprocal single-pass layer approximation;
+    // multiple scattering between layers is not represented.
+    if(correctClearcoat && material.clearcoat>0.0) {
+        float strength=.25*material.clearcoat;
+        float fv=mix(.04,1.0,SchlickFresnel(abs(V.z)));
+        float fl=mix(.04,1.0,SchlickFresnel(abs(L.z)));
+        f*=(1.0-strength*fv)*(1.0-strength*fl);
+    }
     // Clearcoat
     if (clearCtPr > 0.0 && reflect && material.clearcoatGloss > 0.0)
     {
@@ -473,6 +492,10 @@ BsdfSample SampleDisneyBSDF(vec3 V, vec3 N, Material m, float eta, vec3 xi) {
             mass += glass*F;
             value += vec3(glass*F);
         }
+        if(correctClearcoat && m.clearcoat>0.0) {
+            float attenuation=1.0-.25*m.clearcoat*mix(.04,1.0,schlick);
+            value*=attenuation*attenuation;
+        }
         if (m.clearcoatGloss <= 0.0) {
             mass += pc;
             value += vec3(pc*mix(0.04,1.0,schlick));
@@ -483,4 +506,26 @@ BsdfSample SampleDisneyBSDF(vec3 V, vec3 N, Material m, float eta, vec3 xi) {
     }
     if (mass > 0.0 && total > 0.0) s.weight = value * total / mass;
     return s;
+}
+
+// Shading normals select the local lobe frame; winding geometry selects the
+// physical side. Mismatched events are null samples, never renormalized.
+bool ValidSurfaceScatter(vec3 V,vec3 N,vec3 G,vec3 L) {
+    float gv=dot(G,V),gl=dot(G,L),sv=dot(N,V),sl=dot(N,L);
+    return gv!=0.0 && gl!=0.0 && sv>0.0 && sl!=0.0 &&
+        ((gv*gl>0.0)==(sv*sl>0.0));
+}
+vec3 EvaluateSurfaceBSDF(HitResult hit,vec3 L,float eta,out float pdf) {
+    vec3 V=-hit.viewDir;
+    pdf=0.0;
+    if(!ValidSurfaceScatter(V,hit.normal,hit.geometricNormal,L))return vec3(0);
+    return DisneyEval(V,hit.normal,L,hit.material,eta,pdf);
+}
+BsdfSample SampleSurfaceBSDF(HitResult hit,float eta,vec3 xi) {
+    vec3 V=-hit.viewDir;
+    BsdfSample result=SampleDisneyBSDF(V,hit.normal,hit.material,eta,xi);
+    if(!ValidSurfaceScatter(V,hit.normal,hit.geometricNormal,result.direction)) {
+        result.pdf=0.0;result.weight=vec3(0);
+    }
+    return result;
 }

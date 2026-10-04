@@ -1,0 +1,11 @@
+{
+  "before": {
+    "roiMean": 0.5228597836047411,
+    "roiStdDev": 0.024353028593353372
+  },
+  "after": {
+    "roiMean": 0.5228440036674341,
+    "roiStdDev": 0.01345364001613195
+  },
+  "definition": "x=120:360, y=40:140, lower-left GL origin; spatial stddev, not ground-truth error"
+}
