@@ -1851,6 +1851,9 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
     }
     stats.normalMinimum=1;stats.normalMaximum=-1;
     decodeOidnNormals(static_cast<float*>(oidnNormalBuf.getData()),packedNormals.data(),packedNormals.size(),stats.normalMinimum,stats.normalMaximum);
+    const std::vector<float> confidenceAlbedo(albedo,albedo+pixels*3);
+    const auto *decodedNormal=static_cast<const float*>(oidnNormalBuf.getData());
+    const std::vector<float> confidenceNormal(decodedNormal,decodedNormal+pixels*3);
     stats.auxiliarySize={render_width,render_height};
 
 
@@ -1897,7 +1900,8 @@ void Renderer::performDenoising(const RenderParams::Snapshot &snapshot, bool for
     stats.oidnGuidePolicy=auxiliarySafe?QStringLiteral("surface/delta guides"):QStringLiteral("beauty-only volume fallback");
     stats.oidnProtectedPixels=0;
     if(!qEnvironmentVariableIsSet("LEARNQT_LEGACY_OIDN_GUIDES"))
-        stats.oidnProtectedPixels=protectOidnOutput(raw,static_cast<float*>(oidnOutputBuf.getData()),pixels,secondMoment,counts,&confidenceEligible);
+        stats.oidnProtectedPixels=protectOidnOutput(raw,static_cast<float*>(oidnOutputBuf.getData()),pixels,secondMoment,counts,&confidenceEligible,
+            render_width,confidenceAlbedo.data(),confidenceNormal.data());
     glBindTexture(GL_TEXTURE_2D, RenderColorTexfiltered);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, render_width, render_height, GL_RGB, GL_FLOAT,
                     oidnOutputBuf.getData());

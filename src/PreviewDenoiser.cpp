@@ -56,8 +56,12 @@ PreviewDenoiser::Result PreviewDenoiser::execute(Snapshot snapshot)
             mainFilter.set("cleanAux", true);
         }
         decodeOidnNormals(snapshot.normal.data(),snapshot.normal.data(),snapshot.normal.size(),result.normalMinimum,result.normalMaximum);
+        // Keep the raw guides for confidence matching; OIDN prefilters its copies in-place.
+        const auto confidenceAlbedo=snapshot.confidence?snapshot.albedo:std::vector<float>{};
+        const auto confidenceNormal=snapshot.confidence?snapshot.normal:std::vector<float>{};
         result.color.resize(snapshot.color.size());
         bytes = quint64(snapshot.color.size()) * sizeof(float) * 4 +
+            (confidenceAlbedo.size()+confidenceNormal.size())*sizeof(float)+
             (snapshot.secondMoment.size()+snapshot.sampleCounts.size())*sizeof(float)+snapshot.confidenceEligible.size();
         const int w = snapshot.size.width(), h = snapshot.size.height();
         auto progress = [](void *user, double) { return !static_cast<std::atomic_bool *>(user)->load(); };
@@ -90,7 +94,7 @@ PreviewDenoiser::Result PreviewDenoiser::execute(Snapshot snapshot)
             throw std::runtime_error(message ? message : "OIDN failed");
         else if(snapshot.confidence && !snapshot.secondMoment.empty())
             result.protectedPixels=protectOidnOutput(snapshot.color.data(),result.color.data(),size_t(w)*h,snapshot.secondMoment,snapshot.sampleCounts,
-                snapshot.confidenceEligible.empty()?nullptr:&snapshot.confidenceEligible);
+                snapshot.confidenceEligible.empty()?nullptr:&snapshot.confidenceEligible,w,confidenceAlbedo.data(),confidenceNormal.data());
     }
     catch (const std::exception &e)
     {

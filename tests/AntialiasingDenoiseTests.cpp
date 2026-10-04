@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QJsonDocument>
 #include <QElapsedTimer>
+#include <QThread>
 #include <cmath>
 #include <iostream>
 
@@ -17,6 +18,15 @@ struct RendererDenoiseTestAccess
     static GLuint color(Renderer &r) { return r.preRenderColorTex; }
     static GLuint normal(Renderer &r) { return r.previousNormalTex; }
     static GLuint albedo(Renderer &r) { return r.previousAlbedoTex; }
+    static std::vector<float> unprotectedOidn(Renderer &r,int w,int h) {
+        r.oidnMainFilter.execute();
+        const char *message=nullptr;
+        if(r.oidnDevice.getError(message)!=oidn::Error::None)throw std::runtime_error(message?message:"OIDN audit failed");
+        const auto *data=static_cast<const float *>(r.oidnOutputBuf.getData());
+        std::vector<float> rgba(size_t(w)*h*4,1);
+        for(size_t p=0;p<size_t(w)*h;++p)for(int c=0;c<3;++c)rgba[p*4+c]=data[p*3+c];
+        return rgba;
+    }
     static GLuint moments(GpuDenoiser &d) { return d.moments[d.read]; }
     static GLuint filtered(Renderer &r, DenoiseMode mode) { return mode==DenoiseMode::Realtime ? r.gpuDenoiser.output() : mode==DenoiseMode::OIDN ? r.RenderColorTexfiltered : r.preRenderColorTex; }
 };
@@ -501,6 +511,30 @@ void benchmark(const QStringList &args,QOpenGLFunctions_3_3_Core *gl)
         profile.write(QJsonDocument(renderer.traceProfile()).toJson());
     }
     saveLinear(read(gl,RendererDenoiseTestAccess::filtered(renderer,settings.effectiveDenoiseMode()),w,h),w,h,args[3]+".filtered.png");
+    if(args.contains("--oidn-audit")) {
+        require(!preview && mode=="oidn","OIDN audit requires final OIDN");
+        saveLinear(RendererDenoiseTestAccess::unprotectedOidn(renderer,w,h),w,h,args[3]+".unprotected.png");
+        const auto normals=read(gl,RendererDenoiseTestAccess::normal(renderer),w,h);
+        const auto albedos=read(gl,RendererDenoiseTestAccess::albedo(renderer),w,h);
+        saveLinear(normals,w,h,args[3]+".normal.png");
+        saveLinear(albedos,w,h,args[3]+".albedo.png");
+        PreviewDenoiser::Snapshot snapshot;snapshot.size={w,h};snapshot.samples=renderer.samples();snapshot.version=1;
+        snapshot.color.resize(size_t(w)*h*3);snapshot.normal.resize(snapshot.color.size());snapshot.albedo.resize(snapshot.color.size());
+        snapshot.sampleCounts.resize(size_t(w)*h);snapshot.secondMoment.resize(size_t(w)*h);snapshot.confidenceEligible.resize(size_t(w)*h);
+        for(size_t p=0;p<size_t(w)*h;++p) {
+            for(int c=0;c<3;++c) {snapshot.color[p*3+c]=raw[p*4+c];snapshot.normal[p*3+c]=normals[p*4+c];snapshot.albedo[p*3+c]=albedos[p*4+c];}
+            snapshot.sampleCounts[p]=normals[p*4+3];snapshot.secondMoment[p]=raw[p*4+3];
+            const unsigned flags=unsigned(albedos[p*4+3]);snapshot.confidenceEligible[p]=(flags&128u)==0u;
+            if(flags&64u)snapshot.useAuxiliary=false;
+        }
+        PreviewDenoiser previewDenoiser;previewDenoiser.start(std::move(snapshot));PreviewDenoiser::Result previewResult;
+        QElapsedTimer deadline;deadline.start();
+        while(!previewDenoiser.take(previewResult)) {require(deadline.elapsed()<30000,"Preview OIDN audit timed out");QThread::msleep(1);}
+        require(previewResult.error.isEmpty() && previewResult.color.size()==size_t(w)*h*3,"Preview OIDN audit failed");
+        auto previewRgba=raw;
+        for(size_t p=0;p<size_t(w)*h;++p)for(int c=0;c<3;++c)previewRgba[p*4+c]=previewResult.color[p*3+c];
+        saveLinear(previewRgba,w,h,args[3]+".preview-filtered.png");
+    }
     QJsonObject result{{"width",w},{"height",h},{"spp",measuredSpp},{"totalSpp",renderer.samples()},{"seconds",seconds},{"fps",measuredSpp/seconds},
         {"mode",mode},{"aa",settings.antialiasing},{"preview",preview},{"historyAcceptance",renderer.stats.historyAcceptance},
         {"gpuDenoiseMs",renderer.stats.realtimeDenoiseMs},{"oidnMs",renderer.stats.oidnMs},

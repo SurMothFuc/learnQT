@@ -189,6 +189,25 @@ int main(int argc,char **argv) {
         check(protectOidnOutput(confidentRaw.data(),candidate.data(),1,moments,counts)==1 && candidate==confidentRaw,"Converged texture detail was blurred");
         std::vector<unsigned char> noisy={0};candidate={.8f,.8f,.8f};
         check(protectOidnOutput(confidentRaw.data(),candidate.data(),1,moments,counts,&noisy)==0 && candidate[0]==.8f,"Rough transport lost its denoising correction");
+        // A dark sample mean with zero measured variance is not a converged
+        // black texture if compatible neighboring pixels received illumination.
+        std::vector<float> darkRaw(27,.5f),darkFiltered(27,.5f),darkMoments(9,.25f),darkCounts(9,128);
+        std::vector<float> darkAlbedo(27,.5f),darkNormals(27,0);
+        for(int p=0;p<9;++p)darkNormals[p*3+2]=1;
+        for(int c=0;c<3;++c)darkRaw[12+c]=0;
+        darkMoments[4]=0;
+        const auto unchangedRaw=darkRaw;
+        protectOidnOutput(darkRaw.data(),darkFiltered.data(),9,darkMoments,darkCounts,nullptr,3,darkAlbedo.data(),darkNormals.data());
+        check(darkFiltered[12]>.45f && darkRaw==unchangedRaw,"Confidence restored an isolated dark noise speck");
+        // The same beauty discontinuity is real when its albedo is black.
+        for(int c=0;c<3;++c)darkAlbedo[12+c]=0;
+        darkFiltered.assign(27,.5f);
+        protectOidnOutput(darkRaw.data(),darkFiltered.data(),9,darkMoments,darkCounts,nullptr,3,darkAlbedo.data(),darkNormals.data());
+        check(darkFiltered[12]==0,"Confidence blurred a true black texture edge");
+        // Nor may a different surface normal supply the uncertainty floor.
+        darkAlbedo.assign(27,.5f);darkNormals[12]=1;darkNormals[14]=0;darkFiltered.assign(27,.5f);
+        protectOidnOutput(darkRaw.data(),darkFiltered.data(),9,darkMoments,darkCounts,nullptr,3,darkAlbedo.data(),darkNormals.data());
+        check(darkFiltered[12]==0,"Confidence crossed a normal discontinuity");
         checkNear(encodeDisplaySrgb(.0031308f),.04044994,1e-7,"sRGB linear toe");
         checkNear(encodeDisplaySrgb(.18f),.4613561,1e-6,"sRGB middle gray");
         RenderResult result;result.size={2,2};result.samples=64;result.beauty={.001f,.18f,16.f,1.f,2.f,4.f,.25f,.5f,.75f,0.f,.01f,.1f};

@@ -21,6 +21,8 @@ void learnQT::configureMaterialRegression()
     const auto output=QFileInfo(args[option+1]).absoluteFilePath();QDir().mkpath(output);
     struct State {int phase=0;QString object,other;SceneDocument original;QJsonObject stable;int undo=0,frames=0;quint64 version=0;QImage first;QElapsedTimer clock;RenderStats stats;QSize previewSize{0,0},captureSize;int finalSamples=0;quint64 finalVersion=0;};
     auto state=std::make_shared<State>();state->clock.start();
+    auto timings=std::make_shared<QJsonObject>();
+    auto previewClock=std::make_shared<QElapsedTimer>();
     connect(viewport,&GLWidget::framePresented,this,[state]{++state->frames;});
     auto watchStats=[this,state] {connect(viewport->renderThread(),&RenderThread::statsReady,this,[state](RenderStats stats){state->stats=stats;});};
     if(viewport->renderThread())watchStats();else connect(viewport,&GLWidget::renderThreadReady,this,watchStats);
@@ -32,16 +34,16 @@ void learnQT::configureMaterialRegression()
         }
     });modalMonitor->start();
     auto timer=new QTimer(this);timer->setInterval(100);
-    auto finish=[this,state,timer,output](QString error) {
+    auto finish=[this,state,timer,output,timings](QString error) {
         timer->stop();grab().save(output+(error.isEmpty()?"/final.png":"/failure.png"));
         QFile report(output+"/report.json");if(report.open(QIODevice::WriteOnly))report.write(QJsonDocument(QJsonObject{
             {"passed",error.isEmpty()},{"error",error},{"phase",state->phase},{"width",width()},{"height",height()},
             {"dpi",devicePixelRatioF()},{"compactWindow",QJsonArray{state->captureSize.width(),state->captureSize.height()}},{"previewSize",QJsonArray{state->previewSize.width(),state->previewSize.height()}},
-            {"previewSamples",state->finalSamples},{"version",qint64(state->finalVersion)}}).toJson());
+            {"previewSamples",state->finalSamples},{"version",qint64(state->finalVersion)},{"timingsMs",*timings}}).toJson());
         std::cout<<(error.isEmpty()?"Material UI regression passed":error.toStdString())<<std::endl;
         editor->markSaved();m_sceneDirty=false;QCoreApplication::exit(error.isEmpty()?0:19);
     };
-    connect(timer,&QTimer::timeout,this,[this,state,finish,output] {
+    connect(timer,&QTimer::timeout,this,[this,state,finish,output,timings,previewClock] {
         if(state->clock.elapsed()>150000)return finish("Material UI timed out: "+workspace->materialPreview->status());
         auto definition=[this](QString id) {const QString mat=editor->node(id)["material"].toString();
             for(auto v:editor->document.root["materials"].toArray())if(v.toObject()["id"].toString()==mat)return v.toObject();return QJsonObject();};
@@ -137,21 +139,28 @@ void learnQT::configureMaterialRegression()
             editor->setMaterialFields(QJsonObject{{"baseColor",QJsonArray{.8,.12,.05}},{"emissive",QJsonArray{0,0,0}},{"metallic",0},{"roughness",.3}}, {state->object});
             inspector->browseMaterial(editor->node(state->object)["material"].toString());
             state->stable=editor->document.root;state->undo=editor->undo.index();
-            findChild<QPushButton *>("materialBallMode")->click();state->version=workspace->materialPreview->requestVersion();state->phase=2;return;
+            previewClock->start();findChild<QPushButton *>("materialBallMode")->click();state->version=workspace->materialPreview->requestVersion();state->phase=2;return;
         }
         if(state->phase==2) {
             auto preview=workspace->materialPreview;
             if(preview->status().startsWith("预览失败"))return finish(preview->status());
+            if(preview->samples()>0 && preview->displayedVersion()==preview->requestVersion() && !timings->contains("coldFirstFrame"))
+                (*timings)["coldFirstFrame"]=previewClock->elapsed();
             if(preview->samples()!=64 || preview->displayedVersion()!=preview->requestVersion())return;
+            (*timings)["cold64spp"]=previewClock->elapsed();
             if(preview->image().size()!=QSize(384,384) || editor->document.root!=state->stable || editor->undo.index()!=state->undo)return finish("Material ball changed document or result invalid");
             state->first=preview->image();state->first.save(output+"/ball-red.png");grab().save(output+"/material-ball.png");
             // Continuous edits must cancel old requests and publish only the last one.
-            for(int i=0;i<8;++i)editor->setMaterialFields(QJsonObject{{"baseColor",QJsonArray{.03,.2,double(.3+i*.07)}}},{state->object},7000);
+            previewClock->restart();for(int i=0;i<8;++i)editor->setMaterialFields(QJsonObject{{"baseColor",QJsonArray{.03,.2,double(.3+i*.07)}}},{state->object},7000);
             inspector->browseMaterial(editor->node(state->object)["material"].toString());
             state->stable=editor->document.root;state->undo=editor->undo.index();state->phase=3;return;
         }
         if(state->phase==3) {
-            auto preview=workspace->materialPreview;if(preview->samples()!=64 || preview->displayedVersion()!=preview->requestVersion())return;
+            auto preview=workspace->materialPreview;
+            if(preview->samples()>0 && preview->displayedVersion()==preview->requestVersion() && !timings->contains("editFirstFrame"))
+                (*timings)["editFirstFrame"]=previewClock->elapsed();
+            if(preview->samples()!=64 || preview->displayedVersion()!=preview->requestVersion())return;
+            (*timings)["edit64spp"]=previewClock->elapsed();
             if(preview->image()==state->first)return finish("Material change did not change ball image");
             preview->image().save(output+"/ball-blue.png");
             QMouseEvent press(QEvent::MouseButtonPress,QPointF(preview->rect().center()),Qt::LeftButton,Qt::LeftButton,Qt::NoModifier);QApplication::sendEvent(preview,&press);
@@ -164,11 +173,12 @@ void learnQT::configureMaterialRegression()
         }
         if(state->phase==4) {
             if(workspace->materialPreview->requestVersion()!=state->version)return finish("Pause did not stay paused");
-            m_queueRunning=false;workspace->materialPreview->setRenderingAllowed(true);findChild<QPushButton *>("materialBallReset")->click();
+            previewClock->restart();m_queueRunning=false;workspace->materialPreview->setRenderingAllowed(true);findChild<QPushButton *>("materialBallReset")->click();
             resize(1366,768);state->phase=5;return;
         }
         if(state->phase==5) {
             auto preview=workspace->materialPreview;if(preview->samples()!=64 || preview->displayedVersion()!=preview->requestVersion())return;
+            (*timings)["reset64spp"]=previewClock->elapsed();
             state->previewSize=preview->image().size();state->finalSamples=preview->samples();state->finalVersion=preview->displayedVersion();
             if(width()!=1366 || height()!=768)return finish("Compact window does not fit requested size");
             state->captureSize=size();
